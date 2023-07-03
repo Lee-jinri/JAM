@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.message.dao.MessageDAO">
+	
+	<!-- 받은 쪽지 -->
+	<select id="receiveMessage" parameterType="message" resultType="message" >
+		<![CDATA[
+		SELECT message_no, message_title, sender, to_char(sendTime,'YYYY/MM/DD HH24:MI') as sendTime, to_char(readTime,'YYYY/MM/DD HH24:MI') as readTime, read_chk
+		FROM (
+				SELECT /*+ INDEX_DESC(message SYS_C0028093) */
+					rownum as rnum, message_no, message_title, sender, sendTime, readTime, read_chk
+				FROM message 
+				where ]]> receiver_id = #{receiver_id} AND
+				<trim prefix="(" suffix=") AND " prefixOverrides="AND">
+					<include refid="mSearch"></include> 
+				</trim>
+			<![CDATA[ rownum <= #{pageNum} * #{amount}
+				) messageList
+			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			]]>
+	</select>
+	
+	<!-- 보낸 쪽지 -->
+	<select id="sendMessage" resultType="message" parameterType="String">
+		SELECT message_no, message_title, receiver, sendTime, readTime, read_chk
+		FROM message
+		WHERE sender_id  = #{sender_id}
+		ORDER BY sendTime DESC
+	</select>
+	
+	<!-- 받은 쪽지 전체 레코드 수 조회 -->
+	<select id="receiveListCnt" parameterType="message" resultType="int">
+		SELECT count(*) 
+		FROM message
+		WHERE receiver_id = #{receiver_id}
+	</select>
+	
+	<!-- 보낸 쪽지 전체 레코드 수 조회 -->
+	<select id="sendListCnt" parameterType="message" resultType="int">
+		SELECT count(*) 
+		FROM message
+		WHERE sender_id  = #{sender_id} 
+	</select>
+	
+	<!-- 검색 -->
+	<sql id="mSearch">
+		<if test="search=='message_title'">
+			<![CDATA[message_title LIKE '%' || #{keyword} || '%']]>
+		</if>
+		<if test="search=='sender'">
+			<![CDATA[sender LIKE '%' || #{keyword} || '%']]>
+		</if>
+		<if test="search=='message_content'">
+			<![CDATA[message_content LIKE '%' || #{keyword} || '%']]>
+		</if>
+	</sql>
+	
+	<!-- 쪽지 상태 읽음으로 변경 -->
+	<update id="message_read" parameterType="message">
+		<if test="read_chk == 0">
+			UPDATE message
+			SET read_chk = 1, readTime = sysdate
+			WHERE message_no = #{message_no}
+ 		</if>
+	</update>
+	
+	
+	<!-- 받은 쪽지 상세 페이지 -->
+	<select id="rMessageDetail" parameterType="message" resultType="message">
+		SELECT message_no, message_title, message_contents, receiver, sender_id, sender, sendTime
+		FROM message
+		WHERE message_no = #{message_no}
+	</select>
+	
+	<!-- 보낸 쪽지 상세 페이지 -->
+	<select id="sMessageDetail" parameterType="message" resultType="message">
+		SELECT message_no, message_title, message_contents, receiver, receiver_id, sendTime
+		FROM message
+		WHERE message_no = #{message_no}
+	</select>
+	
+	<!-- 쪽지 보내기 -->
+	<insert id="messageWrite" parameterType="message">
+		INSERT INTO message(message_no, sender, sender_id, receiver, receiver_id, message_contents, message_title, sendTime, read_chk)
+		VALUES(message_seq.nextval, #{sender}, #{sender_id}, #{receiver}, #{receiver_id}, #{message_contents}, #{message_title}, sysdate, 0)
+	</insert>
+</mapper>

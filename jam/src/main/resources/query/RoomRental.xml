@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.roomRental.dao.RoomRentalDAO">
+	
+	<!-- 합주실 검색 -->
+	<sql id="roomSearch">
+		<if test="search=='room_title'">
+			<![CDATA[room_title LIKE '%' || #{keyword} || '%']]>
+		</if>
+		<if test="search=='room_content'">
+			<![CDATA[room_content LIKE '%' || #{keyword} || '%']]>
+		</if>
+		<if test="search=='user_name'">
+			<![CDATA[user_name LIKE '%' || #{keyword} || '%']]>
+		</if>
+	</sql>
+	
+	<!-- 합주실 list -->
+	<select id="roomList" parameterType="room" resultType="room">
+		<![CDATA[
+		SELECT roomRental_no, roomRental_title, to_char(roomRental_date,'YYYY/MM/DD HH24:MI') as roomRental_date, roomRental_reply_cnt, roomRental_hits,roomRental_status, user_id , user_name
+		FROM (
+				SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
+					rownum as rnum, roomRental_no, roomRental_title, roomRental_date, roomRental_reply_cnt, roomRental_hits, roomRental_status, user_id , user_name
+				FROM roomRental 
+				where ]]>
+				<trim prefix="(" suffix=") AND " prefixOverrides="AND">
+					<include refid="roomSearch"></include> 
+				</trim>
+			<![CDATA[ rownum <= #{pageNum} * #{amount}
+				) roomList
+			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			]]>
+	</select>
+
+	<!-- 전체 레코드 수 조회 -->
+	<select id="roomListCnt" parameterType="room" resultType="int">
+		SELECT count(*) FROM roomRental
+		<trim prefix=" where (" suffix=")">
+			<include refid="roomSearch"></include>
+		</trim>
+	</select>
+	
+	<!-- 합주실 조회수 -->
+	<update id="roomReadCnt" parameterType="room">
+		UPDATE roomRental 
+		SET roomRental_hits = roomRental_hits + 1 
+		WHERE roomRental_no = #{roomRental_no}
+	</update>
+	
+	<!-- 합주실 상세페이지 -->
+	<select id="roomDetail" resultType="room">
+		SELECT roomRental_no, roomRental_title, roomRental_content, roomRental_status, roomRental_hits, to_char(roomRental_date,'YYYY/MM/DD HH24:MI:SS') as roomRental_date, roomRental_price, user_name, user_id
+		FROM roomRental
+		WHERE roomRental_no = #{roomRental_no}
+	</select>
+	
+	<!-- 합주실 글 입력 -->
+	<insert id="roomInsert" parameterType="room">
+		<selectKey keyProperty="roomRental_no" resultType="int" order="BEFORE">
+			SELECT roomRental_seq.nextval from dual
+		</selectKey>
+		INSERT INTO roomRental(roomRental_no,  roomRental_title, roomRental_content,roomRental_status, roomRental_hits, roomRental_reply_cnt,roomRental_date, roomRental_price, user_id , user_name )
+		VALUES(#{roomRental_no}, #{roomRental_title}, #{roomRental_content}, #{roomRental_status}, 0, 0, sysdate, #{roomRental_price}, #{user_id}, #{user_name})
+	</insert>
+	
+	<!-- 합주실 글 수정 페이지 -->
+	<select id="roomUpdateForm" parameterType="room" resultType="room">
+		SELECT roomRental_no, roomRental_title, roomRental_content,roomRental_status,roomRental_price, imageFileName
+		FROM roomRental
+		WHERE roomRental_no = #{roomRental_no}
+	</select>
+	
+	<!-- 합주실 글 수정 -->
+	<update id="roomUpdate" parameterType="room">
+		UPDATE roomRental SET
+		roomRental_title = #{roomRental_title},
+		roomRental_content = #{roomRental_content},
+		roomRental_status = #{roomRental_status},
+		roomRental_price = #{roomRental_price},
+		roomRental_date = sysdate
+		<if test="imageFileName != ''">
+			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
+		</if>
+		WHERE roomRental_no = #{roomRental_no}
+	</update>
+	
+	<!-- 합주실 글 삭제 -->
+	<delete id="roomDelete" parameterType="room">
+		DELETE FROM roomRental WHERE roomRental_no = #{roomRental_no}
+	</delete>
+	
+	<!-- 댓글 개수 증감 -->
+	<update id="updateReplyCnt">
+		UPDATE roomRental
+		SET roomRental_reply_cnt = roomRental_reply_cnt + #{amount}
+		WHERE roomRental_no = #{roomRental_no}
+	</update>
+</mapper>

@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.member.dao.MemberDAO">
+
+	<!-- 회원가입 -->
+	<insert id="memberJoin" parameterType="member">
+	INSERT INTO member (user_id, user_pw, user_name, phone, address)
+	VALUES (
+		#{user_id}, 
+		#{user_pw}, 
+		#{user_name}, 
+		#{phone}, 
+		#{address}
+	)
+	</insert>
+	
+	<!-- 아이디 중복검사 -->
+  	<select id="idCheck" resultType="int">
+  		SELECT count(*) 
+  		FROM member 
+  		WHERE user_id = #{userId}
+  	</select>
+  	
+  	<!-- 닉네임 중복검사 -->
+  	<select id="nameCheck" resultType="int">
+  		SELECT count(*) 
+  		FROM member 
+  		WHERE user_name = #{user_name}
+  	</select>
+  	
+  	<!-- 전화번호 중복검사 -->
+  	<select id="phoneCheck" resultType="int">
+  		SELECT count(*) 
+  		FROM member 
+  		WHERE phone = #{phone}
+  	</select>
+  	
+  	<!-- 로그인 -->
+  	<select id="login" resultType="member">
+  		SELECT user_id, user_pw, user_name, address, phone
+  		FROM member 
+  		WHERE user_id = #{user_id}
+  	</select>
+	
+	<!-- 마이페이지 - 내가 쓴 글 -->
+	
+	<!-- 커뮤니티 -->
+	<select id="comMyWrite" resultType="community" parameterType="member">
+		<![CDATA[
+		SELECT com_no, com_title, to_char(com_date,'YYYY/MM/DD') as com_date, com_hits
+		FROM (
+				SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
+					rownum as rnum, com_no, com_title, com_date, com_hits
+				FROM community 
+				WHERE ]]> user_id = #{user_id} AND 
+				<![CDATA[ rownum <= #{pageNum} * (#{amount}-5)
+				) communityList
+			WHERE rnum > (#{pageNum} - 1) * (#{amount}-5)
+			]]>	
+	</select>
+	
+	
+	<select id="fleaMyWrite" resultType="flea" parameterType="member">
+		<![CDATA[
+		SELECT flea_no, flea_title, to_char(flea_date,'YYYY/MM/DD') as flea_date, flea_hits
+		FROM (
+				SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
+					rownum as rnum, flea_no, flea_title, flea_date, flea_hits
+				FROM fleaMarket 
+				WHERE ]]> user_id = #{user_id} AND
+				<![CDATA[ rownum <= #{pageNum} * (#{amount}-5)
+				) fleaList
+			WHERE rnum > (#{pageNum} - 1) * (#{amount}-5)
+			]]>
+	</select>
+	
+	<select id="jobMyWrite" resultType="job" parameterType="member">
+		<![CDATA[
+		SELECT job_no, job_title, to_char(job_date,'YYYY/MM/DD') as job_date, job_hits
+		FROM (
+				SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
+					rownum as rnum, job_no, job_title, job_date, job_hits
+				FROM job 
+				where ]]> user_id = #{user_id} AND
+			<![CDATA[ rownum <= #{pageNum} * (#{amount}-5)
+				) jobList
+			WHERE rnum > (#{pageNum} - 1) * (#{amount}-5)
+			]]>
+	</select>
+	
+	<select id="roomMyWrite" resultType="room" parameterType="member">
+		<![CDATA[
+		SELECT roomRental_no, roomRental_title, to_char(roomRental_date,'YYYY/MM/DD') as roomRental_date, roomRental_hits
+		FROM (
+				SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
+					rownum as rnum, roomRental_no, roomRental_title, roomRental_date, roomRental_hits
+				FROM roomRental 
+				where ]]> user_id = #{user_id} AND
+			<![CDATA[ rownum <= #{pageNum} * (#{amount}-5)
+				) roomList
+			WHERE rnum > (#{pageNum} - 1) * (#{amount}-5)
+			]]>
+	</select>
+	
+	<!-- 마이페이지 - 회원 정보 페이지 -->
+	<select id="account" resultType="member" parameterType="member">
+		SELECT user_id, user_pw, user_name, address, phone
+		FROM member
+		WHERE user_id = #{user_id}
+	</select>
+	
+	<!-- 마이페이지 - 회원 정보 수정 --> 
+	<update id="memberUpdate" parameterType="member">
+		UPDATE member
+		SET user_pw = #{user_pw}, user_name = #{user_name}, address = #{address}, phone = #{phone}
+		WHERE  user_id = #{user_id} 
+	</update> 	
+  	    
+  	<!-- 아이디 찾기 -->
+  	<select id="findId" parameterType="String" resultType="member">
+  		SELECT user_id
+  		FROM member
+  		WHERE user_name = #{user_name} 
+  		AND phone = #{phone}
+  	</select>
+  	
+  	<!-- 비밀번호 찾기 -->
+	<select id="findPw" resultType="member">
+		SELECT user_pw
+		FROM member
+		WHERE user_id = #{user_id} 
+		AND user_name = #{user_name} 
+		AND phone = #{phone}
+	</select>
+	
+	<!-- 전화번호 변경 -->
+	<update id="phoneModi" parameterType="member">
+		UPDATE member
+		SET phone = #{phone}
+		WHERE user_id = #{user_id}
+	</update>
+	
+	<!-- 비밀번호 확인 -->
+	<select id="pwConfirm" resultType="int" parameterType="member">
+		SELECT count(*)
+		FROM member
+		WHERE user_id = #{user_id} AND user_pw = #{user_pw}
+	</select>
+	
+	<!-- 비밀번호 변경 -->
+	<update id="pwModi" parameterType="member">
+		UPDATE member
+		SET user_pw = #{user_pw}
+		WHERE user_id = #{user_id}
+	</update>
+	
+	<!-- 주소 변경 -->
+	<update id="addressModi" parameterType="member">
+		UPDATE member
+		SET address = #{address}
+		WHERE user_id = #{user_id}
+	</update>
+	
+	<!-- 회원 탈퇴 -->
+	<delete id="withDraw" parameterType="String">
+		DELETE FROM member WHERE user_id = #{user_id}		
+	</delete>
+	
+</mapper>
