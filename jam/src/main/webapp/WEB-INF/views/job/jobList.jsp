@@ -161,8 +161,8 @@
 						</c:if>
 						
 						<c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
-							<li class="paginate_button">
-								<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':'' }" class="font-weight-bold" style="color:#585858;" href="${num}">${num}</a>
+							<li class="paginate_button"  >
+								<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold" href="${num}">${num}</a>
 							</li>
 						</c:forEach>
 						

@@ -26,11 +26,17 @@ public interface MemberService {
 	public MemberVO login(MemberVO member);
 
 	// 마이페이지
-	public List<CommunityVO> comMyWrite(MemberVO member);
-	public List<FleaMarketVO> fleaMyWrite(MemberVO member);
-	public List<JobVO> jobMyWrite(MemberVO member);
-	public List<RoomRentalVO> roomMyWrite(MemberVO member);
+	public List<CommunityVO> comMyWrite(CommunityVO com_vo);
+	public List<FleaMarketVO> fleaMyWrite(FleaMarketVO flea_vo);
+	public List<JobVO> jobMyWrite(JobVO jov_vo);
+	public List<RoomRentalVO> roomMyWrite(RoomRentalVO room_vo);
 	
+	// 마이페이지 - 작성 글 페이징
+	public int myComListCnt(CommunityVO com_vo);
+	public int myFleaListCnt(FleaMarketVO flea_vo);
+	public int myJobListCnt(JobVO jov_vo);
+	public int myRoomListCnt(RoomRentalVO room_vo);
+		
 	// 마이페이지 - 회원 정보 페이지
 	public MemberVO account(MemberVO member);
 
@@ -60,6 +66,11 @@ public interface MemberService {
 
 	// 회원 탈퇴
 	public int withDraw(String user_id);
+
+	
+	
+
+	
 
 	
 

@@ -92,7 +92,7 @@
 					<label>본문</label>
 				</div>
 				<div class="content">
-					<textarea id="com_content" class="summernote" name="com_content">${updateData.com_content }</textarea>    
+					<textarea id="com_content" class="summernote" name="com_content" style="resize:none;">${updateData.com_content }</textarea>    
 				</div>
 				<div class=" flex justify-center my-top-8">
 					<button type="button" class="comWriteBtn" id="write">등록</button>

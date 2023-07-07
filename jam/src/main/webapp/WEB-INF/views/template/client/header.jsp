@@ -51,7 +51,6 @@
     background-color: #fff;}
     .text-center{text-align:center;}
     
-    .message_icon{width:4rem;}
     
     .mypage_toggle{
     	background-color : #fff; 
@@ -115,7 +114,7 @@
 		<div class="flex flex-end my-bottom-4">
 			<c:choose>
 				<c:when test="${member != null}">
-					<div>
+					<div class="flex items-center">
 						<span class="font-size-1 font-weight-bold cursor-pointer" id="header_name">${member.user_name } 님</span>
 						
 						<div class="mypage_toggle absolute border border-radius-7px">
@@ -126,7 +125,7 @@
 							</ul>
 						</div>
 						<a href="/message/receiveMessage" class="">
-							<img class="message_icon mr-2" alt="쪽지" src="/resources/include/images/message_icon.svg">
+							<img class="message_icon  mr-2 ml-05" style="width:3rem;" alt="쪽지" src="/resources/include/images/message_icon.svg">
 						</a>
 						<button type="button" id="logout" class="btn mr-2">로그아웃</button>
 					</div>

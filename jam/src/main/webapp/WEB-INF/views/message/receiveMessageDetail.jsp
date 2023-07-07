@@ -8,53 +8,19 @@
 
 <!-- 제이쿼리 -->
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+<link rel="stylesheet" href="/resources/include/dist/css/layout.css" />
 		
 <title>JAM - MESSAGE</title>
 	<style>
-		.contents{
-			margin:0 10px;
+	
+		body {margin:0;}
+		
+		.border{
+			border-bottom: 1px solid #BDBDBD;
 		}
-		#msg_title{
-			font-weight:bold; 
-			font-size:20px;
-		}
-		.title{
-			margin-bottom:10px;
-			height:30px;
-			border-bottom: solid #ffdd77;
-		}
-		#sender{
-			font-weight:600;
-		}
-		#senderTime{
-			display: block; 
-			color:#A4A4A4;
-		}
-		.msg_contents{
-			border:3px solid #ffdd77; 
-			border-radius:20px;
-			min-height:450px; 
-			margin-top:10px;
-		}
-		#msg_contents{
-			display: block;
-    		margin: 10px;
-    	}
-    	.btn{
-    		display: flex;
-    		justify-content: center; margin:10px 0;
-		}
-		#response, #list {    width: 70px;
-    height: 30px; border:none; border-radius:15px;}
-    	#response {background-color:#ffb689; margin-right:1rem;}
-    	#list{background-color:#ffdd77;}
-
 	</style>
 	<script>
 		$(function(){
-			$("#list").click(function(){
-				self.close();
-			});
 			
 			$("#response").click(function(){
 				
@@ -72,33 +38,44 @@
 	</script>
 </head>
 <body>
-	<div class="contents">
-		<div class="title">
+	<div class="contents message">
+		<div class="margin15px">
 			<span id="msg_title">${detail.message_title }</span>
 		</div>
-		<div class="send_info">
-			<span id="sender">보낸 사람</span>
-			<span id="sender_name">${detail.sender }</span>
-			<span id='sender_id'>(${detail.sender_id })</span>
-			<span id='senderTime'>${detail.sendTime }</span>
-		</div>
-		<div class='msg_contents'>
-			<span id='msg_contents'>${detail.message_contents }</span>
-		</div>
-		<div class="btn">
-			<button type="button" class="mr-1" id="response">답장</button>
-			<button type="button" id="list">목록</button>
+		<div class="border-bottom">
 		</div>
 		
-		<div>
+		<div class="send_info">
+			<div class="margin15px ">
+				<img class="icon vertical-align-m"style="width:1.7rem;" src="/resources/include/images/msg1.svg">
+				<span class="font600 vertical-align-m">보낸 사람</span>
+			</div>
+			<div class="font600 margin15px msg_border height35 background-color-gray flex items-center">
+				<span id="sender_name" class="ml-05">${detail.sender }</span>
+			</div>
+		</div>
+		<div class=''>
+			<div class="margin15px"  >
+				<img class="icon vertical-align-m"style="width:1.3rem;" src="/resources/include/images/msg2.svg">
+				<span class="font600 vertical-align-m">쪽지 내용</span>
+			</div>
+			<div class="margin15px msg_border min-height60 flex" >
+				<span class='pd-top05 ml-05'>${detail.message_contents }</span>
+			</div>
+		</div>
+		<div class="border-bottom my-top-7">
+		</div>
+		
+		<div class="msgBtn_div my-top-4 margin15px ">
+			<button type="button" class="msgBtn mr-1" id="response">쪽지 보내기</button>
+		</div>
+		
+		<div class="">
 			<form id="responseForm" name="responseForm">
 				<input type="hidden" name="sender_id" value="${detail.sender_id }">
 				<input type="hidden" name="sender" value="${detail.sender }">
 			</form>
 		</div>
 	</div>
-<p>
-</p>
-
 </body>
 </html>

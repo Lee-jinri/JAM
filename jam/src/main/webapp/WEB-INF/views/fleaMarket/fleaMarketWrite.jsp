@@ -15,27 +15,23 @@
 	<style type="text/css">
 		.width-85 {width:80rem;}
 		.border-radius-10 {border-radius:10px;}
-		.com_title {border: 3px solid #ffdd77; }
-		.com_content{    border: 3px solid #ffdd77;}
+		.flea_title {border: 3px solid #ffdd77; }
+		.flea_content{    border: 3px solid #ffdd77;}
 		.resize-none {resize: none;}
 		.height4 {height:4rem;}
 		#textarea{min-height:50rem;}
-		.comWriteBtn{
+		.fleaWriteBtn{
 			border-radius: 10px;
-    border: 3px solid #ffdd77;
-    /* padding: 3px 10px; */
-    background-color: #fff;
-    margin-right: 30px;
-    height: 45px;
-    width: 80px;
-    /* color: black; */
-    font-weight: 600;
-    /* border: none;
-		
+		    border: 3px solid #ffdd77;
+		    background-color: #fff;
+		    height: 35px;
+    		width: 60px;
+		    font-weight: 600;
+			align-items: center;
+		    justify-content: center;
+		    display: flex;
+		    color : #848484;
 		}
-		#write {
-		background-color:#ffdd77;
-		color:#fff;}
 	</style>
 	<script>
 		$(function(){
@@ -70,15 +66,16 @@
 				
 				$("#fleaWrite").submit();
 				
+				alert("등록이 완료되었습니다.");
 			})
 			
 		})
 	</script>
 </head>
 <body>
-	<div class="rem-30">
-		<div class="title flex justify-center">
-			<h2>중고악기</h2>
+	<div class="rem-30 my-top-15 my-bottom-15">
+		<div class="title flex justify-center my-bottom-8" >
+			<h2>중고 악기</h2>
 		</div>
 		<div class="content flex justify-center" >
 			<form id="fleaWrite">
@@ -87,29 +84,30 @@
 					<input type="hidden" name="user_name" value="${member.user_name }">
 					<input type="hidden" name="sales_status" value=0> 
 				</div>
-				<div>
-					<select name="flea_category">
+				<div class="flex my-bottom-7 items-center">
+					<select name="flea_category" class="mr-2">
 						<option value=0>판매</option>
 						<option value=1>구매</option>
 					</select><br/>
-					<label>가격</label>
-					<input type="number" name="price" id="price">원
+					
+					<label class="mr-1">가격</label>
+					<input type="number" name="price" id="price">&nbsp;원
 				</div>
-				<div>
+				<div class="my-bottom-4">
 					<label>제목</label>
 				</div>
 				<div>
-					<input type="text" class="com_title height4 border width-85 border-radius-10" id="flea_title" name="flea_title">
+					<input type="text" class="flea_title my-bottom-7 height4 border width-85 border-radius-10" id="flea_title" name="flea_title">
 				</div>
-				<div>
+				<div class="my-bottom-4">
 					<label>본문</label>
 				</div>
 				<div class="content">
-					<textarea id="flea_content" class="summernote" name="flea_content"></textarea>    
+					<textarea id="flea_content" class="summernote" name="flea_content" style="resize:none;"></textarea>    
 				</div>
-				<div class=" flex justify-center my-top-8">
-					<button type="button" class=fleaWriteBtn id="write">등록</button>
-					<a href="/fleaMarket/fleaMarketList"  class="fleaWriteBtn text-center" id="cancel">취소</a>
+				<div class=" flex justify-right my-top-8">
+					<button type="button" class="fleaWriteBtn mr-1" id="write">등록</button>
+					<a href="/fleaMarket/fleaMarketList"  class="fleaWriteBtn text-center">취소</a>
 				</div>
 			</form>
 		</div>

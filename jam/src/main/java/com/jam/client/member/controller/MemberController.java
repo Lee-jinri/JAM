@@ -204,7 +204,7 @@ public class MemberController {
 	 * 마이페이지 - 커뮤니티 작성 글
 	 ********************/
 	@RequestMapping(value = "/comMyWrite", method = RequestMethod.GET)
-	public String comMyWrite(HttpServletRequest request, Model model) throws Exception {
+	public String comMyWrite(HttpServletRequest request, Model model, @ModelAttribute CommunityVO com_vo) throws Exception {
 
 		String url = "";
 
@@ -213,9 +213,14 @@ public class MemberController {
 			MemberVO member = (MemberVO) session.getAttribute("member");
 			if (member != null) {
 				url = "mypage/comMyWrite";
-				List<CommunityVO> comMyWrite = memberService.comMyWrite(member);
 				
+				com_vo.setUser_id(member.getUser_id());
+				
+				List<CommunityVO> comMyWrite = memberService.comMyWrite(com_vo);
 				model.addAttribute("comMyWrite", comMyWrite);
+				
+				int total = memberService.myComListCnt(com_vo);
+				model.addAttribute("pageMaker",new PageDTO(com_vo,total));
 			} else {
 				url = "member/login";
 			}
@@ -231,7 +236,7 @@ public class MemberController {
 	 * 마이페이지 - 중고악기 작성 글
 	 ********************/
 	@RequestMapping(value = "/fleaMyWrite", method = RequestMethod.GET)
-	public String fleaMyWrite(HttpServletRequest request, Model model) throws Exception {
+	public String fleaMyWrite(HttpServletRequest request, Model model, @ModelAttribute FleaMarketVO flea_vo) throws Exception {
 
 		String url = "";
 
@@ -240,9 +245,14 @@ public class MemberController {
 			MemberVO member = (MemberVO) session.getAttribute("member");
 			if (member != null) {
 				url = "mypage/fleaMyWrite";
-				List<FleaMarketVO> fleaMyWrite = memberService.fleaMyWrite(member);
 				
+				flea_vo.setUser_id(member.getUser_id());
+				
+				List<FleaMarketVO> fleaMyWrite = memberService.fleaMyWrite(flea_vo);
 				model.addAttribute("fleaMyWrite", fleaMyWrite);
+				
+				int total = memberService.myFleaListCnt(flea_vo);
+				model.addAttribute("pageMaker",new PageDTO(flea_vo, total));
 			} else {
 				url = "member/login";
 			}
@@ -258,7 +268,7 @@ public class MemberController {
 	 * 마이페이지 - 구인구직 작성 글
 	 ********************/
 	@RequestMapping(value = "/jobMyWrite", method = RequestMethod.GET)
-	public String jobMyWrite(HttpServletRequest request, Model model) throws Exception {
+	public String jobMyWrite(HttpServletRequest request, Model model, @ModelAttribute JobVO jov_vo) throws Exception {
 
 		String url = "";
 
@@ -267,8 +277,14 @@ public class MemberController {
 			MemberVO member = (MemberVO) session.getAttribute("member");
 			if (member != null) {
 				url = "mypage/jobMyWrite";
-				List<JobVO> jobMyWrite = memberService.jobMyWrite(member);
+				
+				jov_vo.setUser_id(member.getUser_id());
+				
+				List<JobVO> jobMyWrite = memberService.jobMyWrite(jov_vo);
 				model.addAttribute("jobMyWrite", jobMyWrite);
+				
+				int total = memberService.myJobListCnt(jov_vo);
+				model.addAttribute("pageMaker",new PageDTO(jov_vo, total));
 			} else {
 				url = "member/login";
 			}
@@ -284,7 +300,7 @@ public class MemberController {
 	 * 마이페이지 - 중고악기 작성 글
 	 ********************/
 	@RequestMapping(value = "/roomMyWrite", method = RequestMethod.GET)
-	public String roomMyWrite(HttpServletRequest request, Model model) throws Exception {
+	public String roomMyWrite(HttpServletRequest request, Model model, @ModelAttribute RoomRentalVO room_vo) throws Exception {
 
 		String url = "";
 
@@ -293,8 +309,14 @@ public class MemberController {
 			MemberVO member = (MemberVO) session.getAttribute("member");
 			if (member != null) {
 				url = "mypage/roomMyWrite";
-				List<RoomRentalVO> roomMyWrite = memberService.roomMyWrite(member);
+				
+				room_vo.setUser_id(member.getUser_id());
+				
+				List<RoomRentalVO> roomMyWrite = memberService.roomMyWrite(room_vo);
 				model.addAttribute("roomMyWrite",roomMyWrite);
+				
+				int total = memberService.myRoomListCnt(room_vo);
+				model.addAttribute("pageMaker",new PageDTO(room_vo, total));
 			} else {
 				url = "member/login";
 			}

@@ -25,27 +25,29 @@
 		#textarea{min-height:50rem;}
 		.jobWriteBtn{
 			border-radius: 10px;
-    border: 3px solid #ffdd77;
-    /* padding: 3px 10px; */
-    background-color: #fff;
-    margin-right: 30px;
-    height: 45px;
-    width: 80px;
-    /* color: black; */
-    font-weight: 600;
-    /* border: none;
-		
+		    border: 3px solid #ffdd77;
+		    background-color: #fff;
+		    height: 35px;
+    		width: 60px;
+		    font-weight: 600;
+			align-items: center;
+		    justify-content: center;
+		    display: flex;
+		    color : #848484;
 		}
-		#write {
-		background-color:#ffdd77;
-		color:#fff;}
 	</style>
 	<script>
 		$(function(){
-		
 			$("#write").click(function(){
 				let job_title = $("#job_title").val();
 				let job_content = $("#job_content").val();
+				let pay = $("#pay").val();
+				
+				if(pay.replace(/\s/g,"") == ""){
+					alert("급여를 입력하세요.");
+					$("#pay").focus();
+					return false;
+				}
 				
 				if(job_title.replace(/\s/g,"") == ""){
 					alert("제목을 입력하세요.");
@@ -67,16 +69,16 @@
 				
 				$("#jobWrite").submit();
 				
+				alert("등록이 완료되었습니다.");
 			})
 			
 		})
 	</script>
 </head>
 <body>
-	<div class="rem-30">
-		<div class="title flex justify-center">
-			<h2>구인구직</h2>
-			<span>JAM</span>
+	<div class="rem-30 my-top-15 my-bottom-15">
+		<div class="title flex justify-center my-bottom-8" >
+			<h2>구인 / 구직</h2>
 		</div>
 		<div class="content flex justify-center" >
 			<form id="jobWrite">
@@ -84,36 +86,38 @@
 					<input type="hidden" name="user_id" value="${member.user_id }"> 
 					<input type="hidden" name="user_name" value="${member.user_name }">
 				</div>
-				<div>
-					<select name="job_category">
+				<div class="flex my-bottom-7 items-center">
+					<select name="job_category" class="mr-1">
 						<option value=0>구인</option>
 						<option value=1>구직</option>
 					</select><br/>
 					
-					<select name="pay_category">
+					<select name="pay_category" class="mr-2">
 						<option value=0>일급</option>
 						<option value=1>주급</option>
 						<option value=2>월급</option>
 					</select><br/>
 					
-					<label>급여</label>
-					<input type="number" name="pay" id="pay">원
+					<label class="mr-1">급여</label>
+					<input type="number" name="pay" id="pay">&nbsp;원
 				</div>
-				<div>
+				<div class="my-bottom-4">
 					<label>제목</label>
 				</div>
 				<div>
-					<input type="text" class="job_title height4 border width-85 border-radius-10" id="job_title" name="job_title">
+					<input type="text" class="job_title my-bottom-7 height4 border width-85 border-radius-10" id="job_title" name="job_title">
 				</div>
-				<div>
+				<div class="my-bottom-4">
 					<label>본문</label>
 				</div>
 				<div class="content">
-					<textarea id="job_content" class="summernote" name="job_content"></textarea>    
+					<textarea id="job_content" class="summernote" name="job_content" style="resize:none;"></textarea>    
 				</div>
-				<div class=" flex justify-center my-top-8">
-					<button type="button" class="jobWriteBtn" id="write">등록</button>
-					<a href="/job/jobList"  class="jobWriteBtn text-center" id="cancel">취소</a>
+				<div class=" flex justify-right my-top-8">
+					<button type="button" class="jobWriteBtn mr-1" id="write">등록</button>
+					<a href="/job/jobList"  class="jobWriteBtn text-center">취소</a>
+					
+					
 				</div>
 			</form>
 		</div>

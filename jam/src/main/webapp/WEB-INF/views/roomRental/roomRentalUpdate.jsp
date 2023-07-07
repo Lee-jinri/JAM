@@ -15,88 +15,87 @@
 	<style type="text/css">
 		.width-85 {width:80rem;}
 		.border-radius-10 {border-radius:10px;}
-		.roomRental_title {border: 3px solid #ffdd77; }
-		.roomRental_content{    border: 3px solid #ffdd77;}
+		.room_title {border: 3px solid #ffdd77; }
+		.room_content{    border: 3px solid #ffdd77;}
 		.resize-none {resize: none;}
 		.height4 {height:4rem;}
 		#textarea{min-height:50rem;}
-		.roomRentalWriteBtn{
+		.roomUpdateBtn{
 			border-radius: 10px;
-    border: 3px solid #ffdd77;
-    /* padding: 3px 10px; */
-    background-color: #fff;
-    margin-right: 30px;
-    height: 45px;
-    width: 80px;
-    /* color: black; */
-    font-weight: 600;
-    /* border: none;
-		
+		    border: 3px solid #ffdd77;
+		    background-color: #fff;
+		    height: 35px;
+    		width: 60px;
+		    font-weight: 600;
+			align-items: center;
+		    justify-content: center;
+		    display: flex;
+		    color : #848484;
 		}
-		#write {
-		background-color:#ffdd77;
-		color:#fff;}
 	</style>
 	<script>
 		$(function(){
 			
-			$("#write").click(function(){
-				let roomRental_title = $("#roomRental_title").val();
-				let roomRental_content = $("#roomRental_content").val();
+			$("#update").click(function(){
+				let room_title = $("#roomRental_title").val();
+				let room_content = $("#roomRental_content").val();
 				
-				if(roomRental_title.replace(/\s/g,"") == ""){
+				if(room_title.replace(/\s/g,"") == ""){
 					alert("제목을 입력하세요.");
 					$("#roomRental_title").focus();
 					return false;
 				}
 				
-				if(roomRental_content.replace(/\s/g,"") == ""){
+				if(room_content.replace(/\s/g,"") == ""){
 					alert("본문을 입력하세요.");
 					$("#roomRental_content").focus();
 					return false;
 				}
 				
-				$("#roomRentalWrite").attr({
+				$("#roomUpdate").attr({
 					"action" : "/roomRental/roomRentalUpdate",
 					"enctype": "multipart/form-data",
 					"method" : "post"
 				})
 				
-				$("#roomRentalWrite").submit();
+				$("#roomUpdate").submit();
 				
+				alert("수정이 완료되었습니다.");
 			})
 			
 		})
 	</script>
 </head>
 <body>
-	<div class="rem-30">
-		<div class="title flex justify-center">
-			<h2>커뮤니티</h2>
-			<span>JAM 회원들과 대화를 나눠보세요.</span>
+	<div class="rem-30 my-top-15 my-bottom-15">
+		<div class="title flex justify-center my-bottom-8" >
+			<h2>합주실 / 연습실</h2>
 		</div>
 		<div class="content flex justify-center" >
-			<form id="roomRentalWrite">
+			<form id="roomUpdate">
 				<div>
 					<input type="hidden" name="user_id" value="${member.user_id }"> 
 					<input type="hidden" name="user_name" value="${member.user_name }">
 					<input type="hidden" name="roomRental_no" value="${updateData.roomRental_no }">
 				</div>
 				<div>
+					<label class="my-bottom-4"><input type="checkbox" name="roomRental_status" value=1> 거래 완료 시 체크하세요.</label>
+				</div>
+				<div class="my-bottom-4">
 					<label>제목</label>
 				</div>
-				<div>
-					<input type="text" class="roomRental_title height4 border width-85 border-radius-10" id="roomRental_title" name="roomRental_title" value="${updateData.roomRental_title }">
+				<div class="my-bottom-4">
+					<input type="text" class="room_title my-bottom-7 height4 border width-85 border-radius-10" id="roomRental_title" name="roomRental_title" value="${updateData.roomRental_title }">
 				</div>
-				<div>
+				<div class="my-bottom-4">
 					<label>본문</label>
 				</div>
 				<div class="content">
-					<textarea id="roomRental_content" class="summernote" name="roomRental_content">${updateData.roomRental_content }</textarea>    
+					<textarea id="roomRental_content" class="summernote" name="roomRental_content" style="resize:none;">${updateData.roomRental_content }</textarea>    
 				</div>
-				<div class=" flex justify-center my-top-8">
-					<button type="button" class="roomRentalWriteBtn" id="write">등록</button>
-					<a href="/roomRental/roomRentalList"  class="roomRentalWriteBtn text-center" id="cancel">취소</a>
+				<div class=" flex justify-right my-top-8">
+					<button type="button" class="roomUpdateBtn mr-1" id="update">수정</button>
+					<a href="/roomRental/roomRentalDetail/${updateData.roomRental_no }"  class="roomUpdateBtn text-center" >취소</a>
 				</div>
 			</form>
 		</div>

@@ -61,26 +61,48 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.login(member);
 	}
 
-	// 마이페이지
+	// 마이페이지 작성글
 	@Override
-	public List<CommunityVO> comMyWrite(MemberVO member) {
-		return memberDao.comMyWrite(member);
+	public List<CommunityVO> comMyWrite(CommunityVO com_vo) {
+		return memberDao.comMyWrite(com_vo);
 	}
 
 	@Override
-	public List<FleaMarketVO> fleaMyWrite(MemberVO member) {
-		return memberDao.fleaMyWrite(member);
+	public List<FleaMarketVO> fleaMyWrite(FleaMarketVO flea_vo) {
+		return memberDao.fleaMyWrite(flea_vo);
 	}
 	
 	@Override
-	public List<JobVO> jobMyWrite(MemberVO member) {
-		return memberDao.jobMyWrite(member);
+	public List<JobVO> jobMyWrite(JobVO jov_vo) {
+		return memberDao.jobMyWrite(jov_vo);
 	}
 
 	@Override
-	public List<RoomRentalVO> roomMyWrite(MemberVO member) {
-		return memberDao.roomMyWrite(member);
+	public List<RoomRentalVO> roomMyWrite(RoomRentalVO room_vo) {
+		return memberDao.roomMyWrite(room_vo);
 	}
+	
+	// 마이페이지 작성글 페이징
+	@Override
+	public int myComListCnt(CommunityVO com_vo) {
+		return memberDao.myComListCnt(com_vo);
+	}
+
+	@Override
+	public int myFleaListCnt(FleaMarketVO flea_vo) {
+		return memberDao.myFleaListCnt(flea_vo);
+	}
+
+	@Override
+	public int myJobListCnt(JobVO job_vo) {
+		return memberDao.myJobListCnt(job_vo);
+	}
+
+	@Override
+	public int myRoomListCnt(RoomRentalVO room_vo) {
+		return memberDao.myRoomListCnt(room_vo);
+	}
+
 
 	
 	// 마이페이지 - 회원 정보 페이지
@@ -201,6 +223,9 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.withDraw(user_id);
 	}
 
+
+	
+	
 	
 
 	

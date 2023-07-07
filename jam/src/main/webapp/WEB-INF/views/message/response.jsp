@@ -8,19 +8,19 @@
 
 <!-- 제이쿼리 -->
 <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
-	
+<link rel="stylesheet" href="/resources/include/dist/css/layout.css" />
+		
 <title>JAM - MESSAGE</title>
 	<style>
-		.contents{
-			margin:0 10px;
+		body {margin:0;}
+		.margin15px{
+			margin:15px;
 		}
-		.message_title{
-			font-weight:bold;
-			margin : 10px 0;
+		
+		.border{
+			border-bottom: 1px solid #BDBDBD;
 		}
-		.span_receiver{
-			font-weight:bold;
-		}
+		
 		.receiver{
 			margin-bottom:10px;
 		}
@@ -33,10 +33,14 @@
 			justify-content: center;
 			margin:10px 0;
 		}
-		#send, #cancel {    width: 70px;
-    			height: 30px; border:none; border-radius:15px;}
-    	#send {background-color:#ffb689; margin-right:1rem;}
-    	#cancel{background-color:#ffdd77;}
+		.msgBtn2 {
+		    background-color:#fff; 
+		     color:#0080FF; 
+		    font-weight:600; 
+		    border:1px solid #0080FF;
+		    border-radius: 3px;
+			height: 35px;
+		}
 	</style>
 	<script>
 		$(function(){
@@ -84,7 +88,7 @@
 				})
 			});
 			
-			$("#cancel").click(function(){
+			$("#message_list").click(function(){
 				self.close();
 			});
 		})
@@ -92,21 +96,30 @@
 </head>
 <body>
 	<form id="message">
-		<div class="contents">
-			<div class="message_title">
-				<span>제목</span>
-				<input type="text" name="message_title" id="message_title">
-			</div>
+		<div class="my-top-4">
+		
 			<div class="receiver">
-				<span class='span_receiver'>받는 사람</span>
-				<span>${receiver } (${receiver_id })</span>
+				<span class='ml-1 font600'>받는 사람</span>
+				<span class="ml-05">${receiver } (${receiver_id })</span>
 			</div>
-			<div class="message_contents">
-				<textarea rows="32" cols="55" name="message_contents" id="message_area"></textarea>
+			
+			<div class="my-top-4 flex items-center">
+				<span class="ml-1 font600">제목</span>
+				<input type="text" class="mr-1 ml-05 msg_border height25 background-color-gray" name="message_title" id="message_title" style="background: none; flex: 1;">
 			</div>
-			<div class="btn">
-				<button type="button" id="send">보내기</button>
-				<button type="button" id="cancel">취소</button>
+			
+			<div class="border-bottom my-top-4"></div>
+			
+			<div class="margin15px"  >
+				<img class="icon vertical-align-m"style="width:1.3rem;" src="/resources/include/images/msg2.svg">
+				<span class="font600 vertical-align-m">쪽지 내용</span>
+			</div>
+			<div class="message_contents my-top-4">
+				<textarea rows="10" cols="63" name="message_contents" id="message_area"  style="resize: none;" maxlength="200"></textarea>
+			</div>
+			<div class="msgBtn_div  margin15px ">
+				<button type="button" class="msgBtn mr-1" id="send" style="width: 4rem;">보내기</button>
+				<button type="button" class="msgBtn2" id="message_list"style="width: 4rem;" >목록</button>
 			</div>
 		</div>
 		<div>

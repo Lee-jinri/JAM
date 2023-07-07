@@ -129,9 +129,22 @@
 									<span> | </span>
 									<span>${room.roomRental_date }</span>
 								</div>
-							
-								<div class="inline-block my-bottom-4">
-									<a class="font-weight-bold" href="/roomRental/roomRentalDetail/${room.roomRental_no }">${room.roomRental_title }</a>
+								
+								<div class=inline-block>
+									<c:if test="${room.roomRental_status == 0}">
+										<span class="border-g " style="color:#04B431;">거래중</span>
+										<div class="inline-block my-bottom-4 ml-1">
+											<a class="font-weight-bold"  href="/roomRental/roomRentalDetail/${room.roomRental_no }">${room.roomRental_title }</a>
+										</div>
+										
+									</c:if>
+									<c:if test="${room.roomRental_status == 1}">
+										<span class="border" style="color:#A4A4A4;">거래 완료</span>
+										<div class="inline-block my-bottom-4 ml-1">
+											<a class="font-weight-bold" style="color:#A4A4A4;"href="/roomRental/roomRentalDetail/${room.roomRental_no }">${room.roomRental_title }</a>
+										</div>
+										
+									</c:if>
 								</div>
 								<div class="flex float-right items-center width-13rem justify-between">
 									<img class="icon" id="" style="width:3rem;" src="/resources/include/images/hits.svg">
@@ -156,8 +169,8 @@
 						</c:if>
 						
 						<c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
-							<li class="paginate_button">
-								<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold"  style="color:#585858;" href="${num}">${num}</a>
+							<li class="paginate_button"  >
+								<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold" href="${num}">${num}</a>
 							</li>
 						</c:forEach>
 						

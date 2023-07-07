@@ -57,28 +57,27 @@
 			let phone_check = true;
 			
 			
-			/* 	아이디, 비밀번호 정규식 : 영문 대,소문자 + 숫자 8 ~ 20자 (숫자, 영문 필수!!!!!!!!!!)
-				닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 2 ~ 6자 (영문, 한글 필수 X)
-				전화번호 정규식 : 0,1 3글자 + 0~9 8글자 */
-			let id_legExp = /^[0-9a-zA-Z]{8,20}$/;
-			let pw_legExp = /^[0-9a-zA-Z]{8,20}$/;
-			let name_legExp = /^[a-zA-z가-힣0-9]{2,6}$/;
+			/* 	아이디, 비밀번호 정규식 : 영문 대,소문자 + 숫자 8 ~ 20자
+			닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 3 ~ 8자
+			전화번호 정규식 : 0,1 3글자 + 0~9 8글자 */
+			let id_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
+			let pw_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
+			let name_legExp = /^[a-zA-z가-힣0-9]{2,7}$/;
 			let phone_legExp = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
-			
-			
 			
 			/********************아이디 **********************/
 			$("#user_id").on("propertychange change keyup paste input", function(){
+				var userId = $("#user_id").val();	
 				
 				// 아이디 유효성 체크
-				if(!id_legExp.test($("#user_id").val())){
+				if(!id_legExp.test(userId)){
 					$("#id_check2").css("display","inline-block");
 					$('#id_check1').css("display","none");
 				}else{
 					// 아이디 중복 확인
 					$("#id_check2").css("display","none");
 					
-					var userId = $("#user_id").val();			
+							
 					
 					$.ajax({
 						type : "post",

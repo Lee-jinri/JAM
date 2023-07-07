@@ -39,7 +39,6 @@
 		}
 	#receive_btn{background-color : #ffdd77;}
 	#send_btn {background-color : #f5ecce;}
-	
 </style>
 <script>
 	$(function(){
@@ -79,7 +78,7 @@
 			$("#message_no").val(message_no);
 			
 			var url = "/message/rMessage_detail";
-			var option = "width=450, height=610, top=10, left=10";
+			var option = "width=500, height=370, top=10, left=10";
 			var name = "팝업";
 			
 			window.open("",name,option);
@@ -98,7 +97,6 @@
 		</div>
 		
 		<div class="py-2rem flex justify-right">
-				
 			<div class="items-center">
 				<form id="searchForm">
 					<!-- 페이징 처리를 위한 파라미터 -->
@@ -154,29 +152,27 @@
 					</c:choose>
 				</div>
 			</div>
-			<div>
-				<!-- 페이징 -->
-				<div class="text-center">
-					<ul class="pagination">
-						<c:if test="${pageMaker.prev}">
-							<li class="paginate_button previous">
-								<a href="${pageMaker.startPage -1}">Previous</a>
-							</li>
-						</c:if>
-						
-						<c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
-							<li class="paginate_button">
-								<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':'' }" class="font-weight-bold" style="color:#585858;" href="${num}">${num}</a>
-							</li>
-						</c:forEach>
-						
-						<c:if test="${pageMaker.next}">
-							<li class="paginate_button next">
-								<a href="${pageMaker.endPage +1 }">Next</a>
-							</li>
-						</c:if>
-					</ul>
-				</div>
+			<!-- 페이징 -->
+			<div class="text-center">
+				<ul class="pagination">
+					<c:if test="${pageMaker.prev}">
+						<li class="paginate_button previous">
+							<a href="${pageMaker.startPage -1}">Previous</a>
+						</li>
+					</c:if>
+					
+					<c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
+						<li class="paginate_button"  >
+							<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold" href="${num}">${num}</a>
+						</li>
+					</c:forEach>
+					
+					<c:if test="${pageMaker.next}">
+						<li class="paginate_button next">
+							<a href="${pageMaker.endPage +1 }">Next</a>
+						</li>
+					</c:if>
+				</ul>
 			</div>
 		</div>
 	</div>

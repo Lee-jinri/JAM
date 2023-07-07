@@ -133,19 +133,30 @@
 									<span>${fleaMarketBoard.flea_date }</span>
 								</div>
 								
-								<div class="inline-block my-bottom-4">
-									<a class="font-weight-bold" href="/fleaMarket/fleaMarketDetail/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
-								</div>
+								
 								<div class=inline-block>
-									<c:if test="${fleaMarketBoard.flea_category == 0}">
-										<span class="border ml-1">판매</span>
-									</c:if>
-									<c:if test="${fleaMarketBoard.flea_category == 1} ">
-										<span class="border ml-1">구매</span>
-									</c:if>
-									<c:if test="${fleaMarketBoard.sales_status == 1} ">
-										<span class="border ml-1">거래 완료</span>
-									</c:if>
+									<c:choose>
+						        		<c:when test = "${fleaMarketBoard.sales_status == 0}">
+						            		<c:if test="${fleaMarketBoard.flea_category == 0}">
+												<span class="border-g " style="color:#04B431;">판매</span>
+												<div class="inline-block my-bottom-4 ml-1">
+													<a class="font-weight-bold" href="/fleaMarket/fleaMarketDetail/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
+												</div>
+											</c:if>
+											<c:if test="${fleaMarketBoard.flea_category == 1}">
+												<span class="border-r" style="color:#FE2E2E;">구매</span>
+												<div class="inline-block my-bottom-4 ml-1">
+													<a class="font-weight-bold" href="/fleaMarket/fleaMarketDetail/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
+												</div>
+											</c:if>
+										</c:when>
+										<c:otherwise>
+											<span class="border" style="color:#A4A4A4;">거래 완료</span>
+											<div class="inline-block my-bottom-4 ml-1">
+												<a class="font-weight-bold" style="color:#A4A4A4;" href="/fleaMarket/fleaMarketDetail/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
+											</div>
+								        </c:otherwise>
+									</c:choose>
 								</div>
 								<div class="">
 									<span>${fleaMarketBoard.price }원</span>
@@ -173,7 +184,7 @@
 						
 						<c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
 							<li class="paginate_button"  >
-								<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold"  style="color:#585858;" href="${num}">${num}</a>
+								<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold" href="${num}">${num}</a>
 							</li>
 						</c:forEach>
 						
