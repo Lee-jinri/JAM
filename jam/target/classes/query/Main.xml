@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.dao.MainDAO">
+
+	<!-- 구인 구직 글 리스트  -->
+	<select id="jobList" resultType="job">
+		SELECT  job_no, job_title, to_char(job_date, 'YYYY/MM/DD HH24:MI') as job_date, job_reply_cnt, job_hits, user_id , user_name
+		FROM job
+		WHERE <![CDATA[ROWNUM <= 5 ]]> ORDER BY job_date DESC 
+	</select>
+	
+	<!-- 중고악기 글 리스트 -->
+	<select id="fleaList" resultType="flea">
+		SELECT flea_no, flea_title, to_char(flea_date, 'YYYY/MM/DD HH24:MI') as flea_date, flea_reply_cnt, flea_hits, user_id , user_name
+		FROM fleaMarket
+		WHERE  <![CDATA[ROWNUM <= 5 ]]> ORDER BY flea_date DESC 
+	</select>
+
+	<!-- 합주실 글 리스트 -->
+	<select id="roomList" resultType="room">
+		SELECT roomRental_no, roomRental_title, to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') as roomRental_date, roomRental_reply_cnt, roomRental_hits, user_id , user_name
+		FROM roomRental
+		WHERE  <![CDATA[ROWNUM <= 5 ]]> ORDER BY roomRental_date DESC 
+	</select>
+
+	<!-- 커뮤니티 글 리스트 -->
+	<select id="comList" resultType="community">
+		SELECT com_no, com_title, to_char(com_date, 'YYYY/MM/DD HH24:MI') as com_date, com_reply_cnt, com_hits, user_id , user_name
+		FROM community
+		WHERE <![CDATA[ROWNUM <= 5 ]]> ORDER BY com_date DESC 
+	</select>
+
+</mapper>

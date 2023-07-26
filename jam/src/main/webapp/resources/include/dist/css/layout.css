@@ -33,6 +33,7 @@ input::-webkit-inner-spin-button {
 }
 .color_y {color: #ffdd77;}
 .color_r {color: #ffb689;}
+.color_o {color: #FAAC58;}
 .rem-2 {
 	padding-left : 2rem;
 	padding-right : 2rem;
@@ -435,6 +436,9 @@ a {
 
 .my-top-7{
 	margin-top: 1.75rem;
+}
+.my-top-75{
+	margin-top: 2rem;
 }
 .my-top-8{
 	margin-top: 3.5rem;
