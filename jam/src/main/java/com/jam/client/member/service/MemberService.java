@@ -22,6 +22,9 @@ public interface MemberService {
 	// 전화번호 중복확인
 	public int phoneCheck(String phone) throws Exception;
 
+	// 이메일 중복확인
+	public int emailCheck(String email) throws Exception;
+
 	// 로그인
 	public MemberVO login(MemberVO member);
 
@@ -47,8 +50,11 @@ public interface MemberService {
 	public MemberVO FindId(String user_name, String phone);
 
 	// 비밀번호 찾기
-	public MemberVO FindPw(String user_id, String user_name, String phone);
+	public int FindPw(String user_id, String email, String phone);
 
+	// 임시 비밀번호로 변경
+	public int UpdatePw(String user_id, String email);
+	
 	// 카카오 로그인
 	public String getAccessToken(String code);
 	
@@ -56,7 +62,7 @@ public interface MemberService {
 	public int phoneModi(MemberVO m_vo);
 	
 	// 비밀번호 확인
-	public int pwConfirm(MemberVO m_vo);
+	public String pwConfirm(MemberVO m_vo);
 	
 	// 비밀번호 변경
 	public int pwModi(MemberVO m_vo);
@@ -66,6 +72,8 @@ public interface MemberService {
 
 	// 회원 탈퇴
 	public int withDraw(String user_id);
+
+	
 
 	
 	

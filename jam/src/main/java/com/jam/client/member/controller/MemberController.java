@@ -1,13 +1,21 @@
 package com.jam.client.member.controller;
 
+import java.security.SecureRandom;
+import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -38,10 +46,9 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 
-	// 비밀번호 암호화
-//	@Autowired(required = true)
-//	private BCryptPasswordEncoder encoder;
-//	
+	@Autowired(required = true)
+	private BCryptPasswordEncoder encoder;
+	
 
 	/*******************
 	 * 회원가입 페이지
@@ -56,12 +63,15 @@ public class MemberController {
 
 	/*******************
 	 * 로그인 페이지
-	 * 
-	 * @param action
 	 ********************/
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
-	public ModelAndView login() {
+	public ModelAndView login(HttpServletRequest request) {
 
+	    String uri = request.getHeader("Referer");
+	    if (uri != null && !uri.contains("/login")) {
+	        request.getSession().setAttribute("prevPage", uri);
+	    }
+	    
 		ModelAndView mav = new ModelAndView();
 		mav.setViewName("member/login");
 
@@ -77,13 +87,20 @@ public class MemberController {
 
 		String url = "";
 		int result = 0;
+		
+		String rawPw = ""; // 인코딩 전 비밀번호
+		String encodePw = ""; // 인코딩 후 비밀번호
+
+		rawPw = member.getUser_pw(); // 비밀번호 데이터 얻음
+		encodePw = encoder.encode(rawPw); // 비밀번호 인코딩
+		member.setUser_pw(encodePw); // 인코딩된 비밀번호 member객체에 다시 저장
 
 		result = memberService.join(member);
 
 		if (result == 0) {
 			url = "member/joinPage";
 		} else {
-			url = "member/joinFinish";
+			return "redirect:/member/login";
 		}
 
 		return url;
@@ -137,19 +154,33 @@ public class MemberController {
 			return "success"; // 중복 핸드폰 번호 X
 		}
 	}
+	
+	/****************************
+	 * 이메일 중복 확인
+	 */
+	@RequestMapping(value = "/memberEmailChk", method = RequestMethod.POST)
+	@ResponseBody
+	public String memberEmailChkPOST(String email) throws Exception{
+		
+		int result = memberService.emailCheck(email);
+		
+		if (result != 0) {
+			return "fail";
+		}else {
+			return "success";
+		}
+	}
 
 	/**********************************
 	 * 로그인
 	 *********************************/
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public ModelAndView login(HttpServletRequest request, MemberVO member, RedirectAttributes rttr) throws Exception {
+	public String login(HttpServletRequest request, MemberVO member, RedirectAttributes rttr) throws Exception {
 
-		/* 비밀번호 암호화 해야됨~ */
 		HttpSession session = request.getSession();
 
 		MemberVO vo = memberService.login(member);
 
-		ModelAndView mav = new ModelAndView();
 		String user_pw = "";
 		String encodePw = "";
 
@@ -157,32 +188,40 @@ public class MemberController {
 
 			user_pw = member.getUser_pw(); // 사용자가 제출한 비밀번호
 			encodePw = vo.getUser_pw(); // 데이터베이스에 저장된 비밀번호
+			
+			log.info("데이터베이스에 저장된 비번 " +encodePw);
+			log.info("사용자가 제출한 비번 "+user_pw);
+			
+			if (true == encoder.matches(user_pw, encodePw)) { // 비밀번호 일치여부 판단
 
-			log.info(member.getUser_pw());
-			log.info(vo.getUser_pw());
-
-			log.info(member);
-
-			if (user_pw.equals(encodePw)) { // 비밀번호 일치여부 판단
-
+				vo.setUser_pw(""); // 인코딩된 비밀번호 정보 지움
 				session.setAttribute("member", vo);
 				session.setMaxInactiveInterval(-1); // 세션 시간을 무한대로 설정
-
-				mav.setViewName("main");
-				return mav;
+				
+				// 로그인 성공시 이전 페이지로 이동
+				String prevPage = (String) request.getSession().getAttribute("prevPage");
+		        
+				log.info(prevPage);
+				if (prevPage != null && !prevPage.equals("")) {
+		            request.getSession().removeAttribute("prevPage");
+		            // 회원가입 - 로그인으로 넘어온 경우 "/"로 redirect
+		            if (prevPage.contains("/member/join")) {
+		                return  "redirect:/";
+		            } else {
+		                return "redirect:" + prevPage;
+		            }
+		        } else return  "redirect:/";
 
 			} else {
 
 				rttr.addFlashAttribute("result", 1);
-				mav.setViewName("redirect:/member/login");
-				return mav;
+				return "redirect:/member/login";
 			}
 
 		} else { // 일치하는 아이디가 존재하지 않을 시 (로그인 실패)
 
 			rttr.addFlashAttribute("result", 2);
-			mav.setViewName("redirect:/member/login");
-			return mav;
+			return "redirect:/member/login";
 		}
 
 	}
@@ -297,7 +336,7 @@ public class MemberController {
 	}
 	
 	/********************
-	 * 마이페이지 - 중고악기 작성 글
+	 * 마이페이지 - 합주실 작성 글
 	 ********************/
 	@RequestMapping(value = "/roomMyWrite", method = RequestMethod.GET)
 	public String roomMyWrite(HttpServletRequest request, Model model, @ModelAttribute RoomRentalVO room_vo) throws Exception {
@@ -363,6 +402,7 @@ public class MemberController {
 	public ModelAndView findIdPage() throws Exception {
 		ModelAndView mav = new ModelAndView();
 		mav.setViewName("member/joinFind");
+		
 		return mav;
 	}
 
@@ -378,21 +418,31 @@ public class MemberController {
 		 if(result != null) { return result.getUser_id(); } else { return ""; }
 		 
 	}
-
+	
+	
 	/*************************
 	 * 비밀번호 찾기
 	 ***************************/
 	@RequestMapping(value = "/memberFindPw", method = RequestMethod.POST)
 	@ResponseBody
-	public String memberFindPwPOST(String user_id, String user_name, String phone) throws Exception {
+	public String memberFindPwPOST(String user_id, String email, String phone) throws Exception {
+		
+		// 입력한 정보와 일치하는 사용자가 있는지 확인
+		int user = memberService.FindPw(user_id, email, phone);
 
-		MemberVO result = memberService.FindPw(user_id, user_name, phone);
+		if (user == 1) {
 
-		if (result != null) {
-			return result.getUser_pw();
+			int result =  memberService.UpdatePw(user_id, email);
+			
+			if(result == 1) {
+				return "success";
+			}else {
+				return "fail";
+			}
 		} else {
-			return "";
+			return "notFound";
 		}
+		
 	}
 	
 	/********************************
@@ -461,13 +511,12 @@ public class MemberController {
 					
 		 MemberVO m_vo = new MemberVO();
 		 m_vo.setUser_id(user_id);
-		 m_vo.setUser_pw(user_pw);
 					
-		 int result = memberService.pwConfirm(m_vo);
-
-		 if (result == 1) {
+		 String encodePw = memberService.pwConfirm(m_vo);
+		 
+		 if (true == encoder.matches(user_pw, encodePw)) { // 비밀번호 일치여부 판단
 			 return "success"; 	// 비밀번호 일치
-		 } else {
+		 }else {
 			 return "fail";		// 비밀번호 일치하지 않음
 		 }
 	 }
@@ -488,8 +537,11 @@ public class MemberController {
 				String user_id = member.getUser_id();
 				
 				MemberVO m_vo = new MemberVO();
+				
+				String encodePw = encoder.encode(user_pw); // 비밀번호 인코딩
+				
 				m_vo.setUser_id(user_id);
-				m_vo.setUser_pw(user_pw);
+				m_vo.setUser_pw(encodePw);
 				
 				int result = memberService.pwModi(m_vo);
 

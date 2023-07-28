@@ -31,7 +31,7 @@
 					url : "/member/memberFindId",
 					data : {user_name : user_name , phone : phone}, 	
 					success : function(result){
-						if(result != ''){
+						if(result == ''){
 							let user_name = $("#id_name").val();
 							alert(user_name + "님의 아이디는 " + result + "입니다.");
 							let login = confirm("로그인 페이지로 이동하시겠습니까?");
@@ -52,22 +52,22 @@
 			$("#find_pw_btn").click(function(){
 				
 				var user_id = $("#pw_id").val();
-				var user_name = $("#pw_name").val();
+				var email = $("#pw_email").val();
 				var phone = $("#pw_phone").val();
 				
-				if($("#pw_id").val().replace(/\s/g, "") == ""){
+				if(user_id.replace(/\s/g, "") == ""){
 					alert("아이디를 입력하세요.");
 					$("#pw_id").focus();
 					return false;
 				}
 				
-				if($("#pw_name").val().replace(/\s/g, "") == ""){
-					alert("이름을 입력하세요.");
-					$("#pw_name").focus();
+				if(email.replace(/\s/g, "") == ""){
+					alert("이메일을 입력하세요.");
+					$("#pw_email").focus();
 					return false;
 				}
 				
-				if($("#pw_phone").val().replace(/\s/g,"") == ""){
+				if(phone.replace(/\s/g,"") == ""){
 					alert("핸드폰 번호를 입력하세요.");
 					$("#pw_phone").focus();
 					return false;
@@ -76,14 +76,17 @@
 				$.ajax({
 					type : "post",
 					url : "/member/memberFindPw",
-					data : {user_id : user_id, user_name : user_name, phone : phone},
+					data : {user_id : user_id, email : email, phone : phone},
 					success : function(result){
-						if(result != ''){
-							alert(user_name + "님의 비밀번호는 " + result + "입니다.");
+						console.log("결과 " +result);
+						if(result == 'success'){
+							alert("메일로 임시 비밀번호를 발송했습니다. 로그인 후 비밀번호를 변경하세요.");
 							let login = confirm("로그인 페이지로 이동하시겠습니까?");
-							if(login) location.href = "/login";
-						}else{
-							alert("회원정보를 찾을 수 없습니다.");
+							if(login) location.href = "/member/login";
+						}else if(result == 'fail'){
+							alert("지금은 요청하신 작업을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+						}else if (result == 'notFound'){
+							alert("회원 정보를 찾을 수 없습니다.");
 						}
 					},
 					error: function (request, status, error) {
@@ -112,10 +115,10 @@
 					<div>
 						<div>
 							<div class="inline-block width_80px my-4">
-								<span>이름</span>
+								<span>이메일</span>
 							</div>
 							<div class="inline-block">
-								<input type="text" id="id_name" name="user_name">
+								<input type="text" id="id_email" name="email">
 							</div>
 						</div>
 						<div>
@@ -144,10 +147,10 @@
 					</div>	
 					<div>
 						<div class="inline-block width_80px my-4">
-							<span class="find_span">이름</span>
+							<span class="find_span">이메일</span>
 						</div>	
 						<div class="inline-block">
-							<input type="text" id="pw_name" name="user_name">
+							<input type="text" id="pw_email" name="email" placeholder="chicken@jam.kr">
 						</div>
 					</div>	
 					<div>

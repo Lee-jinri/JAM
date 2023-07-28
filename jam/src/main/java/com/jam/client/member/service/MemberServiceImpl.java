@@ -7,9 +7,17 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.security.SecureRandom;
+import java.util.Date;
 import java.util.List;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.JsonElement;
@@ -26,6 +34,12 @@ public class MemberServiceImpl implements MemberService {
 
 	@Autowired
 	private MemberDAO memberDao;
+	
+	@Autowired(required = true)
+	private BCryptPasswordEncoder encoder;
+
+	@Autowired
+	private JavaMailSender mailSender;
 	
 	// 회원가입
 	@Override
@@ -52,6 +66,12 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public int phoneCheck(String phone) throws Exception {
 		return memberDao.phoneCheck(phone);
+	}
+	
+	// 이메일 중복확인
+	@Override
+	public int emailCheck(String email) throws Exception{
+		return memberDao.emailCheck(email);
 	}
 
 	// 로그인
@@ -125,9 +145,67 @@ public class MemberServiceImpl implements MemberService {
 
 	// 비밀번호 찾기
 	@Override
-	public MemberVO FindPw(String user_id, String user_name, String phone) {
-		return memberDao.findPw(user_id, user_name, phone);
+	public int FindPw(String user_id, String email, String phone) {
+		
+		return memberDao.findPw(user_id, email, phone);
 	}
+	
+	@Override
+	public int UpdatePw(String user_id, String email) {
+		
+		String tempPw = getTempPassword();
+		String user_pw = encoder.encode(tempPw);
+		
+		
+		/* 이메일 보내기 */
+		String setFrom = "ar971004@naver.com";
+		String title = "JAM 임시 비밀번호 입니다.";
+		
+		String content = "JAM에서 발송된 메일입니다.\n 임시 비밀번호를 이용하여 사이트에 접속하셔서 비밀번호를 변경하세요.\n";
+		try {
+
+			MimeMessage message = mailSender.createMimeMessage();
+			MimeMessageHelper helper = new MimeMessageHelper(message, true,"UTF-8");
+
+			//메일 보관함에 저장
+			helper.setFrom(setFrom);
+			helper.setTo(email);
+			helper.setSubject(title);
+			
+			content = content.replace("\n", "<br/>");
+			content += "<font color=red>"+ tempPw + "</font><br>";
+			helper.setText(content, true);
+			
+			// 메일 전송
+			mailSender.send(message); 
+		} catch (MessagingException e) {
+			e.printStackTrace();
+		}
+		
+		return memberDao.updatePw(user_id, user_pw);
+	}
+	
+	//임시 비밀번호 발급
+    public String getTempPassword(){
+    	char[] charSet = new char[] {
+                '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+                'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+                '!', '@', '#', '$', '%', '^', '&' };
+ 
+        StringBuffer sb = new StringBuffer();
+        SecureRandom sr = new SecureRandom();
+        sr.setSeed(new Date().getTime());
+ 
+        int idx = 0;
+        int len = charSet.length;
+        for (int i=0; i<10; i++) {
+            idx = sr.nextInt(len);    // 강력한 난수를 발생시키기 위해 SecureRandom을 사용한다.
+            sb.append(charSet[idx]);
+        }
+ 
+        return sb.toString();
+    }
 
 	// 카카오 로그인
 	@Override
@@ -198,7 +276,7 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 비밀번호 확인
 	@Override
-	public int pwConfirm(MemberVO m_vo) {
+	public String pwConfirm(MemberVO m_vo) {
 		
 		return memberDao.pwConfirm(m_vo);
 	}
@@ -223,7 +301,11 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.withDraw(user_id);
 	}
 
+	
 
+
+	
+	
 	
 	
 	

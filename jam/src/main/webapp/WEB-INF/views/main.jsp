@@ -115,7 +115,7 @@
 					</div>
 				</div>
 					
-				<div class="my-top-8">
+				<div class="my-top-8 mr-1 ml-1">
 					<ul>
 						<c:forEach items="${jobList }" var="jobList" varStatus="status">
 							<li class="border-bottom">
@@ -151,7 +151,7 @@
 				</div>
 				
 				
-				<div class="my-top-8">
+				<div class="my-top-8 mr-1 ml-1">
 					<ul>
 						<c:forEach items="${roomList }" var="roomList" varStatus="status">
 							<li class="border-bottom">
@@ -188,7 +188,7 @@
 				</div>
 			
 					
-				<div class="my-top-8">
+				<div class="my-top-8 mr-1 ml-1">
 					<ul>
 						<c:forEach items="${fleaList }" var="fleaList" varStatus="status">
 							<li class="border-bottom">
@@ -224,7 +224,7 @@
 					</div>
 				</div>
 				
-				<div class="my-top-8">
+				<div class="my-top-8 mr-1 ml-1">
 					<ul>
 						<c:forEach items="${comList }" var="comList" varStatus="status">
 							<li class="border-bottom">

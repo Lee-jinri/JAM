@@ -67,7 +67,7 @@
 		</div>
 		
 		<div class="msgBtn_div my-top-4 margin15px ">
-			<button type="button" class="msgBtn mr-1" id="response">쪽지 보내기</button>
+			<button type="button" class="msgBtn mr-1" id="response"  style="cursor:pointer">쪽지 보내기</button>
 		</div>
 		
 		<div class="">

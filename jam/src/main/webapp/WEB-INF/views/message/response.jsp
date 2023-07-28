@@ -44,6 +44,8 @@
 	</style>
 	<script>
 		$(function(){
+			
+			// 전송 버튼 클릭
 			$("#send").click(function(){
 				
 				$.ajax({
@@ -88,6 +90,8 @@
 				})
 			});
 			
+			
+			// 목록 버튼 클릭
 			$("#message_list").click(function(){
 				self.close();
 			});
@@ -118,8 +122,8 @@
 				<textarea rows="10" cols="63" name="message_contents" id="message_area"  style="resize: none;" maxlength="200"></textarea>
 			</div>
 			<div class="msgBtn_div  margin15px ">
-				<button type="button" class="msgBtn mr-1" id="send" style="width: 4rem;">보내기</button>
-				<button type="button" class="msgBtn2" id="message_list"style="width: 4rem;" >목록</button>
+				<button type="button" class="msgBtn mr-1" id="send"  style="width: 4rem; cursor:pointer;">보내기</button>
+				<button type="button" class="msgBtn2" id="message_list"style="width: 4rem; cursor:pointer;" >목록</button>
 			</div>
 		</div>
 		<div>

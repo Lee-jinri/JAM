@@ -62,8 +62,10 @@
 			전화번호 정규식 : 0,1 3글자 + 0~9 8글자 */
 			let id_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
 			let pw_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
-			let name_legExp = /^[a-zA-z가-힣0-9]{2,7}$/;
+			let name_legExp = /^[a-zA-z가-힣0-9]{2,11}$/;
 			let phone_legExp = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
+			let email_letExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
+			
 			
 			/********************아이디 **********************/
 			$("#user_id").on("propertychange change keyup paste input", function(){
@@ -188,6 +190,40 @@
 				}
 			});
 			
+			/******************* 이메일 *********************/
+			$("#email").on("propertychange change keyup paste input", function(){
+				// 이메일 유효성 체크
+				if(!email_letExp.test($("#email").val())){
+					$("#email_check2").css("display","inline-block");
+					$("#email_check1").css("display","none");
+				}else{
+					// 이메일 중복 확인
+					var email = $("#email").val();
+					
+					$.ajax({
+						type : "post",
+						url : "/member/memberEmailChk",
+						data : {email : email},
+						success : function(result){
+							if(result != 'fail'){ // 사용 가능한 이메일
+								email_check = false;
+								$('#email_check1').css("display","inline-block");
+								$("#email_check2").css("display","none");
+								$("#email_hint1").css("display","inline-block");
+								$("#email_hint2").css("display","none");
+							} else { // 사용 불가능한 이메일
+								phone_check = true;
+								$('#email_check1').css("display","none");
+								$("#email_check2").css("display","inline-block");
+								$("#email_hint1").css("display","none");
+								$("#email_hint2").css("display","inline-block");
+								$("#email_hint2").css("color","red");
+							}		
+						}
+					}); 
+				}
+			});
+			
 			
 			// 회원가입 버튼 클릭
 			$(".join_agree").click(function(){
@@ -196,6 +232,7 @@
 				let pw = $("#user_pw").val();
 				let name = $("#user_name").val();
 				let phone = $("#phone").val();
+				let email = $("#email").val();
 				let streetAddress = $("#streetAddress").val();
 				let detailAddress = $("#detailAddress").val();
 				
@@ -225,6 +262,12 @@
 				}
 				
 				if(phone.replace(/\s/g,"") == ""){
+					alert("전화번호를 입력하세요.");
+					$("#phone").focus();
+					return false;
+				}
+				
+				if(email.replace(/\s/g,"") == ""){
 					alert("전화번호를 입력하세요.");
 					$("#phone").focus();
 					return false;
@@ -277,7 +320,7 @@
 						<input type="text" id="user_name" name="user_name" class="join_input" placeholder="닉네임">
 						<img class="join_check" id="name_check1" alt="check" src="/resources/include/images/checked.svg">
 						<img class="join_check" id="name_check2" alt="error" src="/resources/include/images/checked2.svg">
-						<p class="join_hint" id="name_hint1">닉네임은 2~6자 이내로 한글, 영문 또는 숫자를 사용하여 입력해 주세요.</p>
+						<p class="join_hint" id="name_hint1">닉네임은 2~10자 이내로 한글, 영문 또는 숫자를 사용하여 입력해 주세요.</p>
 						<p class="join_hint" id="name_hint2" style="display : none">이미 사용중인 닉네임 입니다.</p>
 					</li>
 					<li>
@@ -287,6 +330,13 @@
 						<img class="join_check" id="phone_check2" alt="error" src="/resources/include/images/checked2.svg">
 						<p class="join_hint" id="phone_hint1">핸드폰 번호는 '-'를 제외한 숫자만 입력해 주세요.</p>
 						<p class="join_hint" id="phone_hint2" style="display : none">이미 사용중인 핸드폰 번호 입니다.</p>
+					</li>
+					<li>
+						<input type="text" id="email" name="email" class="join_input" placeholder="chicken@jam.kr">
+						<img class="join_check" id="email_check1" alt="check" src="/resources/include/images/checked.svg">
+						<img class="join_check" id="email_check2" alt="error" src="/resources/include/images/checked2.svg">
+						<p class="join_hint" id="email_hint1">유효한 이메일 주소를 입력해 주세요.</p>
+						<p class="join_hint" id="email_hint2" style="display : none">이미 사용중인 이메일 입니다.</p>
 					</li>
 					<li>
 						<input type="text" id="streetAddress" class="join_input" placeholder="주소" readonly="readonly">

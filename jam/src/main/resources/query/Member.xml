@@ -4,12 +4,13 @@
 
 	<!-- 회원가입 -->
 	<insert id="memberJoin" parameterType="member">
-	INSERT INTO member (user_id, user_pw, user_name, phone, address)
+	INSERT INTO member (user_id, user_pw, user_name, phone, email, address)
 	VALUES (
 		#{user_id}, 
 		#{user_pw}, 
 		#{user_name}, 
 		#{phone}, 
+		#{email},
 		#{address}
 	)
 	</insert>
@@ -35,9 +36,16 @@
   		WHERE phone = #{phone}
   	</select>
   	
+  	<!-- 이메일 중복검사 -->
+  	<select id="emailCheck" resultType="int">
+  		SELECT count(*)
+  		FROM member
+  		WHERE email = #{email}
+  	</select>
+  	
   	<!-- 로그인 -->
   	<select id="login" resultType="member">
-  		SELECT user_id, user_pw, user_name, address, phone
+  		SELECT user_id, user_pw, user_name, address, phone, email
   		FROM member 
   		WHERE user_id = #{user_id}
   	</select>
@@ -203,18 +211,25 @@
   	<select id="findId" parameterType="String" resultType="member">
   		SELECT user_id
   		FROM member
-  		WHERE user_name = #{user_name} 
+  		WHERE email = #{email}
   		AND phone = #{phone}
   	</select>
   	
   	<!-- 비밀번호 찾기 -->
-	<select id="findPw" resultType="member">
-		SELECT user_pw
+	<select id="findPw" parameterType="String" resultType="int">
+		SELECT count(*)
 		FROM member
 		WHERE user_id = #{user_id} 
-		AND user_name = #{user_name} 
+		AND email = #{email} 
 		AND phone = #{phone}
 	</select>
+	
+	<!-- 임시 비밀번호로 변경 -->
+	<update id="updatePw" parameterType="String">
+		UPDATE member
+		SET user_pw = #{user_pw}
+		WHERE user_id = #{user_id}
+	</update>
 	
 	<!-- 전화번호 변경 -->
 	<update id="phoneModi" parameterType="member">
@@ -224,10 +239,10 @@
 	</update>
 	
 	<!-- 비밀번호 확인 -->
-	<select id="pwConfirm" resultType="int" parameterType="member">
-		SELECT count(*)
+	<select id="pwConfirm" resultType="String" parameterType="member">
+		SELECT user_pw
 		FROM member
-		WHERE user_id = #{user_id} AND user_pw = #{user_pw}
+		WHERE user_id = #{user_id}
 	</select>
 	
 	<!-- 비밀번호 변경 -->

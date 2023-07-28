@@ -23,6 +23,9 @@ public interface MemberDAO {
 
 	// 전화번호 중복확인
 	public int phoneCheck(String phone) throws Exception;
+	
+	// 이메일 중복확인
+	public int emailCheck(String email) throws Exception;
 
 	// 로그인
 	public MemberVO login(MemberVO member);
@@ -50,13 +53,16 @@ public interface MemberDAO {
 	public MemberVO findId(@Param("user_name") String user_name, @Param("phone") String phone);
 
 	// 비밀번호 찾기
-	public MemberVO findPw(@Param("user_id") String user_id, @Param("user_name") String user_name, @Param("phone") String phone);
+	public int findPw(@Param("user_id") String user_id, @Param("email") String email, @Param("phone") String phone);
+	
+	// 임시 비밀번호로 변경
+	public int updatePw(@Param("user_id") String user_id, @Param("user_pw") String user_pw);
 
 	// 전화번호 변경
 	public int phoneModi(MemberVO m_vo);
 	
 	// 비밀번호 확인
-	public int pwConfirm(MemberVO m_vo);
+	public String pwConfirm(MemberVO m_vo);
 	
 	// 비밀번호 변경
 	public int pwModi(MemberVO m_vo);
@@ -66,6 +72,7 @@ public interface MemberDAO {
 
 	// 회원 탈퇴
 	public int withDraw(String user_id);
+
 
 	
 
