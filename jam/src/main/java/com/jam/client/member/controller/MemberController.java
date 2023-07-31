@@ -1,20 +1,12 @@
 package com.jam.client.member.controller;
 
-import java.security.SecureRandom;
-import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -50,9 +42,9 @@ public class MemberController {
 	private BCryptPasswordEncoder encoder;
 	
 
-	/*******************
-	 * 회원가입 페이지
-	 ********************/
+	/******************************
+	 * @return 회원가입 페이지
+	 ******************************/
 	@RequestMapping(value = "/join", method = RequestMethod.GET)
 	public ModelAndView joinPage(Model model) {
 
@@ -61,9 +53,9 @@ public class MemberController {
 		return mav;
 	}
 
-	/*******************
-	 * 로그인 페이지
-	 ********************/
+	/****************************
+	 * @return 로그인 페이지
+	 ****************************/
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
 	public ModelAndView login(HttpServletRequest request) {
 
@@ -78,14 +70,15 @@ public class MemberController {
 		return mav;
 	}
 
-	/**********************
-	 * 회원가입
-	 *********************/
-
+	/**********************************
+	 * 회원 가입
+	 * @param MemberVO member
+	 * @return 성공 시 로그인 페이지 / 실패 시 회원가입 페이지
+	 * @throws Exception
+	 *********************************/
 	@RequestMapping(value = "join", method = RequestMethod.POST)
 	public String join(MemberVO member, Model model) throws Exception {
 
-		String url = "";
 		int result = 0;
 		
 		String rawPw = ""; // 인코딩 전 비밀번호
@@ -97,18 +90,20 @@ public class MemberController {
 
 		result = memberService.join(member);
 
-		if (result == 0) {
-			url = "member/joinPage";
-		} else {
+		if (result == 1) {
 			return "redirect:/member/login";
+		} else {
+			return "member/joinPage";
 		}
 
-		return url;
 	}
 
-	/*****************************
+	/**************************
 	 * 아이디 중복 확인
-	 *****************************/
+	 * @param String userId
+	 * @return 아이디 중복 여부
+	 * @throws Exception
+	 **************************/
 	@RequestMapping(value = "/memberIdChk", method = RequestMethod.POST)
 	@ResponseBody
 	public String memberIdChkPOST(String userId) throws Exception {
@@ -122,9 +117,12 @@ public class MemberController {
 		}
 	}
 
-	/*******************************
+	/******************************
 	 * 닉네임 중복 확인
-	 *******************************/
+	 * @param String user_name
+	 * @return 닉네임 중복 여부
+	 * @throws Exception
+	 ******************************/
 	@RequestMapping(value = "/memberNameChk", method = RequestMethod.POST)
 	@ResponseBody
 	public String memberNameChkPOST(String user_name) throws Exception {
@@ -140,7 +138,10 @@ public class MemberController {
 
 	/***********************************
 	 * 핸드폰 번호 중복 확인
-	 ************************************/
+	 * @param String phone
+	 * @return 핸드폰 번호 중복 여부
+	 * @throws Exception
+	 ***********************************/
 	@RequestMapping(value = "/memberPhoneChk", method = RequestMethod.POST)
 	@ResponseBody
 	public String memberPhoneChkPOST(String phone) throws Exception {
@@ -157,7 +158,10 @@ public class MemberController {
 	
 	/****************************
 	 * 이메일 중복 확인
-	 */
+	 * @param String email
+	 * @return 이메일 중복 여부
+	 * @throws Exception
+	 ****************************/
 	@RequestMapping(value = "/memberEmailChk", method = RequestMethod.POST)
 	@ResponseBody
 	public String memberEmailChkPOST(String email) throws Exception{
@@ -174,6 +178,12 @@ public class MemberController {
 	/**********************************
 	 * 로그인
 	 *********************************/
+	/************************************************************
+	 * 로그인
+	 * @param MemberVOmember
+	 * @return 성공 시 로그인 전 페이지 / 실패 시 로그인 페이지
+	 * @throws Exception
+	 *****************************************************/
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public String login(HttpServletRequest request, MemberVO member, RedirectAttributes rttr) throws Exception {
 
@@ -226,9 +236,10 @@ public class MemberController {
 
 	}
 
-	/********************
+	/************************
 	 * 로그아웃
-	 ********************/
+	 * @throws Exception
+	 **************************/
 	@RequestMapping(value = "/logout", method = RequestMethod.GET)
 	public void logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
 
@@ -239,9 +250,11 @@ public class MemberController {
 
 	}
 
-	/********************
-	 * 마이페이지 - 커뮤니티 작성 글
-	 ********************/
+	/***************************************
+	 * @param CommunityVO com_vo
+	 * @return 마이페이지 - 커뮤니티 작성 글 
+	 * @throws Exception
+	 ***************************************/
 	@RequestMapping(value = "/comMyWrite", method = RequestMethod.GET)
 	public String comMyWrite(HttpServletRequest request, Model model, @ModelAttribute CommunityVO com_vo) throws Exception {
 
@@ -271,9 +284,11 @@ public class MemberController {
 
 	}
 	
-	/********************
-	 * 마이페이지 - 중고악기 작성 글
-	 ********************/
+	/***************************************
+	 * @param FleaMarketVO flea_vo
+	 * @return 마이페이지 - 중고악기 작성 글 
+	 * @throws Exception
+	 ***************************************/
 	@RequestMapping(value = "/fleaMyWrite", method = RequestMethod.GET)
 	public String fleaMyWrite(HttpServletRequest request, Model model, @ModelAttribute FleaMarketVO flea_vo) throws Exception {
 
@@ -303,9 +318,11 @@ public class MemberController {
 
 	}
 	
-	/********************
-	 * 마이페이지 - 구인구직 작성 글
-	 ********************/
+	/***************************************
+	 * @param JobVO jov_vo
+	 * @return 마이페이지 - 구인구직 작성 글 
+	 * @throws Exception
+	 ***************************************/
 	@RequestMapping(value = "/jobMyWrite", method = RequestMethod.GET)
 	public String jobMyWrite(HttpServletRequest request, Model model, @ModelAttribute JobVO jov_vo) throws Exception {
 
@@ -335,9 +352,11 @@ public class MemberController {
 
 	}
 	
-	/********************
-	 * 마이페이지 - 합주실 작성 글
-	 ********************/
+	/***************************************
+	 * @param RoomRentalVO room_vo
+	 * @return 마이페이지 - 합주실 작성 글 
+	 * @throws Exception
+	 ***************************************/
 	@RequestMapping(value = "/roomMyWrite", method = RequestMethod.GET)
 	public String roomMyWrite(HttpServletRequest request, Model model, @ModelAttribute RoomRentalVO room_vo) throws Exception {
 
@@ -367,9 +386,10 @@ public class MemberController {
 
 	}
 
-	/*************************
-	 * 마이페이지 - 회원 정보 페이지
-	 *************************/
+	/************************************
+	 * @return 마이페이지 - 회원 정보 페이지
+	 * @throws Exception
+	 ************************************/
 	@RequestMapping(value = "/account", method = RequestMethod.GET)
 	public String mypageUpdateForm(HttpServletRequest request, Model model) throws Exception {
 
@@ -395,9 +415,10 @@ public class MemberController {
 	}
 
 	
-	/******************************
-	 * 아이디/비밀번호 찾기 페이지
-	 *******************************/
+	/***********************************
+	 * @return 아이디/비밀번호 찾기 페이지
+	 * @throws Exception
+	 ***********************************/
 	@RequestMapping(value = "/joinFind", method = RequestMethod.GET)
 	public ModelAndView findIdPage() throws Exception {
 		ModelAndView mav = new ModelAndView();
@@ -406,9 +427,13 @@ public class MemberController {
 		return mav;
 	}
 
-	/*************************
+	/*************************************
 	 * 아이디 찾기
-	 ***************************/
+	 * @param String user_name
+	 * @param String phone
+	 * @return 회원ID
+	 * @throws Exception
+	 */
 	@RequestMapping(value = "/memberFindId", method = RequestMethod.POST)
 	@ResponseBody
 	public String memberFindIdPOST(@RequestParam("user_name") String user_name , @RequestParam("phone") String phone) throws Exception {
@@ -419,10 +444,14 @@ public class MemberController {
 		 
 	}
 	
-	
-	/*************************
-	 * 비밀번호 찾기
-	 ***************************/
+	/*********************************
+	 * 비밀번호 찾기 
+	 * @param String user_id
+	 * @param String email
+	 * @param String phone
+	 * @return 비밀번호 찾기 결과
+	 * @throws Exception
+	 *********************************/
 	@RequestMapping(value = "/memberFindPw", method = RequestMethod.POST)
 	@ResponseBody
 	public String memberFindPwPOST(String user_id, String email, String phone) throws Exception {
@@ -459,9 +488,12 @@ public class MemberController {
 		return "member/testPage";
     	}
 
-	/***********************************
+	/************************************
 	 * 전화번호 변경
-	 ***********************************/
+	 * @param String phone
+	 * @return 전화번호 변경 결과
+	 * @throws Exception
+	 *******************************/
 	@RequestMapping(value = "/phoneModi", method = RequestMethod.POST)
 	public String phoneModi(HttpServletRequest request, Model model, String phone, RedirectAttributes rttr) throws Exception {
 
@@ -497,9 +529,12 @@ public class MemberController {
 		return url;
 	}
 
-	/************************************
+	/*********************************
 	 * 비밀번호 확인
-	 ***********************************/
+	 * @param user_pw
+	 * @return 비밀번호 일치 여부
+	 * @throws Exception
+	 ********************************/
 	 @RequestMapping(value = "/pwConfirm", method = RequestMethod.POST)
 	 @ResponseBody
 	 public String pwConfirm(String user_pw, HttpServletRequest request) throws Exception {
@@ -522,9 +557,12 @@ public class MemberController {
 	 }
 	
 	
-	/***********************************
-	 * 비밀번호 변경
-	 ***********************************/
+	 /***********************************
+	  * 비밀번호 변경
+	  * @param String user_pw
+	  * @return 비밀번호 변경 결과 + 마이페이지
+	  * @throws Exception
+	  ***********************************/
 	@RequestMapping(value = "/pwModi", method = RequestMethod.POST)
 	public String pwModi(HttpServletRequest request, Model model, String user_pw, RedirectAttributes rttr) throws Exception {
 
@@ -563,9 +601,12 @@ public class MemberController {
 		return url;
 	}
 	
-	/******************************
+	/***********************************
 	 * 주소 변경
-	 ******************************/
+	 * @param String address
+	 * @return 주소 변경 결과 + 마이페이지
+	 * @throws Exception
+	 ***********************************/
 	@RequestMapping(value = "/addressModi", method = RequestMethod.POST)
 	public String addressModi(HttpServletRequest request, Model model, String address, RedirectAttributes rttr) throws Exception {
 		
@@ -601,9 +642,10 @@ public class MemberController {
 		return url;
 	}
 	
-	/*******************************
+	/******************************************
 	 * 회원 탈퇴
-	 *******************************/
+	 * @return 성공 시 메인페이지 실패 시 실패 메세지
+	 *****************************************/
     @RequestMapping(value = "/withDraw", method = RequestMethod.POST)
     public String withDraw(HttpServletRequest request) {
     	

@@ -45,6 +45,10 @@ public class FleaMarketController {
 	@Autowired
 	private FleaMarketService fleaService;
 	
+	/**************************************
+	 * @param FleaMarketVO flea_vo
+	 * @return 중고악기 글 리스트 
+	 ***************************************/
 	@RequestMapping(value="/fleaMarketList", method=RequestMethod.GET)
 	public String fleaMarketList(Model model, @ModelAttribute FleaMarketVO flea_vo) {
 		
@@ -58,8 +62,13 @@ public class FleaMarketController {
 		return "fleaMarket/fleaMarketList";
 	}
 	
+	/*****************************************
+	 * @param FleaMarketVO flea_vo
+	 * @return 중고악기 상세페이지
+	 * @throws Exception
+	 *****************************************/
 	@RequestMapping(value="/fleaMarketDetail/{flea_no}", method=RequestMethod.GET)
-	public ModelAndView communityDetail(@ModelAttribute("data")FleaMarketVO flea_vo, Model model) throws Exception{
+	public ModelAndView fleaDetail(@ModelAttribute("data")FleaMarketVO flea_vo, Model model) throws Exception{
 		
 		fleaService.fleaReadCnt(flea_vo);
 		FleaMarketVO detail = fleaService.fleaDetail(flea_vo);
@@ -72,6 +81,9 @@ public class FleaMarketController {
 		return mav;
 	}
 	
+	/***************************************
+	 * @return 중고악기 글 작성 페이지
+	 **************************************/
 	@RequestMapping(value="/fleaWrite", method=RequestMethod.GET)
 	public ModelAndView fleaMarketWriteForm(HttpServletRequest request, Model model) {
 		
@@ -92,6 +104,12 @@ public class FleaMarketController {
 		return mav;
 	}
 	
+	/***********************************
+	 * 중고 악기 글 작성
+	 * @param MemberVO member
+	 * @param FleaMarketVO flea_vo
+	 * @return 성공 시 작성한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 작성 페이지
+	 **********************************/
 	@RequestMapping(value="/fleaWrite", method=RequestMethod.POST)
 	public ModelAndView fleaMarketWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) {
 		
@@ -118,6 +136,12 @@ public class FleaMarketController {
 		}
 	}
 	
+	/******************************
+	 * @param MemberVO member
+	 * @param FleaMarketVO flea_vo
+	 * @return 중고악기 글 수정 페이지
+	 * @throws Exception
+	 ******************************/
 	@RequestMapping(value="/fleaUpdateForm", method=RequestMethod.POST)
 	public ModelAndView fleaMarketUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, FleaMarketVO flea_vo, Model model) throws Exception{
 		
@@ -139,6 +163,12 @@ public class FleaMarketController {
 		return mav;
 	}
 	
+	/********************************************************
+	 * 중고악기 글 수정
+	 * @param MemberVO member
+	 * @param FleaMarket_VO flea_vo
+	 * @return 성공시 수정한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 수정 페이지
+	 *******************************************************/
 	@RequestMapping(value="/fleaUpdate", method=RequestMethod.POST)
 	public ModelAndView fleaMarketUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) {
 		
@@ -164,6 +194,13 @@ public class FleaMarketController {
 		}
 	}
 	
+	/*********************************
+	 * 중고 악기 글 삭제 
+	 * @param MemberVO member
+	 * @param FleaMarket_VO flea_vo
+	 * @return 성공 시 중고악기 글 목록 / 실패 시 중고악기 글 상세페이지
+	 * @throws Exception
+	 ***********************************/
 	@RequestMapping(value="/fleaDelete", method=RequestMethod.POST)
 	public ModelAndView fleaMarketDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) throws Exception{
 		
@@ -193,7 +230,7 @@ public class FleaMarketController {
 
 	/********************************
 	 * 중고악기 사진 업로드
-	 * @return String
+	 * @return String 사진 저장 경로 
 	 ********************************/
 	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
 	@ResponseBody

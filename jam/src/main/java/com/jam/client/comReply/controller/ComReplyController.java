@@ -36,6 +36,12 @@ public class ComReplyController {
 	
 	private ComReplyService comreplyService;
 	
+	/***************************
+	 * @param Integer com_no
+	 * @param ComReplyVO crvo
+	 * @param MemberVO member
+	 * @return 커뮤니티 댓글 리스트
+	 ****************************/
 	@GetMapping(value = "/all/{com_no}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<ComReplyVO> replyList(@PathVariable("com_no") Integer com_no,@ModelAttribute("data") ComReplyVO crvo, MemberVO member, HttpServletRequest request, Model model){
 		System.out.println("replyList 호출 성공");
@@ -53,10 +59,15 @@ public class ComReplyController {
 	   		crvo.setUser_name(vo.getUser_name());
 		} 
 		
-		
 		return reply;
 	}
 	
+	/*************************
+	 * 커뮤니티 댓글 작성
+	 * @param ComReplyVO crvo
+	 * @param MemberVO member
+	 * @return 댓글 작성 실행 결과
+	 **************************/
 	@JsonFormat
 	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyInsert(@RequestBody ComReplyVO crvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
@@ -78,6 +89,12 @@ public class ComReplyController {
 	}
 	
 
+	/*******************************
+	 * 커뮤니티 댓글 수정
+	 * @param Integer comReply_no
+	 * @param ComReplyVO crvo
+	 * @return 댓글 수정 결과 
+	 *******************************/
 	@PutMapping(value = "/{comReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyUpdate(@PathVariable("comReply_no") Integer comReply_no, @RequestBody ComReplyVO crvo) {
 	
@@ -86,6 +103,11 @@ public class ComReplyController {
 		return(result ==1) ? "SUCCESS" : "FAILURE";
 	}
 	
+	/*******************************
+	 * 커뮤니티 댓글 삭제
+	 * @param Integer comReply_no
+	 * @return 댓글 삭제 결과
+	 ********************************/
 	@DeleteMapping(value = "/{comReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> replyDelete(@PathVariable("comReply_no")Integer comReply_no){
 

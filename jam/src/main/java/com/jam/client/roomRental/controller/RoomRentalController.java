@@ -44,9 +44,8 @@ public class RoomRentalController {
 	private RoomRentalService roomService;
 	
 	/******************************
-	 * 합주실/연습실 글 리스트 페이지
-	 * @param room_vo
-	 * @return String
+	 * @param RoomRentalVO room_vo
+	 * @return 합주실/연습실 글 리스트 페이지
 	 ******************************/
 	@RequestMapping(value="/roomRentalList", method=RequestMethod.GET)
 	public String roomList(Model model, @ModelAttribute RoomRentalVO room_vo) {
@@ -60,9 +59,8 @@ public class RoomRentalController {
 	}
 	
 	/****************************************
-	 * 합주실/연습실 상세페이지
-	 * @param room_vo
-	 * @return String
+	 * @param RoomRentalVO room_vo
+	 * @return 합주실/연습실 상세페이지
 	 *****************************************/
 	@RequestMapping(value="/roomRentalDetail/{roomRental_no}", method=RequestMethod.GET)
 	public String roomDetail(@ModelAttribute("data")RoomRentalVO room_vo, Model model) throws Exception{
@@ -78,9 +76,8 @@ public class RoomRentalController {
 	}
 	
 	/***************************************
-	 * 합주실/연습실 글 작성 페이지
-	 * @param room_vo
-	 * @return
+	 * @param RoomRentalVO room_vo
+	 * @return 합주실/연습실 글 작성 페이지
 	 ***************************************/
 	@RequestMapping(value="/roomRentalWrite", method=RequestMethod.GET)
 	public String roomWriteForm(HttpServletRequest request, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
@@ -104,9 +101,9 @@ public class RoomRentalController {
 	
 	/******************************
 	 * 합주실/연습실 글 작성
-	 * @param member
-	 * @param room_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 성공 시 작성한 합주실 글 상세 페이지 / 실패 시 합주실 글 작성 페이지
 	 *****************************/
 	@RequestMapping(value="/roomRentalInsert", method=RequestMethod.POST)
 	public ModelAndView roomWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
@@ -135,10 +132,9 @@ public class RoomRentalController {
 	}
 	
 	/********************************
-	 * 합주실/연습실 글 수정 페이지
-	 * @param member
-	 * @param jab_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 합주실/연습실 글 수정 페이지
 	 *********************************/
 	@RequestMapping(value="/roomRentalUpdateForm", method=RequestMethod.POST)
 	public ModelAndView roomUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, RoomRentalVO room_vo, Model model) throws Exception{
@@ -163,9 +159,9 @@ public class RoomRentalController {
 	
 	/***********************************
 	 * 합주실/연습실 글 수정
-	 * @param member
-	 * @param room_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 성공 시 수정한 합주실 글 상세페이지 / 실패 시 합주실 글 수정 페이지
 	 ***********************************/
 	@RequestMapping(value="/roomRentalUpdate", method=RequestMethod.POST)
 	public ModelAndView roomUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, RoomRentalVO room_vo, Model model) throws Exception{
@@ -196,9 +192,9 @@ public class RoomRentalController {
 	
 	/**********************************
 	 * 합주실/연습실 글 삭제
-	 * @param member
-	 * @param room_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 성공 시 합주실 글 목록 / 실패 시 합주실 글 상세페이지
 	 **********************************/
 	@RequestMapping(value="/roomRentalDelete", method=RequestMethod.POST)
 	public ModelAndView roomDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
@@ -228,7 +224,7 @@ public class RoomRentalController {
 	
 	/********************************
 	 * 합주실/연습실 사진 업로드
-	 * @return String
+	 * @return String 사진 저장 경로
 	 ********************************/
 	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
 	@ResponseBody

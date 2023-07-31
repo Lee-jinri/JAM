@@ -36,6 +36,12 @@ public class FleaReplyController {
 
 	private FleaReplyService fleareplyService;
 	
+	/***************************
+	 * @param Integer flea_no
+	 * @param FleaReplyVO frvo
+	 * @param MemberVO member
+	 * @return 댓글 리스트
+	 ****************************/
 	@DateTimeFormat 
 	@GetMapping(value = "/all/{flea_no}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<FleaReplyVO> replyList(@PathVariable("flea_no") Integer flea_no, @ModelAttribute("data") FleaReplyVO frvo, MemberVO member, HttpServletRequest request, Model model){
@@ -56,6 +62,12 @@ public class FleaReplyController {
 		return reply;
 	}
 	
+	/******************************
+	 * 중고악기 댓글 작성
+	 * @param FleaReplyVO frvo
+	 * @param MemberVO member
+	 * @return 댓글 작성 실행 결과
+	 **********************************/
 	@JsonFormat
 	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyInsert(@RequestBody FleaReplyVO frvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
@@ -76,6 +88,12 @@ public class FleaReplyController {
 		return(result ==1)? "SUCCESS" : "FAILURE";
 	}
 	
+	/****************************
+	 * 중고악기 댓글 수정
+	 * @param Integer fleaReply_no
+	 * @param FleaReplyVO frvo
+	 * @return 댓글 수정 결과
+	 ****************************/
 	@PutMapping(value = "/{fleaReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyUpdate(@PathVariable("fleaReply_no") Integer fleaReply_no, @RequestBody FleaReplyVO frvo) {
 	
@@ -83,6 +101,12 @@ public class FleaReplyController {
 		int result = fleareplyService.replyUpdate(frvo);
 		return(result ==1) ? "SUCCESS" : "FAILURE";
 	}
+	
+	/*******************************
+	 * 중고악기 댓글 삭제
+	 * @param Integer fleaReply_no
+	 * @return 댓글 삭제 결과
+	 **********************************/
 	
 	@DeleteMapping(value = "/{fleaReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> replyDelete(@PathVariable("fleaReply_no")Integer fleaReply_no){

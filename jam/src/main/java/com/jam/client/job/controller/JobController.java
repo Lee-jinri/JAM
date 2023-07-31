@@ -43,9 +43,8 @@ public class JobController {
 	private JobService jobService;
 	
 	/******************************
-	 * 구인구직 글 리스트 페이지
-	 * @param job_vo
-	 * @return String
+	 * @param JobVO job_vo
+	 * @return 구인구직 글 리스트 페이지
 	 ******************************/
 	@RequestMapping(value="/jobList", method=RequestMethod.GET)
 	public String jobList(Model model, @ModelAttribute JobVO job_vo) {
@@ -59,9 +58,8 @@ public class JobController {
 	}
 	
 	/****************************************
-	 * 구인구직 상세페이지
-	 * @param job_vo
-	 * @return String
+	 * @param JobVO job_vo
+	 * @return 구인구직 상세페이지
 	 *****************************************/
 	@RequestMapping(value="/jobDetail/{job_no}", method=RequestMethod.GET)
 	public String jobDetail(@ModelAttribute("data")JobVO job_vo, Model model) throws Exception{
@@ -77,9 +75,8 @@ public class JobController {
 	}
 	
 	/***************************************
-	 * 구인구직 글 작성 페이지
-	 * @param job_vo
-	 * @return
+	 * @param JobVO job_vo
+	 * @return 구인구직 글 작성 페이지
 	 ***************************************/
 	@RequestMapping(value="/jobWrite", method=RequestMethod.GET)
 	public String jobWriteForm(HttpServletRequest request, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
@@ -103,9 +100,9 @@ public class JobController {
 	
 	/******************************
 	 * 구인구직 글 작성
-	 * @param member
-	 * @param job_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param JobVO job_vo
+	 * @return 성공 시 작성한 구인구직 글 상세 페이지 / 실패 시 구인구직 글 작성 페이지
 	 *****************************/
 	@RequestMapping(value="/jobWrite", method=RequestMethod.POST)
 	public ModelAndView jobWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
@@ -134,10 +131,9 @@ public class JobController {
 	}
 	
 	/********************************
-	 * 구인구직 글 수정 페이지
-	 * @param member
-	 * @param jab_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param Job_VO job_vo
+	 * @return 구인구직 글 수정 페이지
 	 *********************************/
 	@RequestMapping(value="/jobUpdateForm", method=RequestMethod.POST)
 	public ModelAndView jobUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, JobVO job_vo, Model model) throws Exception{
@@ -162,9 +158,9 @@ public class JobController {
 	
 	/***********************************
 	 * 구인구직 글 수정
-	 * @param member
-	 * @param job_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param Job_vo job_vo
+	 * @return 성공 시 수정한 구인구직 글 상세페이지 / 실패 시 구인구직 글 수정 페이지
 	 ***********************************/
 	@RequestMapping(value="/jobUpdate", method=RequestMethod.POST)
 	public ModelAndView jobUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, JobVO job_vo, Model model) throws Exception{
@@ -195,9 +191,9 @@ public class JobController {
 	
 	/**********************************
 	 * 구인구직 글 삭제
-	 * @param member
-	 * @param job_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param Job_VO job_vo
+	 * @return 성공 시 구인구직 글 목록 / 실패 시 구인구직 글 상세페이지
 	 **********************************/
 	@RequestMapping(value="/jobDelete", method=RequestMethod.POST)
 	public ModelAndView jobDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
@@ -227,7 +223,7 @@ public class JobController {
 	
 	/********************************
 	 * 구인구직 사진 업로드
-	 * @return String
+	 * @return String 사진 저장 경로
 	 ********************************/
 	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
 	@ResponseBody

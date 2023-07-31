@@ -43,9 +43,8 @@ public class CommunityController {
 	private CommunityService comService;
 	
 	/**************************************
-	 * 커뮤니티 글 리스트
-	 * @param com_vo
-	 * @return String 
+	 * @param CommunityVO com_vo
+	 * @return 커뮤니티 글 리스트 
 	 ***************************************/
 	@RequestMapping(value="/communityList", method=RequestMethod.GET)
 	public String communityList(Model model, @ModelAttribute CommunityVO com_vo) {
@@ -60,9 +59,8 @@ public class CommunityController {
 	}
 	
 	/****************************************
-	 * 커뮤니티 상세페이지
-	 * @param com_vo
-	 * @return String
+	 * @param CommunityVO com_vo
+	 * @return 커뮤니티 상세페이지
 	 *****************************************/
 	@RequestMapping(value="/communityDetail/{com_no}", method=RequestMethod.GET)
 	public String communityDetail(@ModelAttribute("data")CommunityVO com_vo, Model model) throws Exception{
@@ -76,9 +74,8 @@ public class CommunityController {
 	}
 	
 	/***************************************
-	 * 커뮤니티 글 작성 페이지
-	 * @param com_vo
-	 * @return
+	 * @param CommunityVO com_vo
+	 * @return 커뮤니티 글 작성 페이지
 	 ***************************************/
 	@RequestMapping(value="/communityWrite", method=RequestMethod.GET)
 	public String communityWriteForm(HttpServletRequest request, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
@@ -102,9 +99,9 @@ public class CommunityController {
 	
 	/******************************
 	 * 커뮤니티 글 작성
-	 * @param member
-	 * @param com_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param CommunityVO com_vo
+	 * @return 성공 시 작성한 커뮤니티 글 상세 페이지/ 실패 시 커뮤니티 글 작성 페이지
 	 *****************************/
 	@RequestMapping(value="/communityWrite", method=RequestMethod.POST)
 	public ModelAndView communityWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
@@ -133,10 +130,9 @@ public class CommunityController {
 	}
 	
 	/********************************
-	 * 커뮤니티 글 수정 페이지
-	 * @param member
-	 * @param com_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param CommunityVO com_vo
+	 * @return 커뮤니티 글 수정 페이지
 	 *********************************/
 	@RequestMapping(value="/communityUpdateForm", method=RequestMethod.POST)
 	public ModelAndView communityUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, CommunityVO com_vo, Model model) throws Exception{
@@ -161,9 +157,9 @@ public class CommunityController {
 	
 	/***********************************
 	 * 커뮤니티 글 수정
-	 * @param member
-	 * @param com_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param CommunityVO com_vo
+	 * @return 성공 시 수정한 커뮤니티 글 상세 페이지 / 실패 시 커뮤니티 글 수정 페이지
 	 ***********************************/
 	@RequestMapping(value="/communityUpdate", method=RequestMethod.POST)
 	public ModelAndView communityUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, CommunityVO com_vo, Model model) throws Exception{
@@ -194,9 +190,9 @@ public class CommunityController {
 	
 	/**********************************
 	 * 커뮤니티 글 삭제
-	 * @param member
-	 * @param com_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param CommunityVO com_vo
+	 * @return 성공 시 커뮤니티 글 목록 / 실패 시 커뮤니티 글 상세 페이지
 	 **********************************/
 	@RequestMapping(value="/communityDelete", method=RequestMethod.POST)
 	public ModelAndView communityDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
@@ -226,7 +222,7 @@ public class CommunityController {
 	
 	/********************************
 	 * 커뮤니티 사진 업로드
-	 * @return String
+	 * @return String 사진 저장 경로
 	 ********************************/
 	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
 	@ResponseBody

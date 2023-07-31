@@ -25,7 +25,7 @@
 	.link_set{
 		color: #252525;
 	}
-	input {
+	.input-border-none {
     -webkit-appearance: none;
        -moz-appearance: none;
             appearance: none;
@@ -54,7 +54,8 @@
 				$("#phone").removeAttr("readonly"); 
 				$("#phone").focus();
 				$("#phone_modi_btn").attr("type", "hidden");
-				$("#phone_btn").css("display","flex");
+				$("#phone_btn").css("display","inline");
+				$("#phone").val("");
 			})
 			
 			/* 전화번호 수정 확인 버튼 클릭 */
@@ -112,7 +113,7 @@
 			/* 비밀번호 변경 버튼 클릭 */
 			$("#pw_modi_btn").click(function(){
 				$("#pw_modi_btn").attr("type","hidden");
-				$("#pwConfirm").css("display","flex");
+				$("#pwConfirm").css("display","inline");
 				$("#user_pw").focus();
 			})
 			
@@ -135,6 +136,7 @@
 							alert("비밀번호 확인 완료");
 							$("#pwConfirm").css("display","none");
 							$("#pwModi_div").css("display","inline-block");
+							$("#new_pw").pocus();
 						} else {
 							alert("비밀번호가 일치하지 않습니다.");
 						}		
@@ -178,6 +180,7 @@
 			// 주소 수정 버튼 클릭
 			$("#address_modi_btn").click(function(){
 				$("#address_div").css("display","inline-block");
+				$("#address_modi_btn").attr("type","hidden");
 			})
 			
 				
@@ -280,11 +283,11 @@
 				<div class="info_box">
 					<span class="link_set">전화번호</span>
 					<div>
-						<input type="number" class="" id="phone" name="phone" value="${account.phone }" readonly=readonly placeholder="전화번호 입력">
+						<input type="number" class="input-border-none" id="phone" name="phone" value="${account.phone }" readonly=readonly placeholder="전화번호 입력">
 						<input type="button" id="phone_modi_btn" class="float-right" value="수정">
 						<div id="phone_btn" style="display:none;">
-							<button type="button" id="phone_cancel" class="float-right">취소</button>
-							<button type="button" id="phoneChange" class="float-right">확인</button>
+							<button type="button" id="phone_cancel" class="float-right ">취소</button>
+							<button type="button" id="phoneChange" class="float-right mr-1">확인</button>
 						</div>
 					</div>
 					
@@ -293,19 +296,19 @@
 					<span class="link_set">비밀번호</span>
 					<input type="button" id="pw_modi_btn" class="float-right" value="변경">
 					<div id="pwConfirm" style="display:none;">
-						<input type="text" id="user_pw" placeholder="기존 비밀번호 입력">
-						<input type="button" id="pwConfirm_btn" value="확인">
+						<input type="text" id="user_pw" class="ml-1" placeholder="기존 비밀번호 입력">
+						<input type="button" id="pwConfirm_btn" class="float-right" value="확인">
 					</div>
-					<div id="pwModi_div" style="display:none;">
-						<span>변경할 비밀번호를 입력하세요. </span><br>
-						<span>(8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력하세요.)</span>
-						<div>
-							<span>변경할 비밀번호</span>
-							<input type="text" id="new_pw" name="user_pw"><br>
-							<span>비밀번호 확인</span>
-							<input type="text" id="pw_check">
+					<div id="pwModi_div" style="display:none; " class="my-top-4">
+						<span style="font-size: 1.5rem; color: #A4A4A4;">변경할 비밀번호를 입력하세요. </span><br>
+						<span style="color: #A4A4A4;">(8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력하세요.)</span>
+						<div class="my-top-4">
+							<p >변경할 비밀번호</p>
+							<input type="text" id="new_pw" name="user_pw" class=""><br>
+							<p class="my-top-4">비밀번호 확인</p>
+							<input type="text" id="pw_check" class="">
 						</div>
-						<button type="button" id="pwModi_btn">변경</button>
+						<button type="button" id="pwModi_btn" class="my-top-4">변경</button>
 					</div>
 					
 				</div>
@@ -314,10 +317,10 @@
 				<p>주소 관리</p>
 				<div class="info_box">
 					<span class="">${account.address }</span>
-					<button type="button" id="address_modi_btn" class="float-right">수정</button>
+					<input type="button" id="address_modi_btn" class="float-right" value="수정">
 					<div id="address_div" style="display:none;" >
-						<input type="text" id="streetAddress" class="" placeholder="주소" readonly="readonly">
-						<input type="text" id="detailAddress" class="" placeholder="상세주소 입력" >
+						<input type="text" id="streetAddress" class="" placeholder="주소" readonly="readonly" style="width: 350px;">
+						<input type="text" id="detailAddress" class="" placeholder="상세주소 입력" style="width: 350px;" >
 						<button type="button" id="address_search">검색</button>
 						<button type="button" id="address_modi">변경</button>
 						<input type="hidden" id="address" name="address">
@@ -326,7 +329,7 @@
 			</div>
 		</form>
 		<div>
-			<button type="button" id="account_cancel_btn">회원 탈퇴</button>
+			<button type="button" id="account_cancel_btn" class="my-top-7">회원 탈퇴</button>
 		</div>
 	</div>		
 </body>

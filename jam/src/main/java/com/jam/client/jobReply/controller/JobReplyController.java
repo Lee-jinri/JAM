@@ -35,6 +35,12 @@ public class JobReplyController {
 
 	private JobReplyService jobReplyService;
 	
+	/************************
+	 * @param Integer job_no
+	 * @param JobReplyVO jrvo
+	 * @param MemberVO member
+	 * @return 댓글 리스트
+	 *************************/
 	@GetMapping(value = "/all/{job_no}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<JobReplyVO> replyList(@PathVariable("job_no") Integer job_no,@ModelAttribute("data") JobReplyVO jrvo, MemberVO member, HttpServletRequest request, Model model){
 		System.out.println("replyList 호출 성공");
@@ -55,6 +61,12 @@ public class JobReplyController {
 	}
 	
 
+	/*******************************
+	 * 구인구직 댓글 작성
+	 * @param JobReplyVO jrvo
+	 * @param MemberVO member
+	 * @return 댓글 작성 실행 결과
+	 *******************************/
 	@JsonFormat
 	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyInsert(@RequestBody JobReplyVO jrvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
@@ -74,8 +86,12 @@ public class JobReplyController {
 		return(result ==1)? "SUCCESS" : "FAILURE";
 	}
 	
-
-
+	/*******************************
+	 * 구인구직 댓글 수정
+	 * @param Integer jobReply_no
+	 * @param JobReplyVO jrvo
+	 * @return 댓글 수정 결과
+	 */
 	@PutMapping(value = "/{jobReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyUpdate(@PathVariable("jobReply_no") Integer jobReply_no, @RequestBody JobReplyVO jrvo) {
 	
@@ -84,6 +100,11 @@ public class JobReplyController {
 		return(result ==1) ? "SUCCESS" : "FAILURE";
 	}
 	
+	/********************************
+	 * 구인구직 댓글 삭제
+	 * @param Integer jobReply_no
+	 * @return 댓글 삭제 결과
+	 */
 	@DeleteMapping(value = "/{jobReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> replyDelete(@PathVariable("jobReply_no")Integer jobReply_no){
 

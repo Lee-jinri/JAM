@@ -35,9 +35,10 @@ public class MessageController {
 	@Autowired
 	private MessageService messageService;
 	
-	/***************************
-	 * 받은 쪽지
-	*/
+	/***********************************************
+	 * @param MessageVO m_vo
+	 * @return 받은 쪽지 목록 페이지
+	 *******************************************/
 	@RequestMapping(value="/receiveMessage", method=RequestMethod.GET)
 	public String receiveMessage(HttpServletRequest request, Model model, @ModelAttribute MessageVO m_vo) {
 		
@@ -66,9 +67,10 @@ public class MessageController {
 		return url;
 	}
 	
-	/***************************
-	 * 보낸 쪽지
-	*/
+	/*********************************
+	 * @param MessageVO m_vo
+	 * @return 보낸 쪽지 목록 페이지
+	 ********************************/
 	@RequestMapping(value="/sendMessage", method=RequestMethod.GET)
 	public String sendMessage(HttpServletRequest request, Model model, @ModelAttribute MessageVO m_vo) {
 		
@@ -98,9 +100,10 @@ public class MessageController {
 		return url;
 	}
 	
-	/****************
-	 * 받은 쪽지 detail
-	 */
+	/***********************************
+	 * @param MessageVO message_vo
+	 * @return 받은 쪽지 상세 페이지
+	 ***********************************/
 	@RequestMapping(value="/rMessage_detail", method=RequestMethod.POST)
 	public String receiveMessageDetail(HttpServletRequest request, @ModelAttribute MessageVO message_vo, Model model) {
 		
@@ -116,9 +119,10 @@ public class MessageController {
 		return "/message/receiveMessageDetail";
 	}
 	
-	/**********************
-	 * 보낸 쪽지 detail
-	 */
+	/******************************
+	 * @param MessageVO message_vo
+	 * @return 보낸 쪽지 상세페이지
+	 ******************************/
 	@RequestMapping(value="/sMessage_detail", method=RequestMethod.POST)
 	public String sendMessageDetail(HttpServletRequest request, @ModelAttribute MessageVO message_vo, Model model) {
 		
@@ -133,9 +137,10 @@ public class MessageController {
 		return "/message/sendMessageDetail";
 	}
 	
-	/**************************
-	 * 쪽지 답장 페이지
-	 */
+	/********************************
+	 * @param MessageVO message_vo 
+	 * @return 쪽지 답장 페이지
+	 ********************************/
 	@RequestMapping(value="/response", method=RequestMethod.POST)
 	public String responseForm(@ModelAttribute MessageVO message_vo, Model model) {
 		
@@ -150,9 +155,11 @@ public class MessageController {
 		return "/message/response";
 	}
 	
-	/*************
-	 * 쪽지 보내기
-	 */
+	/*******************************
+	 * 쪽지 전송
+	 * @param MessageVO message_vo
+	 * @return 쪽지 전송 결과 
+	 ****************************/
 	@ResponseBody
 	@RequestMapping(value="/messageWrite", method=RequestMethod.POST)
 	public String messageWrite(HttpServletRequest request, @ModelAttribute MessageVO message_vo, Model model) {
