@@ -89,7 +89,7 @@
 <body>
 	<div class="rem-20 my-top-15 my-bottom-15">
 		<div class="title">
-			<p class="text-center my-7">구인 / 구직</p>
+			<p class="text-center">구인 / 구직</p>
 		</div>
 		<div class="content">
 			<div class="justify-between flex py-4">
@@ -101,7 +101,7 @@
 			
 			<div class="border-top border-bottom py-2rem flex justify-center">
 				
-				<div class="items-center">
+				<div class="items-center flex">
 					<form id="searchForm">
 						<!-- 페이징 처리를 위한 파라미터 -->
 						<input type="hidden" name="pageNum" value="${pageMaker.cvo.pageNum }">

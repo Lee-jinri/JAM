@@ -58,7 +58,9 @@
     	height: 10rem;
 	    text-align: center;
 	    box-shadow : 0px 0px 7px #E6E6E6;
-	    }
+	    top: 13rem;
+    	left: 125rem;
+		}
 	</style>
 	
 	<script>
@@ -119,7 +121,7 @@
 						
 						<div class="mypage_toggle absolute border border-radius-7px">
 							<ul>
-								<li class="pd-top1 font-weight-bold color_y">마이페이지</li>
+								<li class="font-weight-bold color_y">마이페이지</li>
 								<li class="pd-top1"><a class="mypage_font" href="/member/account">계정 정보</a></li>
 								<li class="pd-top1"><a class="mypage_font" href="/member/comMyWrite">작성한 글</a></li>
 							</ul>

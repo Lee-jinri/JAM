@@ -159,8 +159,16 @@
 			$element.attr("data-num",jobReply_no);
 			$element.addClass("reply");
 			$element.find('.panel-heading > .panel-title > .name').html(user_name);
-			$element.find('.panel-heading > .panel-title > .date').html(jobReply_date);
 			
+			$element.find('.panel-heading > .panel-title > .frmPopup').attr("id", "frmPopup_" + jobReply_no);
+			$element.find('.panel-heading > .panel-title > .frmPopup > #receiver_id').attr("value", user_id);
+			$element.find('.panel-heading > .panel-title > .frmPopup > #receiver').attr("value", user_name);
+			
+			
+			$element.find('.panel-heading > .panel-title > .date').html(jobReply_date);
+			$element.find('.panel-body').html(jobReply_content);
+			
+			$div.append($element);
 			
 			/* 댓글 작성자와 사용자 아이디가 일치 시 댓글 수정 삭제 버튼 생성 */
 			if("${member.user_id}" != ""){
@@ -170,14 +178,18 @@
 					$element.find('.panel-heading > .panel-title > .panel-btn').html( 
 							"<button type='button' class='delBtn' data-btn='delBtn' >삭제</button>"
 							+ "<button type='button' class='upBtn' data-btn='upBtn'>수정</button>" );
+				}else{ /* 댓글 작성자와 사용자 아이디 불일치 시 메세지 버튼 생성 */
+					$element.find('.panel-heading > .panel-title > .message').html(
+							"<button type='button' class='send_message'>"
+							+ "<img class='message_icon' style='width:2rem;' alt='쪽지' src='/resources/include/images/message_icon.svg'>"
+							+ "</button>");
+					
 				}
 			}
-
+			/* 메세지 버튼에 click 이벤트 */
+			$element.find('.panel-heading > .panel-title > .message > .send_message').attr("onclick", "sendMsg('" + jobReply_no + "')");
 			
-			$element.find('.panel-body').html(jobReply_content);
 			
-			
-			$div.append($element);
 		}
 		
 		/*입력 폼 초기화*/
@@ -213,6 +225,24 @@
 				});
 			}
 		}
+		
+		/* 쪽지 전송 팝업 */
+		function sendMsg(jobReply_no){
+			
+			var url = "/message/send";
+			var option = "width=500, height=370, top=10, left=10";
+			var name = "팝업";
+			
+			window.open("",name,option);
+			
+			let msg = "frmPopup_"+jobReply_no;
+			
+			$("#" + msg).attr("action", url);
+			$("#" + msg).attr("target", name);
+			$("#" + msg).attr("method", "POST");
+			$("#" + msg).submit();
+		}
+	
 	</script>
 </head>
 <body>
@@ -254,13 +284,18 @@
 			<div id="item-template" class="panel">
 				<div class="panel-heading">
 					<div class="panel-title">
-						<span class="name" id="user_name"></span>
+						<span class="cursor-pointer name " id="user_name"></span>
+						<div class="message"></div>
+						<form class="frmPopup" name="frmPopup">
+							<input type="hidden" id="receiver_id" name="receiver_id">
+							<input type="hidden" id="receiver" name="receiver">
+						</form>
 						<span class="date"></span>
 						<div class="panel-btn"></div>
 						<div class="panel-body"></div>
-					</div>
-				</div>		
-			</div>			
+					</div>	
+				</div>
+			</div>
 		</div>
 	</div>
 </body>

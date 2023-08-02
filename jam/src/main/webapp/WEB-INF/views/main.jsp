@@ -101,10 +101,6 @@
 
 <body>
 	<div class="contents rem-20 ">
-		<div class="search my-top-15">
-			<input type="text" id="search_bar" placeholder="궁금한 내용을 JAM에서 찾아보세요!">
-			<img class="search-icon" src="/resources/include/images/search.svg">
-		</div>
 		<div class="flex flex-container my-top-15 my-bottom-15">
 		
 			<!-- 구인구직 글 리스트 -->

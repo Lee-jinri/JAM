@@ -138,6 +138,20 @@ public class MessageController {
 	}
 	
 	/********************************
+	 * @return 쪽지 전송 페이지
+	 ********************************/
+	@RequestMapping(value="/send", method=RequestMethod.POST)
+	public String sendForm(@ModelAttribute MessageVO message_vo, Model model) {
+		
+		log.info("받는 사람 " + message_vo.getReceiver());
+		log.info(message_vo.getReceiver_id());
+		
+		model.addAttribute("receiver",message_vo.getReceiver());
+		model.addAttribute("receiver_id",message_vo.getReceiver_id());
+		return "/message/send";
+	}
+	
+	/********************************
 	 * @param MessageVO message_vo 
 	 * @return 쪽지 답장 페이지
 	 ********************************/
@@ -147,8 +161,6 @@ public class MessageController {
 		String receiver = message_vo.getSender();
 		String receiver_id = message_vo.getSender_id();
 		
-		log.info(message_vo);
-		log.info(receiver);
 		
 		model.addAttribute("receiver",receiver);
 		model.addAttribute("receiver_id",receiver_id);

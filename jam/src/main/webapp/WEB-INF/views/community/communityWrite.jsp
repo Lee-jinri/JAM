@@ -25,20 +25,17 @@
 		#textarea{min-height:50rem;}
 		.comWriteBtn{
 			border-radius: 10px;
-    border: 3px solid #ffdd77;
-    /* padding: 3px 10px; */
-    background-color: #fff;
-    margin-right: 30px;
-    height: 45px;
-    width: 80px;
-    /* color: black; */
-    font-weight: 600;
-    /* border: none;
+		    border: 3px solid #ffdd77;
+		    background-color: #fff;
+		    height: 35px;
+    		width: 60px;
+		    font-weight: 600;
+			align-items: center;
+		    justify-content: center;
+		    display: flex;
+		    color : #848484;
 		
 		}
-		#write {
-		background-color:#ffdd77;
-		color:#fff;}
 	</style>
 	<script>
 		$(function(){
@@ -95,9 +92,9 @@
 				<div class="content">
 					<textarea id="com_content" class="summernote" name="com_content" style="resize: none;"></textarea>    
 				</div>
-				<div class=" flex justify-center my-top-8">
-					<button type="button" class="comWriteBtn" id="write">등록</button>
-					<a href="/community/communityList"  class="comWriteBtn text-center" id="cancel">취소</a>
+				<div class=" flex justify-right my-top-8">
+					<button type="button" class="comWriteBtn mr-1" id="write">등록</button>
+					<a href="/community/communityList"  class="comWriteBtn text-center">취소</a>
 				</div>
 			</form>
 		</div>
