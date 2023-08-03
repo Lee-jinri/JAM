@@ -1,6 +1,8 @@
 package com.jam.client.member.controller;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -249,6 +251,7 @@ public class MemberController {
 		session.invalidate();
 
 	}
+	
 
 	/***************************************
 	 * @param CommunityVO com_vo
@@ -429,21 +432,22 @@ public class MemberController {
 
 	/*************************************
 	 * 아이디 찾기
-	 * @param String user_name
+	 * @param String email
 	 * @param String phone
 	 * @return 회원ID
 	 * @throws Exception
 	 */
 	@RequestMapping(value = "/memberFindId", method = RequestMethod.POST)
 	@ResponseBody
-	public String memberFindIdPOST(@RequestParam("user_name") String user_name , @RequestParam("phone") String phone) throws Exception {
+	public String memberFindIdPOST(@RequestParam("email") String email , @RequestParam("phone") String phone, Model model) throws Exception {
 		
-		 MemberVO result = memberService.FindId(user_name, phone);
+		MemberVO result = memberService.FindId(email, phone);
 		 
-		 if(result != null) { return result.getUser_id(); } else { return ""; }
+		if(result != null) return result.getUser_id();
+		else return "";
 		 
+		  
 	}
-	
 	/*********************************
 	 * 비밀번호 찾기 
 	 * @param String user_id

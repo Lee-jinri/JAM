@@ -50,7 +50,7 @@ public interface MemberDAO {
 	public int memberUpdate(MemberVO member);
 
 	// 아이디 찾기
-	public MemberVO findId(@Param("user_name") String user_name, @Param("phone") String phone);
+	public MemberVO findId(@Param("email") String email, @Param("phone") String phone);
 
 	// 비밀번호 찾기
 	public int findPw(@Param("user_id") String user_id, @Param("email") String email, @Param("phone") String phone);

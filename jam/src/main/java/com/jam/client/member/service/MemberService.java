@@ -47,7 +47,7 @@ public interface MemberService {
 	public int memberUpdate(MemberVO member);
 
 	// 아이디 찾기
-	public MemberVO FindId(String user_name, String phone);
+	public MemberVO FindId(String email, String phone);
 
 	// 비밀번호 찾기
 	public int FindPw(String user_id, String email, String phone);

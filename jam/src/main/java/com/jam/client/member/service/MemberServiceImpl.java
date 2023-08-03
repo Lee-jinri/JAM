@@ -139,8 +139,8 @@ public class MemberServiceImpl implements MemberService {
 
 	// 아이디 찾기
 	@Override
-	public MemberVO FindId(String user_name, String phone) {
-		return memberDao.findId(user_name, phone);
+	public MemberVO FindId(String email, String phone) {
+		return memberDao.findId(email, phone);
 	}
 
 	// 비밀번호 찾기

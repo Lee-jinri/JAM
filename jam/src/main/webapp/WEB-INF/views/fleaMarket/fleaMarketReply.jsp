@@ -283,7 +283,7 @@
 				<div class="panel-heading">
 					<div class="panel-title">
 						<span class="cursor-pointer name " id="user_name"></span>
-						<div class="message"></div>
+						<div class="message inline"></div>
 						<form class="frmPopup" name="frmPopup">
 							<input type="hidden" id="receiver_id" name="receiver_id">
 							<input type="hidden" id="receiver" name="receiver">

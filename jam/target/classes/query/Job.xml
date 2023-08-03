@@ -18,10 +18,10 @@
 	<!-- 구인구직 list -->
 	<select id="jobList" parameterType="job" resultType="job">
 		<![CDATA[
-		SELECT job_no, job_title, to_char(job_date,'YYYY/MM/DD HH24:MI') as job_date, job_reply_cnt, job_hits,job_status, user_id , user_name
+		SELECT job_no, job_title, to_char(job_date,'YYYY/MM/DD HH24:MI') as job_date, job_reply_cnt, job_hits,job_status, job_category, user_id , user_name
 		FROM (
 				SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
-					rownum as rnum, job_no, job_title, job_date, job_reply_cnt, job_hits,job_status, user_id , user_name
+					rownum as rnum, job_no, job_title, job_date, job_reply_cnt, job_hits,job_status, job_category, user_id , user_name
 				FROM job 
 				where ]]>
 				<trim prefix="(" suffix=") AND " prefixOverrides="AND">
@@ -64,7 +64,7 @@
 	
 	<!-- 구인구직 글 수정페이지 -->
 	<select id="jobUpdateForm" parameterType="job"  resultType="job">
-		SELECT job_no, job_title, job_content,job_status,pay_category, pay, imageFileName
+		SELECT job_no, job_title, job_content,job_status,pay_category, job_status, pay, imageFileName
 		FROM job
 		WHERE job_no = #{job_no} 
 	</select>
@@ -74,6 +74,10 @@
 		UPDATE job SET
 		job_title = #{job_title},
 		job_content = #{job_content},
+		job_status = #{job_status},
+		job_category = #{job_category},
+		pay_category = #{pay_category},
+		pay = #{pay},
 		job_date = sysdate
 		<if test="imageFileName != ''">
 			,imageFileName = #{imageFileName, jdbcType = VARCHAR}

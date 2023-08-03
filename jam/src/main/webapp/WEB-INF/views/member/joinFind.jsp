@@ -11,12 +11,12 @@
 			
 			$("#find_id_btn").click(function(){
 				
-				var user_name = $("#id_name").val();
+				var email = $("#id_email").val();
 				var phone = $("#id_phone").val();
 				
-				if(user_name.replace(/\s/g, "") == ""){
-					alert("이름을 입력하세요.");
-					$("#id_name").focus();
+				if(email.replace(/\s/g, "") == ""){
+					alert("이메일을 입력하세요.");
+					$("#id_email").focus();
 					return false;
 				}
 				
@@ -29,16 +29,15 @@
 				$.ajax({
 					type : "post",
 					url : "/member/memberFindId",
-					data : {user_name : user_name , phone : phone}, 	
+					data : {email : email , phone : phone}, 	
 					success : function(result){
-						if(result == ''){
-							let user_name = $("#id_name").val();
-							alert(user_name + "님의 아이디는 " + result + "입니다.");
+						if(result != ""){
+							alert("회원님의 아이디는 " + result + "입니다.");
 							let login = confirm("로그인 페이지로 이동하시겠습니까?");
 							if(login) location.href="/member/login";
 						} else {
 							alert("회원정보를 찾을 수 없습니다.");
-						}		
+						}
 					},
 					error: function (request, status, error) {
 				        console.log("code: " + request.status)

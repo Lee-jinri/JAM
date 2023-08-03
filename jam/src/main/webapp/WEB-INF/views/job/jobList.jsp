@@ -134,9 +134,30 @@
 									<span> | </span>
 									<span>${jobBoard.job_date }</span>
 								</div>
-							
-								<div class="inline-block my-bottom-4">
-									<a class="font-weight-bold" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title }</a>
+								
+								<div class="inline-block">
+									<c:if test="${jobBoard.job_status == 0 }">
+										<c:if test="${jobBoard.job_category == 0 }">
+											<span class="border-g" style="color:#04B431;">구인</span>
+											<div class="inline-block my-bottom-4 ml-1">
+												<a class="font-weight-bold" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title }</a>
+											</div>
+										</c:if>
+										<c:if test="${jobBoard.job_category == 1 }">
+											<span class="border-r" style="color:#FE2E2E;">구직</span>
+											<div class="inline-block my-bottom-4 ml-1">
+												<a class="font-weight-bold" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title }</a>
+											</div>
+										</c:if>
+									</c:if>
+									<c:if test="${jobBoard.job_status == 1 }">
+										<span class="border" style="color:#A4A4A4;">마감</span>
+										<div class="inline-block my-bottom-4 ml-1">
+											<a class="font-weight-bold" style="color:#A4A4A4;" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title }</a>										
+										</div>
+									</c:if>
+									
+									
 								</div>
 								<div class="flex float-right items-center width-13rem justify-between">
 									<img class="icon" id="" style="width:3rem;" src="/resources/include/images/hits.svg">

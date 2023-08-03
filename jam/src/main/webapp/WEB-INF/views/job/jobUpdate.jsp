@@ -84,6 +84,9 @@
 					<input type="hidden" name="user_name" value="${member.user_name }">
 					<input type="hidden" name="job_no" value="${updateData.job_no }">
 				</div>
+				<div>
+					<label class="my-bottom-4"><input type="checkbox" name="job_status" value=1> 구인,구직 완료 시 체크하세요.</label>
+				</div>
 				<div class="flex my-bottom-7 items-center">
 					<select name="job_category" class="mr-1">
 						<option value=0>구인</option>

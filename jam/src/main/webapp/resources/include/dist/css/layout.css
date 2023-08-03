@@ -288,7 +288,6 @@ ul {
 }
     	
 .name {
-    margin-right: 10px;
 	font-weight: 700;
 	color: #ffb689;
 }
@@ -328,6 +327,7 @@ ul {
 }
 
 .message{color:#6E6E6E;}
+.send_message {background-color : #fff; border:none;}
 
 #msg_title{
 	font-weight:bold; 
@@ -370,6 +370,7 @@ a {
 	text-decoration: none; 
 }
 .clear-both{clear : both;}
+.inline {display : inline;}
 .inline-block {display : inline-block;}
 .justify-space-around {justify-content: space-around;}
 .justify-between {justify-content: space-between;}
