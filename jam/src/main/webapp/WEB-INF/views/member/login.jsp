@@ -87,11 +87,14 @@
 			<p class="login_sns_p">다른 서비스 계정으로 로그인</p>
 			<ul class="login_sns">
 				<li>
-					<a href="/kakao_login"><img class="kakao" src="/resources/include/images/icon_kakao.png"></a>
+					<a href="/member/kakao_oauth">
+						<img class="" src="/resources/include/images/kakao_login_large_wide.png">
+					</a>
 				</li>
-				<!-- http://localhost:8080/member/kakao_login?code=oQYMlWc4lKQ4Z3TAzEnk-cXb_tkevnZMoHbAVWnPrnupFyjaYiGSDTKMdB2x_VDA_NnGNwoqJQ8AAAGGk3uqJg -->
-				<li>
-					<a href="/member/naver"><img class="naver" src="/resources/include/images/icon_naver.png"></a>
+				<li class="pd-top1">
+					<a href="/member/naver_oauth">
+						<img class="" src="/resources/include/images/btnG_완성형.png">
+					</a>
 				</li>
 			</ul>
 		</div>

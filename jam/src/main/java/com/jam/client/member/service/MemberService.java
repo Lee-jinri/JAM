@@ -1,5 +1,6 @@
 package com.jam.client.member.service;
 
+
 import java.util.List;
 
 import com.jam.client.community.vo.CommunityVO;
@@ -54,9 +55,18 @@ public interface MemberService {
 
 	// 임시 비밀번호로 변경
 	public int UpdatePw(String user_id, String email);
-	
-	// 카카오 로그인
+
+	// 카카오 토큰 받기
 	public String getAccessToken(String code);
+	
+	// 카카오 로그인 정보 저장
+	public MemberVO getUserInfo(String access_Token);
+	
+	// 네이버 토큰 받기
+	public String getNaverToken(String code);
+	
+	// 네이버 로그인 정보 저장
+	public MemberVO getNaverInfo(String access_Token);
 	
 	// 전화번호 변경
 	public int phoneModi(MemberVO m_vo);
@@ -76,19 +86,7 @@ public interface MemberService {
 	
 
 	
-	
 
 	
 
-	
-
-	
-
-
-	
-
-	
-	
-	
-	
 }

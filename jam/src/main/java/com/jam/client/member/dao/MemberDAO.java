@@ -1,8 +1,10 @@
 package com.jam.client.member.dao;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
@@ -73,11 +75,17 @@ public interface MemberDAO {
 	// 회원 탈퇴
 	public int withDraw(String user_id);
 
+	// 카카오 정보 확인
+	public MemberVO findKakao(HashMap<String, Object> userInfo);
 
-	
+	// 카카오 정보 저장
+	public void kakaoInsert(HashMap<String, Object> userInfo);
 
+	// 네이버 정보 확인
+	public MemberVO findNaver(HashMap<String, Object> userInfo);
 
-
+	// 네이버 정보 저장
+	public void naverInsert(HashMap<String, Object> userInfo);
 
 
 }

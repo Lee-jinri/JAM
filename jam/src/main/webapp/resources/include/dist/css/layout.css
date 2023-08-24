@@ -171,13 +171,8 @@ ul {
 .join_find>li > a {color:#a5a5a5; text-decoration: none; font-size: 14px; font-weight: 400;}
 .deco {border-right: solid 2px #a5a5a5;}
 .login_sns {text-align:center;}
-.login_sns > li {display: inline-block; padding:15px;}
 .login_sns > li > a >img {
-    width: 60px;
-    height: 60px;
-    border-radius: 100px;
-    object-fit: cover;
-    text-align:center;
+    width: 350px;
 }
 .kakao {background-color : #FAE80C; padding-top : 4px;}
 .naver {background-color : #00C300; padding-left:7px; padding-top:4px;}

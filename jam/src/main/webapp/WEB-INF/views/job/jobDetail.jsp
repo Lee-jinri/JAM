@@ -114,6 +114,18 @@
 		</div>
 		
 		<div class="my-top-8 py-8 border-top border-bottom m-height350">
+			<div>
+				<c:if test="${detail.pay_category == 0}">
+					<span class="">일급</span>
+				</c:if>
+				<c:if test="${detail.pay_category == 1 }">
+					<span>주급</span>
+				</c:if>
+				<c:if test="${detail.pay_category == 2 }">
+					<span>월급</span>
+				</c:if>
+				<span>급여 : ${detail.pay }</span>
+			</div>
 			<p>${detail.job_content }</p>
 		</div>
 		
