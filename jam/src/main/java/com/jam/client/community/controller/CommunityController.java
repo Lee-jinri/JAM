@@ -230,12 +230,14 @@ public class CommunityController {
 		JsonObject jsonObject = new JsonObject();
 		
 		// 내부경로로 저장
+		// getRealPath 실제 톰캣이 돌아가고 있는 컴퓨터에서 그 곳의 절대 주소값 리턴
 		String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
+		log.info(contextRoot);
 		String fileRoot = contextRoot+"resources/fileupload/";
 		
 		String originalFileName = multipartFile.getOriginalFilename();	//오리지날 파일명
 		String extension = originalFileName.substring(originalFileName.lastIndexOf("."));	//파일 확장자
-		String savedFileName = UUID.randomUUID() + extension;	//저장될 파일 명
+		String savedFileName = UUID.randomUUID() + extension;	//저장될 파일명
 		
 		File targetFile = new File(fileRoot + savedFileName);	
 		try {
@@ -249,8 +251,8 @@ public class CommunityController {
 			jsonObject.addProperty("responseCode", "error");
 			e.printStackTrace();
 		}
-		String a = jsonObject.toString();
-		return a;
+		
+		return jsonObject.toString();
 	}
 	
 	

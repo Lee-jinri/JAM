@@ -1,5 +1,8 @@
 package com.jam.client.member.controller;
 
+import java.io.PrintWriter;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -9,10 +12,14 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -40,7 +47,7 @@ public class MemberController {
 	@Autowired
 	private MemberService memberService;
 
-	@Autowired(required = true)
+	@Autowired
 	private BCryptPasswordEncoder encoder;
 	
 
@@ -57,7 +64,7 @@ public class MemberController {
 
 	/****************************
 	 * @return 로그인 페이지
-	 ****************************/
+	 
 	@RequestMapping(value = "/login", method = RequestMethod.GET)
 	public ModelAndView login(HttpServletRequest request) {
 
@@ -70,16 +77,25 @@ public class MemberController {
 		mav.setViewName("member/login");
 
 		return mav;
+	}****************************/
+	
+	@GetMapping("/login")
+	public void loginPage() {
+		
+	}
+	@GetMapping("/member")
+	public String member() {
+		return "/member/member";
 	}
 
 	/**********************************
 	 * 회원 가입
 	 * @param MemberVO member
-	 * @return 성공 시 로그인 페이지 / 실패 시 회원가입 페이지
+	 * @return 성공 시 회원가입 완료 페이지 / 실패 시 회원가입 페이지
 	 * @throws Exception
 	 *********************************/
 	@RequestMapping(value = "join", method = RequestMethod.POST)
-	public String join(MemberVO member, Model model) throws Exception {
+	public String join(MemberVO member, Model model,  HttpServletResponse response) throws Exception {
 
 		int result = 0;
 		
@@ -93,16 +109,27 @@ public class MemberController {
 		result = memberService.join(member);
 
 		if (result == 1) {
-			return "redirect:/member/login";
+			try {
+	            response.setContentType("text/html; charset=utf-8");
+	            PrintWriter writer = response.getWriter();
+	            writer.write("<script>alert('" + member.getUser_name() + "님 환영합니다! \\n JAM에서 당신의 음악 친구를 찾아보세요.');</script>");
+	            writer.write("<script>location.href='/member/login';</script>");
+	            writer.flush();
+	            writer.close();
+	            return null;
+	        } catch(Exception e) {
+	            e.printStackTrace();
+	            return null;
+	        }
 		} else {
 			return "member/joinPage";
 		}
 
 	}
-
+	
 	/**************************
 	 * 아이디 중복 확인
-	 * @param String userId
+	 * @param userId
 	 * @return 아이디 중복 여부
 	 * @throws Exception
 	 **************************/
@@ -121,7 +148,7 @@ public class MemberController {
 
 	/******************************
 	 * 닉네임 중복 확인
-	 * @param String user_name
+	 * @param user_name
 	 * @return 닉네임 중복 여부
 	 * @throws Exception
 	 ******************************/
@@ -140,7 +167,7 @@ public class MemberController {
 
 	/***********************************
 	 * 핸드폰 번호 중복 확인
-	 * @param String phone
+	 * @param phone
 	 * @return 핸드폰 번호 중복 여부
 	 * @throws Exception
 	 ***********************************/
@@ -160,7 +187,7 @@ public class MemberController {
 	
 	/****************************
 	 * 이메일 중복 확인
-	 * @param String email
+	 * @param email
 	 * @return 이메일 중복 여부
 	 * @throws Exception
 	 ****************************/
@@ -177,20 +204,23 @@ public class MemberController {
 		}
 	}
 
-	/**********************************
-	 * 로그인
-	 *********************************/
 	/************************************************************
 	 * 로그인
-	 * @param MemberVOmember
+	 * @param member
 	 * @return 성공 시 로그인 전 페이지 / 실패 시 로그인 페이지
 	 * @throws Exception
-	 *****************************************************/
+	
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	public String login(HttpServletRequest request, MemberVO member, RedirectAttributes rttr) throws Exception {
 
+		log.info("이거 실행이 되는거임??");
+		
+		 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+	     String username = authentication.getName();
+	     
+	     log.info(username);
+		
 		HttpSession session = request.getSession();
-
 		MemberVO vo = memberService.login(member);
 
 		String user_pw = "";
@@ -210,6 +240,7 @@ public class MemberController {
 				session.setAttribute("member", vo);
 				session.setMaxInactiveInterval(-1); // 세션 시간을 무한대로 설정
 				
+				
 				// 로그인 성공시 이전 페이지로 이동
 				String prevPage = (String) request.getSession().getAttribute("prevPage");
 		        
@@ -218,7 +249,7 @@ public class MemberController {
 		            request.getSession().removeAttribute("prevPage");
 		            // 회원가입 - 로그인으로 넘어온 경우 "/"로 redirect
 		            if (prevPage.contains("/member/join")) {
-		                return  "redirect:/";
+		                
 		            } else {
 		                return "redirect:" + prevPage;
 		            }
@@ -235,9 +266,17 @@ public class MemberController {
 			rttr.addFlashAttribute("result", 2);
 			return "redirect:/member/login";
 		}
+		return  "redirect:/";
+	} 
+*****************************************************/
 
-	}
-
+	@GetMapping("/member/login/error")
+    public String LoginError(Model model){
+        model.addAttribute("loginErrorMsg","아이디 또는 비밀번호 확인해주세요");
+        return "/member/login";
+    }
+	
+	
 	/************************
 	 * 로그아웃
 	 * @throws Exception
@@ -478,23 +517,120 @@ public class MemberController {
 		
 	}
 	
+	
+	/**************************************
+	 * 카카오 소셜 로그인 권한 요청
+	 * @param response
+	 * @return 카카오 인가 코드 요청 url
+	 **************************************/
+	@RequestMapping(value="/kakao_oauth", method=RequestMethod.GET)
+	public String kakaoOauth(HttpServletResponse response) {
+		
+		StringBuffer url = new StringBuffer();
+		url.append("https://kauth.kakao.com/oauth/authorize?");
+		url.append("client_id=5e18a572e50f01203a5cf31c55ec073d");
+		url.append("&redirect_uri=http://localhost:8080/member/kakao_login");
+		url.append("&response_type=code");
+		
+		return "redirect:" + url;
+	}
+	
+	
 	/********************************
 	 * 카카오 로그인
+	 * @param code 인가코드
+	 * @return 메인 페이지 or 로그인 이전 페이지
 	 *********************************/
-	@RequestMapping(value="/kakaoLogin", method=RequestMethod.GET)
-	public String kakaoLogin(@RequestParam(value = "code", required = false) String code) throws Exception {
-		System.out.println("#########" + code);
-        
-		// 위에서 만든 코드 아래에 코드 추가
+	@RequestMapping(value="/kakao_login", method=RequestMethod.GET)
+	public String kakaoCallback(@RequestParam String code, HttpServletRequest request) {
+		
+		// 인가코드 보내서 토큰 받기
 		String access_Token = memberService.getAccessToken(code);
-		System.out.println("###access_Token#### : " + access_Token);
+		// 토큰을 보내서 사용자 정보 받기
+		MemberVO member = memberService.getUserInfo(access_Token);
+		
+		HttpSession session = request.getSession();
+		
+		session.setAttribute("member", member);
+		session.setMaxInactiveInterval(-1); // 세션 시간을 무한대로 설정
+		
+		String prevPage = (String) request.getSession().getAttribute("prevPage");
         
-		return "member/testPage";
-    	}
+		log.info(prevPage);
+		if (prevPage != null && !prevPage.equals("")) {
+            request.getSession().removeAttribute("prevPage");
+            // 회원가입 - 로그인으로 넘어온 경우 "/"로 redirect
+            if (prevPage.contains("/member/join")) {
+                return  "redirect:/";
+            } else {
+                return "redirect:" + prevPage;
+            }
+        } else return  "redirect:/";
+	}
+	
+	/**************************************
+	 * 네이버 소셜 로그인 권한 요청
+	 * @param response
+	 * @return 네이버 인가 코드 요청 url
+	 **************************************/
+	@RequestMapping(value="/naver_oauth", method=RequestMethod.GET)
+	public String naverOauth(HttpServletResponse response) {
+		
+		SecureRandom random = new SecureRandom();
+		String state = new BigInteger(130, random).toString(32);
+		
+		// 네이버 로그인 연동 URL 생성
+		StringBuffer url = new StringBuffer();
+		url.append("https://nid.naver.com/oauth2.0/authorize?");
+		url.append("client_id=TVknnflYlinxp0rriL8N");
+		url.append("&response_type=code");
+		url.append("&redirect_uri=http://localhost:8080/member/naver_login");
+		// state : 사이트 간 요청 위조(cross-site request forgery) 공격을 방지하기 위해 애플리케이션에서 생성한 상태 토큰값
+		url.append("&state="+state);
+	
+		return "redirect:" + url;
+	}
+	
+	/*****************************************
+	 * 네이버 로그인
+	 * @param code 인가코드
+	 * @param state
+	 * @param request
+	 * @return 메인 페이지 or 로그인 이전 페이지
+	 ****************************************/
+	@RequestMapping(value="/naver_login", method=RequestMethod.GET)
+	public String naverLogin(@RequestParam(value="code") String code, @RequestParam(value="state") String state, HttpServletRequest request) {
+		
+		// 카카오 토큰 받기
+		String access_Token = memberService.getNaverToken(code);
+		// 토큰을 보내서 사용자 정보 받기
+		MemberVO member = memberService.getNaverInfo(access_Token);
+		
+		HttpSession session = request.getSession();
+		
+		session.setAttribute("member", member);
+		session.setMaxInactiveInterval(-1); // 세션 시간을 무한대로 설정
+				
+		String prevPage = (String) request.getSession().getAttribute("prevPage");
+		      
+		log.info(prevPage);
+		if (prevPage != null && !prevPage.equals("")) {
+			request.getSession().removeAttribute("prevPage");
+		    // 회원가입 - 로그인으로 넘어온 경우 "/"로 redirect
+		    if (prevPage.contains("/member/join")) {
+		    	return  "redirect:/";
+		    } else {
+		    	return "redirect:" + prevPage;
+		    }
+		} else return  "redirect:/";
+	
+	}
+	
+	
 
 	/************************************
 	 * 전화번호 변경
-	 * @param String phone
+	 * @param String phone 변경할 전화번호
 	 * @return 전화번호 변경 결과
 	 * @throws Exception
 	 *******************************/
@@ -502,7 +638,7 @@ public class MemberController {
 	public String phoneModi(HttpServletRequest request, Model model, String phone, RedirectAttributes rttr) throws Exception {
 
 		String url = "";
-
+		
 		HttpSession session = request.getSession();
 		if (session != null) {
 			MemberVO member = (MemberVO) session.getAttribute("member");
@@ -535,7 +671,7 @@ public class MemberController {
 
 	/*********************************
 	 * 비밀번호 확인
-	 * @param user_pw
+	 * @param user_pw 사용자 비밀번호
 	 * @return 비밀번호 일치 여부
 	 * @throws Exception
 	 ********************************/
@@ -563,7 +699,7 @@ public class MemberController {
 	
 	 /***********************************
 	  * 비밀번호 변경
-	  * @param String user_pw
+	  * @param user_pw 변경 할 비밀번호
 	  * @return 비밀번호 변경 결과 + 마이페이지
 	  * @throws Exception
 	  ***********************************/
@@ -607,7 +743,7 @@ public class MemberController {
 	
 	/***********************************
 	 * 주소 변경
-	 * @param String address
+	 * @param String address 변경 할 주소
 	 * @return 주소 변경 결과 + 마이페이지
 	 * @throws Exception
 	 ***********************************/

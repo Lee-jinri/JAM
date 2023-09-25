@@ -49,6 +49,13 @@
   		FROM member 
   		WHERE user_id = #{user_id}
   	</select>
+  	
+  	<!-- 사용자 정보 확인 -->
+  	<select id="findByUsername" resultType="member">
+  		SELECT user_id, user_pw, user_name, address, phone, email, role
+  		FROM member
+  		WHERE user_id = #{user_id}
+  	</select>
 	
 	<!-- 마이페이지 - 내가 쓴 글 -->
 	
@@ -263,5 +270,36 @@
 	<delete id="withDraw" parameterType="String">
 		DELETE FROM member WHERE user_id = #{user_id}		
 	</delete>
+	
+	<!-- 카카오 정보 찾기 -->
+	<select id="findKakao" parameterType="java.util.HashMap" resultType="member">
+		<![CDATA[
+		select *
+		from member 
+		where user_name=#{user_name} and email=#{email}
+		]]>
+	</select>
+
+	<!-- 카카오 회원 정보 저장 -->
+	<insert id="kakaoInsert" parameterType="java.util.HashMap">
+		INSERT INTO member (user_id, user_name,  email)
+		VALUES (#{user_id}, #{user_name}, #{email})
+	</insert>
+	
+	<!-- 네이버 회원 정보 찾기 -->
+	<select id="findNaver" parameterType="java.util.HashMap" resultType="member">
+		<![CDATA[
+		select *
+		from member 
+		where user_id = #{user_id} and user_name=#{user_name} and email=#{email}
+		]]>
+	</select>
+	
+	<!-- 네이버 회원 정보 저장 -->
+	<insert id="naverInsert" parameterType="java.util.HashMap">
+		INSERT INTO member(user_id, user_name, email)
+		VALUES (#{user_id}, #{user_name}, #{email})
+	</insert>
+	
 	
 </mapper>

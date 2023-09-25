@@ -97,7 +97,12 @@ input::-webkit-inner-spin-button {
 
 .login_button { margin-top:50px; }
 .join_button { margin-top:40px;}
-
+.join_check{
+	width:23px;
+	height:20px;
+	margin-left:5px;
+	display: none;
+}
 #loginBtn {
 	width : 480px;
 	font-weight: 400;
@@ -352,8 +357,9 @@ select {
 .contents_height{height:35rem;}
 
 footer { 
+	position: absolute;
 	padding-top : 27px;
-	bottom : 0;
+	
 	width : 100%;
 	margin-top : 70px;
 	clear : both; 
@@ -492,6 +498,7 @@ a {
 
 .text-alignL {text-align : left;}
 .text-alignR {text-align : right;}
+.text-alignC {text-align : center;}
 
 textarea {resize: none;}
 .cursor-pointer {cursor: pointer;}

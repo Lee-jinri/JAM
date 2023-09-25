@@ -87,5 +87,9 @@ public interface MemberDAO {
 	// 네이버 정보 저장
 	public void naverInsert(HashMap<String, Object> userInfo);
 
+	// 사용자 정보 확인
+	public MemberVO findByUsername(String username);
+
+
 
 }

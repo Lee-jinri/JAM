@@ -1,5 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <!DOCTYPE html>
 <html>
 <head>
@@ -58,6 +59,12 @@
 		<div class="login_title">
 			<p>로그인</p>
 		</div>
+		<c:if test="${param.error ne null}">
+		    <div class="alert alert-danger">
+		        로그인에 실패하였습니다. 올바른 아이디와 비밀번호를 입력하세요.
+		        ${param.error }
+		    </div>
+		</c:if>
 		<form id="login_form">
 			<div>
 				<ul>
@@ -69,6 +76,8 @@
 					</li>
 				</ul>
 			</div>	
+			<input type="hidden" name="${_csrf.parameterName }" value="${csrf.token }">
+		
 		</form>
 		<div class="login_button">
 			<button type="button" id="loginBtn">로그인</button>

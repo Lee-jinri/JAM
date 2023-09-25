@@ -49,6 +49,13 @@
   		FROM member 
   		WHERE user_id = #{user_id}
   	</select>
+  	
+  	<!-- 사용자 정보 확인 -->
+  	<select id="findByUsername" resultType="member">
+  		SELECT user_id, user_pw, user_name, address, phone, email, role
+  		FROM member
+  		WHERE user_id = #{user_id}
+  	</select>
 	
 	<!-- 마이페이지 - 내가 쓴 글 -->
 	
