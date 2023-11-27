@@ -1,21 +1,11 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-
+<html>
 <head>
 	<!-- 카카오 주소 검색 API -->
 	<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 	
 	<title>JAM-회원가입</title>
-	<style>
-	.join_check{
-		width:23px;
-		height:20px;
-		margin-left:5px;
-		display: none;
-	}
-	
-	
-	</style>
 
 	<script type="text/javascript">
 		$(function(){
@@ -57,28 +47,29 @@
 			let phone_check = true;
 			
 			
-			/* 	아이디, 비밀번호 정규식 : 영문 대,소문자 + 숫자 8 ~ 20자 (숫자, 영문 필수!!!!!!!!!!)
-				닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 2 ~ 6자 (영문, 한글 필수 X)
-				전화번호 정규식 : 0,1 3글자 + 0~9 8글자 */
-			let id_legExp = /^[0-9a-zA-Z]{8,20}$/;
-			let pw_legExp = /^[0-9a-zA-Z]{8,20}$/;
-			let name_legExp = /^[a-zA-z가-힣0-9]{2,6}$/;
+			/* 	아이디, 비밀번호 정규식 : 영문 대,소문자 + 숫자 8 ~ 20자
+			닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 3 ~ 8자
+			전화번호 정규식 : 0,1 3글자 + 0~9 8글자 */
+			let id_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
+			let pw_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
+			let name_legExp = /^[a-zA-z가-힣0-9]{2,11}$/;
 			let phone_legExp = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
-			
+			let email_letExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
 			
 			
 			/********************아이디 **********************/
 			$("#user_id").on("propertychange change keyup paste input", function(){
+				var userId = $("#user_id").val();	
 				
 				// 아이디 유효성 체크
-				if(!id_legExp.test($("#user_id").val())){
+				if(!id_legExp.test(userId)){
 					$("#id_check2").css("display","inline-block");
 					$('#id_check1').css("display","none");
 				}else{
 					// 아이디 중복 확인
 					$("#id_check2").css("display","none");
 					
-					var userId = $("#user_id").val();			
+							
 					
 					$.ajax({
 						type : "post",
@@ -189,6 +180,40 @@
 				}
 			});
 			
+			/******************* 이메일 *********************/
+			$("#email").on("propertychange change keyup paste input", function(){
+				// 이메일 유효성 체크
+				if(!email_letExp.test($("#email").val())){
+					$("#email_check2").css("display","inline-block");
+					$("#email_check1").css("display","none");
+				}else{
+					// 이메일 중복 확인
+					var email = $("#email").val();
+					
+					$.ajax({
+						type : "post",
+						url : "/member/memberEmailChk",
+						data : {email : email},
+						success : function(result){
+							if(result != 'fail'){ // 사용 가능한 이메일
+								email_check = false;
+								$('#email_check1').css("display","inline-block");
+								$("#email_check2").css("display","none");
+								$("#email_hint1").css("display","inline-block");
+								$("#email_hint2").css("display","none");
+							} else { // 사용 불가능한 이메일
+								phone_check = true;
+								$('#email_check1').css("display","none");
+								$("#email_check2").css("display","inline-block");
+								$("#email_hint1").css("display","none");
+								$("#email_hint2").css("display","inline-block");
+								$("#email_hint2").css("color","red");
+							}		
+						}
+					}); 
+				}
+			});
+			
 			
 			// 회원가입 버튼 클릭
 			$(".join_agree").click(function(){
@@ -197,6 +222,7 @@
 				let pw = $("#user_pw").val();
 				let name = $("#user_name").val();
 				let phone = $("#phone").val();
+				let email = $("#email").val();
 				let streetAddress = $("#streetAddress").val();
 				let detailAddress = $("#detailAddress").val();
 				
@@ -231,6 +257,12 @@
 					return false;
 				}
 				
+				if(email.replace(/\s/g,"") == ""){
+					alert("전화번호를 입력하세요.");
+					$("#phone").focus();
+					return false;
+				}
+				
 				if(streetAddress.replace(/\s/g,"") == ""){
 					alert("주소를 입력하세요.");
 					$("#streetAddress").focus();
@@ -253,56 +285,66 @@
 		})
 	</script>
 </head>
-<body>
-	<div class="common-box" id="join-box">
-		<div class="join_title">
-			<p>회원가입</p>
-		</div>
-		<form id="join_form">
-			<div>
-				<ul>
-					<li>
-						<input type="text" id="user_id" name="user_id" class="join_input" placeholder="아이디">
-						<img class="join_check" id="id_check1" alt="check" src="/resources/include/images/checked.svg">
-						<img class="join_check" id="id_check2" alt="error" src="/resources/include/images/checked2.svg">
-						<p class="join_hint" id="id_hint1">아이디는 8~20자 이내로 영문, 숫자를 혼용하여 입력해 주세요. </p>
-						<p class="join_hint" id="id_hint2" style="display : none">이미 사용중인 아이디 입니다.</p>
-					</li>
-					<li>
-						<input type="text" id="user_pw" name="user_pw" class="join_input" placeholder="비밀번호">
-						<img class="join_check" id="pw_check1" alt="check" src="/resources/include/images/checked.svg">
-						<img class="join_check" id="pw_check2" alt="error" src="/resources/include/images/checked2.svg">
-						<p class="join_hint">비밀번호는 8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력해 주세요.</p>
-					</li>
-					<li>
-						<input type="text" id="user_name" name="user_name" class="join_input" placeholder="닉네임">
-						<img class="join_check" id="name_check1" alt="check" src="/resources/include/images/checked.svg">
-						<img class="join_check" id="name_check2" alt="error" src="/resources/include/images/checked2.svg">
-						<p class="join_hint" id="name_hint1">닉네임은 2~6자 이내로 한글, 영문 또는 숫자를 사용하여 입력해 주세요.</p>
-						<p class="join_hint" id="name_hint2" style="display : none">이미 사용중인 닉네임 입니다.</p>
-					</li>
-					<li>
-						<input type="text" id="phone" name="phone" class="join_input" placeholder="핸드폰 번호" maxlength="11" 	
-						oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
-						<img class="join_check" id="phone_check1" alt="check" src="/resources/include/images/checked.svg">
-						<img class="join_check" id="phone_check2" alt="error" src="/resources/include/images/checked2.svg">
-						<p class="join_hint" id="phone_hint1">핸드폰 번호는 '-'를 제외한 숫자만 입력해 주세요.</p>
-						<p class="join_hint" id="phone_hint2" style="display : none">이미 사용중인 핸드폰 번호 입니다.</p>
-					</li>
-					<li>
-						<input type="text" id="streetAddress" class="join_input" placeholder="주소" readonly="readonly">
-						<input type="text" id="detailAddress" class="join_input" placeholder="상세주소 입력" >
-						<button type="button" id="address_search">검색</button>
-						
-						<input type="hidden" id="address" name="address">
-					</li>
-					
-					
-				</ul>
+<body class="wrap">
+	<div class="">
+		<div class="common-box my-top-15 my-bottom-15" id="join-box">
+			<div class="join_title">
+				<p>회원가입</p>
 			</div>
-		</form>
-		<div class="join_button">
-			<button type="button" class="join_agree" >JAM 회원가입</button>
-		</div>
-	</div>		
+			<form id="join_form">
+				<div>
+					<ul>
+						<li>
+							<input type="text" id="user_id" name="user_id" class="join_input" placeholder="아이디">
+							<img class="join_check" id="id_check1" alt="check" src="/resources/include/images/checked.svg">
+							<img class="join_check" id="id_check2" alt="error" src="/resources/include/images/checked2.svg">
+							<p class="join_hint" id="id_hint1">아이디는 8~20자 이내로 영문, 숫자를 혼용하여 입력해 주세요. </p>
+							<p class="join_hint" id="id_hint2" style="display : none">이미 사용중인 아이디 입니다.</p>
+						</li>
+						<li>
+							<input type="password" id="user_pw" name="user_pw" class="join_input" placeholder="비밀번호">
+							<img class="join_check" id="pw_check1" alt="check" src="/resources/include/images/checked.svg">
+							<img class="join_check" id="pw_check2" alt="error" src="/resources/include/images/checked2.svg">
+							<p class="join_hint">비밀번호는 8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력해 주세요.</p>
+						</li>
+						<li>
+							<input type="text" id="user_name" name="user_name" class="join_input" placeholder="닉네임">
+							<img class="join_check" id="name_check1" alt="check" src="/resources/include/images/checked.svg">
+							<img class="join_check" id="name_check2" alt="error" src="/resources/include/images/checked2.svg">
+							<p class="join_hint" id="name_hint1">닉네임은 2~10자 이내로 한글, 영문 또는 숫자를 사용하여 입력해 주세요.</p>
+							<p class="join_hint" id="name_hint2" style="display : none">이미 사용중인 닉네임 입니다.</p>
+						</li>
+						<li>
+							<input type="text" id="phone" name="phone" class="join_input" placeholder="핸드폰 번호" maxlength="11" 	
+							oninput="this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');" />
+							<img class="join_check" id="phone_check1" alt="check" src="/resources/include/images/checked.svg">
+							<img class="join_check" id="phone_check2" alt="error" src="/resources/include/images/checked2.svg">
+							<p class="join_hint" id="phone_hint1">핸드폰 번호는 '-'를 제외한 숫자만 입력해 주세요.</p>
+							<p class="join_hint" id="phone_hint2" style="display : none">이미 사용중인 핸드폰 번호 입니다.</p>
+						</li>
+						<li>
+							<input type="text" id="email" name="email" class="join_input" placeholder="chicken@jam.kr">
+							<img class="join_check" id="email_check1" alt="check" src="/resources/include/images/checked.svg">
+							<img class="join_check" id="email_check2" alt="error" src="/resources/include/images/checked2.svg">
+							<p class="join_hint" id="email_hint1">유효한 이메일 주소를 입력해 주세요.</p>
+							<p class="join_hint" id="email_hint2" style="display : none">이미 사용중인 이메일 입니다.</p>
+						</li>
+						<li>
+							<input type="text" id="streetAddress" class="join_input" placeholder="주소" readonly="readonly">
+							<input type="text" id="detailAddress" class="join_input" placeholder="상세주소 입력" >
+							<button type="button" id="address_search">검색</button>
+							
+							<input type="hidden" id="address" name="address">
+						</li>
+						
+						
+					</ul>
+				</div>
+				<div class="join_button">
+					<button type="button" class="join_agree" >JAM 회원가입</button>
+				</div>
+			</form>
+		</div>	
+	</div>	
 </body>
+</html>

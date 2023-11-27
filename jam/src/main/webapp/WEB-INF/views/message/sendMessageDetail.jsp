@@ -5,26 +5,65 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>JAM - message</title>
+
+<!-- 제이쿼리 -->
+<script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
+<link rel="stylesheet" href="/resources/include/dist/css/layout.css" />
+	
+<title>JAM - MESSAGE</title>
+
+	<style>
+		body {margin:0;}
+		.margin15px{
+			margin:15px;
+		}
+		
+		.border{
+			border-bottom: 1px solid #BDBDBD;
+		}
+		
+	</style>
+	
+	<script>
+		$(function(){
+			$("#sMessage_list").click(function(){
+				self.close();
+			})
+		})
+	</script>
 </head>
 <body>
-	<div class="contents">
-		<div class="title">
-			<span>${detail.message_title }</span>
-			<span>받는 사람</span>
-			<span>${detail.receiver }</span>
-			<span>(${detail.receiver_id })</span>
-			<span>${detail.sendTime }</span>
+	<div class="contents message">
+		<div class="margin15px">
+			<span id="msg_title">${detail.message_title }</span>
 		</div>
+		<div class="border-bottom"></div>
+		
+		<div class="receive_info">
+			<div class="margin15px ">
+				<img class="icon vertical-align-m"style="width:1.7rem;" src="/resources/include/images/msg1.svg">
+				<span class="font600 vertical-align-m">받는 사람</span>
+			</div>
+			<div class="font600 margin15px msg_border height35 background-color-gray flex items-center">
+				<span id="receiver_name" class="ml-05">${detail.receiver }</span>
+			</div>
+		</div>
+		
 		<div>
-			${detail.message_contents }
+			<div class="margin15px"  >
+				<img class="icon vertical-align-m"style="width:1.3rem;" src="/resources/include/images/msg2.svg">
+				<span class="font600 vertical-align-m">쪽지 내용</span>
+			</div>
+			<div class="margin15px msg_border min-height60 flex" >
+				<span class='pd-top05 ml-05'>${detail.message_contents }</span>
+			</div>
 		</div>
-		<div class="btn">
-			<button type="button">목록</button>
+		
+		<div class="border-bottom my-top-7"></div>
+		
+		<div class="msgBtn_div my-top-4 margin15px">
+			<button type="button" class="msgBtn mr-1 cursor-pointer" id="sMessage_list"style="width: 4rem;" >목록</button>
 		</div>
 	</div>
-<p>
-</p>
-
 </body>
 </html>

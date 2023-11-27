@@ -8,31 +8,44 @@
 		SELECT message_no, message_title, sender, to_char(sendTime,'YYYY/MM/DD HH24:MI') as sendTime, to_char(readTime,'YYYY/MM/DD HH24:MI') as readTime, read_chk
 		FROM (
 				SELECT /*+ INDEX_DESC(message SYS_C0028093) */
-					rownum as rnum, message_no, message_title, sender, sendTime, readTime, read_chk
+					rownum as rnum, message_no, message_title, receiver_id, sender, sendTime, readTime, read_chk
 				FROM message 
-				where ]]> receiver_id = #{receiver_id} AND
-				<trim prefix="(" suffix=") AND " prefixOverrides="AND">
+				where ]]> 
+				<trim prefix="(" suffix=") AND" prefixOverrides="AND">
 					<include refid="mSearch"></include> 
 				</trim>
-			<![CDATA[ rownum <= #{pageNum} * #{amount}
+			<![CDATA[ rownum <= #{pageNum} * #{amount} AND receiver_id  = #{receiver_id} 
 				) messageList
-			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			WHERE rnum > (#{pageNum} - 1) * #{amount} 
 			]]>
 	</select>
 	
 	<!-- 보낸 쪽지 -->
-	<select id="sendMessage" resultType="message" parameterType="String">
-		SELECT message_no, message_title, receiver, sendTime, readTime, read_chk
-		FROM message
-		WHERE sender_id  = #{sender_id}
-		ORDER BY sendTime DESC
+	<select id="sendMessage" resultType="message" parameterType="message">
+		<![CDATA[
+		SELECT message_no, message_title, receiver, to_char(sendTime,'YYYY/MM/DD HH24:MI') as sendTime, to_char(readTime,'YYYY/MM/DD HH24:MI') as readTime, read_chk
+		FROM (
+				SELECT /*+ INDEX_DESC(message SYS_C0028093) */
+					rownum as rnum, message_no, message_title, receiver, sendTime, readTime, read_chk
+				FROM message 
+				where ]]> 
+				<trim prefix="(" suffix=") AND" prefixOverrides="AND">
+					<include refid="mSearch"></include> 
+				</trim>
+			<![CDATA[ rownum <= #{pageNum} * #{amount} AND sender_id  = #{sender_id} 
+				) messageList
+			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			]]>
 	</select>
 	
 	<!-- 받은 쪽지 전체 레코드 수 조회 -->
 	<select id="receiveListCnt" parameterType="message" resultType="int">
 		SELECT count(*) 
 		FROM message
-		WHERE receiver_id = #{receiver_id}
+		WHERE receiver_id  = #{receiver_id} 
+		<trim prefix=" and (" suffix=")" >
+			<include refid="mSearch"></include>
+		</trim>
 	</select>
 	
 	<!-- 보낸 쪽지 전체 레코드 수 조회 -->
@@ -40,6 +53,9 @@
 		SELECT count(*) 
 		FROM message
 		WHERE sender_id  = #{sender_id} 
+		<trim prefix="and (" suffix=")" >
+			<include refid="mSearch"></include>
+		</trim>
 	</select>
 	
 	<!-- 검색 -->
@@ -49,6 +65,9 @@
 		</if>
 		<if test="search=='sender'">
 			<![CDATA[sender LIKE '%' || #{keyword} || '%']]>
+		</if>
+		<if test="search=='receiver'">
+			<![CDATA[receiver LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='message_content'">
 			<![CDATA[message_content LIKE '%' || #{keyword} || '%']]>

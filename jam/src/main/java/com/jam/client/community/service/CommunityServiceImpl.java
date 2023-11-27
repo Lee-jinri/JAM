@@ -62,10 +62,4 @@ public class CommunityServiceImpl implements CommunityService {
 		return comDao.comDelete(com_vo);
 	}
 
-	
-
-
-
-	
-
 }

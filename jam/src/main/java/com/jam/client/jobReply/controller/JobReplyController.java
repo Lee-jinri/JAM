@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.jam.client.comReply.vo.ComReplyVO;
 import com.jam.client.jobReply.service.JobReplyService;
 import com.jam.client.jobReply.vo.JobReplyVO;
 import com.jam.client.member.vo.MemberVO;
@@ -35,38 +37,34 @@ public class JobReplyController {
 
 	private JobReplyService jobReplyService;
 	
+	/************************
+	 * @param Integer job_no
+	 * @param JobReplyVO jrvo
+	 * @param MemberVO member
+	 * @return 댓글 리스트
+	 *************************/
 	@GetMapping(value = "/all/{job_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<JobReplyVO> replyList(@PathVariable("job_no") Integer job_no,@ModelAttribute("data") JobReplyVO jrvo, MemberVO member, HttpServletRequest request, Model model){
-		System.out.println("replyList 호출 성공");
+	public List<JobReplyVO> replyList(@PathVariable("job_no") Integer job_no,@RequestParam(value = "user_id", required = false) String user_id,@ModelAttribute("data") JobReplyVO jrvo, MemberVO member, HttpServletRequest request, Model model){
 		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		
-		if(vo != null) {
-   		 
-			session.setAttribute("member", vo);
-	   		jrvo.setUser_id(vo.getUser_id());
-	   		jrvo.setUser_name(vo.getUser_name());
-		} 
 		List<JobReplyVO> reply = null;
 		reply = jobReplyService.jobReplyList(job_no);
 		
+		jrvo.setUser_id(user_id);
+   		
 		return reply;
 	}
 	
 
+	/*******************************
+	 * 구인구직 댓글 작성
+	 * @param JobReplyVO jrvo
+	 * @param MemberVO member
+	 * @return 댓글 작성 실행 결과
+	 *******************************/
 	@JsonFormat
 	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyInsert(@RequestBody JobReplyVO jrvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
-		
-		HttpSession session = request.getSession();
-		MemberVO vo =(MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		
-		jrvo.setUser_id(vo.getUser_id());
-		jrvo.setUser_name(vo.getUser_name());
-		log.info("jobReplyVO : "+jrvo);
-		
+
 		int result = 0;
 		
 		result = jobReplyService.replyInsert(jrvo);
@@ -74,8 +72,12 @@ public class JobReplyController {
 		return(result ==1)? "SUCCESS" : "FAILURE";
 	}
 	
-
-
+	/*******************************
+	 * 구인구직 댓글 수정
+	 * @param Integer jobReply_no
+	 * @param JobReplyVO jrvo
+	 * @return 댓글 수정 결과
+	 */
 	@PutMapping(value = "/{jobReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyUpdate(@PathVariable("jobReply_no") Integer jobReply_no, @RequestBody JobReplyVO jrvo) {
 	
@@ -84,6 +86,11 @@ public class JobReplyController {
 		return(result ==1) ? "SUCCESS" : "FAILURE";
 	}
 	
+	/********************************
+	 * 구인구직 댓글 삭제
+	 * @param Integer jobReply_no
+	 * @return 댓글 삭제 결과
+	 */
 	@DeleteMapping(value = "/{jobReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> replyDelete(@PathVariable("jobReply_no")Integer jobReply_no){
 

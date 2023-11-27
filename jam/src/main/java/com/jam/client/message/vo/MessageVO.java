@@ -3,8 +3,10 @@ package com.jam.client.message.vo;
 import com.jam.common.vo.CommonVO;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class MessageVO extends CommonVO{
 	private int 	message_no;			// 메세지 번호
 	private String 	sender;				// 보낸 사람

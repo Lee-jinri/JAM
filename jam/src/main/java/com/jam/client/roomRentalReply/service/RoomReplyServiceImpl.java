@@ -30,6 +30,7 @@ public class RoomReplyServiceImpl implements RoomReplyService {
 		return list;
 	}
 
+	@Transactional
 	@Override
 	public int replyInsert(RoomReplyVO rrvo) {
 		roomDao.updateReplyCnt(rrvo.getRoomRental_no(), reply_Add);
@@ -41,6 +42,7 @@ public class RoomReplyServiceImpl implements RoomReplyService {
 		return roomreplyDao.replyUpdate(rrvo);
 	}
 
+	@Transactional
 	@Override
 	public int replyDelete(Integer roomReply_no) {
 		

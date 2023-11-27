@@ -9,8 +9,6 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.google.gson.JsonObject;
-import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.service.RoomRentalService;
 import com.jam.common.vo.PageDTO;
 
@@ -44,9 +41,8 @@ public class RoomRentalController {
 	private RoomRentalService roomService;
 	
 	/******************************
-	 * 합주실/연습실 글 리스트 페이지
-	 * @param room_vo
-	 * @return String
+	 * @param RoomRentalVO room_vo
+	 * @return 합주실/연습실 글 리스트 페이지
 	 ******************************/
 	@RequestMapping(value="/roomRentalList", method=RequestMethod.GET)
 	public String roomList(Model model, @ModelAttribute RoomRentalVO room_vo) {
@@ -54,15 +50,14 @@ public class RoomRentalController {
 		List<RoomRentalVO> roomList = roomService.roomList(room_vo);
 		model.addAttribute("roomList",roomList);
 		
+		// 페이징 처리
 		int total = roomService.roomListCnt(room_vo);
 		model.addAttribute("pageMaker", new PageDTO(room_vo, total));
 		return "roomRental/roomRentalList";
 	}
 	
 	/****************************************
-	 * 합주실/연습실 상세페이지
-	 * @param room_vo
-	 * @return String
+	 * @return 합주실/연습실 상세페이지
 	 *****************************************/
 	@RequestMapping(value="/roomRentalDetail/{roomRental_no}", method=RequestMethod.GET)
 	public String roomDetail(@ModelAttribute("data")RoomRentalVO room_vo, Model model) throws Exception{
@@ -78,79 +73,49 @@ public class RoomRentalController {
 	}
 	
 	/***************************************
-	 * 합주실/연습실 글 작성 페이지
-	 * @param room_vo
-	 * @return
+	 * @param RoomRentalVO room_vo
+	 * @return 합주실/연습실 글 작성 페이지
 	 ***************************************/
 	@RequestMapping(value="/roomRentalWrite", method=RequestMethod.GET)
-	public String roomWriteForm(HttpServletRequest request, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
-		
-		String url = "";
-		
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			MemberVO member = (MemberVO) session.getAttribute("member");
-			if(member != null) {
-				url = "roomRental/roomRentalWrite";
-			}else {
-				url = "member/login";
-			}
-		}else {
-			url = "member/login";
-		}
-		
-		return url;
+	public String roomWriteForm() throws Exception{
+
+		return "roomRental/roomRentalWrite";
 	}
 	
 	/******************************
 	 * 합주실/연습실 글 작성
-	 * @param member
-	 * @param room_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 성공 시 작성한 합주실 글 상세 페이지 / 실패 시 합주실 글 작성 페이지
 	 *****************************/
 	@RequestMapping(value="/roomRentalInsert", method=RequestMethod.POST)
-	public ModelAndView roomWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView roomWrite(RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = roomService.roomInsert(room_vo);
-		
-		if(result == 1) {
+		try {
+			roomService.roomInsert(room_vo);
+			
 			mav.setViewName("redirect:/roomRental/roomRentalDetail/"+room_vo.getRoomRental_no());
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+			
+		}catch(Exception e) {
+			log.error("roomRentalInsert 데이터 저장 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/roomRental/roomRentalWrite");
 			return mav;
 		}
 	}
 	
 	/********************************
-	 * 합주실/연습실 글 수정 페이지
-	 * @param member
-	 * @param jab_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 합주실/연습실 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/roomRentalUpdateForm", method=RequestMethod.POST)
-	public ModelAndView roomUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, RoomRentalVO room_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
-		
+	@RequestMapping(value="/roomRentalUpdateForm", method=RequestMethod.GET)
+	public ModelAndView roomUpdateForm(RoomRentalVO room_vo, Model model) throws Exception{
+	
 		ModelAndView mav = new ModelAndView();
 		
 		RoomRentalVO updateData = roomService.roomUpdateForm(room_vo);
@@ -163,32 +128,24 @@ public class RoomRentalController {
 	
 	/***********************************
 	 * 합주실/연습실 글 수정
-	 * @param member
-	 * @param room_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 성공 시 수정한 합주실 글 상세페이지 / 실패 시 합주실 글 수정 페이지
 	 ***********************************/
 	@RequestMapping(value="/roomRentalUpdate", method=RequestMethod.POST)
-	public ModelAndView roomUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, RoomRentalVO room_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView roomUpdate(RedirectAttributes rttr, RoomRentalVO room_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = roomService.roomUpdate(room_vo);
-		
-		
-		if(result == 1) {
+		try {
+			roomService.roomUpdate(room_vo);
+			
 			mav.setViewName("redirect:/roomRental/roomRentalDetail/"+room_vo.getRoomRental_no());
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		}catch(Exception e) {
+			log.error("roomRentalUpdate 데이터 수정 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/roomRental/roomRentalUpdate");
 			return mav;
 		}
@@ -196,31 +153,24 @@ public class RoomRentalController {
 	
 	/**********************************
 	 * 합주실/연습실 글 삭제
-	 * @param member
-	 * @param room_vo
-	 * @return ModelAndView
+	 * @param MemberVO member
+	 * @param RoomRentalVO room_vo
+	 * @return 성공 시 합주실 글 목록 / 실패 시 합주실 글 상세페이지
 	 **********************************/
 	@RequestMapping(value="/roomRentalDelete", method=RequestMethod.POST)
-	public ModelAndView roomDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView roomDelete(RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = roomService.roomDelete(room_vo);
-		
-		if(result == 1) {
+		try {
+			roomService.roomDelete(room_vo);
 			mav.setViewName("redirect:/roomRental/roomRentalList");
+			
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		}catch(Exception e){
+			log.error("roomRentalDelete 데이터 삭제 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/roomRental/roomRentalDetail/"+room_vo.getRoomRental_no());
 			return mav;
 		}
@@ -228,7 +178,7 @@ public class RoomRentalController {
 	
 	/********************************
 	 * 합주실/연습실 사진 업로드
-	 * @return String
+	 * @return String 사진 저장 경로
 	 ********************************/
 	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
 	@ResponseBody
@@ -255,8 +205,7 @@ public class RoomRentalController {
 			jsonObject.addProperty("responseCode", "error");
 			e.printStackTrace();
 		}
-		String a = jsonObject.toString();
-		return a;
+		return jsonObject.toString();
 	}
 	
 }

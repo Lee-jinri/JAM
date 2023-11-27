@@ -3,7 +3,6 @@ package com.jam.client.roomRentalReply.controller;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -26,48 +26,43 @@ import com.jam.client.roomRentalReply.service.RoomReplyService;
 import com.jam.client.roomRentalReply.vo.RoomReplyVO;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping(value="roomreplies")
 @AllArgsConstructor
-@Log4j
 public class RoomReplyController {
 
 	private RoomReplyService roomreplyService;
 	
+	
+	/***************************
+	 * @param Integer roomRental_no
+	 * @param RoomReplyVO rrvo
+	 * @param MemberVO member
+	 * @return 합주실 댓글 리스트
+	 ****************************/
 	@DateTimeFormat 
 	@GetMapping(value = "/all/{roomRental_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<RoomReplyVO> replyList(@PathVariable("roomRental_no") Integer roomRental_no, @ModelAttribute("data") RoomReplyVO rrvo, MemberVO member, HttpServletRequest request, Model model){
-		System.out.println("replyList 호출 성공");
+	public List<RoomReplyVO> replyList(@PathVariable("roomRental_no") Integer roomRental_no, @ModelAttribute("data") RoomReplyVO rrvo, @RequestParam(value = "user_id", required = false) String user_id, HttpServletRequest request, Model model){
 		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
 		
-		if(vo != null) {
-   		 
-			session.setAttribute("member", vo);
-			rrvo.setUser_id(vo.getUser_id());
-			rrvo.setUser_name(vo.getUser_name());
-		} 
 		List<RoomReplyVO> reply = null;
 		reply = roomreplyService.roomReplyList(roomRental_no);
 		
+		rrvo.setUser_id(user_id);
+   		
 		return reply;
 	}
 	
+	/************************
+	 * 합주실 댓글 작성
+	 * @param RoomRentalReplyVO rrvo
+	 * @param MemberVO member
+	 * @return 댓글 작성 실행 결과
+	 ***************************/
 	@JsonFormat
 	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyInsert(@RequestBody RoomReplyVO rrvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
-		
-		System.out.println("replyInsert 호출 성공");
-		HttpSession session = request.getSession();
-		MemberVO vo =(MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		
-		rrvo.setUser_id(vo.getUser_id());
-		rrvo.setUser_name(vo.getUser_name());
-		log.info("roomReplyVO : "+rrvo);
 		
 		int result = 0;
 		
@@ -76,6 +71,12 @@ public class RoomReplyController {
 		return(result ==1)? "SUCCESS" : "FAILURE";
 	}
 	
+	/*****************************
+	 * 합주실 댓글 수정
+	 * @param Integer roomReply_no
+	 * @param RoomRentalReplyVO rrvo
+	 * @return 댓글 수정 결과
+	 *******************************/
 	@PutMapping(value = "/{roomReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyUpdate(@PathVariable("roomReply_no") Integer roomReply_no, @RequestBody RoomReplyVO rrvo) {
 		
@@ -84,6 +85,11 @@ public class RoomReplyController {
 		return(result ==1) ? "SUCCESS" : "FAILURE";
 	}
 	
+	/***********************
+	 * 합주실 댓글 삭제
+	 * @param Integer roomReply_no
+	 * @return 댓글 삭제 결과
+	 ***********************/
 	@DeleteMapping(value = "/{roomReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> replyDelete(@PathVariable("roomReply_no")Integer roomReply_no){
 

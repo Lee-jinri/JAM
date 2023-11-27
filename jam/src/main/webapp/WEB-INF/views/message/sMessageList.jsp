@@ -42,11 +42,74 @@
 	
 </style>
 <script>
+	$(function(){
+		$("#searchBtn").click(function(){
+			if($("#search").val() != "all"){
+				if($("#keyword").val().replace(/\s/g, "") == ""){
+					alert("검색어를 입력하세요.");
+					$("#keyword").focus();
+					return;
+				}
+			}
+			$("#pageNum").val(1);
+			goPage();
+		})
+		
+		$(".paginate_button a").click(function(e) {
+			e.preventDefault();
+			$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
+			goPage();
+		})
+		
+		$("#receive_btn").click(function(){
+			getUserIDAndRedirect('/message/receiveMessage?user_id=');
+		})
+		
+		$("#send_btn").click(function(){
+			getUserIDAndRedirect('/message/sendMessage?user_id=');
+		})
+	})
+	
+	/*검색을 위한 실질적인 처리 함수*/
+	function goPage(){
+		if($("#search").val()=="all"){
+			$("#keyword").val("");
+		}
+		fetch('http://localhost:8080/member/getUserInfo', {
+	        method: 'GET',
+	        headers: {
+	            'Authorization': localStorage.getItem("Authorization")
+	        },
+	    })
+	    .then(response => {
+	        if (response.ok) {
+	            user_id = response.headers.get('user_id');
+	            
+	            if(user_id == null) $(location).attr('href', '/member/login');
+	            
+	            $("#user_id").val(user_id);
+				
+	            $("#searchForm").attr({
+	    			"method":"get",
+	    			"action":"/message/sendMessage/"
+	    		});
+	    		$("#searchForm").submit();
+				
+	        } else {
+	            throw new Error('Network response was not ok');
+	        }
+	    })
+	    .catch(error => {
+	        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+	    });
+		
+	}
+	
 	function senderPopup(message_no){
 		$("#message_no").val(message_no);
 		
 		var url = "/message/sMessage_detail";
-		var option = 'width=450, height=610, top=10, left=10';
+		var option = 'width=500, height=370, top=10, left=10';
 		var name='팝업';
 		
 		window.open("",name,option);
@@ -56,16 +119,67 @@
 		$("#frmPopup").attr("method", "POST");
 		$("#frmPopup").submit();
 	}
+	
+	function getUserIDAndRedirect(redirectURL) {
+	    fetch('http://localhost:8080/member/getUserInfo', {
+	        method: 'GET',
+	        headers: {
+	            'Authorization': localStorage.getItem("Authorization")
+	        },
+	    })
+	    .then(response => {
+	        if (response.ok) {
+	            return response.headers.get('user_id');
+	        } else {
+	            throw new Error('Network response was not ok');
+	        }
+	    })
+	    .then((user_id) => {
+	        if (user_id) {
+	        	$(location).attr('href', redirectURL + user_id);
+	        } else {
+	            $(location).attr('href', '/member/login');
+	        }
+	    })
+	    .catch(error => {
+	        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+	    });
+	}
 </script>
 </head>
-<body>
+<body class="wrap">
 	<div class="rem-20 my-top-15 my-bottom-15">
 		<div class="title">
 			<p class="text-center my-7">쪽지</p>
 		</div>
+		<div class="py-2rem flex justify-right">
+			<div class="items-center">
+				<form id="searchForm">
+					<!-- 페이징 처리를 위한 파라미터 -->
+					<input type="hidden" name="pageNum" value="${pageMaker.cvo.pageNum }">
+					<input type="hidden" name="amount" value="${pageMaker.cvo.amount }">
+					<input type="hidden" id="user_id" name="user_id">
+					
+					<div class="item-center flex">
+						<!-- <label>검색조건</label> -->
+						<select id="search" name="search" class="search">
+							<option value="all">전체</option>
+							<option value="message_title">제목</option>
+							<option value="message_content">내용</option>
+							<option value="receiver">받는 사람</option>
+						</select>
+						<div>
+							<input type="text" name="keyword" id="keyword" placeholder="쪽지 검색" class="border border-radius-43px rem-2 search"/>
+						</div>
+						<img class="icon" id="searchBtn" style="cursor:pointer; width:3rem;" src="/resources/include/images/search.svg">
+					</div>
+				</form>
+			</div>
+		</div>	
+		
 		<div class="content">
-			<button id="receive_btn" class="width_100px height_35px ml-1" onclick="location.href='/message/receiveMessage'" >받은 쪽지</button>
-			<button id="send_btn" class="width_100px height_35px ml-1" onclick="location.href='/message/sendMessage'" >보낸 쪽지</button>
+			<button id="receive_btn" class="width_100px height_35px ml-1"  >받은 쪽지</button>
+			<button id="send_btn" class="width_100px height_35px ml-1" >보낸 쪽지</button>
 			
 			<div class="border border-radius-15px" >
 				<form id="frmPopup" name="frmPopup">
@@ -102,6 +216,28 @@
 						</c:when>
 					</c:choose>
 				</div>
+			</div>
+			<!-- 페이징 -->
+			<div class="text-center">
+				<ul class="pagination">
+					<c:if test="${pageMaker.prev}">
+						<li class="paginate_button previous">
+							<a href="${pageMaker.startPage -1}">Previous</a>
+						</li>
+					</c:if>
+					
+					<c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
+						<li class="paginate_button"  >
+							<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold" href="${num}">${num}</a>
+						</li>
+					</c:forEach>
+					
+					<c:if test="${pageMaker.next}">
+						<li class="paginate_button next">
+							<a href="${pageMaker.endPage +1 }">Next</a>
+						</li>
+					</c:if>
+				</ul>
 			</div>
 		</div>
 	</div>

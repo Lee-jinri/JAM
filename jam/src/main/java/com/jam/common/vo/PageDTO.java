@@ -18,15 +18,15 @@ public class PageDTO {
 		this.total = total;
 		
 		/*페이징의 끝번호(endPage) 구하기
-		 * this.endPage = (int) (Math.ceil(페이지번호 / 10.0)) * 10;*/
-		this.endPage = (int) (Math.ceil(cvo.getPageNum() / 10.0)) * 10; //2
+		 * this.endPage = (int) (Math.ceil 정수로 반올림 (페이지번호 / 10.0)) * 10;*/
+		this.endPage = (int) (Math.ceil(cvo.getPageNum() / 10.0)) * 10; 
 		
 		/*페이지의 시작번호(startPage) 구하기*/
-		this.startPage = this.endPage - 9; //1
+		this.startPage = this.endPage - 9; 
 		
 		/*끝 페이지 구하기*/
 		int realEnd = (int) (Math.ceil((total * 1.0) / cvo.getAmount()));
-		//1
+		
 		/*realEnd가 endPage와 같거나 작은 경우, endPage 값 변경*/
 		if(realEnd <= this.endPage) {
 			this.endPage = realEnd;

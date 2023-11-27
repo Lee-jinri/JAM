@@ -147,7 +147,7 @@ public class MemberMapperTest {
 		log.info(memberDao.roomMyWrite(member));
 	} 
 	*/
-		
+	
 	/* 마이페이지 - 회원 정보 페이지
 	@Test
 	public void testAccount() {
