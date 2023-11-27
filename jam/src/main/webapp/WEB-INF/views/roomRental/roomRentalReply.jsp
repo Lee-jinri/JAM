@@ -24,16 +24,76 @@
 	<script>
 		$(function(){
 			
-			let room_no = ${detail.roomRental_no};
-			
-			listAll(room_no);
-			
-			/* 댓글 입력 */
+			let now_userId = "";
+			let now_userName = "";
+
+			// 사용자 정보를 가져오는 비동기 함수
+			async function getUserInfo() {
+			    try {
+			        const response = await fetch('http://localhost:8080/member/getUserInfo', {
+			            method: 'GET',
+			            headers: {
+			                'Authorization': localStorage.getItem("Authorization")
+			            },
+			        });
+
+			        if (response.ok) {
+			            now_userId = response.headers.get('user_id');
+			            console.log("now_userId : " + now_userId);
+
+			            const user_name = await response.text();
+            
+			            console.log("now_userName : " + user_name);
+			            // user_name을 사용하여 원하는 작업 수행
+			            if (user_name) {
+			                now_userName = user_name;
+			            }
+			            if (now_userId == null || now_userId == "") {
+			                // textarea를 readonly로 변경
+			                console.log("true? ");
+			                const textarea = document.getElementById('comReply_content');
+			                textarea.readOnly = true;
+
+			                // 로그인 메세지 생성
+			                const replyLogin = document.getElementById("reply_login");
+
+			                const span1 = document.createElement("span");
+			                span1.textContent = "댓글을 작성하려면 ";
+
+			                const loginLink = document.createElement("a");
+			                loginLink.href = "/member/login";
+			                loginLink.textContent = "로그인";
+			                const span2 = document.createElement("span");
+			                span2.textContent = "이 필요합니다.";
+
+			                replyLogin.appendChild(span1);
+			                replyLogin.appendChild(loginLink);
+			                replyLogin.appendChild(span2);
+			            }
+			        } else {
+			            throw new Error('Network response was not ok');
+			        }
+			    } catch (error) {
+			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+			    }
+			}
+			// getUserInfo 함수 호출
+			getUserInfo().then(() => {
+			    console.log("now_userID : " + now_userId);
+			    console.log("now_userName : " + now_userName);
+			    // 여기에서 now_userId를 사용할 수 있음
+			    
+			    listAll(room_no , now_userId);
+			    
+			    /* 댓글 입력 */
+				/* 댓글 입력 */
 			$("#reply_insert").click(function(){
 				
 				let insertUrl = "/roomreplies/replyInsert";
 				
 				let value = JSON.stringify({
+					user_id : now_userId,
+					user_name : now_userName,
 					roomRental_no:room_no,
 					roomReply_content:$('#roomReply_content').val()
 				});
@@ -60,20 +120,22 @@
 						if(result=="SUCCESS"){
 							alert("댓글이 등록되었습니다.");
 							dataReset();
-							listAll(room_no);
+							listAll(room_no, now_userId);
 						}
 					}
 				});
 				
 			})
-			
-			/* 비밀번호 확인없이 수정버튼 */
-			$(document).on("click","button[data-btn='upBtn']",function(){
-				let panel = $(this).parents("div.panel")
-				let roomReply_no = panel.attr("data-num");
 				
-				updateForm(roomReply_no, panel);
+				/* 수정 버튼 클릭*/
+				$(document).on("click","button[data-btn='upBtn']",function(){
+					let panel = $(this).parents("div.panel");
+					let roomReply_no = panel.attr("data-num");
+					updateForm(roomReply_no, panel);
+				});
 			});
+			
+			let room_no = ${detail.roomRental_no};
 			
 			function updateForm(roomReply_no, panel){
 				$("#user_name").val(panel.find(".panel-title .name").html());
@@ -94,7 +156,7 @@
 			
 			/* 수정 취소 버튼 클릭*/
 			$(document).on("click","#cancel",function(){
-				listAll(room_no);
+				listAll(room_no, now_userId);
 			})
 			
 			/* 댓글 수정 */
@@ -124,7 +186,7 @@
 						if(result == "SUCCESS"){
 							alert("댓글 수정이 완료되었습니다.");
 							dataReset();
-							listAll(room_no);
+							listAll(room_no, now_userId);
 						}
 					}
 				});
@@ -133,15 +195,20 @@
 			/* 삭제 버튼 클릭 */
 			$(document).on("click","button[data-btn='delBtn']",function(){
 				let roomReply_no = $(this).parents("div.panel").attr("data-num");
-				deleteBtn(roomReply_no, room_no);
+				deleteBtn(roomReply_no, room_no, now_userId);
 			});
 			
 		})
 		
-		function listAll(room_no){
+		function listAll(room_no, now_userId){
 			$(".reply").detach();
-			let url = "/roomreplies/all/"+room_no;
 			
+			if(now_userId == null){
+		    	console.log("list all / now_userId is null");
+		    	url = "/roomreplies/all/"+room_no;
+		    }else url = "/roomreplies/all/" + room_no + "?user_id=" + now_userId;
+		    
+			console.log(url);
 			$.getJSON(url, function(data){ 
 				$(data).each(function(){
 					let roomReply_no = this.roomReply_no;
@@ -150,14 +217,14 @@
 					let roomReply_content = this.roomReply_content;
 					let roomReply_date = this.roomReply_date;
 					roomReply_content = roomReply_content.replace(/(\r\n|\r\n)/g, "<br/>");
-					template(roomReply_no,user_name,roomReply_content,roomReply_date,user_id);
+					template(roomReply_no,user_name,roomReply_content,roomReply_date,user_id, now_userId);
 				});
 			}).fail(function(){
 				alert("댓글 목록을 불러오는데 실패하였습니다. 잠시후에 다시 시도해 주세요.");
 			});
 		}
 		
-		function template(roomReply_no,user_name,roomReply_content,roomReply_date,user_id){
+		function template(roomReply_no,user_name,roomReply_content,roomReply_date,user_id, now_userId){
 			let $div = $('#reviewList');
 			
 			let $element = $('#item-template').clone().removeAttr('id');
@@ -175,20 +242,25 @@
 			$div.append($element);
 			
 			/* 댓글 작성자와 사용자 아이디가 일치 시 댓글 수정 삭제 버튼 생성 */
-			if("${member.user_id}" != ""){
-				
-				if('${member.user_id}' == user_id ){
-					
+			
+			console.log("현재 아이디 : " + now_userId);
+			if (now_userId != null) {
+				console.log("현재 아이디 : " + now_userId);
+				console.log("댓글 작성자 : " + user_id);
+				/* 댓글 작성자와 사용자 아이디가 일치 시 댓글 수정 삭제 버튼 생성 */
+				if(now_userId == user_id ){
 					$element.find('.panel-heading > .panel-title > .panel-btn').html( 
 							"<button type='button' class='delBtn' data-btn='delBtn' >삭제</button>"
 							+ "<button type='button' class='upBtn' data-btn='upBtn'>수정</button>" );
-				}else { /* 댓글 작성자와 사용자 아이디 불일치 시 메세지 버튼 생성 */
+				}else {  
+					/* 댓글 작성자와 사용자 아이디 불일치 시 메세지 버튼 생성*/
 					$element.find('.panel-heading > .panel-title > .message').html(
 							"<button type='button' class='send_message'>"
 							+ "<img class='message_icon' style='width:2rem;' alt='쪽지' src='/resources/include/images/message_icon.svg'>"
 							+ "</button>");
 				}
 			}
+			
 			/* 메세지 버튼에 click 이벤트 */
 			$element.find('.panel-heading > .panel-title > .message > .send_message').attr("onclick", "sendMsg('" + roomReply_no + "')");	
 		}
@@ -203,7 +275,7 @@
 		}
 		
 		/* 댓글 삭제 */
-		function deleteBtn(roomReply_no, room_no){
+		function deleteBtn(roomReply_no, room_no, now_userId){
 			if(confirm("댓글을 삭제하겠습니까?")){
 				$.ajax({
 					url : "/roomreplies/"+roomReply_no,
@@ -220,7 +292,7 @@
 						if(result == 'SUCCESS'){
 							alert("댓글 삭제가 완료되었습니다.");
 							dataReset();
-							listAll(room_no);
+							listAll(room_no, now_userId);
 						}
 					}
 				});
@@ -247,39 +319,31 @@
 		}
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div>
+		<!-- 댓글 작성부 -->
 		<div class="replyContainer">
-			<c:choose>
-				<c:when test="${member != null}">
-					<form id="replyForm">
-						<div class="reply_div">
-							<table>
-								<tr>
-									<td id="reply_name">${member.user_name }</td>
-								</tr>
-								<tr>
-									<td>
-										<textarea id="roomReply_content" name="roomReply_content" class="form-control" rows="3"></textarea>
-									</td>
-								</tr>
-								<tr>
-									<td><button type="button" id="reply_insert">등록</button></td>
-								</tr>
-							</table>
-						</div>	
-					</form>
-				</c:when>
-				<c:otherwise>
-					<div>
-						<span>댓글을 작성하려면</span>
-						<a href="/member/login">로그인</a>
-						<span>이 필요합니다.</span>
-					</div>
-				</c:otherwise>
-			</c:choose>
+			
+			<form id="replyForm">
+				<div class="reply_div">
+					<div id="reply_login"></div>
+					<table>
+						<tr id="reply_userName">
+							<td id="reply_name">${member.user_name } </td>
+						</tr>
+						<tr>
+							<td>
+								<textarea id="roomReply_content" name="roomReply_content" class="form-control" rows="3"></textarea>
+							</td>
+						</tr>
+						<tr>
+							<td><button type="button" id="reply_insert">등록</button></td>
+						</tr>
+					</table>
+				</div>	
+			</form>
+					
 		</div>
-		
 		
 		<%--리스트 영역 --%>
 		<div id="reviewList">

@@ -5,7 +5,6 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.jam.client.member.vo.MemberVO;
 import com.jam.client.message.dao.MessageDAO;
 import com.jam.client.message.vo.MessageVO;
 
@@ -59,7 +58,7 @@ public class MessageServiceImpl implements MessageService {
 		return messageDao.sMessageDetail(message_vo);
 	}
 
-	// 쪽지 보내긔
+	// 쪽지 발송
 	@Override
 	public int messageWrite(MessageVO message_vo) {
 		return messageDao.messageWrite(message_vo);

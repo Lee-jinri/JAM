@@ -77,7 +77,6 @@
 					url : "/member/memberFindPw",
 					data : {user_id : user_id, email : email, phone : phone},
 					success : function(result){
-						console.log("결과 " +result);
 						if(result == 'success'){
 							alert("메일로 임시 비밀번호를 발송했습니다. 로그인 후 비밀번호를 변경하세요.");
 							let login = confirm("로그인 페이지로 이동하시겠습니까?");
@@ -101,7 +100,7 @@
 		})
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div class="my-top-15 my-bottom-15 rem-20">
 		<div class="contents">
 			<div class="info_title">

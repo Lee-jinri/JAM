@@ -8,15 +8,12 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -26,7 +23,6 @@ import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.google.gson.JsonObject;
-import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.member.vo.MemberVO;
@@ -56,7 +52,6 @@ public class FleaMarketController {
 		
 		model.addAttribute("fleaMarketList",fleaMarketList);
 		
-		
 		int total = fleaService.fleaListCnt(flea_vo);
 		model.addAttribute("pageMaker", new PageDTO(flea_vo, total));
 		return "fleaMarket/fleaMarketList";
@@ -65,12 +60,13 @@ public class FleaMarketController {
 	/*****************************************
 	 * @param FleaMarketVO flea_vo
 	 * @return 중고악기 상세페이지
-	 * @throws Exception
 	 *****************************************/
 	@RequestMapping(value="/fleaMarketDetail/{flea_no}", method=RequestMethod.GET)
 	public ModelAndView fleaDetail(@ModelAttribute("data")FleaMarketVO flea_vo, Model model) throws Exception{
 		
+		// 조회수 증가
 		fleaService.fleaReadCnt(flea_vo);
+		
 		FleaMarketVO detail = fleaService.fleaDetail(flea_vo);
 		
 		ModelAndView mav = new ModelAndView();
@@ -85,23 +81,9 @@ public class FleaMarketController {
 	 * @return 중고악기 글 작성 페이지
 	 **************************************/
 	@RequestMapping(value="/fleaWrite", method=RequestMethod.GET)
-	public ModelAndView fleaMarketWriteForm(HttpServletRequest request, Model model) {
+	public String fleaMarketWriteForm() {
 		
-		HttpSession session = request.getSession(false);
-		ModelAndView mav = new ModelAndView();
-		
-		if (session != null) {
-			MemberVO member = (MemberVO) session.getAttribute("member");
-			if(member != null) {
-				mav.setViewName("fleaMarket/fleaMarketWrite");
-			}else {
-				mav.setViewName("member/login");
-			}
-		}else {
-			mav.setViewName("member/login");
-		}
-		
-		return mav;
+		return "fleaMarket/fleaMarketWrite";
 	}
 	
 	/***********************************
@@ -111,27 +93,20 @@ public class FleaMarketController {
 	 * @return 성공 시 작성한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 작성 페이지
 	 **********************************/
 	@RequestMapping(value="/fleaWrite", method=RequestMethod.POST)
-	public ModelAndView fleaMarketWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) {
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView fleaMarketWrite(MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) {
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = fleaService.fleaInsert(flea_vo);
-		
-		if(result == 1) {
+		try {
+			fleaService.fleaInsert(flea_vo);
+			
 			mav.setViewName("redirect:/fleaMarket/fleaMarketDetail/"+flea_vo.getFlea_no());
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result",1);
+		}catch (Exception e){
+			log.error("fleaWrite 데이터 저장 중 오류 : " + e.getMessage());
+			rttr.addFlashAttribute("result","error");
 			mav.setViewName("redirect:/fleaMarket/fleaMarketWrite");
+			
 			return mav;
 		}
 	}
@@ -140,19 +115,10 @@ public class FleaMarketController {
 	 * @param MemberVO member
 	 * @param FleaMarketVO flea_vo
 	 * @return 중고악기 글 수정 페이지
-	 * @throws Exception
 	 ******************************/
-	@RequestMapping(value="/fleaUpdateForm", method=RequestMethod.POST)
-	public ModelAndView fleaMarketUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, FleaMarketVO flea_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
-		
+	@RequestMapping(value="/fleaUpdateForm", method=RequestMethod.GET)
+	public ModelAndView fleaMarketUpdateForm(FleaMarketVO flea_vo, Model model) throws Exception{
+	
 		ModelAndView mav = new ModelAndView();
 		
 		FleaMarketVO updateData = fleaService.fleaUpdateForm(flea_vo);
@@ -167,28 +133,22 @@ public class FleaMarketController {
 	 * 중고악기 글 수정
 	 * @param MemberVO member
 	 * @param FleaMarket_VO flea_vo
-	 * @return 성공시 수정한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 수정 페이지
+	 * @return 성공 시 수정한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 수정 페이지
 	 *******************************************************/
 	@RequestMapping(value="/fleaUpdate", method=RequestMethod.POST)
-	public ModelAndView fleaMarketUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) {
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView fleaMarketUpdate(RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) {
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = fleaService.fleaUpdate(flea_vo);
-		
-		if(result == 1){
+		try {
+			fleaService.fleaUpdate(flea_vo);
+			
 			mav.setViewName("redirect:/fleaMarket/fleaMarketDetail/"+flea_vo.getFlea_no());
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result",1);
+		}catch(Exception e) {
+			log.error("fleaUpdate 데이터 수정 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result","error");
 			mav.setViewName("redirect:/fleaMarket/fleaMarketUpdate");
 			return mav;
 		}
@@ -199,29 +159,21 @@ public class FleaMarketController {
 	 * @param MemberVO member
 	 * @param FleaMarket_VO flea_vo
 	 * @return 성공 시 중고악기 글 목록 / 실패 시 중고악기 글 상세페이지
-	 * @throws Exception
 	 ***********************************/
 	@RequestMapping(value="/fleaDelete", method=RequestMethod.POST)
-	public ModelAndView fleaMarketDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView fleaMarketDelete(RedirectAttributes rttr, @ModelAttribute("data") FleaMarketVO flea_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = fleaService.fleaDelete(flea_vo);
-		
-		if(result == 1) {
-			mav.setViewName("redirect:/fleaMarket/fleaMarketList");
-			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		try {
+			 fleaService.fleaDelete(flea_vo);
+			 
+			 mav.setViewName("redirect:/fleaMarket/fleaMarketList");
+			 return mav;
+		}catch(Exception e) {
+			log.error("fleaDelete 데이터 삭제 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/fleaMarket/fleaMarketDetail/"+flea_vo.getFlea_no());
 			return mav;
 		}
@@ -257,7 +209,7 @@ public class FleaMarketController {
 			jsonObject.addProperty("responseCode", "error");
 			e.printStackTrace();
 		}
-		String a = jsonObject.toString();
-		return a;
+		
+		return jsonObject.toString();
 	}
 }

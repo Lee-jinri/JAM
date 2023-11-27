@@ -13,81 +13,77 @@
 <title>JAM - MESSAGE</title>
 	<style>
 		body {margin:0;}
-		.margin15px{
-			margin:15px;
-		}
 		
-		.border{
-			border-bottom: 1px solid #BDBDBD;
-		}
-		
-		.receiver{
-			margin-bottom:10px;
-		}
-		.message_contents{
-			display: flex;
-    		justify-content: center; margin:10px 0;
-		}
-		.btn{
-			display : flex;
-			justify-content: center;
-			margin:10px 0;
-		}
-		.msgBtn2 {
-		    background-color:#fff; 
-		     color:#0080FF; 
-		    font-weight:600; 
-		    border:1px solid #0080FF;
-		    border-radius: 3px;
-			height: 35px;
-		}
 	</style>
 	<script>
 		$(function(){
 			
 			// 전송 버튼 클릭
 			$("#send").click(function(){
-				
-				$.ajax({
-			    	url: '/message/messageWrite',
-			        type: 'post',
-			        data: $('#message').serialize(),
-			        error:function(xhr,textStatus, errorThrown){
-						console.log(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
-					},
-					beforeSend:function(){
-						
-						let message_title = $("#message_title").val();
-						let message_contents = $("#message_area").val();
-						
-						if(message_title.replace(/\s/g,"") == ""){
-							alert("쪽지 제목을 입력하세요.");
-							$("#message_title").focus();
-							return false;
-						}
-						
-						if(message_contents.replace(/\s/g,"") == ""){
-							alert("쪽지 내용을 입력하세요.");
-							$("#message_area").focus();
-							return false;
-						}
-					},
-			        success: function(result){
+				fetch('http://localhost:8080/member/getUserInfo', {
+			        method: 'GET',
+			        headers: {
+			            'Authorization': localStorage.getItem("Authorization")
+			        },
+			    })
+			    .then(response => {
+			        if (response.ok) {
+			        	let user_id = response.headers.get('user_id');
+			        	let user_name = response.headers.get('username');
 			        	
-						console.log(result);
-			        	if(result=="SUCCESS"){  
-			            	alert("쪽지가 전송 되었습니다.");
-			            	
-			            	opener.parent.location.reload();
-							self.close();
-			           	}else{
-			            	alert("쪽지 전송에 실패했습니다. 잠시 후 다시 시도해주세요."); 
-			            	
-			            	opener.parent.location.reload();
-							self.close();
-			         	}
-			   		}
-				})
+			        	$("#sender_id").val(user_id);
+			        	$("#sender").val(user_name);
+			        	
+			        	$.ajax({
+					    	url: '/message/messageWrite',
+					        type: 'post',
+					        data: $('#message').serialize(),
+					        error:function(xhr,textStatus, errorThrown){
+								console.log(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
+							},
+							beforeSend:function(){
+								
+								let message_title = $("#message_title").val();
+								let message_contents = $("#message_area").val();
+								
+								if(message_title.replace(/\s/g,"") == ""){
+									alert("쪽지 제목을 입력하세요.");
+									$("#message_title").focus();
+									return false;
+								}
+								
+								if(message_contents.replace(/\s/g,"") == ""){
+									alert("쪽지 내용을 입력하세요.");
+									$("#message_area").focus();
+									return false;
+								}
+							},
+					        success: function(result){
+					        	
+								console.log(result);
+					        	if(result=="SUCCESS"){  
+					            	alert("쪽지가 전송 되었습니다.");
+					            	
+					            	opener.parent.location.reload();
+									self.close();
+					           	}else{
+					            	alert("쪽지 전송에 실패했습니다. 잠시 후 다시 시도해주세요."); 
+					            	
+					            	opener.parent.location.reload();
+									self.close();
+					         	}
+					   		}
+						})
+			           
+			        } else {
+			            throw new Error('Network response was not ok');
+			        }
+			    })
+			    .catch(error => {
+			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+			    });
+				
+				
 			});
 			
 			
@@ -129,6 +125,8 @@
 		<div>
 			<input type="hidden" name="receiver" value="${receiver }">
 			<input type="hidden" name="receiver_id" value="${receiver_id }">
+			<input type="hidden" id="sender" name="sender" >
+			<input type="hidden" id="sender_id" name="sender_id">
 		</div>
 	</form>
 </body>

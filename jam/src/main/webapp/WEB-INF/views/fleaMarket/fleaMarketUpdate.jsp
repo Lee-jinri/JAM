@@ -12,27 +12,6 @@
   <script src="/resources/include/dist/summernote/summernote-ko-KR.js"></script>
   <link rel="stylesheet" href="/resources/include/dist/summernote/summernote-lite.css">
 
-	<style type="text/css">
-		.width-85 {width:80rem;}
-		.border-radius-10 {border-radius:10px;}
-		.flea_title {border: 3px solid #ffdd77; }
-		.flea_content{    border: 3px solid #ffdd77;}
-		.resize-none {resize: none;}
-		.height4 {height:4rem;}
-		#textarea{min-height:50rem;}
-		.fleaUpdateBtn{
-			border-radius: 10px;
-		    border: 3px solid #ffdd77;
-		    background-color: #fff;
-		    height: 35px;
-    		width: 60px;
-		    font-weight: 600;
-			align-items: center;
-		    justify-content: center;
-		    display: flex;
-		    color : #848484;
-		}
-	</style>
 	<script>
 		$(function(){
 			
@@ -59,29 +38,69 @@
 					return false;
 				}
 				
-				$("#fleaUpdate").attr({
-					"action" : "/fleaMarket/fleaUpdate",
-					"enctype": "multipart/form-data",
-					"method" : "post"
+				// 사용자 id, name 가져옴
+				fetch('http://localhost:8080/member/getUserInfo', {
+			        method: 'GET',
+			        headers: {
+			            'Authorization': localStorage.getItem("Authorization")
+			        },
+			    })
+			    .then(response => {
+			        if (response.ok) {
+			        	user_id = response.headers.get('user_id');
+			            $("#user_id").val(user_id);
+			            
+			            if(user_id == null) $(location).attr('href', '/member/login');
+			            
+			            return response.text();
+			        } else {
+			            throw new Error('Network response was not ok');
+			        }
+			    })
+			    .then((user_name) => {
+		        	if (user_name) {
+						$("#user_name").val(user_name);
+						
+						$("#fleaUpdate").attr({
+							"action" : "/fleaMarket/fleaUpdate",
+							"enctype": "multipart/form-data",
+							"method" : "post"
+						})
+						
+						$("#fleaUpdate").submit();
+						
+						/* 글 수정 중 오류 발생 */
+						let result = $("#result");
+						
+						if(result == 'error') alert("게시글 수정을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+						else alert("수정이 완료되었습니다.");
+						
+		            }
+		        	else $(location).attr('href', '/member/login');
 				})
-				
-				$("#fleaUpdate").submit();
-				alert("수정이 완료되었습니다.");
+			    .catch(error => {
+			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+			    });
 			})
+			
+			
 			
 		})
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div class="rem-30 my-top-15 my-bottom-15">
+		<div>
+			<input type="hidden" value="${result }">
+		</div>
 		<div class="title flex justify-center my-bottom-8" >
 			<h2>중고 악기</h2>
 		</div>
 		<div class="content flex justify-center" >
 			<form id="fleaUpdate">
 				<div>
-					<input type="hidden" name="user_id" value="${member.user_id }"> 
-					<input type="hidden" name="user_name" value="${member.user_name }">
+					<input type="hidden" name="user_id"> 
+					<input type="hidden" name="user_name">
 					<input type="hidden" name="flea_no" value="${updateData.flea_no }">
 				</div>
 				<div>

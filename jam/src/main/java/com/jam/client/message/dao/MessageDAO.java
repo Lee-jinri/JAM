@@ -27,7 +27,7 @@ public interface MessageDAO {
 	// 보낸 쪽지 상세 페이지
 	public MessageVO sMessageDetail(MessageVO message_vo);
 
-	// 쪽지 보내기
+	// 쪽지 발송
 	public int messageWrite(MessageVO message_vo);
 
 	

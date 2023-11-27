@@ -99,7 +99,7 @@
 
 </head>
 
-<body>
+<body class="wrap">
 	<div class="contents rem-20 ">
 		<div class="flex flex-container my-top-15 my-bottom-15">
 		

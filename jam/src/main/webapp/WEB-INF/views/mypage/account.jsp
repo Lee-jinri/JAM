@@ -1,6 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-
+<%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <head>
 	<!-- 카카오 주소 검색 API -->
 	<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
@@ -87,12 +87,13 @@
 						url : "/member/memberPhoneChk",
 						data : {phone : phone},
 						success : function(result){
-							if(result != 'fail'){
+							if(result == 'success'){
 								$("#account_modi").attr({
 									"method" : "post",
 									"action" : "/member/phoneModi"
 								})
 								$("#account_modi").submit();
+								alert("전화번호가 변경되었습니다.");
 								
 							} else {
 								alert("이미 사용중인 전화번호 입니다.");
@@ -120,6 +121,7 @@
 			/* 비밀번호 확인 */
 			$("#pwConfirm_btn").click(function(){
 				let user_pw = $("#user_pw").val();
+				let user_id = $("#user_id").val();
 				
 				if(user_pw.replace(/\s/g,"")==""){
 					alert("비밀번호를 입력하세요.");
@@ -130,7 +132,10 @@
 				$.ajax({
 					type : "post",
 					url : "/member/pwConfirm",
-					data : {user_pw : user_pw}, 	// '컨트롤에 넘길 데이터 이름' : '데이터(.userId에 입력되는 값)'
+					data : {
+						user_id : user_id,
+						user_pw : user_pw						
+					}, 	// '컨트롤에 넘길 데이터 이름' : '데이터(.userId에 입력되는 값)'
 					success : function(result){
 						if(result == 'success'){
 							alert("비밀번호 확인 완료");
@@ -172,8 +177,6 @@
 					})
 					$("#account_modi").submit();
 				}
-				
-
 			})
 			
 			
@@ -221,13 +224,22 @@
 					return false;
 				}
 				
-				$("#address").val(streetAddress + " " + detailAddress);
+				var address = streetAddress + " " + detailAddress;
+				var user_id = $("#user_id").val();
 				
-				$("#account_modi").attr({
-					"method" : "post",
-					"action" : "/member/addressModi"
-				})
-				$("#account_modi").submit();
+				$.ajax({
+				    type: "POST",
+				    url: "/member/addressModi",
+				    data: { user_id: user_id, address: address },  
+				    success: function(data) {
+				    	alert("주소가 변경되었습니다.");
+				    	location.reload();
+				    },
+				    error: function(jqXHR, textStatus, errorThrown) {
+				        console.error("주소 변경 중 오류 발생:", textStatus, errorThrown);
+				        alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+				    }
+				});
 				
 			})
 			
@@ -237,14 +249,23 @@
 				var result = confirm("정말 탈퇴 하시겠습니까?");
 				
 				if(result){
-					$("#account_modi").attr({
-						"method" : "post",
-						"action" : "/member/withDraw"
-					})
-					$("#account_modi").submit();
 					
-					alert("회원 탈퇴가 완료되었습니다.");
-					
+					var user_id = $("#user_id").val();
+
+					$.ajax({
+					    type: "POST",
+					    url: "/member/withDraw",
+					    data: { user_id: user_id },  
+					    success: function(data) {
+					    	localStorage.removeItem("Authorization");
+					    	alert("회원 탈퇴가 완료되었습니다.");
+					    	window.location.href = "/";
+					    },
+					    error: function(jqXHR, textStatus, errorThrown) {
+					        console.error("회원 탈퇴 중 오류 발생:", textStatus, errorThrown);
+					        alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					    }
+					});
 				}
 			})
 				
@@ -260,20 +281,28 @@
 		
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div class="common-box  my-top-15 my-bottom-15" id="info-box">
 		<div class="info_title border-bottom">
 			<p>계정 정보</p>
 		</div>
 		<form id="account_modi">
-			<div class="my-top-15">
-				<p>로그인 정보</p>
-				<div class="info_box">
-					<span class="link_set">아이디</span>
-					<div>
-						<span class="">${account.user_id }</span>
-					</div>
-				</div>
+			<div class="my-top-8">
+				<!-- 소셜로그인이 아닐 때만 아이디 표시 -->
+				<c:choose>
+				    <c:when test="${account.social_login == 0}">
+				        <div class="info_box">
+				            <span class="link_set">아이디</span>
+				            <div>
+				                <input type="text" id="user_id" name="user_id" class="border-none" value="${account.user_id}">
+				            </div>
+				        </div>
+				    </c:when>
+				    <c:otherwise>
+				        <input type="hidden" id="user_id" name="user_id" class="border-none" value="${account.user_id}">
+				    </c:otherwise>
+				</c:choose>
+				
 				<div class="info_box">
 					<span class="link_set">이름</span>
 					<div>
@@ -290,32 +319,35 @@
 							<button type="button" id="phoneChange" class="float-right mr-1">확인</button>
 						</div>
 					</div>
-					
 				</div>
-				<div class="info_box">
-					<span class="link_set">비밀번호</span>
-					<input type="button" id="pw_modi_btn" class="float-right" value="변경">
-					<div id="pwConfirm" style="display:none;">
-						<input type="text" id="user_pw" class="ml-1" placeholder="기존 비밀번호 입력">
-						<input type="button" id="pwConfirm_btn" class="float-right" value="확인">
-					</div>
-					<div id="pwModi_div" style="display:none; " class="my-top-4">
-						<span style="font-size: 1.5rem; color: #A4A4A4;">변경할 비밀번호를 입력하세요. </span><br>
-						<span style="color: #A4A4A4;">(8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력하세요.)</span>
-						<div class="my-top-4">
-							<p >변경할 비밀번호</p>
-							<input type="text" id="new_pw" name="user_pw" class=""><br>
-							<p class="my-top-4">비밀번호 확인</p>
-							<input type="text" id="pw_check" class="">
+				
+				<!-- 소셜로그인이 아닐 때 비밀번호 변경 div 표시 -->
+				<c:if test="${account.social_login == 0}">
+				    <div id="password" class="info_box">
+						<span class="link_set">비밀번호</span>
+						<input type="button" id="pw_modi_btn" class="float-right" value="변경">
+						<div id="pwConfirm" style="display:none;">
+							<input type="text" id="user_pw" class="ml-1" placeholder="기존 비밀번호 입력">
+							<input type="button" id="pwConfirm_btn" class="float-right" value="확인">
 						</div>
-						<button type="button" id="pwModi_btn" class="my-top-4">변경</button>
+						<div id="pwModi_div" style="display:none; " class="my-top-4">
+							<span style="font-size: 1.5rem; color: #A4A4A4;">변경할 비밀번호를 입력하세요. </span><br>
+							<span style="color: #A4A4A4;">(8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력하세요.)</span>
+							<div class="my-top-4">
+								<p >변경할 비밀번호</p>
+								<input type="text" id="new_pw" name="user_pw" class=""><br>
+								<p class="my-top-4">비밀번호 확인</p>
+								<input type="text" id="pw_check" class="">
+							</div>
+							<button type="button" id="pwModi_btn" class="my-top-4">변경</button>
+						</div>
 					</div>
-					
-				</div>
+				</c:if>
 			</div>
+			
 			<div class="my-top-8">
-				<p>주소 관리</p>
 				<div class="info_box">
+					<p class="link_set">주소 관리</p>
 					<span class="">${account.address }</span>
 					<input type="button" id="address_modi_btn" class="float-right" value="수정">
 					<div id="address_div" style="display:none;" >

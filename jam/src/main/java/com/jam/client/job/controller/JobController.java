@@ -8,8 +8,6 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +25,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.google.gson.JsonObject;
 import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.JobVO;
-import com.jam.client.member.vo.MemberVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.AllArgsConstructor;
@@ -52,6 +49,7 @@ public class JobController {
 		List<JobVO> jobList = jobService.jobList(job_vo);
 		model.addAttribute("jobList",jobList);
 		
+		// 페이징 처리
 		int total = jobService.jobListCnt(job_vo);
 		model.addAttribute("pageMaker", new PageDTO(job_vo, total));
 		return "job/jobList";
@@ -75,27 +73,12 @@ public class JobController {
 	}
 	
 	/***************************************
-	 * @param JobVO job_vo
 	 * @return 구인구직 글 작성 페이지
 	 ***************************************/
 	@RequestMapping(value="/jobWrite", method=RequestMethod.GET)
-	public String jobWriteForm(HttpServletRequest request, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
+	public String jobWriteForm() throws Exception{
 		
-		String url = "";
-		
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			MemberVO member = (MemberVO) session.getAttribute("member");
-			if(member != null) {
-				url = "job/jobWrite";
-			}else {
-				url = "member/login";
-			}
-		}else {
-			url = "member/login";
-		}
-		
-		return url;
+		return "job/jobWrite";
 	}
 	
 	/******************************
@@ -105,26 +88,20 @@ public class JobController {
 	 * @return 성공 시 작성한 구인구직 글 상세 페이지 / 실패 시 구인구직 글 작성 페이지
 	 *****************************/
 	@RequestMapping(value="/jobWrite", method=RequestMethod.POST)
-	public ModelAndView jobWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
-		
+	public ModelAndView jobWrite(RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
+	
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = jobService.jobInsert(job_vo);
-		
-		if(result == 1) {
+		try {
+			jobService.jobInsert(job_vo);
+			
 			mav.setViewName("redirect:/job/jobDetail/"+job_vo.getJob_no());
+			
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		}catch(Exception e) {
+			log.error("jobWrite 데이터 저장 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/job/jobWrite");
 			return mav;
 		}
@@ -135,21 +112,12 @@ public class JobController {
 	 * @param Job_VO job_vo
 	 * @return 구인구직 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/jobUpdateForm", method=RequestMethod.POST)
-	public ModelAndView jobUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, JobVO job_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
-		
+	@RequestMapping(value="/jobUpdateForm", method=RequestMethod.GET)
+	public ModelAndView jobUpdateForm(JobVO job_vo, Model model) throws Exception{
+	
 		ModelAndView mav = new ModelAndView();
 		
 		JobVO updateData = jobService.jobUpdateForm(job_vo);
-		
 		model.addAttribute("updateData", updateData);
 		
 		mav.setViewName("job/jobUpdate");
@@ -163,28 +131,21 @@ public class JobController {
 	 * @return 성공 시 수정한 구인구직 글 상세페이지 / 실패 시 구인구직 글 수정 페이지
 	 ***********************************/
 	@RequestMapping(value="/jobUpdate", method=RequestMethod.POST)
-	public ModelAndView jobUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, JobVO job_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView jobUpdate(RedirectAttributes rttr, JobVO job_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = jobService.jobUpdate(job_vo);
-		
-		
-		if(result == 1) {
+		try {
+			jobService.jobUpdate(job_vo);
+
 			mav.setViewName("redirect:/job/jobDetail/"+job_vo.getJob_no());
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		}catch(Exception e) {
+			log.error("jobUpdate 데이터 수정 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/job/jobUpdate");
+			
 			return mav;
 		}
 	}
@@ -196,26 +157,19 @@ public class JobController {
 	 * @return 성공 시 구인구직 글 목록 / 실패 시 구인구직 글 상세페이지
 	 **********************************/
 	@RequestMapping(value="/jobDelete", method=RequestMethod.POST)
-	public ModelAndView jobDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView jobDelete(RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = jobService.jobDelete(job_vo);
-		
-		if(result == 1) {
+		try {
+			jobService.jobDelete(job_vo);
+			
 			mav.setViewName("redirect:/job/jobList");
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		}catch(Exception e) {
+			log.error("jobDelete 데이터 수정 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/job/jobDetail/"+job_vo.getJob_no());
 			return mav;
 		}
@@ -250,7 +204,6 @@ public class JobController {
 			jsonObject.addProperty("responseCode", "error");
 			e.printStackTrace();
 		}
-		String a = jsonObject.toString();
-		return a;
+		return jsonObject.toString();
 	}
 }

@@ -10,9 +10,11 @@ import lombok.extern.log4j.Log4j;
 @RequestMapping("/admin/*")
 @Controller
 public class AdminController {
-
+	
 	@GetMapping("/admin")
-	public void doAdmin() {
-		log.info("admin only");
+	public String doAdmin() {
+		log.info("admin page");
+		
+		return "/admin/admin";
 	}
 }

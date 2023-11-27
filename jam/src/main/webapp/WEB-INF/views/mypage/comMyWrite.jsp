@@ -26,22 +26,64 @@
 				$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
 				goPage();
 			})
+			
+			$("#myComBtn").click(function(){
+				getUserIDAndRedirect("/member/comMyWrite/?user_id=", null, null);
+			})
+			$("#myFleaBtn").click(function(){
+				getUserIDAndRedirect("/member/fleaMyWrite/?user_id=", null, null);
+			})
+			$("#myJobBtn").click(function(){
+				getUserIDAndRedirect("/member/jobMyWrite/?user_id=", null, null);
+			})
+			$("#myRoomBtn").click(function(){
+				getUserIDAndRedirect("/member/roomMyWrite/?user_id=", null, null);
+			})
+			
 		})
 		
 		/*검색을 위한 실질적인 처리 함수*/
 		function goPage(){
-			if($("#search").val()=="all"){
+			let search = $("#search").val();
+			let keyword = $("#keyword").val();
+			
+			if(search=="all"){
 				$("#keyword").val("");
 			}
-			$("#searchForm").attr({
-				"method":"get",
-				"action":"/member/comMyWrite/"
-			});
-			$("#searchForm").submit();
+			let url = "/member/comMyWrite/?user_id=";
+			
+			getUserIDAndRedirect(url, search, keyword);
+			
+		}
+		
+		function getUserIDAndRedirect(redirectURL, search, keyword) {
+		    fetch('http://localhost:8080/member/getUser-id', {
+		        method: 'GET',
+		        headers: {
+		            'Authorization': localStorage.getItem("Authorization")
+		        },
+		    })
+		    .then(response => {
+		        if (response.ok) {
+		            return response.headers.get('user_id');
+		        } else {
+		            throw new Error('Network response was not ok');
+		        }
+		    })
+		    .then((user_id) => {
+		        if (user_id) {
+		        	$(location).attr('href', redirectURL + user_id + "&search=" + search + "&keyword=" + keyword);
+		        } else {
+		            $(location).attr('href', '/member/login');
+		        }
+		    })
+		    .catch(error => {
+		        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+		    });
 		}
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div class="rem-20 my-top-15 my-bottom-15">
 		<div class="title my-bottom-15">
 			<p class="text-center my-7">작성한 글</p>
@@ -70,12 +112,12 @@
 			</div>
 		</div>	
 		
-		<div class="clear-both">
+		<div class="border-bottom">
 			<ul class="nav nav-tabs nav-justified">
-				<li class="active"><a href="/member/comMyWrite">커뮤니티</a></li>
-				<li><a href="/member/fleaMyWrite">중고악기</a></li>
-				<li><a href="/member/jobMyWrite">구인구직</a></li>
-				<li><a href="/member/roomMyWrite">합주실/연습실</a></li>
+				<li><button type="button" id="myComBtn" class="myPageBtn" style="background-color:#A9D0F5;">커뮤니티</button></li>
+				<li><button type="button" id="myFleaBtn" class="myPageBtn">중고악기</button></li>
+				<li><button type="button" id="myJobBtn" class="myPageBtn">구인구직</button></li>
+				<li><button type="button" id="myRoomBtn" class="myPageBtn">합주실/연습실</button></li>
 			</ul>
 		</div>
 		

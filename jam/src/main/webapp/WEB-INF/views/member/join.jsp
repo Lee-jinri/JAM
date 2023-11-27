@@ -285,7 +285,7 @@
 		})
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div class="">
 		<div class="common-box my-top-15 my-bottom-15" id="join-box">
 			<div class="join_title">
@@ -302,7 +302,7 @@
 							<p class="join_hint" id="id_hint2" style="display : none">이미 사용중인 아이디 입니다.</p>
 						</li>
 						<li>
-							<input type="text" id="user_pw" name="user_pw" class="join_input" placeholder="비밀번호">
+							<input type="password" id="user_pw" name="user_pw" class="join_input" placeholder="비밀번호">
 							<img class="join_check" id="pw_check1" alt="check" src="/resources/include/images/checked.svg">
 							<img class="join_check" id="pw_check2" alt="error" src="/resources/include/images/checked2.svg">
 							<p class="join_hint">비밀번호는 8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력해 주세요.</p>

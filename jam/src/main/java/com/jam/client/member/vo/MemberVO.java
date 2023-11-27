@@ -11,31 +11,27 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 
 @Data
+@EqualsAndHashCode(callSuper=false)
 public class MemberVO extends CommonVO implements UserDetails {
 	private String user_id = "";		// 아이디
 	private String user_pw = "";		// 비밀번호
-	private String user_name = "";	// 닉네임
-	private String phone = "";		// 전화번호
-	private String address = "";	// 주소
-	private String email = ""; 		// 이메일
-	private String role = ""; // 권한(역할) 정보
+	private String user_name = "";		// 닉네임
+	private String phone = "";			// 전화번호
+	private String address = "";		// 주소
+	private String email = ""; 			// 이메일
+	private String role = ""; 		// 권한(역할) 정보
+	private int social_login; 		// 소셜 로그인 여부 0 : 소셜로그인 아님 / 1:소셜 로그인 
+	
 	
 	// implements UserDetails
 	private boolean enabled;
-
-	/*
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return authorities;
-    }*/
     
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        
-        //String roleGrant = "ROLE_" + role;
         
         GrantedAuthority myGrant = new SimpleGrantedAuthority(role);
         
@@ -54,6 +50,10 @@ public class MemberVO extends CommonVO implements UserDetails {
     @Override
     public String getUsername() {
         return user_id;
+    }
+    
+    public String getNickname() {
+        return user_name;
     }
 	
     @Override
@@ -78,7 +78,5 @@ public class MemberVO extends CommonVO implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
-
-
 	
 }

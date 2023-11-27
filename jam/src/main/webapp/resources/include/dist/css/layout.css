@@ -22,9 +22,16 @@ body{
 	color:#000000;
 	font-family: 'TTWanjunuricheR';
 }
+.wrap{
+	min-width : 1160px;
+}
 a:hover {
   text-decoration: none;
 }
+a { 
+	text-decoration: none; 
+}
+		
 label {margin:0;}
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
@@ -34,6 +41,9 @@ input::-webkit-inner-spin-button {
 .color_y {color: #ffdd77;}
 .color_r {color: #ffb689;}
 .color_o {color: #FAAC58;}
+.font-color-red {color: #ffb689;}
+
+.bColor_fff {background-color : #fff;}
 .rem-2 {
 	padding-left : 2rem;
 	padding-right : 2rem;
@@ -74,7 +84,6 @@ input::-webkit-inner-spin-button {
     color: #ffb689;
 }
 .info_title > p {
-    color: #ffb689;
 	font-weight: bold;
     font-size: 20px;
     letter-spacing: 0;
@@ -128,7 +137,49 @@ input::-webkit-inner-spin-button {
 	background-color: #F6E3CE;
 	border-radius: 10px;
 }
+#join, #login {
+	padding: 0 15px;
+	font-size: 12px;
+	color: #a5a5a5;
+}
+.nav-icon {
+	width: 130px;
+	height: 100px;
+	object-fit: contain;
+	margin-left: 100px;
+}
 
+.nav-items {
+	display: inline-block;
+	float: right;
+	margin-top: 25px;
+	margin-right: 80px;
+}
+
+.nav-items>li {
+	float: left;
+	font-weight: 700;
+}
+
+.nav-items>li>a {
+	font-size: 20px;
+	color: #F4BC97;
+}
+
+.nav-items>li>a:hover {text-decoration: none;}
+
+.item {flex-grow: 1; /* default 0 */}
+
+
+.myPageBtn {
+	    border: solid 1px hsla(220,9%,46%,.3);
+		background-color : #fff;
+		border-bottom : none;
+		border-top-left-radius: 10px;
+		border-top-right-radius: 10px;
+		padding: 8px;
+    width: -webkit-fill-available;
+	}
 		
 ul {
 	list-style:none;
@@ -156,7 +207,14 @@ ul {
 	border-radius: 20px;
 	border : none;
 }
-
+.mypage_toggle {
+	background-color: #fff;
+	width: 17rem;
+	height: 10rem;
+	text-align: center;
+	box-shadow: 0px 0px 7px #E6E6E6;
+	top: 13rem;
+}
 
 #detailAddress { width : 390px; }
 
@@ -205,6 +263,50 @@ ul {
 .write_btn {
 	padding: 5px 11px 5px 4px;
 }
+.com_title, .flea_title {border: 3px solid #ffdd77; }
+.com_content, .flea_content{    border: 3px solid #ffdd77;}
+.resize-none {resize: none;}
+.height4 {height:4rem;}
+#textarea{min-height:50rem;}
+.comWriteBtn, .fleaWriteBtn, .jobWriteBtn, .roomWriteBtn{
+	border-radius: 10px;
+	border: 3px solid #ffdd77;
+	background-color: #fff;
+	height: 35px;
+    width: 60px;
+	font-weight: 600;
+	align-items: center;
+	justify-content: center;
+	display: flex;
+	color : #848484;
+}
+.comUpdateBtn, .fleaUpdateBtn, .jobUpdateBtn, .roomUpdateBtn{
+	border-radius: 10px;
+	border: 3px solid #ffdd77;
+	background-color: #fff;
+	height: 35px;
+    width: 60px;
+	font-weight: 600;
+	align-items: center;
+	justify-content: center;
+	display: flex;
+	color : #848484;
+}
+#write {
+	background-color:#ffdd77;
+	color:#fff;
+}
+.logoutA {
+	color: #ffb689;
+	font-weight: bold;
+	font-size: 1.4rem;
+	width: 8rem;
+	border: solid 2px;
+    border-radius: 13px;
+    padding: 6px;
+}
+
+
     
 
 #btnColor {
@@ -228,7 +330,7 @@ ul {
 #replyUpdateBtn:hover, #cancel:hover, #response:hover
 {
 	text-decoration : underline;
-}
+}textarea
 
 #comUpdateBtn, #comDeleteBtn, #fleaUpdateBtn, #fleaDeleteBtn, #roomRentalUpdateBtn, #roomRentalDeleteBtn, #jobUpdateBtn, #jobDeleteBtn{
     border: #E6E6E6 1px solid;
@@ -325,7 +427,19 @@ ul {
     border-radius: 3px;
 	height: 35px;
 }
+.msgBtn2 {
+	background-color:#fff; 
+	color:#0080FF; 
+	font-weight:600; 
+	border:1px solid #0080FF;
+	border-radius: 3px;
+	height: 35px;
+}
 
+.message_contents{
+	display: flex;
+    justify-content: center; margin:10px 0;
+}
 .message{color:#6E6E6E;}
 .send_message {background-color : #fff; border:none;}
 
@@ -338,6 +452,7 @@ ul {
    	color: #6E6E6E;
     font-size: 15px;
 }
+.receiver{margin-bottom:10px;}
 
 select {
 	font-size: 1.3rem;
@@ -370,8 +485,12 @@ ul {list-style: none;}
 a { 
 	text-decoration: none; 
 }
+#header-main:hover {cursor: pointer;}
+.w-full {width: 100%;}
+
 .clear-both{clear : both;}
 .inline {display : inline;}
+.display-block {display: block;}
 .inline-block {display : inline-block;}
 .justify-space-around {justify-content: space-around;}
 .justify-between {justify-content: space-between;}
@@ -384,6 +503,7 @@ a {
 
 .float-right {float : right;}
 .absolute {position : absolute;}
+.position-relativ {position: relative;}
 
 .width_100px{width:100px;}
 .width_80px{width:80px;}
@@ -391,7 +511,9 @@ a {
 .width_45 {width: 45rem;}
 .width_50 {width : 50rem;}
 .width_60 {width:60rem;}
-
+.width-85 {width:80rem;}
+.width-13rem {width : 13rem;}
+		
 .height_35px{height: 35px;}
 
 .border { border: 1px solid #e5e7eb;}
@@ -486,6 +608,7 @@ a {
 
 .border-radius-43px{border-radius: 43px;}
 .border-radius-15px{border-radius: 15px;}
+.border-radius-10 {border-radius:10px;}
 .border-radius-7px{border-radius: 7px;}
 .border-none {border-style: none;}
 

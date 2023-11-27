@@ -4,14 +4,16 @@
 
 	<!-- 회원가입 -->
 	<insert id="memberJoin" parameterType="member">
-	INSERT INTO member (user_id, user_pw, user_name, phone, email, address)
+	INSERT INTO member (user_id, user_pw, user_name, phone, email, address, role, social_login)
 	VALUES (
 		#{user_id}, 
 		#{user_pw}, 
 		#{user_name}, 
 		#{phone}, 
 		#{email},
-		#{address}
+		#{address},
+		'MEMBER',
+		0
 	)
 	</insert>
 	
@@ -56,6 +58,27 @@
   		FROM member
   		WHERE user_id = #{user_id}
   	</select>
+  	
+  	<!-- 회원 닉네임 가져오기 -->
+  	<select id="getUserName" resultType="String">
+  		SELECT user_name
+  		FROM member
+  		WHERE user_id = #{user_id}
+  	</select>
+  	
+  	<!-- refresh 토큰 저장 -->
+  	<update id="addRefreshToken" parameterType="String">
+		UPDATE member
+		SET refreshToken = #{refreshToken}
+		WHERE user_id = #{user_id}
+  	</update>
+  	
+  	<!-- refresh 토큰 삭제 -->
+  	<update id="deleteRefreshToken" parameterType="String">
+  		UPDATE member
+		SET refreshToken = NULL
+		WHERE user_id = #{user_id}
+  	</update>
 	
 	<!-- 마이페이지 - 내가 쓴 글 -->
 	
@@ -201,8 +224,8 @@
 	</sql>
 	
 	<!-- 마이페이지 - 회원 정보 페이지 -->
-	<select id="account" resultType="member" parameterType="member">
-		SELECT user_id, user_pw, user_name, address, phone
+	<select id="account" resultType="member" parameterType="String">
+		SELECT user_id, user_pw, user_name, address, phone, social_login
 		FROM member
 		WHERE user_id = #{user_id}
 	</select>
@@ -282,8 +305,8 @@
 
 	<!-- 카카오 회원 정보 저장 -->
 	<insert id="kakaoInsert" parameterType="java.util.HashMap">
-		INSERT INTO member (user_id, user_name,  email)
-		VALUES (#{user_id}, #{user_name}, #{email})
+		INSERT INTO member (user_id, user_name, user_pw,  email, role, social_login)
+		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, 'MEMBER', 1)
 	</insert>
 	
 	<!-- 네이버 회원 정보 찾기 -->
@@ -297,8 +320,8 @@
 	
 	<!-- 네이버 회원 정보 저장 -->
 	<insert id="naverInsert" parameterType="java.util.HashMap">
-		INSERT INTO member(user_id, user_name, email)
-		VALUES (#{user_id}, #{user_name}, #{email})
+		INSERT INTO member(user_id, user_name, user_pw, email, role, social_login)
+		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, 'MEMBER', 1)
 	</insert>
 	
 	

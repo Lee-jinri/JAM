@@ -13,62 +13,123 @@
 	
 	<script>
 		$(function(){
-			
+			// 현재 로그인한 사용자 아이디와 닉네임 변수
+			let now_userId = "";
+			let now_userName = "";
+
+			// 사용자 정보 가져옴
+			async function getUserInfo() {
+			    try {
+			        const response = await fetch('http://localhost:8080/member/getUserInfo', {
+			            method: 'GET',
+			            headers: {
+			                'Authorization': localStorage.getItem("Authorization")
+			            },
+			        });
+
+			        if (response.ok) {
+			            now_userId = response.headers.get('user_id');
+
+			            const user_name = await response.text();
+            			
+			            if (user_name) {
+			                now_userName = user_name;
+			            }
+			            if (now_userId == null || now_userId == "") {
+			                // textarea를 readonly로 변경
+			                const textarea = document.getElementById('comReply_content');
+			                textarea.readOnly = true;
+
+			                // 로그인 메세지 생성
+			                const replyLogin = document.getElementById("reply_login");
+
+			                const span1 = document.createElement("span");
+			                span1.textContent = "댓글을 작성하려면 ";
+
+			                const loginLink = document.createElement("a");
+			                loginLink.href = "/member/login";
+			                loginLink.textContent = "로그인";
+			                const span2 = document.createElement("span");
+			                span2.textContent = "이 필요합니다.";
+
+			                replyLogin.appendChild(span1);
+			                replyLogin.appendChild(loginLink);
+			                replyLogin.appendChild(span2);
+			            }
+			        } else {
+			            throw new Error('Network response was not ok');
+			        }
+			    } catch (error) {
+			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+			    }
+			}
+
+			// getUserInfo 함수 호출
+			getUserInfo().then(() => {
+			    console.log("now_userID : " + now_userId);
+			    console.log("now_userName : " + now_userName);
+			    
+			    listAll(com_no , now_userId);
+			    
+			    /* 댓글 입력 */
+				$("#reply_insert").click(function(){
+					
+					let insertUrl = "/comreplies/replyInsert";
+					
+					console.log("reply_insert : " +now_userId);
+					let value = JSON.stringify({
+						user_id : now_userId,
+						user_name : now_userName,
+						com_no:com_no,
+						comReply_content:$('#comReply_content').val()
+					});
+					
+					$.ajax({
+						url:insertUrl,
+						type:"post",
+						headers : {
+							"Content-Type" : "application/json"
+						},
+						dataType:"text",
+						data:value,
+						error:function(xhr,textStatus, errorThrown){
+							console.log(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
+							alert("댓글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+						},
+						beforeSend:function(){
+							if($("#comReply_content").val().replace(/\s/g, "") == ""){
+								alert("댓글을 입력하세요.");
+								$("#comReply_content").focus();
+								return false;
+							}
+						},
+						success : function(result){
+							if(result=="SUCCESS"){
+								alert("댓글이 등록되었습니다.");
+								dataReset();
+								listAll(com_no , now_userId);
+							}
+						}
+					});
+					
+				})
+				
+				/* 수정 버튼 클릭*/
+				$(document).on("click","button[data-btn='upBtn']",function(){
+					let panel = $(this).parents("div.panel");
+					let comReply_no = panel.attr("data-num");
+					updateForm(comReply_no, panel);
+				});
+			});
+		
 			let com_no = ${detail.com_no};
 			
-			listAll(com_no);
-			
-			/* 댓글 입력 */
-			$("#reply_insert").click(function(){
-				
-				let insertUrl = "/comreplies/replyInsert";
-				
-				let value = JSON.stringify({
-					com_no:com_no,
-					comReply_content:$('#comReply_content').val()
-				});
-				
-				$.ajax({
-					url:insertUrl,
-					type:"post",
-					headers : {
-						"Content-Type" : "application/json"
-					},
-					dataType:"text",
-					data:value,
-					error:function(xhr,textStatus, errorThrown){
-						alert(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
-					},
-					beforeSend:function(){
-						if($("#comReply_content").val().replace(/\s/g, "") == ""){
-							alert("댓글을 입력하세요.");
-							$("#comReply_content").focus();
-							return false;
-						}
-					},
-					success : function(result){
-						if(result=="SUCCESS"){
-							alert("댓글이 등록되었습니다.");
-							dataReset();
-							listAll(com_no);
-						}
-					}
-				});
-				
-			})
-			
-			/* 수정 버튼 클릭*/
-			$(document).on("click","button[data-btn='upBtn']",function(){
-				let panel = $(this).parents("div.panel");
-				let comReply_no = panel.attr("data-num");
-				updateForm(comReply_no, panel);
-			});
-			
+			/* 수정 할 댓글 html 구성 */
 			function updateForm(comReply_no, panel){
 				$("#user_name").val(panel.find(".panel-title .name").html());
 				$("#user_name").prop("readonly",true);
 				let content = panel.find(".panel-body").html();
-				content = content.replace(/(<br>|<br\/>|<br \/>)/g, '\r\n'); //<br><br/><br />
+				content = content.replace(/(<br>|<br\/>|<br \/>)/g, '\r\n'); 
 				//$("#comReply_content").val(content);
 				let id = panel.find(".panel-title .name");
 				let panelbody = panel.find(".panel-body");
@@ -83,7 +144,7 @@
 			
 			/* 수정 취소 버튼 클릭*/
 			$(document).on("click","#cancel",function(){
-				listAll(com_no);
+				listAll(com_no , now_userId);
 			})
 			
 			/* 댓글 수정 */
@@ -103,7 +164,8 @@
 					}),
 					dataType:'text',
 					error:function(xhr, textStatus, errorThrown){
-						alert(textStatus + " (HTTP-"+xhr.status+" / " + errorThrown + ")");
+						console.log(textStatus + " (HTTP-"+xhr.status+" / " + errorThrown + ")");
+						alert("댓글 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 					},
 					beforeSend:function(){
 						if(!checkForm("#upReplyContent","댓글 내용을")) return false;
@@ -113,27 +175,28 @@
 						if(result == "SUCCESS"){
 							alert("댓글 수정이 완료되었습니다.");
 							dataReset();
-							listAll(com_no);
+							listAll(com_no , now_userId);
 						}
 					}
 				});
 			});
 			
-			/* 삭제 버튼 클릭 */
+			/* 댓글 삭제 버튼 클릭 */
 			$(document).on("click","button[data-btn='delBtn']",function(){
 				let comReply_no = $(this).parents("div.panel").attr("data-num");
-				deleteBtn(comReply_no, com_no);
+				deleteBtn(comReply_no, com_no, now_userId);
 			});
-			
-			
-			
 		})
 		
-		function listAll(com_no){
-			$(".reply").detach();
-			let url = "/comreplies/all/"+com_no;
-			
-			$.getJSON(url, function(data){ 
+		function listAll(com_no, now_userId) {
+		    $(".reply").detach();
+		    
+		 	// 로그인 시 현재 user_id와 댓글 user_id 비교
+		    if(now_userId == null){
+		    	url = "/comreplies/all/" + com_no;
+		    }else url = "/comreplies/all/" + com_no + "?user_id=" + now_userId;
+		    
+		    $.getJSON(url, function(data){ 
 				$(data).each(function(){
 					let comReply_no = this.comReply_no;
 					let user_id = this.user_id;
@@ -141,14 +204,15 @@
 					let comReply_content = this.comReply_content;
 					let comReply_date = this.comReply_date;
 					comReply_content = comReply_content.replace(/(\r\n|\r\n)/g, "<br/>");
-					template(comReply_no,user_name,comReply_content,comReply_date,user_id);
+					template(comReply_no,user_name,comReply_content,comReply_date,user_id, now_userId);
 				});
 			}).fail(function(){
 				alert("댓글 목록을 불러오는데 실패하였습니다. 잠시후에 다시 시도해 주세요.");
 			});
+		    
 		}
 		
-		function template(comReply_no,user_name,comReply_content,comReply_date,user_id){
+		function template(comReply_no,user_name,comReply_content,comReply_date,user_id, now_userId){
 			let $div = $('#reviewList');
 			
 			let $element = $('#item-template').clone().removeAttr('id');
@@ -167,28 +231,24 @@
 			
 			$div.append($element);
 			
-			/* 댓글 작성자와 사용자 아이디가 일치 시 댓글 수정 삭제 버튼 생성 */
-			if("${member.user_id}" != ""){
+			/* 사용자가 로그인 중이면 */
+			if (now_userId != null) {
 				
-				if('${member.user_id}' == user_id ){
-					
+				/* 댓글 작성자와 사용자 아이디가 일치 시 댓글 수정 삭제 버튼 생성 */
+				if(now_userId == user_id ){
 					$element.find('.panel-heading > .panel-title > .panel-btn').html( 
 							"<button type='button' class='delBtn' data-btn='delBtn' >삭제</button>"
 							+ "<button type='button' class='upBtn' data-btn='upBtn'>수정</button>" );
-				}else { /* 댓글 작성자와 사용자 아이디 불일치 시 메세지 버튼 생성 */
+				}else {  
+					/* 댓글 작성자와 사용자 아이디 불일치 시 메세지 버튼 생성*/
 					$element.find('.panel-heading > .panel-title > .message').html(
 							"<button type='button' class='send_message'>"
 							+ "<img class='message_icon' style='width:2rem;' alt='쪽지' src='/resources/include/images/message_icon.svg'>"
 							+ "</button>");
 				}
 			}
-			
 			/* 메세지 버튼에 click 이벤트 */
 			$element.find('.panel-heading > .panel-title > .message > .send_message').attr("onclick", "sendMsg('" + comReply_no + "')");
-			
-			
-			
-			
 		}
 		
 		/*입력 폼 초기화*/
@@ -201,7 +261,7 @@
 		}
 		
 		/* 댓글 삭제 */
-		function deleteBtn(comReply_no, com_no){
+		function deleteBtn(comReply_no, com_no, now_userId){
 			if(confirm("댓글을 삭제하겠습니까?")){
 				$.ajax({
 					url : "/comreplies/"+comReply_no,
@@ -210,15 +270,16 @@
 						"X-HTTP-Method-Override" : "DELETE"
 					},
 					dataType : 'text',
-					error : function(xhr, textStatus, errorThrown){ //실행시 오류가 발생했을 경우
-						alert("댓글 삭제가 완료되지 않았습니다. 잠시후 다시 이용해주세요" + textStatus + " (HTTP -" +xhr.status + " / " + errorThrown + ")");
+					error : function(xhr, textStatus, errorThrown){ 
+						console.log(textStatus + " (HTTP -" +xhr.status + " / " + errorThrown + ")");
+						alert("댓글 삭제 중 오류가 발생했습니다. 잠시후 다시 이용해주세요");
 					},
 					success : function(result){
 						console.log("result : "+result);
 						if(result == 'SUCCESS'){
 							alert("댓글 삭제가 완료되었습니다.");
 							dataReset();
-							listAll(com_no);
+							listAll(com_no, now_userId);
 						}
 					}
 				});
@@ -246,38 +307,30 @@
 	
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div>
 		<!-- 댓글 작성부 -->
 		<div class="replyContainer">
-			<c:choose>
-				<c:when test="${member != null}">
-					<form id="replyForm">
-						<div class="reply_div">
-							<table>
-								<tr>
-									<td id="reply_name">${member.user_name } </td>
-								</tr>
-								<tr>
-									<td>
-										<textarea id="comReply_content" name="comReply_content" class="form-control" rows="3"></textarea>
-									</td>
-								</tr>
-								<tr>
-									<td><button type="button" id="reply_insert">등록</button></td>
-								</tr>
-							</table>
-						</div>	
-					</form>
-				</c:when>
-				<c:otherwise>
-					<div>
-						<span>댓글을 작성하려면</span>
-						<a href="/member/login">로그인</a>
-						<span>이 필요합니다.</span>
-					</div>
-				</c:otherwise>
-			</c:choose>
+			
+			<form id="replyForm">
+				<div class="reply_div">
+					<div id="reply_login"></div>
+					<table>
+						<tr id="reply_userName">
+							<td id="reply_name">${member.user_name } </td>
+						</tr>
+						<tr>
+							<td>
+								<textarea id="comReply_content" name="comReply_content" class="form-control" rows="3"></textarea>
+							</td>
+						</tr>
+						<tr>
+							<td><button type="button" id="reply_insert">등록</button></td>
+						</tr>
+					</table>
+				</div>	
+			</form>
+					
 		</div>
 		
 		

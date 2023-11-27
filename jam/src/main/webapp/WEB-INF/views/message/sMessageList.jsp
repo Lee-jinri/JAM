@@ -60,6 +60,14 @@
 			$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
 			goPage();
 		})
+		
+		$("#receive_btn").click(function(){
+			getUserIDAndRedirect('/message/receiveMessage?user_id=');
+		})
+		
+		$("#send_btn").click(function(){
+			getUserIDAndRedirect('/message/sendMessage?user_id=');
+		})
 	})
 	
 	/*검색을 위한 실질적인 처리 함수*/
@@ -67,11 +75,34 @@
 		if($("#search").val()=="all"){
 			$("#keyword").val("");
 		}
-		$("#searchForm").attr({
-			"method":"get",
-			"action":"/message/sendMessage/"
-		});
-		$("#searchForm").submit();
+		fetch('http://localhost:8080/member/getUserInfo', {
+	        method: 'GET',
+	        headers: {
+	            'Authorization': localStorage.getItem("Authorization")
+	        },
+	    })
+	    .then(response => {
+	        if (response.ok) {
+	            user_id = response.headers.get('user_id');
+	            
+	            if(user_id == null) $(location).attr('href', '/member/login');
+	            
+	            $("#user_id").val(user_id);
+				
+	            $("#searchForm").attr({
+	    			"method":"get",
+	    			"action":"/message/sendMessage/"
+	    		});
+	    		$("#searchForm").submit();
+				
+	        } else {
+	            throw new Error('Network response was not ok');
+	        }
+	    })
+	    .catch(error => {
+	        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+	    });
+		
 	}
 	
 	function senderPopup(message_no){
@@ -88,9 +119,35 @@
 		$("#frmPopup").attr("method", "POST");
 		$("#frmPopup").submit();
 	}
+	
+	function getUserIDAndRedirect(redirectURL) {
+	    fetch('http://localhost:8080/member/getUserInfo', {
+	        method: 'GET',
+	        headers: {
+	            'Authorization': localStorage.getItem("Authorization")
+	        },
+	    })
+	    .then(response => {
+	        if (response.ok) {
+	            return response.headers.get('user_id');
+	        } else {
+	            throw new Error('Network response was not ok');
+	        }
+	    })
+	    .then((user_id) => {
+	        if (user_id) {
+	        	$(location).attr('href', redirectURL + user_id);
+	        } else {
+	            $(location).attr('href', '/member/login');
+	        }
+	    })
+	    .catch(error => {
+	        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+	    });
+	}
 </script>
 </head>
-<body>
+<body class="wrap">
 	<div class="rem-20 my-top-15 my-bottom-15">
 		<div class="title">
 			<p class="text-center my-7">쪽지</p>
@@ -101,6 +158,7 @@
 					<!-- 페이징 처리를 위한 파라미터 -->
 					<input type="hidden" name="pageNum" value="${pageMaker.cvo.pageNum }">
 					<input type="hidden" name="amount" value="${pageMaker.cvo.amount }">
+					<input type="hidden" id="user_id" name="user_id">
 					
 					<div class="item-center flex">
 						<!-- <label>검색조건</label> -->
@@ -120,8 +178,8 @@
 		</div>	
 		
 		<div class="content">
-			<button id="receive_btn" class="width_100px height_35px ml-1" onclick="location.href='/message/receiveMessage'" >받은 쪽지</button>
-			<button id="send_btn" class="width_100px height_35px ml-1" onclick="location.href='/message/sendMessage'" >보낸 쪽지</button>
+			<button id="receive_btn" class="width_100px height_35px ml-1"  >받은 쪽지</button>
+			<button id="send_btn" class="width_100px height_35px ml-1" >보낸 쪽지</button>
 			
 			<div class="border border-radius-15px" >
 				<form id="frmPopup" name="frmPopup">

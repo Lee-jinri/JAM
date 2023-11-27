@@ -7,8 +7,10 @@ import javax.sql.DataSource;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
 import org.mybatis.spring.annotation.MapperScan;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -19,16 +21,23 @@ import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
 @MapperScan(basePackages= {"com.jam.**.dao"})
+@PropertySource("classpath:application.properties")
 public class RootConfig {
 	
+	@Value("${db.username}")
+    private String dbUsername;
+
+    @Value("${db.password}")
+    private String dbPassword;
+    
 	@Bean
 	public DataSource dataSource() {
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
 		hikariConfig.setJdbcUrl("jdbc:log4jdbc:oracle:thin:@localhost:1521/xepdb1");
 		
-		hikariConfig.setUsername("c##jam");
-		hikariConfig.setPassword("jam1234");
+		hikariConfig.setUsername(dbUsername);
+		hikariConfig.setPassword(dbPassword);
 		
 		HikariDataSource dataSource = new HikariDataSource(hikariConfig);
 		
@@ -56,6 +65,7 @@ public class RootConfig {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp.naver.com");
         mailSender.setPort(465);
+        
         mailSender.setUsername("");
         mailSender.setPassword("");
 

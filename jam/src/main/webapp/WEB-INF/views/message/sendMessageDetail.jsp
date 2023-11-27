@@ -62,7 +62,7 @@
 		<div class="border-bottom my-top-7"></div>
 		
 		<div class="msgBtn_div my-top-4 margin15px">
-			<button type="button" class="msgBtn mr-1" id="sMessage_list"style="width: 4rem;" >목록</button>
+			<button type="button" class="msgBtn mr-1 cursor-pointer" id="sMessage_list"style="width: 4rem;" >목록</button>
 		</div>
 	</div>
 </body>

@@ -5,8 +5,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
@@ -22,22 +20,21 @@ public class CustomUserDetailsService implements UserDetailsService {
 	
 	@Override
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-		
+        
 		MemberVO user = memberDao.findByUsername(username);
 		
-		
 		if(user == null) {
-			log.info("loadUserByUsername");
+			log.info("userDetailsService 사용자 null");
             throw new UsernameNotFoundException("사용자를 찾을 수 없습니다 " + username);
         }
-       
+		
+		log.info("UserDetailsService loadUserByUsername 사용자 : " + user);
        
         return User.builder()
                 .username(user.getUser_id())
-                .password(user.getUser_pw()) 
+                .password(user.getUser_pw())
                 .roles(user.getRole())
                 .build();
-		
 	}
 
 }

@@ -46,7 +46,7 @@ public interface MemberDAO {
 	
 	
 	// 마이페이지 - 회원 정보 페이지
-	public MemberVO account(MemberVO member);
+	public MemberVO account(String user_id);
 
 	// 마이페이지 - 회원 정보 수정
 	public int memberUpdate(MemberVO member);
@@ -61,7 +61,7 @@ public interface MemberDAO {
 	public int updatePw(@Param("user_id") String user_id, @Param("user_pw") String user_pw);
 
 	// 전화번호 변경
-	public int phoneModi(MemberVO m_vo);
+	public int phoneModi(@Param("user_id") String user_id, @Param("phone") String phone);
 	
 	// 비밀번호 확인
 	public String pwConfirm(MemberVO m_vo);
@@ -89,6 +89,17 @@ public interface MemberDAO {
 
 	// 사용자 정보 확인
 	public MemberVO findByUsername(String username);
+
+	// 회원 닉네임 가져오기
+	public String getUserName(String user_id);
+
+	// refresh 토큰 저장
+	public int addRefreshToken(@Param("user_id") String user_id, @Param("refreshToken") String refreshToken);
+
+	// refresh 토큰 삭제
+	public int deleteRefreshToken(String user_id);
+	
+	
 
 
 

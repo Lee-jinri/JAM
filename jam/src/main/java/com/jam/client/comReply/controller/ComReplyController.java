@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
@@ -38,27 +39,19 @@ public class ComReplyController {
 	
 	/***************************
 	 * @param Integer com_no
-	 * @param ComReplyVO crvo
+	 * @param ComReplyVO crvo	
 	 * @param MemberVO member
 	 * @return 커뮤니티 댓글 리스트
 	 ****************************/
 	@GetMapping(value = "/all/{com_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<ComReplyVO> replyList(@PathVariable("com_no") Integer com_no,@ModelAttribute("data") ComReplyVO crvo, MemberVO member, HttpServletRequest request, Model model){
-		System.out.println("replyList 호출 성공");
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
+	public List<ComReplyVO> replyList(@PathVariable("com_no") Integer com_no, @RequestParam(value = "user_id", required = false) String user_id, @ModelAttribute("data") ComReplyVO crvo, MemberVO member, HttpServletRequest request, Model model){
+		log.info("community reply list");
 		
 		List<ComReplyVO> reply = null;
 		reply = comreplyService.comReplyList(com_no);
 		
-		if(vo != null) {
-   		 
-			session.setAttribute("member", vo);
-	   		crvo.setUser_id(vo.getUser_id());
-	   		crvo.setUser_name(vo.getUser_name());
-		} 
-		
+		crvo.setUser_id(user_id);
+   		
 		return reply;
 	}
 	
@@ -72,14 +65,7 @@ public class ComReplyController {
 	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyInsert(@RequestBody ComReplyVO crvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
 		
-		System.out.println("replyInsert 호출 성공");
-		HttpSession session = request.getSession();
-		MemberVO vo =(MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		
-		crvo.setUser_id(vo.getUser_id());
-		crvo.setUser_name(vo.getUser_name());
-		log.info("comReplyVO : "+crvo);
+		log.info("community replyInsert");
 		
 		int result = 0;
 		
@@ -100,6 +86,7 @@ public class ComReplyController {
 	
 		crvo.setComReply_no(comReply_no);
 		int result = comreplyService.replyUpdate(crvo);
+		
 		return(result ==1) ? "SUCCESS" : "FAILURE";
 	}
 	

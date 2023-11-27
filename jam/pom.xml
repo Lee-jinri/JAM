@@ -333,8 +333,19 @@
 			<artifactId>snakeyaml</artifactId>
 			<version>1.28</version>
 		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
+		<dependency>
+		    <groupId>org.springframework.data</groupId>
+		    <artifactId>spring-data-redis</artifactId>
+		    <version>2.6.10</version>
+		</dependency>
+
+
 
 	</dependencies>
+	
+	
 	<build>
 		<plugins>
 			<plugin>
@@ -386,5 +397,6 @@
 	            <directory>src/main/resources</directory>
 	        </resource>
 	    </resources>
+	    
 	</build>
 </project>

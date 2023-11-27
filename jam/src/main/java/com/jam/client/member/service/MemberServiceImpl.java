@@ -18,7 +18,10 @@ import javax.mail.internet.MimeMessage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.google.gson.JsonElement;
@@ -31,13 +34,17 @@ import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
 
+import lombok.extern.log4j.Log4j;
+
 @Service
+@Log4j
 public class MemberServiceImpl implements MemberService {
 
 	@Autowired
 	private MemberDAO memberDao;
 	
-	@Autowired(required = true)
+	
+	@Autowired
 	private BCryptPasswordEncoder encoder;
 
 	@Autowired
@@ -129,8 +136,8 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 마이페이지 - 회원 정보 페이지
 	@Override
-	public MemberVO account(MemberVO member) {
-		return memberDao.account(member);
+	public MemberVO account(String user_id) {
+		return memberDao.account(user_id);
 	}
 
 	// 마이페이지 - 회원 정보 수정
@@ -234,8 +241,8 @@ public class MemberServiceImpl implements MemberService {
 			
 			StringBuilder sb = new StringBuilder();
 			sb.append("grant_type=authorization_code");
-			sb.append("&client_id="); //본인이 발급받은 key
-			sb.append("&redirect_uri=http://localhost:8080/member/kakao_login"); // 본인이 설정한 주소
+			sb.append("&client_id="); 
+			sb.append("&redirect_uri=http://localhost:8080/member/kakao_login"); 
 			sb.append("&code=" + code);
 			
 			// 버퍼에 있는 값 전부 출력
@@ -264,9 +271,6 @@ public class MemberServiceImpl implements MemberService {
             
 			access_Token = element.getAsJsonObject().get("access_token").getAsString();
 			refresh_Token = element.getAsJsonObject().get("refresh_token").getAsString();
-            
-			System.out.println("access_token : " + access_Token);
-			System.out.println("refresh_token : " + refresh_Token);
             
 			br.close();
 			bw.close();
@@ -312,8 +316,9 @@ public class MemberServiceImpl implements MemberService {
 			
 			String[] id = email.split("@");
 			
-			userInfo.put("user_id", id[0]);
+			userInfo.put("user_id", "kakao"+id[0]);
 			userInfo.put("user_name", nickname);
+			userInfo.put("user_pw", encoder.encode("kakaoLoginPassword"));
 			userInfo.put("email", email);
 			
 		} catch (IOException e) {
@@ -322,7 +327,8 @@ public class MemberServiceImpl implements MemberService {
 		
 		// 회원 정보가 있는지 확인
 		MemberVO result = memberDao.findKakao(userInfo);
-			
+		
+		log.info(result);
 		// 회원 정보 없을 때
 		if(result == null) {
 			memberDao.kakaoInsert(userInfo);
@@ -361,13 +367,10 @@ public class MemberServiceImpl implements MemberService {
 			sb.append("&client_secret="); // Client Secret
 			sb.append("&code=" + code);
 			
-			// 버퍼에 있는 값 전부 출력
 			bw.write(sb.toString());
 			
-			// 남아있는 데이터를 모두 출력
 			bw.flush();
             
-			// 결과 코드가 200이라면 성공
 			int responseCode = conn.getResponseCode();
 			System.out.println("responseCode : " + responseCode);
             
@@ -379,8 +382,7 @@ public class MemberServiceImpl implements MemberService {
 			while ((line = br.readLine()) != null) {
 				result += line;
 			}
-			System.out.println("response body : " + result);
-            
+			
 			// Gson 라이브러리에 포함된 클래스로 JSON파싱 객체 생성
 			JsonParser parser = new JsonParser();
 			JsonElement element = parser.parse(result);
@@ -388,8 +390,6 @@ public class MemberServiceImpl implements MemberService {
 			access_Token = element.getAsJsonObject().get("access_token").getAsString();
 			refresh_Token = element.getAsJsonObject().get("refresh_token").getAsString();
             
-			System.out.println("access_token : " + access_Token);
-			System.out.println("refresh_token : " + refresh_Token);
 			
 			br.close();
 			bw.close();
@@ -415,7 +415,7 @@ public class MemberServiceImpl implements MemberService {
 			conn.setRequestProperty("Authorization", "Bearer " + access_Token);
 				
 			int responseCode = conn.getResponseCode();
-			System.out.println("responseCode : " + responseCode);
+			
 			BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
 			String line = "";
 			String result = "";
@@ -423,7 +423,6 @@ public class MemberServiceImpl implements MemberService {
 			while ((line = br.readLine()) != null) {
 				result += line;
 			}
-			System.out.println("response body : " + result);
 			
 			JsonParser parser = new JsonParser();
 			JsonElement element = parser.parse(result);
@@ -435,6 +434,7 @@ public class MemberServiceImpl implements MemberService {
 			
 			userInfo.put("user_id", user_id);
 			userInfo.put("user_name", name);
+			userInfo.put("user_pw", encoder.encode("naverLoginPassword"));
 			userInfo.put("email", email);
 			
 		} catch (IOException e) {
@@ -449,15 +449,15 @@ public class MemberServiceImpl implements MemberService {
 			memberDao.naverInsert(userInfo);
 			return memberDao.findNaver(userInfo);
 		} else {
-			return result; // 회원 정보 있으면 회원 정보 리턴
+			return result; 
 		}
 	}
 	
 	
 	// 전화번호 변경
 	@Override
-	public int phoneModi(MemberVO m_vo) {
-		return memberDao.phoneModi(m_vo);
+	public int phoneModi(String user_id, String phone) {
+		return memberDao.phoneModi(user_id, phone);
 	}
 	
 	// 비밀번호 확인
@@ -483,34 +483,27 @@ public class MemberServiceImpl implements MemberService {
 
 	// 회원 탈퇴
 	@Override
-	public int withDraw(String user_id) {
-		return memberDao.withDraw(user_id);
+	public void withDraw(String user_id) {
+		memberDao.withDraw(user_id);
+		
 	}
 
-	
+	// 회원 닉네임 가져오기
+	@Override
+	public String getUserName(String user_id) {
+		return memberDao.getUserName(user_id);
+	}
 
-	
+	// refresh 토큰 저장
+	@Override
+	public int addRefreshToken(String user_id, String refreshToken) {
+		return memberDao.addRefreshToken(user_id, refreshToken);
+	}
 
+	// refresh 토큰 삭제
+	@Override
+	public int deleteRefreshToken(String user_id) {
+		return memberDao.deleteRefreshToken(user_id);
+	}
 	
-
-	
-
-	
-
-
-	
-	
-	
-	
-	
-
-	
-
-
-	
-
-	
-
-
-
 }

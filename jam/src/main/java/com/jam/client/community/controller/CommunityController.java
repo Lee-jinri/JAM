@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -53,6 +54,7 @@ public class CommunityController {
 		
 		model.addAttribute("communityList",communityList);
 		
+		// 페이징 처리
 		int total = comService.comListCnt(com_vo);
 		model.addAttribute("pageMaker", new PageDTO(com_vo, total));
 		return "community/communityList";
@@ -65,7 +67,9 @@ public class CommunityController {
 	@RequestMapping(value="/communityDetail/{com_no}", method=RequestMethod.GET)
 	public String communityDetail(@ModelAttribute("data")CommunityVO com_vo, Model model) throws Exception{
 		
+		// 조회수 증가
 		comService.comReadCnt(com_vo);
+		
 		CommunityVO detail = comService.boardDetail(com_vo);
 		
 		model.addAttribute("detail",detail);
@@ -74,27 +78,12 @@ public class CommunityController {
 	}
 	
 	/***************************************
-	 * @param CommunityVO com_vo
 	 * @return 커뮤니티 글 작성 페이지
 	 ***************************************/
 	@RequestMapping(value="/communityWrite", method=RequestMethod.GET)
-	public String communityWriteForm(HttpServletRequest request, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
-		
-		String url = "";
-		
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			MemberVO member = (MemberVO) session.getAttribute("member");
-			if(member != null) {
-				url = "community/communityWrite";
-			}else {
-				url = "member/login";
-			}
-		}else {
-			url = "member/login";
-		}
-		
-		return url;
+	public String communityWriteForm() throws Exception{
+				
+		return "community/communityWrite";
 	}
 	
 	/******************************
@@ -104,27 +93,22 @@ public class CommunityController {
 	 * @return 성공 시 작성한 커뮤니티 글 상세 페이지/ 실패 시 커뮤니티 글 작성 페이지
 	 *****************************/
 	@RequestMapping(value="/communityWrite", method=RequestMethod.POST)
-	public ModelAndView communityWrite(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView communityWrite(RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = comService.comInsert(com_vo);
-		
-		if(result == 1) {
+		try {
+			comService.comInsert(com_vo);
+			
 			mav.setViewName("redirect:/community/communityDetail/"+com_vo.getCom_no());
+
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		} catch (Exception e) {
+			log.error("communityWrite 데이터 저장 중 오류 : " + e.getMessage());
+			
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/community/communityWrite");
+			
 			return mav;
 		}
 	}
@@ -134,17 +118,9 @@ public class CommunityController {
 	 * @param CommunityVO com_vo
 	 * @return 커뮤니티 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/communityUpdateForm", method=RequestMethod.POST)
-	public ModelAndView communityUpdateForm(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, CommunityVO com_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
-		
+	@RequestMapping(value="/communityUpdateForm", method=RequestMethod.GET)
+	public ModelAndView communityUpdateForm(CommunityVO com_vo, Model model) throws Exception{
+
 		ModelAndView mav = new ModelAndView();
 		
 		CommunityVO updateData = comService.comUpdateForm(com_vo);
@@ -162,30 +138,23 @@ public class CommunityController {
 	 * @return 성공 시 수정한 커뮤니티 글 상세 페이지 / 실패 시 커뮤니티 글 수정 페이지
 	 ***********************************/
 	@RequestMapping(value="/communityUpdate", method=RequestMethod.POST)
-	public ModelAndView communityUpdate(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, CommunityVO com_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
+	public ModelAndView communityUpdate(RedirectAttributes rttr, CommunityVO com_vo, Model model) throws Exception{
 		
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = comService.comUpdate(com_vo);
-		
-		
-		if(result == 1) {
+		try {
+			comService.comUpdate(com_vo);
+			
 			mav.setViewName("redirect:/community/communityDetail/"+com_vo.getCom_no());
+			
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		} catch(Exception e) {
+			log.error("communityUpdate 데이터 수정 중 오류 : " + e.getMessage());
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/community/communityUpdate");
 			return mav;
 		}
+		
 	}
 	
 	/**********************************
@@ -195,29 +164,22 @@ public class CommunityController {
 	 * @return 성공 시 커뮤니티 글 목록 / 실패 시 커뮤니티 글 상세 페이지
 	 **********************************/
 	@RequestMapping(value="/communityDelete", method=RequestMethod.POST)
-	public ModelAndView communityDelete(HttpServletRequest request, HttpServletResponse response, MemberVO member, RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
-		
-		HttpSession session = request.getSession();
-		MemberVO vo = (MemberVO)session.getAttribute("member");
-		session.setAttribute("member", vo);
-		System.out.println(vo);
-		
-		member.setUser_id(vo.getUser_id());
-		member.setUser_name(vo.getUser_name());
-		
+	public ModelAndView communityDelete(RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
+
 		ModelAndView mav = new ModelAndView();
 		
-		int result = 0;
-		result = comService.comDelete(com_vo);
-		
-		if(result == 1) {
+		try {
+			comService.comDelete(com_vo);
+			
 			mav.setViewName("redirect:/community/communityList");
 			return mav;
-		}else {
-			rttr.addFlashAttribute("result", 1);
+		} catch (Exception e) {
+			log.error("communityDelete 데이터 삭제 중 오류 : " + e.getMessage());
+			rttr.addFlashAttribute("result", "error");
 			mav.setViewName("redirect:/community/communityDetail/"+com_vo.getCom_no());
 			return mav;
 		}
+		
 	}
 	
 	/********************************
@@ -232,7 +194,6 @@ public class CommunityController {
 		// 내부경로로 저장
 		// getRealPath 실제 톰캣이 돌아가고 있는 컴퓨터에서 그 곳의 절대 주소값 리턴
 		String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
-		log.info(contextRoot);
 		String fileRoot = contextRoot+"resources/fileupload/";
 		
 		String originalFileName = multipartFile.getOriginalFilename();	//오리지날 파일명

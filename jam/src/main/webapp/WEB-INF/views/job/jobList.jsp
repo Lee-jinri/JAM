@@ -6,51 +6,6 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM - 구인구직</title>
-	<style type="text/css">
-		.icon {width : 35px;}
-		a { 
-			text-decoration: none; 
-		}
-		.inline-block {display : inline-block;}
-		.justify-between {
-		    justify-content: space-between;
-		}
-		
-		.items-center {
-		    align-items: center;
-		}
-		.flex {
-		    display: flex;
-		}
-		.border {
-		    border: 1px solid #e5e7eb;
-		}
-		.border-top {
-			border-top-color: hsla(220,9%,46%,.3);
-			border-top: 1px solid #e5e7eb;
-		}
-		.border-bottom {
-			border-bottom-color: hsla(220,9%,46%,.3);
-			border-bottom: 1px solid #e5e7eb;
-		}
-		.py-4 {
-		    padding-top: 1rem;
-		    padding-bottom: 1rem;
-		}
-		.my-7 {
-		    margin-top: 1.75rem;
-		    margin-bottom: 1.75rem;
-		}
-		.border-none {
-		    border-style: none;
-		}
-		.width-13rem {
-			width : 13rem;
-		}
-		
-		#btnColor {background-color : #FDE4A4}
-		
-	</style>
 	
 	<script type="text/javascript">
 		$(function(){
@@ -71,6 +26,15 @@
 				$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
 				goPage();
 			})
+			
+			$("#jobWriteBtn").click(function(){
+				var accessToken = localStorage.getItem("Authorization");
+			
+				if(accessToken == null) $(location).attr('href', '/member/login');
+				else{
+					$(location).attr('href', '/job/jobWrite');
+				}
+			})
 		})
 		
 		/*검색을 위한 실질적인 처리 함수*/
@@ -86,7 +50,7 @@
 		}
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div class="rem-20 my-top-15 my-bottom-15">
 		<div class="title">
 			<p class="text-center">구인 / 구직</p>
@@ -95,7 +59,7 @@
 			<div class="justify-between flex py-4">
 				<div class="write_btn write_btn_border flex items-center border-radius-7px">
 					<img class="icon" src="/resources/include/images/write.svg">
-					<a class="write_btn_font" href="/job/jobWrite">작성하기</a>
+					<button type="button" id="jobWriteBtn" class="write_btn_font border-none bColor_fff">작성하기</button>
 				</div>
 			</div>
 			

@@ -13,7 +13,7 @@
 <title>JAM - MESSAGE</title>
 	<style>
 	
-		body {margin:0;}
+		body {margin:0; width=500; height=370;}
 		
 		.border{
 			border-bottom: 1px solid #BDBDBD;

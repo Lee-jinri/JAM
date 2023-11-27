@@ -16,13 +16,15 @@ import com.jam.client.service.MainService;
 
 @Controller
 public class MainController {
-	
 	@Autowired
 	private MainService mainService;
 	
+	/*************************
+	 * 게시판 글 불러오기
+	 * @return 메인 페이지
+	 **************************/
 	@RequestMapping(value = "/", method = RequestMethod.GET)
 	public String home(Model model) {
-		
 		List<JobVO> jobList = mainService.jobList();
 		List<RoomRentalVO> roomList = mainService.roomList();
 		List<FleaMarketVO> fleaList = mainService.fleaList();

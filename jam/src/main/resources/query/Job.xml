@@ -48,7 +48,7 @@
 	
 	<!-- 구인구직 상세페이지 -->
 	<select id="jobDetail" resultType="job">
-		SELECT job_no, job_title, job_content, job_hits, to_char(job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, user_name, user_id 
+		SELECT job_no, job_title, job_content, job_hits, to_char(job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, job_category, job_status,pay_category, pay, user_name, user_id 
 		FROM job 
 		WHERE job_no = #{job_no}
 	</select>

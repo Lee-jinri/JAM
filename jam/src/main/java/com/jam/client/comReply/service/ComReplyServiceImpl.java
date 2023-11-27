@@ -13,7 +13,6 @@ import com.jam.client.community.dao.CommunityDAO;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
-@Log4j
 @Service
 public class ComReplyServiceImpl implements ComReplyService {
 	

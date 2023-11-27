@@ -3,6 +3,8 @@ package com.jam.client.member.service;
 
 import java.util.List;
 
+import org.springframework.security.core.Authentication;
+
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.job.vo.JobVO;
@@ -42,7 +44,7 @@ public interface MemberService {
 	public int myRoomListCnt(RoomRentalVO room_vo);
 		
 	// 마이페이지 - 회원 정보 페이지
-	public MemberVO account(MemberVO member);
+	public MemberVO account(String user_id);
 
 	// 마이페이지 - 회원 정보 수정
 	public int memberUpdate(MemberVO member);
@@ -69,7 +71,7 @@ public interface MemberService {
 	public MemberVO getNaverInfo(String access_Token);
 	
 	// 전화번호 변경
-	public int phoneModi(MemberVO m_vo);
+	public int phoneModi(String user_id, String phone);
 	
 	// 비밀번호 확인
 	public String pwConfirm(MemberVO m_vo);
@@ -81,7 +83,18 @@ public interface MemberService {
 	public int addressModi(MemberVO m_vo);
 
 	// 회원 탈퇴
-	public int withDraw(String user_id);
+	public void withDraw(String user_id);
+
+	// 회원 닉네임 가져오기
+	public String getUserName(String user_id);
+
+	// refresh 토큰 저장
+	public int addRefreshToken(String user_id, String refreshToken);
+
+	// refresh 토큰 삭제
+	public int deleteRefreshToken(String user_id);
+
+	
 
 	
 

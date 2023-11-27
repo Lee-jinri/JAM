@@ -6,46 +6,7 @@
 <meta charset="UTF-8">
 <title>JAM - 중고악기</title>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-	<style type="text/css">
-		.icon {width : 35px;}
-		a { 
-			text-decoration: none; 
-		}
-		.inline-block {display : inline-block;}
-		.justify-between {
-		    justify-content: space-between;
-		}
-		
-		.items-center {
-		    align-items: center;
-		}
-		.flex {
-		    display: flex;
-		}
-		.border-top {
-			border-top-color: hsla(220,9%,46%,.3);
-			border-top: 1px solid #e5e7eb;
-		}
-		.border-bottom {
-			border-bottom-color: hsla(220,9%,46%,.3);
-			border-bottom: 1px solid #e5e7eb;
-		}
-		.py-4 {
-		    padding-top: 1rem;
-		    padding-bottom: 1rem;
-		}
-		.my-7 {
-		    margin-top: 1.75rem;
-		    margin-bottom: 1.75rem;
-		}
-		.border-none {
-		    border-style: none;
-		}
-		.width-13rem {
-			width : 13rem;
-		}
-		#btnColor {background-color : #FDE4A4}
-	</style>
+
 	
 	<script type="text/javascript">
 	$(function(){
@@ -66,6 +27,15 @@
 			$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
 			goPage();
 		})
+		
+		$("#fleaWriteBtn").click(function(){
+				var accessToken = localStorage.getItem("Authorization");
+			
+				if(accessToken == null) $(location).attr('href', '/member/login');
+				else{
+					$(location).attr('href', '/fleaMarket/fleaWrite');
+				}
+			})
 	})
 	
 	/*검색을 위한 실질적인 처리 함수*/
@@ -81,7 +51,7 @@
 	}
 	</script>
 </head>
-<body>
+<body class="wrap">
 	<div class="rem-20  my-top-15 my-bottom-15">
 		<div class="title">
 			<p class="text-center">중고악기</p>
@@ -90,7 +60,7 @@
 			<div class="justify-between flex py-4">
 				<div class="write_btn write_btn_border flex items-center border-radius-7px">
 					<img class="icon" src="/resources/include/images/write.svg">
-					<a class="write_btn_font" href="/fleaMarket/fleaWrite">작성하기</a>
+					<button type="button" id="fleaWriteBtn" class="write_btn_font border-none bColor_fff">작성하기</button>
 				</div>
 			</div>
 			
@@ -158,14 +128,11 @@
 								        </c:otherwise>
 									</c:choose>
 								</div>
-								<div class="">
-									<span>${fleaMarketBoard.price }원</span>
-									<div class="flex float-right items-center width-13rem justify-between">
-										<img class="icon" id="" style="width:3rem;" src="/resources/include/images/hits.svg">
-										<span class="font-size-1 ml-05">${fleaMarketBoard.flea_hits }</span>
-										<img class="icon ml-2" id="" style="width:3rem;" src="/resources/include/images/reply.svg">
-										<span class="font-size-1 ml-05">${fleaMarketBoard.flea_reply_cnt }</span>
-									</div>
+								<div class="flex float-right items-center width-13rem justify-between">
+									<img class="icon" id="" style="width:3rem;" src="/resources/include/images/hits.svg">
+									<span class="font-size-1 ml-05">${fleaMarketBoard.flea_hits }</span>
+									<img class="icon ml-2" id="" style="width:3rem;" src="/resources/include/images/reply.svg">
+									<span class="font-size-1 ml-05">${fleaMarketBoard.flea_reply_cnt }</span>
 								</div>
 							</div>
 						</li>
