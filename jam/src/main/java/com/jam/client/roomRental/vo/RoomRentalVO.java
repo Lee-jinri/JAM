@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class RoomRentalVO  extends CommonVO{
 
-	private int roomRental_no;
+	private Long roomRental_no;
 	private String roomRental_title;
 	private String roomRental_content;
 	private int roomRental_status;

@@ -7,17 +7,6 @@
 <head>
 <meta charset="UTF-8">
 <title>마이페이지 - 합주실/연습실 작성 글</title>
-<style>
-	.myPageBtn {
-	    border: solid 1px;
-		background-color : #fff;
-		border-bottom : none;
-		border-top-left-radius: 10px;
-		border-top-right-radius: 10px;
-		padding: 8px;
-    width: -webkit-fill-available;
-	}
-</style>
 	<script>
 		$(function(){
 			$("#searchBtn").click(function(){
@@ -67,20 +56,20 @@
 		
 
 		function getUserIDAndRedirect(redirectURL, search, keyword) {
-		    fetch('http://localhost:8080/member/getUser-id', {
+		    fetch('http://localhost:8080/api/member/getUserInfo', {
 		        method: 'GET',
 		        headers: {
 		            'Authorization': localStorage.getItem("Authorization")
 		        },
 		    })
 		    .then(response => {
-		        if (response.ok) {
-		            return response.headers.get('user_id');
-		        } else {
+		        if (!response.ok) {
 		            throw new Error('Network response was not ok');
 		        }
+		        return response.json();
 		    })
-		    .then((user_id) => {
+		    .then((data) => {
+		    	let user_id = data.user_id;
 		        if (user_id) {
 		        	$(location).attr('href', redirectURL + user_id + "&search=" + search + "&keyword=" + keyword);
 		        } else {
@@ -145,7 +134,7 @@
 							<c:forEach items="${roomMyWrite }" var="roomBoard" varStatus="status">
 								<tr class="text-center" data-num="${roomBoard.roomRental_no}">
 									<td class="class">
-										<a class="" href="/roomRental/roomRentalDetail/${roomBoard.roomRental_no }">${roomBoard.roomRental_title}</a>
+										<a class="" href="/roomRental/board/${roomBoard.roomRental_no }">${roomBoard.roomRental_title}</a>
 									</td>
 									<td class="col-md-1 ">${roomBoard.roomRental_date}</td>
 									<td class="col-md-1 ">${roomBoard.roomRental_hits }</td>

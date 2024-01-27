@@ -5,8 +5,8 @@ import lombok.Data;
 @Data
 public class JobReplyVO {
 
-	private int jobReply_no;			// 구인구직 댓글 번호
-	private int job_no;					// 구인구직 글 번호
+	private Long jobReply_no;			// 구인구직 댓글 번호
+	private Long job_no;					// 구인구직 글 번호
 	private String jobReply_content;	// 구인구직 댓글 내용
 	private String jobReply_date;		// 구인구직 댓글 작성일
 	private String user_id;				// 구인구직 댓글 작성자 id	

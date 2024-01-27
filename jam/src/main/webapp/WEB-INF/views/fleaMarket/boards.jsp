@@ -31,9 +31,9 @@
 		$("#fleaWriteBtn").click(function(){
 				var accessToken = localStorage.getItem("Authorization");
 			
-				if(accessToken == null) $(location).attr('href', '/member/login');
+				if(accessToken != null) $(location).attr('href', '/fleaMarket/board/write');
 				else{
-					$(location).attr('href', '/fleaMarket/fleaWrite');
+					if(confirm("로그인 후 이용할 수 있는 서비스 입니다. 로그인 하시겠습니까?"))$(location).attr('href', '/member/login');
 				}
 			})
 	})
@@ -110,20 +110,20 @@
 						            		<c:if test="${fleaMarketBoard.flea_category == 0}">
 												<span class="border-g " style="color:#04B431;">판매</span>
 												<div class="inline-block my-bottom-4 ml-1">
-													<a class="font-weight-bold" href="/fleaMarket/fleaMarketDetail/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
+													<a class="font-weight-bold" href="/fleaMarket/board/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
 												</div>
 											</c:if>
 											<c:if test="${fleaMarketBoard.flea_category == 1}">
 												<span class="border-r" style="color:#FE2E2E;">구매</span>
 												<div class="inline-block my-bottom-4 ml-1">
-													<a class="font-weight-bold" href="/fleaMarket/fleaMarketDetail/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
+													<a class="font-weight-bold" href="/fleaMarket/board/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
 												</div>
 											</c:if>
 										</c:when>
 										<c:otherwise>
 											<span class="border" style="color:#A4A4A4;">거래 완료</span>
 											<div class="inline-block my-bottom-4 ml-1">
-												<a class="font-weight-bold" style="color:#A4A4A4;" href="/fleaMarket/fleaMarketDetail/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
+												<a class="font-weight-bold" style="color:#A4A4A4;" href="/fleaMarket/board/${fleaMarketBoard.flea_no }">${fleaMarketBoard.flea_title }</a>
 											</div>
 								        </c:otherwise>
 									</c:choose>

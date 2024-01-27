@@ -1,12 +1,16 @@
 package com.jam.client;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
@@ -19,22 +23,29 @@ public class MainController {
 	@Autowired
 	private MainService mainService;
 	
-	/*************************
-	 * 게시판 글 불러오기
-	 * @return 메인 페이지
-	 **************************/
-	@RequestMapping(value = "/", method = RequestMethod.GET)
-	public String home(Model model) {
-		List<JobVO> jobList = mainService.jobList();
-		List<RoomRentalVO> roomList = mainService.roomList();
-		List<FleaMarketVO> fleaList = mainService.fleaList();
-		List<CommunityVO> comList = mainService.comList();
-		
-		model.addAttribute("jobList", jobList);
-		model.addAttribute("roomList", roomList);
-		model.addAttribute("fleaList", fleaList);
-		model.addAttribute("comList", comList);
-		
+	@GetMapping("/")
+	public String homePage() {
 		return "main";
 	}
+	
+	/*************************
+	 * 메인 페이지 게시판 글 불러오기
+	 * @return 메인 페이지
+	 **************************/
+	@ResponseBody
+	@GetMapping(value = "/boards", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Object>> home() {
+		List<JobVO> jobList = mainService.jobList();
+        List<RoomRentalVO> roomList = mainService.roomList();
+        List<FleaMarketVO> fleaList = mainService.fleaList();
+        List<CommunityVO> comList = mainService.comList();
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("jobList", jobList);
+        response.put("roomList", roomList);
+        response.put("fleaList", fleaList);
+        response.put("comList", comList);
+
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 }

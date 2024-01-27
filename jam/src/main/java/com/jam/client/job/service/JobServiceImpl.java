@@ -18,50 +18,50 @@ public class JobServiceImpl implements JobService {
 	
 	// 구인구직 
 	@Override
-	public List<JobVO> jobList(JobVO job_vo) {
-		return jobDao.jobList(job_vo);
+	public List<JobVO> getBoards(JobVO job_vo) {
+		return jobDao.getBoards(job_vo);
 	}
 
 	// 구인구직 페이징
 	@Override
-	public int jobListCnt(JobVO job_vo) {
-		return jobDao.jobListCnt(job_vo);
+	public int listCnt(JobVO job_vo) {
+		return jobDao.listCnt(job_vo);
 	}
 
 	// 구인구직 조회수 증가 
 	@Override
-	public void jobReadCnt(JobVO job_vo) {
-		jobDao.jobReadCnt(job_vo);
+	public void incrementReadCnt(Long job_no) {
+		jobDao.incrementReadCnt(job_no);
 	}
 
 	// 구인구직 상세페이지
 	@Override
-	public JobVO boardDetail(JobVO job_vo) {
-		return jobDao.jobDetail(job_vo);
+	public JobVO getBoardDetail(Long job_no) {
+		return jobDao.getBoardDetail(job_no);
 	}
 
 	// 구인구직 글 작성
 	@Override
-	public int jobInsert(JobVO job_vo) throws Exception {
-		return jobDao.jobInsert(job_vo);
+	public int writeBoard(JobVO job_vo) throws Exception {
+		return jobDao.writeBoard(job_vo);
 	}
 
 	// 구인구직 글 수정 페이지
 	@Override
-	public JobVO jobUpdateForm(JobVO job_vo) {
-		return jobDao.jobUpdateForm(job_vo);
+	public JobVO getBoardById(Long job_no) {
+		return jobDao.getBoardById(job_no);
 	}
 
 	// 구인구직 글 수정
 	@Override
-	public int jobUpdate(JobVO job_vo) {
-		return jobDao.jobUpdate(job_vo);
+	public int editBoard(JobVO job_vo) {
+		return jobDao.editBoard(job_vo);
 	}
 
 	// 구인구직 글 삭제
 	@Override
-	public int jobDelete(JobVO job_vo) {
-		return jobDao.jobDelete(job_vo);
+	public int boardDelete(Long job_no) {
+		return jobDao.boardDelete(job_no);
 	}
 
 }

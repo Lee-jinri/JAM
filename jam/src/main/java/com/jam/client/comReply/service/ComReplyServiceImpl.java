@@ -11,7 +11,6 @@ import com.jam.client.comReply.vo.ComReplyVO;
 import com.jam.client.community.dao.CommunityDAO;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
 
 @Service
 public class ComReplyServiceImpl implements ComReplyService {
@@ -26,7 +25,7 @@ public class ComReplyServiceImpl implements ComReplyService {
 	private CommunityDAO comDao;
 	
 	@Override
-	public List<ComReplyVO> comReplyList(Integer com_no) {
+	public List<ComReplyVO> comReplyList(Long com_no) {
 		List<ComReplyVO> list = comreplyDao.replyList(com_no);
 		
 		return list;
@@ -48,7 +47,7 @@ public class ComReplyServiceImpl implements ComReplyService {
 
 	@Transactional
 	@Override
-	public int replyDelete(Integer comReply_no) {
+	public int replyDelete(Long comReply_no) {
 		
 		// 댓글 개수 감소
 		ComReplyVO vo = comreplyDao.replyRead(comReply_no);

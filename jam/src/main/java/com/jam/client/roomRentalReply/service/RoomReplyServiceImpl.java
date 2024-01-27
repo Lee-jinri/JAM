@@ -25,7 +25,7 @@ public class RoomReplyServiceImpl implements RoomReplyService {
 	private RoomRentalDAO roomDao;
 
 	@Override
-	public List<RoomReplyVO> roomReplyList(Integer roomRental_no) {
+	public List<RoomReplyVO> roomReplyList(Long roomRental_no) {
 		List<RoomReplyVO> list = roomreplyDao.replyList(roomRental_no);
 		return list;
 	}
@@ -44,7 +44,7 @@ public class RoomReplyServiceImpl implements RoomReplyService {
 
 	@Transactional
 	@Override
-	public int replyDelete(Integer roomReply_no) {
+	public int replyDelete(Long roomReply_no) {
 		
 		RoomReplyVO vo = roomreplyDao.replyRead(roomReply_no);
 		roomDao.updateReplyCnt(vo.getRoomRental_no(), reply_Del);

@@ -25,7 +25,7 @@ public class FleaReplyServiceImpl implements FleaReplyService {
 	private FleaMarketDAO fleaDao;
 
 	@Override
-	public List<FleaReplyVO> fleaReplyList(Integer flea_no) {
+	public List<FleaReplyVO> fleaReplyList(Long flea_no) {
 		List<FleaReplyVO> list = fleareplyDao.replyList(flea_no);
 		return list;
 	}
@@ -44,7 +44,7 @@ public class FleaReplyServiceImpl implements FleaReplyService {
 
 	@Transactional
 	@Override
-	public int replyDelete(Integer fleaReply_no) {
+	public int replyDelete(Long fleaReply_no) {
 		
 		FleaReplyVO vo = fleareplyDao.replyRead(fleaReply_no);
 		fleaDao.updateReplyCnt(vo.getFlea_no(), reply_Del);

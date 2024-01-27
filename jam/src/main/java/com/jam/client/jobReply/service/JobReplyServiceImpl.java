@@ -26,7 +26,7 @@ public class JobReplyServiceImpl implements JobReplyService {
 	
 	
 	@Override
-	public List<JobReplyVO> jobReplyList(Integer job_no) {
+	public List<JobReplyVO> jobReplyList(Long job_no) {
 		List<JobReplyVO> list = jobReplyDao.replyList(job_no);
 		
 		return list;
@@ -48,7 +48,7 @@ public class JobReplyServiceImpl implements JobReplyService {
 
 	@Transactional
 	@Override
-	public int replyDelete(Integer jobReply_no) {
+	public int replyDelete(Long jobReply_no) {
 		
 		// 댓글 개수 감소
 		JobReplyVO vo = jobReplyDao.replyRead(jobReply_no);

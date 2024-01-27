@@ -33,6 +33,8 @@ public class MemberVO extends CommonVO implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         
+    	if (role.equals("")) return null;
+    	
         GrantedAuthority myGrant = new SimpleGrantedAuthority(role);
         
         List<GrantedAuthority> authorities = new ArrayList<>();

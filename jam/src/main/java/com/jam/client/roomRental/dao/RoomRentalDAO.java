@@ -15,24 +15,24 @@ public interface RoomRentalDAO {
 	public int roomListCnt(RoomRentalVO room_vo);
 
 	// 합주,연습실 조회수 증가
-	public void roomReadCnt(RoomRentalVO room_vo);
+	public void incrementReadCnt(Long room_no);
 
 	// 합주,연습실 글 상세페이지
-	public RoomRentalVO roomDetail(RoomRentalVO room_vo);
+	public RoomRentalVO getBoardDetail(Long room_no);
 
 	// 합주,연습실 글 입력
-	public int roomInsert(RoomRentalVO room_vo);
+	public int writeBoard(RoomRentalVO room_vo);
 
 	// 합주,연습실 글 수정 페이지
-	public RoomRentalVO roomUpdateForm(RoomRentalVO room_vo);
+	public RoomRentalVO getBoardById(Long roomRental_no);
 
 	// 합주,연습실 글 수정
-	public int roomUpdate(RoomRentalVO room_vo);
+	public int editBoard(RoomRentalVO room_vo);
 
 	// 합주,연습실 글 삭제
-	public int roomDelete(RoomRentalVO room_vo);
+	public int boardDelete(Long roomRental_no);
 
 	// 댓글 개수 증감
-	public void updateReplyCnt(@Param("roomRental_no") int roomRental_no, @Param("amount") int amount);
+	public void updateReplyCnt(@Param("roomRental_no") Long roomRental_no, @Param("amount") int amount);
 
 }		

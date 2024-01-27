@@ -8,19 +8,7 @@
 <title>JAM - MESSAGE</title>
 
 <style>
-	#receive_btn{
-		background-color : #ffdd77;
-		border : 2px #848484;
-		border-top-left-radius: 1em;
-		border-top-right-radius: 1em;
-	}
-	#send_btn {
-		background-color : #f5ecce;
-		border : 2px #848484;
-		border-top-left-radius: 1em;
-		border-top-right-radius: 1em;
-	}
-	.message_menu{font-weight:bold;}
+	
 	ul {
 		padding : 0 30px; 
 		padding-top : 10px; 
@@ -32,14 +20,8 @@
 		display: inline-block;
 		text-align : left;
 	}
-	.message {color : #777;}
-	.msg_title {
-		border : none;
-		background-color : white;
-		}
-	#receive_btn{background-color : #f5ecce;}
-	#send_btn {background-color : #ffdd77;}
-	
+	#receive_btn{background-color : #ffdd77;}
+	#send_btn {background-color : #f5ecce;}
 </style>
 <script>
 	$(function(){
@@ -70,80 +52,86 @@
 		})
 	})
 	
+	let user_id = "";
+
+	function getUserInfo(){
+		return fetch('/api/member/getUserInfo', {
+	        method: 'GET',
+	        headers: {
+	            'Authorization': localStorage.getItem("Authorization")
+	        },
+	    })
+	    .then(response => {
+	        if (!response.ok) throw new Error('Network response was not ok');
+	        	
+	        return response.json();
+	        
+	    })
+	    .then(data =>{
+	    	console.log(data);
+	    	user_id = data.user_id;
+            
+	    	console.log("getUserInfo : " +user_id);
+            if(user_id == null) {
+            	$(location).attr('href', '/member/login');
+            	return false;
+            }
+            
+            $("#user_id").val(user_id);
+	    })
+	    .catch(error => {
+	        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+	    });
+	}
+	
 	/*검색을 위한 실질적인 처리 함수*/
 	function goPage(){
 		if($("#search").val()=="all"){
 			$("#keyword").val("");
 		}
-		fetch('http://localhost:8080/member/getUserInfo', {
-	        method: 'GET',
-	        headers: {
-	            'Authorization': localStorage.getItem("Authorization")
-	        },
-	    })
-	    .then(response => {
-	        if (response.ok) {
-	            user_id = response.headers.get('user_id');
-	            
-	            if(user_id == null) $(location).attr('href', '/member/login');
-	            
-	            $("#user_id").val(user_id);
-				
-	            $("#searchForm").attr({
-	    			"method":"get",
-	    			"action":"/message/sendMessage/"
-	    		});
-	    		$("#searchForm").submit();
-				
-	        } else {
-	            throw new Error('Network response was not ok');
-	        }
-	    })
-	    .catch(error => {
-	        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
-	    });
+		
+		getUserInfo()
+		.then(() => {
+			$("#searchForm").attr({
+	 			"method":"get",
+	 			"action":"/message/receiveMessage/"
+	 		});
+	 		$("#searchForm").submit();
+		})
 		
 	}
 	
-	function senderPopup(message_no){
-		$("#message_no").val(message_no);
+	function receiverPopup(message_no){
+			
+		getUserInfo()
+        .then(() => {
+            $("#message_no").val(message_no);
+            $("#receiver_id").val(user_id);
+            
+            var url = "/message/receiveMsgDetail";
+    		var option = 'width=500, height=370, top=10, left=10';
+    		var name='팝업';
+    		
+    		window.open("",name,option);
+    		
+    		$("#formPopup").attr("action", url);
+    		$("#formPopup").attr("target", "팝업");
+    		$("#formPopup").attr("method", "POST");
+    		$("#formPopup").submit();
+        });
 		
-		var url = "/message/sMessage_detail";
-		var option = 'width=500, height=370, top=10, left=10';
-		var name='팝업';
-		
-		window.open("",name,option);
-		
-		$("#frmPopup").attr("action", url);
-		$("#frmPopup").attr("target", "팝업");
-		$("#frmPopup").attr("method", "POST");
-		$("#frmPopup").submit();
 	}
 	
 	function getUserIDAndRedirect(redirectURL) {
-	    fetch('http://localhost:8080/member/getUserInfo', {
-	        method: 'GET',
-	        headers: {
-	            'Authorization': localStorage.getItem("Authorization")
-	        },
-	    })
-	    .then(response => {
-	        if (response.ok) {
-	            return response.headers.get('user_id');
-	        } else {
-	            throw new Error('Network response was not ok');
-	        }
-	    })
-	    .then((user_id) => {
-	        if (user_id) {
+		getUserInfo()
+	    .then(() => {
+	    	console.log("getUserIDAndRedirect : "+ user_id);
+		    if (user_id != null && user_id != "") {
 	        	$(location).attr('href', redirectURL + user_id);
 	        } else {
 	            $(location).attr('href', '/member/login');
 	        }
 	    })
-	    .catch(error => {
-	        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
-	    });
 	}
 </script>
 </head>
@@ -152,6 +140,8 @@
 		<div class="title">
 			<p class="text-center my-7">쪽지</p>
 		</div>
+		
+		
 		<div class="py-2rem flex justify-right">
 			<div class="items-center">
 				<form id="searchForm">
@@ -166,7 +156,7 @@
 							<option value="all">전체</option>
 							<option value="message_title">제목</option>
 							<option value="message_content">내용</option>
-							<option value="receiver">받는 사람</option>
+							<option value="sender">보낸 사람</option>
 						</select>
 						<div>
 							<input type="text" name="keyword" id="keyword" placeholder="쪽지 검색" class="border border-radius-43px rem-2 search"/>
@@ -176,41 +166,34 @@
 				</form>
 			</div>
 		</div>	
-		
 		<div class="content">
 			<button id="receive_btn" class="width_100px height_35px ml-1"  >받은 쪽지</button>
 			<button id="send_btn" class="width_100px height_35px ml-1" >보낸 쪽지</button>
 			
 			<div class="border border-radius-15px" >
-				<form id="frmPopup" name="frmPopup">
+				<form id="formPopup" name="formPopup">
 					<input type="hidden" id="message_no" name="message_no">
+					<input type="hidden" id="receiver_id" name="receiver_id">
 				</form>
 				<div id="message_menu">
 					<ul class="message_menu">
-						<li class='message_menu width_20'>받는 사람</li>
+						<li class='message_menu width_20'>보낸 사람</li>
 						<li class='message_menu width_45'>제목</li>
-						<li class='message_menu width_20'>보낸 시간</li>
-						<li class='message_menu'>확인 여부</li>
+						<li class='message_menu '>받은 시간</li>
 					</ul>
 				</div>
 				<div id="message_list">
 					<c:choose>
-						<c:when test="${not empty sMessage }">
-							<c:forEach items="${sMessage }" var="message" varStatus="status">
-								<ul class="message border-top">
-									<li class='receiver message width_20'>${message.receiver }</li>
-									<li class="width_45">
-										<button type='button' class='msg_title' onclick='senderPopup(${message.message_no});'>${message.message_title } </button>
+						<c:when test="${not empty receiveMsg }">
+							<c:forEach items="${receiveMsg }" var="message" varStatus="status">
+								<ul class="message border-top" style="<c:if test="${message.read_chk == 1}">color:#A4A4A4;</c:if>">
+									<li class="width_20">${message.sender }</li>
+									<li class="width_45"> 
+										<button type='button' class='msg_title' onclick="receiverPopup(${message.message_no});">
+											${message.message_title } 
+										</button>
 									</li>
-									<li class="width_20">${message.sendTime }</li>
-									<c:choose>
-										<c:when test="${message.read_chk == 0}">
-											<li class='read_chk message '>읽지 않음 </li>
-										</c:when> 
-										<c:when test="${message.read_chk == 1}">
-											<li class='read_chk message'>읽음</li>
-										</c:when>
-									</c:choose>
+									<li class="">${message.sendTime }</li>
 								</ul>
 							</c:forEach>
 						</c:when>

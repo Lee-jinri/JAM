@@ -55,20 +55,20 @@
 		}
 		
 		function getUserIDAndRedirect(redirectURL, search, keyword) {
-		    fetch('http://localhost:8080/member/getUser-id', {
+		    fetch('http://localhost:8080/api/member/getUserInfo', {
 		        method: 'GET',
 		        headers: {
 		            'Authorization': localStorage.getItem("Authorization")
 		        },
 		    })
 		    .then(response => {
-		        if (response.ok) {
-		            return response.headers.get('user_id');
-		        } else {
+		        if (!response.ok) {
 		            throw new Error('Network response was not ok');
 		        }
+		        return response.json();
 		    })
-		    .then((user_id) => {
+		    .then((data) => {
+		    	let user_id = data.user_id;
 		        if (user_id) {
 		        	$(location).attr('href', redirectURL + user_id + "&search=" + search + "&keyword=" + keyword);
 		        } else {
@@ -135,7 +135,7 @@
 							<c:forEach items="${fleaMyWrite }" var="fleaBoard" varStatus="status">
 								<tr class="text-center" data-num="${fleaBoard.flea_no}">
 									<td class="class">
-										<a class="" href="/fleaMarket/fleaMarketDetail/${fleaBoard.flea_no }">${fleaBoard.flea_title}</a>
+										<a class="" href="/fleaMarket/board/${fleaBoard.flea_no }">${fleaBoard.flea_title}</a>
 									</td>
 									<td class="col-md-1 ">${fleaBoard.flea_date}</td>
 									<td class="col-md-1 ">${fleaBoard.flea_hits }</td>

@@ -15,51 +15,53 @@ public class CommunityServiceImpl implements CommunityService {
 	private CommunityDAO comDao;
 	
 	@Override
-	public List<CommunityVO>communityList(CommunityVO com_vo){
+	public List<CommunityVO>getBoards(CommunityVO com_vo){
 		
-		List<CommunityVO> list = comDao.communityList(com_vo);
+		List<CommunityVO> list = comDao.getBoards(com_vo);
 		
 		return list;
 	}
 	
 	@Override
-	public int comListCnt(CommunityVO com_vo) {
-		return comDao.comListCnt(com_vo);
+	public int listCnt(CommunityVO com_vo) {
+		return comDao.listCnt(com_vo);
 	}
 	
 	@Override
-	public void comReadCnt(CommunityVO com_vo) {
-		comDao.comReadCnt(com_vo);
-	}
-
-	@Override
-	public CommunityVO boardDetail(CommunityVO com_vo) {
-		
-		return comDao.communityDetail(com_vo);
-	}
-
-	@Override
-	public int comInsert(CommunityVO com_vo) throws Exception {
-		
-		return comDao.comInsert(com_vo);
+	public void incrementReadCnt(Long com_no) {
+		comDao.incrementReadCnt(com_no);
 	}
 	
 	@Override
-	public CommunityVO comUpdateForm(CommunityVO com_vo) {
+	public CommunityVO getBoardDetail(Long com_no) {
 		
-		return comDao.comUpdateForm(com_vo);
+		return comDao.getBoardDetail(com_no);
 	}
 
 	@Override
-	public int comUpdate(CommunityVO com_vo) {
+	public int writeBoard(CommunityVO com_vo) {
 		
-		return comDao.comUpdate(com_vo);
+		return comDao.writeBoard(com_vo);
+	}
+	
+	@Override
+	public CommunityVO getBoardById(Long com_no) {
+		
+		return comDao.getBoardById(com_no);
 	}
 
 	@Override
-	public int comDelete(CommunityVO com_vo) {
+	public int editBoard(CommunityVO com_vo) {
 		
-		return comDao.comDelete(com_vo);
+		return comDao.editBoard(com_vo);
 	}
+
+	@Override
+	public int boardDelete(Long com_no) {
+		
+		return comDao.boardDelete(com_no);
+	}
+
+
 
 }

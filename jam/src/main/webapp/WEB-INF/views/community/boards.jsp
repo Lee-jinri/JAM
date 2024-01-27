@@ -14,7 +14,7 @@
 						alert("검색어를 입력하세요.");
 						$("#keyword").focus();
 						return;
-					}
+					} 
 				}
 				$("#pageNum").val(1);
 				goPage();
@@ -29,9 +29,10 @@
 			$("#comWriteBtn").click(function(){
 				var accessToken = localStorage.getItem("Authorization");
 			
-				if(accessToken == null) $(location).attr('href', '/member/login');
+				if(accessToken != null) $(location).attr('href', '/community/board/write');
 				else{
-					$(location).attr('href', '/community/communityWrite');
+					if(confirm("로그인 후 이용할 수 있는 서비스 입니다. 로그인 하시겠습니까?"))$(location).attr('href', '/member/login');
+					
 				}
 			})
 		})
@@ -44,7 +45,7 @@
 			}
 			$("#searchForm").attr({
 				"method":"get",
-				"action":"/community/communityList/"
+				"action":"/community/boards/"
 			});
 			$("#searchForm").submit();
 		}
@@ -99,7 +100,7 @@
 									<span>${communityBoard.com_date }</span>
 								</div>
 								<div class="my-bottom-4">
-									<a class="font-weight-bold" href="/community/communityDetail/${communityBoard.com_no }" >${communityBoard.com_title }</a>
+									<a class="font-weight-bold" href="/community/board/${communityBoard.com_no }" >${communityBoard.com_title }</a>
 									<div class="flex float-right items-center width-13rem justify-between">
 										<img class="icon" id="" style="width:3rem;" src="/resources/include/images/hits.svg">
 										<span class="font-size-1 ml-05">${communityBoard.com_hits }</span>

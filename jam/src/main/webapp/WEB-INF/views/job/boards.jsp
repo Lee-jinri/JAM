@@ -29,10 +29,11 @@
 			
 			$("#jobWriteBtn").click(function(){
 				var accessToken = localStorage.getItem("Authorization");
-			
-				if(accessToken == null) $(location).attr('href', '/member/login');
+				
+				if(accessToken != null) $(location).attr('href','/job/board/write');
 				else{
-					$(location).attr('href', '/job/jobWrite');
+					if(confirm("로그인 후 이용할 수 있는 서비스 입니다. 로그인 페이지로 이동하겠습니까?"))$(location).attr('href', '/member/login');
+					
 				}
 			})
 		})
@@ -44,7 +45,7 @@
 			}
 			$("#searchForm").attr({
 				"method":"get",
-				"action":"/job/jobList/"
+				"action":"/job/boards/"
 			});
 			$("#searchForm").submit();
 		}
@@ -104,20 +105,20 @@
 										<c:if test="${jobBoard.job_category == 0 }">
 											<span class="border-g" style="color:#04B431;">구인</span>
 											<div class="inline-block my-bottom-4 ml-1">
-												<a class="font-weight-bold" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title }</a>
+												<a class="font-weight-bold" href="/job/board/${jobBoard.job_no }">${jobBoard.job_title }</a>
 											</div>
 										</c:if>
 										<c:if test="${jobBoard.job_category == 1 }">
 											<span class="border-r" style="color:#FE2E2E;">구직</span>
 											<div class="inline-block my-bottom-4 ml-1">
-												<a class="font-weight-bold" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title }</a>
+												<a class="font-weight-bold" href="/job/board/${jobBoard.job_no }">${jobBoard.job_title }</a>
 											</div>
 										</c:if>
 									</c:if>
 									<c:if test="${jobBoard.job_status == 1 }">
 										<span class="border" style="color:#A4A4A4;">마감</span>
 										<div class="inline-block my-bottom-4 ml-1">
-											<a class="font-weight-bold" style="color:#A4A4A4;" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title }</a>										
+											<a class="font-weight-bold" style="color:#A4A4A4;" href="/job/board/${jobBoard.job_no }">${jobBoard.job_title }</a>										
 										</div>
 									</c:if>
 									

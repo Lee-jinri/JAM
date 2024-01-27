@@ -5,19 +5,22 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;700&display=swap" rel="stylesheet">	
-</head>
 
-<body>
-	<div id="container">
-		<div id="header">
-			<tiles:insertAttribute name="header"/>
+
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+	<body class="wrap">
+		<div id="container">
+			<div id="header">
+				<tiles:insertAttribute name="header"/>
+			</div>
+			
+			<div id="content">
+				<tiles:insertAttribute name="body"/>
+			</div>
+			
+			<div id="footer">
+				<tiles:insertAttribute name="footer"/>
+			</div>
 		</div>
-		<div id="content">
-			<tiles:insertAttribute name="body"/>
-		</div>
-		<div id="footer">
-			<tiles:insertAttribute name="footer"/>
-		</div>
-	</div>
-</body>
+	</body>
 </html>

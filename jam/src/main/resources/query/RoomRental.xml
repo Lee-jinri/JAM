@@ -42,37 +42,37 @@
 	</select>
 	
 	<!-- 합주실 조회수 -->
-	<update id="roomReadCnt" parameterType="room">
+	<update id="incrementReadCnt" parameterType="Long">
 		UPDATE roomRental 
 		SET roomRental_hits = roomRental_hits + 1 
 		WHERE roomRental_no = #{roomRental_no}
 	</update>
 	
 	<!-- 합주실 상세페이지 -->
-	<select id="roomDetail" resultType="room">
+	<select id="getBoardDetail" parameterType="Long" resultType="room">
 		SELECT roomRental_no, roomRental_title, roomRental_content, roomRental_status, roomRental_hits, to_char(roomRental_date,'YYYY/MM/DD HH24:MI:SS') as roomRental_date, roomRental_price, user_name, user_id
 		FROM roomRental
 		WHERE roomRental_no = #{roomRental_no}
 	</select>
 	
 	<!-- 합주실 글 입력 -->
-	<insert id="roomInsert" parameterType="room">
-		<selectKey keyProperty="roomRental_no" resultType="int" order="BEFORE">
+	<insert id="writeBoard" parameterType="room">
+		<selectKey keyProperty="roomRental_no" resultType="Long" order="BEFORE">
 			SELECT roomRental_seq.nextval from dual
 		</selectKey>
 		INSERT INTO roomRental(roomRental_no,  roomRental_title, roomRental_content,roomRental_status, roomRental_hits, roomRental_reply_cnt,roomRental_date, roomRental_price, user_id , user_name )
-		VALUES(#{roomRental_no}, #{roomRental_title}, #{roomRental_content}, #{roomRental_status}, 0, 0, sysdate, #{roomRental_price}, #{user_id}, #{user_name})
+		VALUES(#{roomRental_no}, #{roomRental_title}, #{roomRental_content}, 0, 0, 0, sysdate, #{roomRental_price}, #{user_id}, #{user_name})
 	</insert>
 	
 	<!-- 합주실 글 수정 페이지 -->
-	<select id="roomUpdateForm" parameterType="room" resultType="room">
+	<select id="getBoardById" parameterType="Long" resultType="room">
 		SELECT roomRental_no, roomRental_title, roomRental_content,roomRental_status,roomRental_price, imageFileName
 		FROM roomRental
 		WHERE roomRental_no = #{roomRental_no}
 	</select>
 	
 	<!-- 합주실 글 수정 -->
-	<update id="roomUpdate" parameterType="room">
+	<update id="editBoard" parameterType="room">
 		UPDATE roomRental SET
 		roomRental_title = #{roomRental_title},
 		roomRental_content = #{roomRental_content},
@@ -86,7 +86,7 @@
 	</update>
 	
 	<!-- 합주실 글 삭제 -->
-	<delete id="roomDelete" parameterType="room">
+	<delete id="boardDelete" parameterType="Long">
 		DELETE FROM roomRental WHERE roomRental_no = #{roomRental_no}
 	</delete>
 	

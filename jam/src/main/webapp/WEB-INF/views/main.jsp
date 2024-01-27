@@ -2,96 +2,75 @@
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
+
 <head>
 <meta charset="UTF-8">
 <title>JAM</title>
-
-	<style>
-		.search {	
-				display: flex;
-	    		justify-content: center;
-	    	}
-	    	#search_bar {
-	    		width : 550px; 
-	    		height : 45px;
-	    		text-align:center;
-			    border: 5px solid #ffb689;
-			    border-radius: 30px;
-			    font-size: 16px;
-			    font-weight: 500;
-			    font-color : #ff7130;
-	    		}
-	    	.search-icon{
-				width : 30px;
-				object-fit : contain;
-				margin-left : 15px;
-			}
-			input::placeholder {
-	  color: #ffb689;
-	}
-			.flex-container{flex-wrap:wrap; column-gap: 5rem; row-gap: 2.5rem; flex-direction: row; justify-content: center;}
-			.w-50rem {width:50rem;}
-			.mainListDiv{
-				width: 50rem;
-			    height: 7rem;
-			    border: #FBF3E3 solid;
-			    border-radius: 2rem;
-			    background-color: #FBF3E3;
-			   }
-	</style>
 	
 	<script>
 		$(function(){
-			$("#jobList").click(function(){
-				location.href = "/job/jobList";
+			
+			function mainBoards() {
+			    fetch('/boards')
+			        .then(response => response.json())
+			        .then(data => {
+			            const jobList = data.jobList;
+			            const roomList = data.roomList;
+			            const fleaList = data.fleaList;
+			            const comList = data.comList;
+
+			            renderList(jobList, "#jobList", "#jobTemplate", "/job/board/", "job");
+			            renderList(roomList, "#roomList", "#roomTemplate", "/roomRental/board/", "roomRental");
+			            renderList(comList, "#comList", "#comTemplate", "/community/board/", "com");
+			            renderList(fleaList, "#fleaList", "#fleaTemplate", "/fleaMarket/board/", "flea");
+			        })
+			        .catch(error => console.error('Error:', error));
+			}
+
+
+			function renderList(list, targetSelector, templateSelector, linkPrefix, listType) {
+			    list.forEach(item => {
+			        const $targetDiv = $(targetSelector);
+			        
+			        let $templateElement = $(templateSelector).clone().removeAttr('id');
+			        
+			        
+			        const datePropertyName = listType + '_date';
+			        const hitsPropertyName = listType + '_hits';
+			        const replyCntPropertyName = listType + '_reply_cnt';
+			        const titlePropertyName = listType + '_title';
+					const numberPropertyName = listType + '_no';
+					
+					$templateElement.find(".listUsername").html(item.user_name);
+			        $templateElement.find(".listDate").html(item[datePropertyName]);
+			        $templateElement.find(".listHits").html(item[hitsPropertyName]);
+			        $templateElement.find(".listReplyCnt").html(item[replyCntPropertyName]);
+			        $templateElement.find(".listTitle").html(item[titlePropertyName]);
+			        $templateElement.find(".listTitle").attr("href", linkPrefix + item[numberPropertyName]);
+			        $templateElement.find(".hitsIcon").attr("src","/resources/include/images/hits.svg");
+			        $templateElement.find(".replyIcon").attr("src","/resources/include/images/reply.svg");
+
+			        $targetDiv.append($templateElement);
+			    });
+			}
+
+	        mainBoards();
+	        
+			$("#jobHeader").click(function(){
+				location.href = "/job/boards";
 			})
 			
-			$("#roomList").click(function(){
-				location.href = "/roomRental/roomRentalList";
+			$("#roomHeader").click(function(){
+				location.href = "/roomRental/boards";
 			})
 			
-			$("#fleaList").click(function(){
-				location.href = "/fleaMarket/fleaMarketList";
+			$("#fleaHeader").click(function(){
+				location.href = "/fleaMarket/boards";
 			})
 			
-			$("#comList").click(function(){
-				location.href = "/community/communityList";
+			$("#comHeader").click(function(){
+				location.href = "/community/boards";
 			})
-			
-			
-			
-			$('#jobList').hover(function() {
-			    $("#jobList_text").css("color","#2E9AFE");
-				$("#jobList").css("cursor","pointer");
-				$("#jobList_text").css('Text-decoration','none');
-			}, function(){
-				$("#jobList_text").css('color','#FAAC58');
-			});
-			
-			$("#roomList").hover(function(){
-				$("#roomList_text").css("color","#2E9AFE");
-				$("#roomList").css("cursor","pointer");
-				$("#roomList_text").css('Text-decoration','none');
-			}, function(){
-				$("#roomList_text").css('color','#FAAC58');
-			});
-			
-			$("#fleaList").hover(function(){
-				$("#fleaList_text").css("color","#2E9AFE");
-				$("#fleaList").css("cursor","pointer");
-				$("#fleaList_text").css('Text-decoration','none');
-			}, function(){
-				$("#fleaList_text").css('color','#FAAC58');
-			});
-			
-			$("#comList").hover(function(){
-				$("#comList_text").css("color","#2E9AFE");
-				$("#comList").css("cursor","pointer");
-				$("#comList_text").css('Text-decoration','none');
-			}, function(){
-				$("#comList_text").css('color','#FAAC58');
-			});
-			
 			
 			
 		})
@@ -99,156 +78,139 @@
 
 </head>
 
-<body class="wrap">
 	<div class="contents rem-20 ">
-		<div class="flex flex-container my-top-15 my-bottom-15">
-		
-			<!-- 구인구직 글 리스트 -->
-			<div class="w-50rem " >
-				<div class="mainListDiv" id="jobList">
-					<div class="my-top-75 ml-2">
-						<span id="jobList_text" class=" font-size-3 color_o font600">구인/구직</span>
-					</div>
-				</div>
-					
-				<div class="my-top-8 mr-1 ml-1">
-					<ul>
-						<c:forEach items="${jobList }" var="jobList" varStatus="status">
-							<li class="border-bottom">
-								<div class="">
-									<div class="my-top-4 my-bottom-4">
-										<span>${jobList.user_name }</span>
-										<span> | </span>
-										<span>${jobList.job_date }</span>
-									</div>
-									<div class="flex float-right items-center width-13rem justify-between">
-										<img class="icon" id="" style="width:2rem;" src="/resources/include/images/hits.svg">
-										<span class="font-size-1 ml-05">${jobList.job_hits }</span>
-										<img class="icon ml-2" id="" style="width:2rem;" src="/resources/include/images/reply.svg">
-										<span class=" ml-05">${jobList.job_reply_cnt }</span>
-									</div>
-									<div class="my-bottom-4">
-										<a class="font-weight-bold font-size-1" href="/job/jobDetail/${jobList.job_no }" >${jobList.job_title }</a>
-									</div>
-									
-								</div>
-							</li>
-						</c:forEach>
-					</ul>
-				</div>
-			</div>
-		
-			<!-- 합주실 글 리스트 -->	
-			<div class="w-50rem">
-				<div class="mainListDiv" id="roomList">
-					<div class="my-top-75 ml-2">
-						<span id="roomList_text" class=" font-size-3 color_o font600">합주실/연습실</span>
-					</div>
-				</div>
-				
-				
-				<div class="my-top-8 mr-1 ml-1">
-					<ul>
-						<c:forEach items="${roomList }" var="roomList" varStatus="status">
-							<li class="border-bottom">
-								<div class="">
-									<div class="my-top-4 my-bottom-4">
-										<span>${roomList.user_name }</span>
-										<span> | </span>
-										<span>${roomList.roomRental_date }</span>
-									</div>
-									<div class="flex float-right items-center width-13rem justify-between ">
-										<img class="icon" id="" style="width:2rem;" src="/resources/include/images/hits.svg">
-										<span class="ml-05">${roomList.roomRental_hits }</span>
-										<img class="icon ml-2" id="" style="width:2rem;" src="/resources/include/images/reply.svg">
-										<span class="ml-05">${roomList.roomRental_reply_cnt }</span>
-									</div>
-									<div class="my-bottom-4">
-										<a class="font-weight-bold font-size-1" href="/roomRental/roomRentalDetail/${roomList.roomRental_no }" >${roomList.roomRental_title }</a>
-									</div>
-									
-								</div>
-							</li>
-						</c:forEach>
-					</ul>
-				</div>
-			</div>
-		</div>
+    <div class="flex flex-container my-top-15 my-bottom-15">
+        <div id="result-container"></div>
+        
+        <!-- 구인구직 글 리스트 -->
+        <div class="w-50rem">
+            <div class="mainListDiv" id="jobHeader">
+                <div class="my-top-75 ml-2">
+                    <span id="jobHeader_text" class=" font-size-3 color_o font600">구인/구직</span>
+                </div>
+            </div>
+
+            <div id="jobList" class="my-top-8 mr-1 ml-1">
+            	<div id="jobTemplate">
+	                <ul>
+	                    <li class="border-bottom">
+                            <div class="my-top-4 my-bottom-4">
+                                <span class="listUsername mr-2"></span>
+                                <span class="listDate"></span>
+                            </div>
+                            <div class="flex float-right items-center width-13rem justify-between">
+                                <img class="hitsIcon icon" style="width:2rem;">
+                                <span class="listHits font-size-1 ml-05"></span>
+                                <img class="replyIcon icon ml-2"style="width:2rem;">
+                                <span class="listReplyCnt ml-05"></span>
+                            </div>
+                            <div class="my-bottom-4">
+                                <a class="listTitle font-weight-bold font-size-1" ></a>
+                            </div>
+	                    </li>
+	                </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- 합주실 글 리스트 -->   
+        <div class="w-50rem">
+            <div class="mainListDiv" id="roomHeader">
+                <div class="my-top-75 ml-2">
+                    <span id="roomHeader_text" class=" font-size-3 color_o font600">합주실/연습실</span>
+                </div>
+            </div>
+
+            <div id="roomList" class="my-top-8 mr-1 ml-1">
+            	<div id="roomTemplate">
+	                <ul>
+	                    <li class="border-bottom">
+                            <div class="my-top-4 my-bottom-4">
+                                <span class="listUsername mr-2"></span>
+                                <span class="listDate"></span>
+                            </div>
+                            <div class="flex float-right items-center width-13rem justify-between">
+                                <img class="icon hitsIcon" style="width:2rem;">
+                                <span class="ml-05 listHits"></span>
+                                <img class="replyIcon icon ml-2" style="width:2rem;">
+                                <span class="ml-05 listReplyCnt"></span>
+                            </div>
+                            <div class="my-bottom-4">
+                                <a class="font-weight-bold font-size-1 listTitle"></a>
+                            </div>
+	                    </li>
+	                </ul>
+                </div>
+            </div>
+        </div>
+    </div>
 		<div class="flex flex-container">
 			<!-- 중고악기 글 리스트 -->
 			<div class="w-50rem ">
-				<div class="mainListDiv" id="fleaList">
+				<div class="mainListDiv" id="fleaHeader">
 					<div class="my-top-75 ml-2">
-						<span id="fleaList_text" class=" font-size-3 color_o font600">중고 악기</span>
+						<span id="fleaHeader_text" class=" font-size-3 color_o font600">중고 악기</span>
 					</div>
 				</div>
 			
 					
-				<div class="my-top-8 mr-1 ml-1">
-					<ul>
-						<c:forEach items="${fleaList }" var="fleaList" varStatus="status">
+				<div id="fleaList" class="my-top-8 mr-1 ml-1">
+					<div id="fleaTemplate">
+						<ul>
 							<li class="border-bottom">
-								<div class="">
-									<div class="my-top-4 my-bottom-4">
-										<span>${fleaList.user_name }</span>
-										<span> | </span>
-										<span>${fleaList.flea_date }</span>
-									</div>
-									<div class="flex float-right items-center width-13rem justify-between">
-										<img class="icon" id="" style="width:2rem;" src="/resources/include/images/hits.svg">
-										<span class="font-size-1 ml-05">${fleaList.flea_hits }</span>
-										<img class="icon ml-2" id="" style="width:2rem;" src="/resources/include/images/reply.svg">
-										<span class=" ml-05">${fleaList.flea_reply_cnt }</span>
-									</div>
-									<div class="my-bottom-4">
-										<a class="font-weight-bold font-size-1" href="/fleaMarket/fleaMarketDetail/${fleaList.flea_no }" >${fleaList.flea_title }</a>
-									</div>
-										
+								
+								<div class="my-top-4 my-bottom-4">
+									<span class="listUsername mr-2"></span>
+									<span class="listDate"></span>
 								</div>
+								<div class="flex float-right items-center width-13rem justify-between">
+									<img class="icon hitsIcon" style="width:2rem;">
+									<span class="listHits font-size-1 ml-05"></span>
+									<img class="replyIcon icon ml-2" style="width:2rem;">
+									<span class="listReplyCnt ml-05"></span>
+								</div>
+								<div class="my-bottom-4">
+									<a class="listTitle font-weight-bold font-size-1"></a>
+								</div>
+											
+								
 							</li>
-						</c:forEach>
-					</ul>
+						</ul>
+					</div>
 				</div>
 			</div>
 		
 			<!-- 커뮤니티 글 리스트 -->
 			<div class="w-50rem">
 				
-				<div class="mainListDiv" id="comList">
+				<div class="mainListDiv" id="comHeader">
 					<div class="my-top-75 ml-2">
-						<span id="comList_text" class=" font-size-3 color_o font600">커뮤니티</span>
+						<span id="comHeader_text" class=" font-size-3 color_o font600">커뮤니티</span>
 					</div>
 				</div>
 				
-				<div class="my-top-8 mr-1 ml-1">
-					<ul>
-						<c:forEach items="${comList }" var="comList" varStatus="status">
+				<div id="comList" class="my-top-8 mr-1 ml-1">
+					<div id="comTemplate">
+						<ul>
 							<li class="border-bottom">
-								<div class="">
-									<div class="my-top-4 my-bottom-4">
-										<span>${comList.user_name }</span>
-										<span> | </span>
-										<span>${comList.com_date }</span>
-									</div>
-									<div class="flex float-right items-center width-13rem justify-between">
-										<img class="icon" id="" style="width:2rem;" src="/resources/include/images/hits.svg">
-										<span class="font-size-1 ml-05">${comList.com_hits }</span>
-										<img class="icon ml-2" id="" style="width:2rem;" src="/resources/include/images/reply.svg">
-										<span class=" ml-05">${comList.com_reply_cnt }</span>
-									</div>
-									<div class="my-bottom-4">
-										<a class="font-weight-bold font-size-1" href="/community/communityDetail/${comList.com_no }" >${comList.com_title }</a>
-									</div>
-										
+								<div class="my-top-4 my-bottom-4">
+									<span class="listUsername mr-2"></span>
+									<span class="listDate"></span>
+								</div>
+								<div class="flex float-right items-center width-13rem justify-between">
+									<img class="icon hitsIcon" style="width:2rem;">
+									<span class="listHits font-size-1 ml-05"></span>
+									<img class="replyIcon icon ml-2" style="width:2rem;">
+									<span class="listReplyCnt ml-05"></span>
+								</div>
+								<div class="my-bottom-4">
+									<a class="listTitle font-weight-bold font-size-1" ></a>
 								</div>
 							</li>
-						</c:forEach>
-					</ul>
+						</ul>
+					</div>
 				</div>
 			</div>
 		</div>
 	</div>
 	
-
-</body>
-</html>

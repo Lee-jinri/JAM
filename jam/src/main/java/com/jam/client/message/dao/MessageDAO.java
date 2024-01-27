@@ -19,13 +19,13 @@ public interface MessageDAO {
 	public int sendListCnt(MessageVO m_vo);
 		
 	// 쪽지 상태 읽음으로 변경
-	public void message_read(MessageVO message_vo);
+	public void message_read(Long message_no);
 
 	// 받은 쪽지 상세
-	public MessageVO rMessageDetail(MessageVO message_vo);
+	public MessageVO receiveMsgDetail(Long message_no);
 
 	// 보낸 쪽지 상세 페이지
-	public MessageVO sMessageDetail(MessageVO message_vo);
+	public MessageVO sendMsgDetail(Long message_no);
 
 	// 쪽지 발송
 	public int messageWrite(MessageVO message_vo);

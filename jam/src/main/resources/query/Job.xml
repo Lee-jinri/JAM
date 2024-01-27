@@ -16,7 +16,7 @@
 	</sql>
 	
 	<!-- 구인구직 list -->
-	<select id="jobList" parameterType="job" resultType="job">
+	<select id="getBoards" parameterType="job" resultType="job">
 		<![CDATA[
 		SELECT job_no, job_title, to_char(job_date,'YYYY/MM/DD HH24:MI') as job_date, job_reply_cnt, job_hits,job_status, job_category, user_id , user_name
 		FROM (
@@ -34,7 +34,7 @@
 	</select>	
 	
 	<!-- 전체 레코드 수 조회 -->
-	<select id="jobListCnt" parameterType="job" resultType="int">
+	<select id="listCnt" parameterType="job" resultType="int">
 		SELECT count(*) FROM job
 		<trim prefix=" where (" suffix=")" >
 			<include refid="jobSearch"></include>
@@ -42,35 +42,35 @@
 	</select>	
 	
 	<!-- 구인구직 조회수 -->
-	<update id="jobReadCnt" parameterType="job">
+	<update id="incrementReadCnt" parameterType="job">
 		UPDATE job SET job_hits = job_hits + 1 where job_no = #{job_no}
 	</update>
 	
 	<!-- 구인구직 상세페이지 -->
-	<select id="jobDetail" resultType="job">
+	<select id="getBoardDetail" resultType="job">
 		SELECT job_no, job_title, job_content, job_hits, to_char(job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, job_category, job_status,pay_category, pay, user_name, user_id 
 		FROM job 
 		WHERE job_no = #{job_no}
 	</select>
 	
 	<!-- 구인구직 글 입력 -->
-	<insert id="jobInsert" parameterType="job">
-		<selectKey keyProperty="job_no" resultType="int" order="BEFORE">
+	<insert id="writeBoard" parameterType="job">
+		<selectKey keyProperty="job_no" resultType="Long" order="BEFORE">
         	select job_seq.nextval from dual
     	</selectKey>
-		INSERT INTO job(job_no, user_id, job_title, job_content, job_category, user_name, pay_category, pay,  job_hits, job_reply_cnt, imageFileName)
-		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},#{user_name}, #{pay_category}, #{pay}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
+		INSERT INTO job(job_no, user_id, job_title, job_content, job_category,job_status, user_name, pay_category, pay,  job_hits, job_reply_cnt, imageFileName)
+		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0, #{user_name}, #{pay_category}, #{pay}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
 	</insert>
 	
 	<!-- 구인구직 글 수정페이지 -->
-	<select id="jobUpdateForm" parameterType="job"  resultType="job">
+	<select id="getBoardById" parameterType="job"  resultType="job">
 		SELECT job_no, job_title, job_content,job_status,pay_category, job_status, pay, imageFileName
 		FROM job
 		WHERE job_no = #{job_no} 
 	</select>
 	
 	<!-- 구인구직 글 수정 -->
-	<update id="jobUpdate" parameterType="job">
+	<update id="editBoard" parameterType="job">
 		UPDATE job SET
 		job_title = #{job_title},
 		job_content = #{job_content},
@@ -86,7 +86,7 @@
 	</update>
 	
 	<!-- 구인구직 글 삭제 -->
-	<delete id="jobDelete" parameterType="job">
+	<delete id="boardDelete" parameterType="job">
 		DELETE FROM job WHERE job_no = #{job_no}
 	</delete>
 	

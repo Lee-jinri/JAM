@@ -10,7 +10,7 @@
 	</select>
 
 	<insert id="replyInsert" parameterType="jobReply">
-		<selectKey keyProperty="jobReply_no" resultType="int" order="BEFORE">
+		<selectKey keyProperty="jobReply_no" resultType="Long" order="BEFORE">
 			select job_reply_seq.nextval from dual
 		</selectKey>
 			insert into jobReply(jobReply_no,job_no,jobReply_content, jobReply_date, user_id,user_name)

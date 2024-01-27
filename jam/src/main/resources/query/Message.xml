@@ -75,25 +75,23 @@
 	</sql>
 	
 	<!-- 쪽지 상태 읽음으로 변경 -->
-	<update id="message_read" parameterType="message">
-		<if test="read_chk == 0">
-			UPDATE message
-			SET read_chk = 1, readTime = sysdate
-			WHERE message_no = #{message_no}
- 		</if>
+	<update id="message_read" parameterType="Long">
+		UPDATE message
+		SET read_chk = 1, readTime = sysdate
+		WHERE message_no = #{message_no}
 	</update>
 	
 	
 	<!-- 받은 쪽지 상세 페이지 -->
-	<select id="rMessageDetail" parameterType="message" resultType="message">
-		SELECT message_no, message_title, message_contents, receiver, sender_id, sender, sendTime
+	<select id="receiveMsgDetail" parameterType="Long" resultType="message">
+		SELECT message_no, message_title, message_contents, receiver_id ,receiver, sender_id, sender, sendTime, read_chk
 		FROM message
 		WHERE message_no = #{message_no}
 	</select>
 	
 	<!-- 보낸 쪽지 상세 페이지 -->
-	<select id="sMessageDetail" parameterType="message" resultType="message">
-		SELECT message_no, message_title, message_contents, receiver, receiver_id, sendTime
+	<select id="sendMsgDetail" parameterType="Long" resultType="message">
+		SELECT message_no, message_title, message_contents, receiver, receiver_id, sendTime, sender_id
 		FROM message
 		WHERE message_no = #{message_no}
 	</select>

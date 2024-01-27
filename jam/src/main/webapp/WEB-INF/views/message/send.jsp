@@ -16,79 +16,85 @@
 			
 			// 전송 버튼 클릭
 			$("#send").click(function(){
-				fetch('http://localhost:8080/member/getUserInfo', {
+		    	
+				let message_title = $("#message_title").val();
+				let message_contents = $("#message_area").val();
+				
+				if(message_title.replace(/\s/g,"") == ""){
+					alert("쪽지 제목을 입력하세요.");
+					$("#message_title").focus();
+					return false;
+				}
+				
+				if(message_contents.replace(/\s/g,"") == ""){
+					alert("쪽지 내용을 입력하세요.");
+					$("#message_area").focus();
+					return false;
+				}
+				
+				fetch('/api/member/getUserInfo', {
 			        method: 'GET',
 			        headers: {
 			            'Authorization': localStorage.getItem("Authorization")
 			        },
 			    })
 			    .then(response => {
-			        if (response.ok) {
-			        	let user_id = response.headers.get('user_id');
-			        	
-			        	$("#sender_id").val(user_id);
-			        	
-			        	
-			        	return response.text();
-			           
-			        } else {
-			            throw new Error('Network response was not ok');
-			        }
-			    })
-			    .then(user_name => {
-		        	$("#sender").val(user_name);
+		        	if(response.status == 401){
+		        		localStorage.removeItem('Authorization');
+		        		
+		        		alert("로그인 유효시간이 초과 되었습니다. 다시 로그인 해주세요.");
+		        		window.location.reload();
+		        	}else if (!response.ok) throw new Error('Network response was not ok');
 		        	
-			    	$.ajax({
-				    	url: '/message/messageWrite',
-				        type: 'post',
-				        data: $('#message').serialize(),
-				        error:function(xhr,textStatus, errorThrown){
-							console.log(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
-						},
-						beforeSend:function(){
-							
-							let message_title = $("#message_title").val();
-							let message_contents = $("#message_area").val();
-							
-							if(message_title.replace(/\s/g,"") == ""){
-								alert("쪽지 제목을 입력하세요.");
-								$("#message_title").focus();
-								return false;
-							}
-							
-							if(message_contents.replace(/\s/g,"") == ""){
-								alert("쪽지 내용을 입력하세요.");
-								$("#message_area").focus();
-								return false;
-							}
-						},
-				        success: function(result){
-				        	
-							console.log(result);
-				        	if(result=="SUCCESS"){  
-				            	alert("쪽지가 전송 되었습니다.");
-				            	
-				            	opener.parent.location.reload();
-								self.close();
-				           	}else{
-				            	alert("쪽지 전송에 실패했습니다. 잠시 후 다시 시도해주세요."); 
-				            	
-				            	opener.parent.location.reload();
-								self.close();
-				         	}
-				   		}
-					})
+		        	const Authorization = response.headers.get('Authorization');
+			        
+			        if(Authorization != null && Authorization != ""){
+			        	// jwt 토큰 로컬 스토리지에 저장
+			        	localStorage.removeItem('Authorization');
+			        	localStorage.setItem('Authorization', Authorization);
+			        }	
+		              
+					return response.json();   
+	        	})
+			    .then(data => {
+			    	
+			    	
+		        	let messageData = {
+		        			sender_id: data.user_id,
+		        			sender: data.user_name,
+		        			receiver_id: "${receiver_id }",
+		        			receiver: "${receiver }",
+		        			message_title: message_title,
+		        			message_contents : message_contents
+		        		    };
+		        	
+		        	fetch('/api/message/messageWrite',{
+		        		method: 'post',
+		        		headers: {
+		        			'Content-Type': 'application/json'
+		        		},
+		        		body: JSON.stringify(messageData)
+		        	}).then(response => {
+		        		console.log(response.status);
+		        		
+		        		if(response.status == 200){
+		        			alert("쪽지가 전송 되었습니다.");
+			            	opener.parent.location.reload();
+			            	self.close();
+		        		}
+		        	}).catch(error => {
+		        		alert("쪽지 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+				        console.error('쪽지 전송 중 오류 발생:', error);
+				    });
 			    })
 			    .catch(error => {
 			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
 			    });
-				
-				
 			});
 			
 			
-			// 목록 버튼 클릭
-			$("#message_list").click(function(){
+			// 닫기 버튼 클릭
+			$("#close").click(function(){
 				self.close();
 			});
 		})
@@ -118,15 +124,9 @@
 				<textarea rows="10" cols="63" name="message_contents" id="message_area"  style="resize: none;" maxlength="200"></textarea>
 			</div>
 			<div class="msgBtn_div  margin15px ">
-				<button type="button" class="msgBtn mr-1" id="send"  style="width: 4rem; cursor:pointer;">보내기</button>
-				<button type="button" class="msgBtn2" id="message_list"style="width: 4rem; cursor:pointer;" >목록</button>
+				<button type="button" class="msgBtn mr-1" id="send" style="cursor:pointer;">쪽지 보내기</button>
+				<button type="button" class="msgBtn2" id="close"style="width: 4rem; cursor:pointer;" >닫기</button>
 			</div>
-		</div>
-		<div>
-			<input type="hidden" name="receiver" value="${receiver }">
-			<input type="hidden" name="receiver_id" value="${receiver_id }">
-			<input type="hidden" id="sender" name="sender" >
-			<input type="hidden" id="sender_id" name="sender_id">
 		</div>
 	</form>
 </body>

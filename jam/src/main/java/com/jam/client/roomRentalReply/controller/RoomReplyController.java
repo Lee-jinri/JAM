@@ -26,24 +26,26 @@ import com.jam.client.roomRentalReply.service.RoomReplyService;
 import com.jam.client.roomRentalReply.vo.RoomReplyVO;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping(value="roomreplies")
 @AllArgsConstructor
+@Log4j
 public class RoomReplyController {
 
 	private RoomReplyService roomreplyService;
 	
 	
 	/***************************
-	 * @param Integer roomRental_no
+	 * 합주실 댓글을 조회하는 메서드입니다.
+	 * @param Long roomRental_no 조회할 합주실 글 번호
 	 * @param RoomReplyVO rrvo
-	 * @param MemberVO member
 	 * @return 합주실 댓글 리스트
 	 ****************************/
 	@DateTimeFormat 
 	@GetMapping(value = "/all/{roomRental_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<RoomReplyVO> replyList(@PathVariable("roomRental_no") Integer roomRental_no, @ModelAttribute("data") RoomReplyVO rrvo, @RequestParam(value = "user_id", required = false) String user_id, HttpServletRequest request, Model model){
+	public List<RoomReplyVO> replyList(@PathVariable("roomRental_no") Long roomRental_no, @ModelAttribute("data") RoomReplyVO rrvo, @RequestParam(value = "user_id", required = false) String user_id, HttpServletRequest request, Model model){
 		
 		
 		List<RoomReplyVO> reply = null;
@@ -55,30 +57,44 @@ public class RoomReplyController {
 	}
 	
 	/************************
-	 * 합주실 댓글 작성
+	 * 합주실 댓글을 작성하는 메서드입니다.
 	 * @param RoomRentalReplyVO rrvo
-	 * @param MemberVO member
 	 * @return 댓글 작성 실행 결과
 	 ***************************/
 	@JsonFormat
-	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
-	public String replyInsert(@RequestBody RoomReplyVO rrvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
+	@PostMapping(value="/reply",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
+	public ResponseEntity<String> replyInsert(@RequestBody RoomReplyVO rrvo, HttpServletRequest request, Model model) {
 		
-		int result = 0;
+		String body = "";
 		
-		result = roomreplyService.replyInsert(rrvo);
+		if(rrvo == null) body = "RoomRentalReplyVO is required.";
+		else if(rrvo.getRoomReply_content() == null) body = "RoomRental reply contents is required";
+		else if(rrvo.getUser_id() == null) body = "user id is required.";
+		else if(rrvo.getUser_name() == null) body = "user name is required.";
+		else if(rrvo.getRoomRental_no() == null) body = "RoomRental no is required.";
+		else {
+			try {
+				roomreplyService.replyInsert(rrvo);
+				
+				return new ResponseEntity<>(HttpStatus.OK);
+			}catch (Exception e) {
+				log.error("합주실/연습실 댓글 입력 중 오류: " + e.getMessage());
+				return ResponseEntity.internalServerError().body(e.getMessage());
+			}
+		}
 		
-		return(result ==1)? "SUCCESS" : "FAILURE";
+		return ResponseEntity.badRequest().body(body);
+		
 	}
 	
 	/*****************************
-	 * 합주실 댓글 수정
-	 * @param Integer roomReply_no
-	 * @param RoomRentalReplyVO rrvo
+	 * 합주실 댓글을 수정하는 메서드입니다.
+	 * @param Long roomReply_no 수정할 댓글 번호
+	 * @param RoomRentalReplyVO rrvo 수정할 댓글 내용
 	 * @return 댓글 수정 결과
 	 *******************************/
 	@PutMapping(value = "/{roomReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
-	public String replyUpdate(@PathVariable("roomReply_no") Integer roomReply_no, @RequestBody RoomReplyVO rrvo) {
+	public String replyUpdate(@PathVariable("roomReply_no") Long roomReply_no, @RequestBody RoomReplyVO rrvo) {
 		
 		rrvo.setRoomReply_no(roomReply_no);
 		int result = roomreplyService.replyUpdate(rrvo);
@@ -86,12 +102,12 @@ public class RoomReplyController {
 	}
 	
 	/***********************
-	 * 합주실 댓글 삭제
-	 * @param Integer roomReply_no
+	 * 합주실 댓글을 삭제하는 메서드입니다.
+	 * @param Long roomReply_no 삭제할 댓글 번호
 	 * @return 댓글 삭제 결과
 	 ***********************/
 	@DeleteMapping(value = "/{roomReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
-	public ResponseEntity<String> replyDelete(@PathVariable("roomReply_no")Integer roomReply_no){
+	public ResponseEntity<String> replyDelete(@PathVariable("roomReply_no")Long roomReply_no){
 
 		int result = roomreplyService.replyDelete(roomReply_no);
 		

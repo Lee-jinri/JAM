@@ -14,19 +14,46 @@
 
 	<style>
 		body {margin:0;}
-		.margin15px{
-			margin:15px;
-		}
-		
-		.border{
-			border-bottom: 1px solid #BDBDBD;
-		}
 		
 	</style>
 	
 	<script>
 		$(function(){
-			$("#sMessage_list").click(function(){
+			
+			let data ={
+					message_no: "${message_no }",
+					sender_id: "${sender_id }"
+			};
+			
+			fetch("/api/message/sendMessageDetail", {
+				method: 'post',
+				headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+			}).then(response =>{
+				if(response.ok){
+					return response.json();
+				}else if(response.status == 403){
+					alert("권한이 없는 페이지입니다.");
+					$(location).attr("href","/");
+					return false;
+				}
+				else {
+					throw new Error();
+				}
+			}).then((data) =>{
+				$("#message_title").text(data.message_title);
+				$("#message_content").text(data.message_contents);
+				$("#receiver").text(data.receiver);
+				
+			}).catch(error => {
+				console.log(error);
+				alert("요청하신 작업을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+				self.close();
+			})
+			
+			$("#close").click(function(){
 				self.close();
 			})
 		})
@@ -35,7 +62,7 @@
 <body>
 	<div class="contents message">
 		<div class="margin15px">
-			<span id="msg_title">${detail.message_title }</span>
+			<span id="message_title"></span>
 		</div>
 		<div class="border-bottom"></div>
 		
@@ -45,7 +72,7 @@
 				<span class="font600 vertical-align-m">받는 사람</span>
 			</div>
 			<div class="font600 margin15px msg_border height35 background-color-gray flex items-center">
-				<span id="receiver_name" class="ml-05">${detail.receiver }</span>
+				<span id="receiver" class="ml-05"></span>
 			</div>
 		</div>
 		
@@ -55,14 +82,14 @@
 				<span class="font600 vertical-align-m">쪽지 내용</span>
 			</div>
 			<div class="margin15px msg_border min-height60 flex" >
-				<span class='pd-top05 ml-05'>${detail.message_contents }</span>
+				<span class='pd-top05 ml-05' id="message_content"></span>
 			</div>
 		</div>
 		
 		<div class="border-bottom my-top-7"></div>
 		
 		<div class="msgBtn_div my-top-4 margin15px">
-			<button type="button" class="msgBtn mr-1 cursor-pointer" id="sMessage_list"style="width: 4rem;" >목록</button>
+			<button type="button" class="msgBtn mr-1 cursor-pointer" id="close"style="width: 4rem;" >닫기</button>
 		</div>
 	</div>
 </body>

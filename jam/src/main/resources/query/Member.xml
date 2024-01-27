@@ -45,12 +45,6 @@
   		WHERE email = #{email}
   	</select>
   	
-  	<!-- 로그인 -->
-  	<select id="login" resultType="member">
-  		SELECT user_id, user_pw, user_name, address, phone, email
-  		FROM member 
-  		WHERE user_id = #{user_id}
-  	</select>
   	
   	<!-- 사용자 정보 확인 -->
   	<select id="findByUsername" resultType="member">
@@ -79,6 +73,13 @@
 		SET refreshToken = NULL
 		WHERE user_id = #{user_id}
   	</update>
+  	
+  	<!-- refresh 토큰 가져오기 -->
+  	<select id="getRefreshToken" parameterType="String" resultType="String">
+  		SELECT refreshToken
+  		FROM member
+  		WHERE user_id = #{user_id}
+  	</select>
 	
 	<!-- 마이페이지 - 내가 쓴 글 -->
 	
@@ -225,18 +226,11 @@
 	
 	<!-- 마이페이지 - 회원 정보 페이지 -->
 	<select id="account" resultType="member" parameterType="String">
-		SELECT user_id, user_pw, user_name, address, phone, social_login
+		SELECT user_id, user_name, address, phone, social_login
 		FROM member
 		WHERE user_id = #{user_id}
 	</select>
 	
-	<!-- 마이페이지 - 회원 정보 수정 --> 
-	<update id="memberUpdate" parameterType="member">
-		UPDATE member
-		SET user_pw = #{user_pw}, user_name = #{user_name}, address = #{address}, phone = #{phone}
-		WHERE  user_id = #{user_id} 
-	</update> 	
-  	    
   	<!-- 아이디 찾기 -->
   	<select id="findId" parameterType="String" resultType="member">
   		SELECT user_id
@@ -254,7 +248,7 @@
 		AND phone = #{phone}
 	</select>
 	
-	<!-- 임시 비밀번호로 변경 -->
+	<!-- 비밀번호 변경 -->
 	<update id="updatePw" parameterType="String">
 		UPDATE member
 		SET user_pw = #{user_pw}
@@ -262,7 +256,7 @@
 	</update>
 	
 	<!-- 전화번호 변경 -->
-	<update id="phoneModi" parameterType="member">
+	<update id="updatePhone" parameterType="member">
 		UPDATE member
 		SET phone = #{phone}
 		WHERE user_id = #{user_id}
@@ -275,15 +269,8 @@
 		WHERE user_id = #{user_id}
 	</select>
 	
-	<!-- 비밀번호 변경 -->
-	<update id="pwModi" parameterType="member">
-		UPDATE member
-		SET user_pw = #{user_pw}
-		WHERE user_id = #{user_id}
-	</update>
-	
 	<!-- 주소 변경 -->
-	<update id="addressModi" parameterType="member">
+	<update id="updateAddress" parameterType="member">
 		UPDATE member
 		SET address = #{address}
 		WHERE user_id = #{user_id}
@@ -294,34 +281,20 @@
 		DELETE FROM member WHERE user_id = #{user_id}		
 	</delete>
 	
-	<!-- 카카오 정보 찾기 -->
-	<select id="findKakao" parameterType="java.util.HashMap" resultType="member">
-		<![CDATA[
-		select *
-		from member 
-		where user_name=#{user_name} and email=#{email}
-		]]>
-	</select>
-
-	<!-- 카카오 회원 정보 저장 -->
-	<insert id="kakaoInsert" parameterType="java.util.HashMap">
-		INSERT INTO member (user_id, user_name, user_pw,  email, role, social_login)
-		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, 'MEMBER', 1)
-	</insert>
 	
 	<!-- 네이버 회원 정보 찾기 -->
-	<select id="findNaver" parameterType="java.util.HashMap" resultType="member">
+	<select id="findSocialUser" parameterType="member" resultType="int">
 		<![CDATA[
-		select *
+		select COUNT(*)
 		from member 
-		where user_id = #{user_id} and user_name=#{user_name} and email=#{email}
+		where user_id = #{user_id}
 		]]>
 	</select>
 	
 	<!-- 네이버 회원 정보 저장 -->
-	<insert id="naverInsert" parameterType="java.util.HashMap">
-		INSERT INTO member(user_id, user_name, user_pw, email, role, social_login)
-		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, 'MEMBER', 1)
+	<insert id="SocialRegister" parameterType="member">
+		INSERT INTO member(user_id, user_name, user_pw, email, phone, role, social_login)
+		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, #{phone},'MEMBER', 1)
 	</insert>
 	
 	

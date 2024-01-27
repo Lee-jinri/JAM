@@ -11,7 +11,7 @@
 	
 	<insert id="replyInsert" parameterType="roomReply">
 	/*Reply - replyInsert*/
-		<selectKey keyProperty="roomReply_no" resultType="int" order="BEFORE">
+		<selectKey keyProperty="roomReply_no" resultType="Long" order="BEFORE">
 			select roomRentalReply_seq.nextval from dual
 		</selectKey>
 		INSERT INTO roomRentalReply(roomReply_no, roomRental_no, roomReply_content, roomReply_date, user_id, user_name)

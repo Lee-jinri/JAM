@@ -7,72 +7,88 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
+import com.jam.client.community.dao.ComMapperTest;
 import com.jam.client.roomRental.vo.RoomRentalVO;
+import com.jam.config.RootConfig;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
-@WebAppConfiguration
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration("file:src/main/webapp/WEB-INF/spring/root-context.xml")
+@ContextConfiguration(classes = RootConfig.class)
 @Log4j
 public class RoomRentalMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
 	private RoomRentalDAO roomDao;
 	
-	/* 리스트 조회
+	/* 전체 글 조회  */
 	@Test
 	public void testRoomList() {
 		RoomRentalVO room_vo = new RoomRentalVO();
 	
 		log.info("글 조회");
 		log.info(roomDao.roomList(room_vo));
-	}  */
+	} 
 	
-	/* detail 조회
+	
+	/* 상세 페이지 조회
 	@Test
 	public void testRoomDatail() {
-		RoomRentalVO room_vo = new RoomRentalVO();
 		
-		room_vo.setRoomRental_no(1);
 		log.info("글 상세");
-		log.info(roomDao.roomDetail(room_vo));
+		
+		Long room_no = 21L;
+		log.info(roomDao.getBoardDetail(room_no));
 	}
-	 */
+	*/
 	
-	/* insert 
+	/* 조회수 증가 
+	@Test
+	public void testIncrementReadCnt() {
+		roomDao.incrementReadCnt(21L);
+	}*/
+	
+	/* 글 작성 
 	@Test
 	public void testRoomInsert() {
 		RoomRentalVO room_vo = new RoomRentalVO();
-		log.info("글 입력");
-		room_vo.setRoomRental_title("글 입력 제목");
-		room_vo.setRoomRental_content("글 입력 내용");
+		log.info("합주실 글 작성");
+		room_vo.setRoomRental_title("작성 테스트");
+		room_vo.setRoomRental_content("작성 테스트 ");
 		room_vo.setUser_id("abcd123");
 		room_vo.setUser_name("김철수");
-		room_vo.setRoomRental_hits(0);
-		room_vo.setRoomRental_reply_cnt(0);
-		log.info(roomDao.roomInsert(room_vo));
+		room_vo.setRoomRental_price(1000);
+		
+		log.info(roomDao.writeBoard(room_vo));
 		
 	}*/
 	
-	/* update 
+	/* 수정할 글 정보 
+	@Test
+	public void testGetBoardById() {
+		log.info(roomDao.getBoardById(23L));
+	}*/
+	
+	
+	/* 수정 
 	@Test
 	public void testRoomUpdate() {
 		RoomRentalVO room_vo = new RoomRentalVO();
-		log.info("글 수정");
-		room_vo.setRoomRental_no(3);
+		
+		room_vo.setRoomRental_no(23L);
 		room_vo.setRoomRental_title("글 수정");
 		room_vo.setRoomRental_content("글 수정 내용");
-		log.info(roomDao.roomUpdate(room_vo));
+		room_vo.setRoomRental_status(1);
+		room_vo.setRoomRental_price(2000);
+		
+		log.info(roomDao.editBoard(room_vo));
 	}*/
 	
-	/* delete
+	/* 삭제
 	@Test
 	public void testRoomDelete() {
-		RoomRentalVO room_vo = new RoomRentalVO();
-		room_vo.setRoomRental_no(7);
-		log.info("글 삭제 " + roomDao.roomDelete(room_vo));
+		log.info(roomDao.boardDelete(23L));
 	}*/
 	
 }

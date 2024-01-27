@@ -1,6 +1,5 @@
 package com.jam.client.community.vo;
 
-import org.springframework.web.multipart.MultipartFile;
 
 import com.jam.common.vo.CommonVO;
 
@@ -12,7 +11,7 @@ import lombok.EqualsAndHashCode;
 public class CommunityVO extends CommonVO{
 	
 	/* 커뮤니티 게시판 */
-	private int	com_no;				// 글 번호
+	private Long com_no;				// 글 번호
 	private String com_title;		// 제목
 	private String com_content;		// 내용
 	private String imageFileName;	// 사진 파일 이름

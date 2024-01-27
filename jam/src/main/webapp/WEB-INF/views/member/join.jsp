@@ -41,24 +41,24 @@
 			
 			
 			/* 아이디, 닉네임, 핸드폰 번호 비밀번호 유효성 체크 변수 / false = 확인, true = 중복 or 사용불가 */
-			let id_check = true;
-			let pw_check = true;
-			let name_check = true;
-			let phone_check = true;
+			let id_check = false;
+			let pw_check = false;
+			let name_check = false;
+			let phone_check = false;
 			
 			
 			/* 	아이디, 비밀번호 정규식 : 영문 대,소문자 + 숫자 8 ~ 20자
-			닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 3 ~ 8자
-			전화번호 정규식 : 0,1 3글자 + 0~9 8글자 */
-			let id_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
-			let pw_legExp = /^[a-zA-Z]+[0-9a-zA-Z]{7,19}$/;
-			let name_legExp = /^[a-zA-z가-힣0-9]{2,11}$/;
+			닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 2 ~ 10자
+			전화번호 정규식 : 01 + 0,1,6,7,8,9 + 0~9 3~4글자 + 0~9 4글자 */
+			let id_legExp = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
+			let pw_legExp = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
+			let name_legExp = /^[a-zA-z가-힣0-9]{2,10}$/;
 			let phone_legExp = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
 			let email_letExp = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*.[a-zA-Z]{2,3}$/i;
 			
 			
 			/********************아이디 **********************/
-			$("#user_id").on("propertychange change keyup paste input", function(){
+			$("#user_id").on("blur", function(){
 				var userId = $("#user_id").val();	
 				
 				// 아이디 유효성 체크
@@ -73,45 +73,50 @@
 					
 					$.ajax({
 						type : "post",
-						url : "/member/memberIdChk",
-						data : {userId : userId}, 	// '컨트롤에 넘길 데이터 이름' : '데이터(.userId에 입력되는 값)'
-						success : function(result){
-							if(result != 'fail'){
+						url : "/api/member/userIdChk",
+						data : {userId : userId}, 	
+						success : function(){
+							id_check = true;
+							$('#id_check1').css("display","inline-block");
+							$("#id_check2").css("display","none");
+							$("#id_hint1").css("display","inline-block");
+							$("#id_hint2").css("display","none");
+						},
+						error : function(jqXHR, textStatus, errorThrown){
+							if (jqXHR.status === 409) {
 								id_check = false;
-								$('#id_check1').css("display","inline-block");
-								$("#id_check2").css("display","none");
-								$("#id_hint1").css("display","inline-block");
-								$("#id_hint2").css("display","none");
-							} else {
-								id_check = true;
 								$('#id_check1').css("display","none");
 								$("#id_check2").css("display","inline-block");
 								$("#id_hint1").css("display","none");
 								$("#id_hint2").css("display","inline-block");
 								$("#id_hint2").css("color","red");
-							}		
+					        } else {
+					            console.error("Error:", textStatus, errorThrown);
+					            alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					        }
 						}
 					}); 
 				}
 		   	});
 			
 			
-			/******************* 비밀번호 *********************/
-			$("#user_pw").on("propertychange change keyup paste input", function(){
+			/******************* 비밀번호 ******************/
+			$("#user_pw").on("blur", function(){
 				// 비밀번호 유효성 체크
 				if(!pw_legExp.test($("#user_pw").val())){
 					$("#pw_check2").css("display","inline-block");
 					$('#pw_check1').css("display","none");
-					pw_check = true;
+					pw_check = false;
 				}else {
 					$('#pw_check1').css("display","inline-block");
 					$("#pw_check2").css("display","none");
-					pw_cehck = false;
+					pw_check = true;
 				}
 			});
 			
+			
 			/******************* 닉네임 *********************/
-			$("#user_name").on("propertychange change keyup paste input", function(){
+			$("#user_name").on("blur", function(){
 				// 닉네임 유효성 체크
 				if(!name_legExp.test($("#user_name").val())){
 					$("#name_check2").css("display","inline-block");
@@ -123,23 +128,28 @@
 					
 					$.ajax({
 						type : "post",
-						url : "/member/memberNameChk",
+						url : "/api/member/userNameChk",
 						data : {user_name : user_name},
-						success : function(result){
-							if(result != 'fail'){
-								name_check = false;
+						success : function(){
+								name_check = true;
 								$('#name_check1').css("display","inline-block");
 								$("#name_check2").css("display","none");
 								$("#name_hint1").css("display","inline-block");
-								$("#name_hint2").css("display","none");
-							} else {
-								name_check = true;
+								$("#name_hint2").css("display","none");	
+						},
+						error : function(jqXHR, textStatus, errorThrown){
+							if (jqXHR.status === 409) {
+								name_check = false;
 								$('#name_check1').css("display","none");
 								$("#name_check2").css("display","inline-block");
 								$("#name_hint1").css("display","none");
 								$("#name_hint2").css("display","inline-block");
 								$("#name_hint2").css("color","red");
-							}		
+
+					        } else {
+					            console.error("Error:", textStatus, errorThrown);
+					            alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					        }
 						}
 					}); 
 				}
@@ -147,7 +157,7 @@
 			
 			
 			/******************* 핸드폰 번호 *********************/
-			$("#phone").on("propertychange change keyup paste input", function(){
+			$("#phone").on("blur", function(){
 				// 핸드폰 번호 유효성 체크
 				if(!phone_legExp.test($("#phone").val())){
 					$("#phone_check2").css("display","inline-block");
@@ -158,30 +168,35 @@
 					
 					$.ajax({
 						type : "post",
-						url : "/member/memberPhoneChk",
+						url : "/api/member/phoneChk",
 						data : {phone : phone},
-						success : function(result){
-							if(result != 'fail'){ // 사용 가능한 핸드폰 번호
+						success : function(){
+							phone_check = true;
+							$('#phone_check1').css("display","inline-block");
+							$("#phone_check2").css("display","none");
+							$("#phone_hint1").css("display","inline-block");
+							$("#phone_hint2").css("display","none");	
+						},
+						error : function(jqXHR, textStatus, errorThrown){
+							if (jqXHR.status === 409) {
 								phone_check = false;
-								$('#phone_check1').css("display","inline-block");
-								$("#phone_check2").css("display","none");
-								$("#phone_hint1").css("display","inline-block");
-								$("#phone_hint2").css("display","none");
-							} else { // 사용 불가능한 핸드폰 번호
-								phone_check = true;
 								$('#phone_check1').css("display","none");
 								$("#phone_check2").css("display","inline-block");
 								$("#phone_hint1").css("display","none");
 								$("#phone_hint2").css("display","inline-block");
 								$("#phone_hint2").css("color","red");
-							}		
+					        } else {
+					            console.error("Error:", textStatus, errorThrown);
+					            alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					        }
 						}
+						
 					}); 
 				}
 			});
 			
 			/******************* 이메일 *********************/
-			$("#email").on("propertychange change keyup paste input", function(){
+			$("#email").on("blur", function(){
 				// 이메일 유효성 체크
 				if(!email_letExp.test($("#email").val())){
 					$("#email_check2").css("display","inline-block");
@@ -192,23 +207,27 @@
 					
 					$.ajax({
 						type : "post",
-						url : "/member/memberEmailChk",
+						url : "/api/member/emailChk",
 						data : {email : email},
-						success : function(result){
-							if(result != 'fail'){ // 사용 가능한 이메일
+						success : function(){
+							email_check = true;
+							$('#email_check1').css("display","inline-block");
+							$("#email_check2").css("display","none");
+							$("#email_hint1").css("display","inline-block");
+							$("#email_hint2").css("display","none");	
+						},
+						error : function(jqXHR, textStatus, errorThrown){
+							if (jqXHR.status === 409) {
 								email_check = false;
-								$('#email_check1').css("display","inline-block");
-								$("#email_check2").css("display","none");
-								$("#email_hint1").css("display","inline-block");
-								$("#email_hint2").css("display","none");
-							} else { // 사용 불가능한 이메일
-								phone_check = true;
 								$('#email_check1').css("display","none");
 								$("#email_check2").css("display","inline-block");
 								$("#email_hint1").css("display","none");
 								$("#email_hint2").css("display","inline-block");
 								$("#email_hint2").css("color","red");
-							}		
+					        } else {
+					            console.error("Error:", textStatus, errorThrown);
+					            alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					        }
 						}
 					}); 
 				}
@@ -225,7 +244,7 @@
 				let email = $("#email").val();
 				let streetAddress = $("#streetAddress").val();
 				let detailAddress = $("#detailAddress").val();
-				
+				let address;
 				
 				if(id.replace(/\s/g,"")==""){
 					alert("아이디를 입력하세요.");
@@ -233,7 +252,7 @@
 					return false;
 				} 
 				
-				if(id_check){
+				if(!id_check){
 					alert("아이디를 확인하세요.");
 					$("#user_id").focus();
 					return false;
@@ -245,8 +264,20 @@
 					return false;
 				}
 				
+				if(!pw_check){
+					alert("비밀번호를 확인하세요.");
+					$("#user_pw").focus();
+					return false;
+				}
+				
 				if(name.replace(/\s/g,"")==""){
 					alert("닉네임을 입력하세요.");
+					$("#user_name").focus();
+					return false;
+				}
+				
+				if(!name_check){
+					alert("닉네임을 확인하세요.");
 					$("#user_name").focus();
 					return false;
 				}
@@ -257,9 +288,21 @@
 					return false;
 				}
 				
+				if(!phone_check){
+					alert("전화번호를 확인하세요.");
+					$("#phone").focus();
+					return false;
+				}
+				
 				if(email.replace(/\s/g,"") == ""){
 					alert("전화번호를 입력하세요.");
 					$("#phone").focus();
+					return false;
+				}
+				
+				if(!email_check){
+					alert("이메일을 확인하세요.");
+					$("#email").focus();
 					return false;
 				}
 				
@@ -272,14 +315,62 @@
 					alert("상세 주소를 입력하세요.");
 					$("#detailAddress").focus();
 					return false;
-				}
-				$("#address").val($("#streetAddress").val() + " " + $("#detailAddress").val());
+				}	
 				
-				$("#join_form").attr({
-					"method" : "post",
-					"action" : "/member/join"
+				address = streetAddress + " " + detailAddress;
+				
+				let data = {
+						'user_id':id,
+						'user_pw':pw,
+						'user_name':name,
+						'phone':phone,
+						'email':email,
+						'address':address
+				}
+				
+				
+				fetch('/api/member/join',{
+					method: 'POST',
+					headers: {
+					    'Content-Type': 'application/json'
+					},
+					body: JSON.stringify(data),
 				})
-				$("#join_form").submit();
+				.then(response => {
+					if(response.status == 400)  return response.text();
+					if(!response.ok) throw new Error('Network response was not ok');
+					
+					if(confirm("회원 가입이 완료되었습니다. 로그인 페이지로 이동하시겠습니까?")){
+						$(location).attr('href','/member/login');
+					}else{
+						// 회원 가입 이전 페이지로 이동
+			        	const prevPage = response.headers.get('prev-page');
+				        
+				        if (prevPage != null && prevPage != "") {
+							if (prevPage.includes("/member/login") || pravPage.includes("/member/join")) {
+								$(location).attr('href', "/");
+							} else {
+								$(location).attr('href', prevPage);
+							}
+						}else $(location).attr('href', "/");
+					}
+				})
+				.then(data =>{
+					console.log(data);
+					if(data == 'user_id') {
+						alert("올바르지 않은 아이디 형식 입니다. 다시 입력해주세요.");
+						$("#user_id").focus();
+					}else if (data == 'user_name'){
+						alert("올바르지 않은 닉네임 형식 입니다. 다시 입력해주세요.");
+						$("#user_name").focus();
+					}
+				})
+				.catch(error =>{
+					alert("회원 가입을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+					//$(location).attr('href','/');
+					
+					console.error('회원 가입 중 오류 발생 : ', error);
+				})
 			});
 			
 		})

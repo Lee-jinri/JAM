@@ -15,8 +15,8 @@
 		</if>
 	</sql>
 	
-	<!-- 커뮤니티 list -->
-	<select id="communityList" parameterType="community" resultType="community">
+	<!-- 커뮤니티 모든 글 조회 -->
+	<select id="getBoards" parameterType="community" resultType="community">
 		<![CDATA[
 		SELECT com_no, com_title, to_char(com_date,'YYYY/MM/DD HH24:MI') as com_date, com_reply_cnt, com_hits, user_id , user_name
 		FROM (
@@ -34,43 +34,43 @@
 	</select>	
 	
 	<!-- 전체 레코드 수 조회 -->
-	<select id="comListCnt" parameterType="community" resultType="int">
+	<select id="listCnt" parameterType="community" resultType="int">
 		SELECT count(*) FROM community
 		<trim prefix=" where (" suffix=")" >
 			<include refid="comSearch"></include>
 		</trim>
 	</select>	
 	
-	<!-- 커뮤니티 조회수 -->
-	<update id="comReadCnt" parameterType="community">
+	<!-- 커뮤니티 조회수 증가  -->
+	<update id="incrementReadCnt" parameterType="Long">
 		UPDATE community SET com_hits = com_hits + 1 where com_no = #{com_no}
 	</update>
 	
-	<!-- 커뮤니티 detail -->
-	<select id="communityDetail" resultType="community">
+	<!-- 커뮤니티 상세 페이지 -->
+	<select id="getBoardDetail" resultType="community">
 		SELECT com_no, com_title, com_content, com_hits, to_char(com_date,'YYYY/MM/DD HH24:MI:SS') as com_date, user_name, user_id 
 		FROM community 
 		WHERE com_no = #{com_no}
 	</select>
 	
-	<!-- 커뮤니티 insert -->
-	<insert id="comInsert" parameterType="community">
-		<selectKey keyProperty="com_no" resultType="int" order="BEFORE">
+	<!-- 커뮤니티 글 작성 -->
+	<insert id="writeBoard" parameterType="community">
+		<selectKey keyProperty="com_no" resultType="Long" order="BEFORE">
         	select com_seq.nextval from dual
     	</selectKey>
 		INSERT INTO community(com_no, user_id, com_title, com_content, user_name, com_hits, com_reply_cnt, imageFileName)
 		VALUES(#{com_no},#{user_id}, #{com_title}, #{com_content},#{user_name}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
 	</insert>
 	
-	<!-- 커뮤니티 update Form -->
-	<select id="comUpdateForm" parameterType="community"  resultType="community">
-		SELECT com_no, com_title, com_content, imageFileName
+	<!-- 커뮤니티 수정 할 글 불러오기 -->
+	<select id="getBoardById" parameterType="community"  resultType="community">
+		SELECT com_title, com_content, imageFileName, user_id
 		FROM community
 		WHERE com_no = #{com_no} 
 	</select>
 	
-	<!-- 커뮤니티 update -->
-	<update id="comUpdate" parameterType="community">
+	<!-- 커뮤니티 글 수정 -->
+	<update id="editBoard" parameterType="community">
 		UPDATE community SET
 		com_title = #{com_title},
 		com_content = #{com_content},
@@ -81,8 +81,8 @@
 		WHERE com_no = #{com_no}
 	</update>
 	
-	<!-- 커뮤니티 delete -->
-	<delete id="comDelete" parameterType="community">
+	<!-- 커뮤니티 글 삭제 -->
+	<delete id="boardDelete" parameterType="community">
 		DELETE FROM community WHERE com_no = #{com_no}
 	</delete>
 	

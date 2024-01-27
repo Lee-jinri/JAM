@@ -7,7 +7,7 @@ import com.jam.client.roomRentalReply.vo.RoomReplyVO;
 public interface RoomReplyDAO {
 
 	// 댓글 리스트
-	List<RoomReplyVO> replyList(Integer roomRental_no);
+	List<RoomReplyVO> replyList(Long roomRental_no);
 
 	// 댓글 입력
 	int replyInsert(RoomReplyVO rrvo);
@@ -16,9 +16,9 @@ public interface RoomReplyDAO {
 	int replyUpdate(RoomReplyVO rrvo);
 
 	// 댓글 삭제
-	int replyDelete(Integer roomReply_no);
+	int replyDelete(Long roomReply_no);
 
 	// 댓글 조회
-	RoomReplyVO replyRead(Integer roomReply_no);
+	RoomReplyVO replyRead(Long roomReply_no);
 
 }

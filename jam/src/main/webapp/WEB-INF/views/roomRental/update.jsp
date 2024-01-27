@@ -31,27 +31,19 @@
 					return false;
 				}
 				// 사용자 id, name 가져옴
-				fetch('http://localhost:8080/member/getUserInfo', {
+				fetch('http://localhost:8080/api/member/getUserInfo', {
 			        method: 'GET',
 			        headers: {
 			            'Authorization': localStorage.getItem("Authorization")
 			        },
 			    })
 			    .then(response => {
-			        if (response.ok) {
-			        	user_id = response.headers.get('user_id');
-			            $("#user_id").val(user_id);
-			            
-			            if(user_id == null) $(location).attr('href', '/member/login');
-			            
-			            return response.text();
-			        } else {
-			            throw new Error('Network response was not ok');
-			        }
+			        if (!response.ok) throw new Error('Network response was not ok');
+			    	return response.json();
 			    })
-			    .then((user_name) => {
-		        	if (user_name) {
-						$("#user_name").val(user_name);
+			    .then((data) => {
+		        	if (data) {
+						$("#user_name").val(data.user_name);
 						
 						$("#roomUpdate").attr({
 							"action" : "/roomRental/roomRentalUpdate",

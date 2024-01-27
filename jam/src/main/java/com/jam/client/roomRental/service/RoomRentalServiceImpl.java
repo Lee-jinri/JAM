@@ -27,33 +27,35 @@ public class RoomRentalServiceImpl implements RoomRentalService {
 	}
 
 	@Override
-	public void roomReadCnt(RoomRentalVO room_vo) {
-		roomDao.roomReadCnt(room_vo);
+	public void incrementReadCnt(Long room_no) {
+		roomDao.incrementReadCnt(room_no);
 	}
 
 	@Override
-	public RoomRentalVO boardDetail(RoomRentalVO room_vo) {
-		return roomDao.roomDetail(room_vo);
+	public RoomRentalVO getBoardDetail(Long room_no) {
+		return roomDao.getBoardDetail(room_no);
 	}
 
 	@Override
-	public int roomInsert(RoomRentalVO room_vo) throws Exception {
-		return roomDao.roomInsert(room_vo);
+	public int writeBoard(RoomRentalVO room_vo) throws Exception {
+		return roomDao.writeBoard(room_vo);
 	}
 
 	@Override
-	public RoomRentalVO roomUpdateForm(RoomRentalVO room_vo) {
-		return roomDao.roomUpdateForm(room_vo);
+	public RoomRentalVO getBoardById(Long roomRental_no) {
+		return roomDao.getBoardById(roomRental_no);
 	}
 
 	@Override
-	public int roomUpdate(RoomRentalVO room_vo) {
-		return roomDao.roomUpdate(room_vo);
+	public int editBoard(RoomRentalVO room_vo) {
+		return roomDao.editBoard(room_vo);
 	}
 
 	@Override
-	public int roomDelete(RoomRentalVO room_vo) {
-		return roomDao.roomDelete(room_vo);
+	public int boardDelete(Long roomRental_no) {
+		return roomDao.boardDelete(roomRental_no);
 	}
+
+	
 
 }

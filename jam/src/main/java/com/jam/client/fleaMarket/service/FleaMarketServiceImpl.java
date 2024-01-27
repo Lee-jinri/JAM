@@ -15,55 +15,55 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	private FleaMarketDAO fleaDao;
 	
 	@Override
-	public List<FleaMarketVO> fleaList(FleaMarketVO flea_vo) {
+	public List<FleaMarketVO> getBoards(FleaMarketVO flea_vo) {
 		
-		List<FleaMarketVO> list = fleaDao.fleaList(flea_vo);
+		List<FleaMarketVO> list = fleaDao.getBoards(flea_vo);
 		
 		return list;
 	}
 	
 	@Override
-	public int fleaListCnt(FleaMarketVO flea_vo) {
-		return fleaDao.fleaListCnt(flea_vo);
+	public int listCnt(FleaMarketVO flea_vo) {
+		return fleaDao.listCnt(flea_vo);
 	}
 
 	@Override
-	public void fleaReadCnt(FleaMarketVO flea_no) {
+	public void incrementReadCnt(Long flea_no) {
 		
-		fleaDao.fleaReadCnt(flea_no);
+		fleaDao.incrementReadCnt(flea_no);
 	}
 
 	@Override
-	public FleaMarketVO fleaDetail(FleaMarketVO flea_no) {
+	public FleaMarketVO getBoardDetail(Long flea_no) {
 		
-		FleaMarketVO detail = fleaDao.fleaDetail(flea_no);
+		FleaMarketVO detail = fleaDao.getBoardDetail(flea_no);
 		
 		return detail;
 	}
 
 	@Override
-	public int fleaInsert(FleaMarketVO flea_vo) {
-		return fleaDao.fleaInsert(flea_vo);
+	public int writeBoard(FleaMarketVO flea_vo) {
+		return fleaDao.writeBoard(flea_vo);
 	}
 
 	@Override
-	public FleaMarketVO fleaUpdateForm(FleaMarketVO flea_vo) {
+	public FleaMarketVO getBoardById(Long flea_no) {
 		
-		FleaMarketVO updateData =  fleaDao.fleaUpdateForm(flea_vo);
+		FleaMarketVO updateData =  fleaDao.getBoardById(flea_no);
 		
 		return updateData;
 	}
 
 	@Override
-	public int fleaUpdate(FleaMarketVO flea_vo) {
+	public int editBoard(FleaMarketVO flea_vo) {
 		
-		return fleaDao.fleaUpdate(flea_vo);
+		return fleaDao.editBoard(flea_vo);
 	}
 
 	@Override
-	public int fleaDelete(FleaMarketVO flea_vo) {
+	public int boardDelete(Long flea_no) {
 	
-		return fleaDao.fleaDelete(flea_vo);
+		return fleaDao.boardDelete(flea_no);
 	}
 
 	

@@ -15,12 +15,45 @@
 	
 		body {margin:0; width=500; height=370;}
 		
-		.border{
-			border-bottom: 1px solid #BDBDBD;
-		}
 	</style>
 	<script>
 		$(function(){
+			
+			let data = {
+					message_no: "${message_no}",
+					receiver_id: "${receiver_id}"
+			};
+			
+			fetch("/api/message/receiveMsgDetail", {
+				method: 'post',
+				headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+			}).then(response =>{
+				if(response.ok){
+					return response.json();
+				}else if(response.status == 403){
+					alert("권한이 없는 페이지입니다.");
+					$(location).attr("href","/");
+					return false;
+				}else {
+					throw new Error();
+				}
+			}).then((data) =>{
+				$("#message_title").text(data.message_title);
+				$("#message_content").text(data.message_contents);
+				$("#sender").text(data.sender);
+				
+				$("#sender_id").val(data.sender_id);
+				$("#sender_name").val(data.sender);
+				
+				
+			}).catch(error => {
+				console.log(error);
+				alert("요청하신 작업을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+				self.close();
+			})
 			
 			$("#response").click(function(){
 				
@@ -33,14 +66,23 @@
 				
 			})
 		
+			// 닫기 버튼 클릭
+			$("#close").click(function(){
+				self.close();
+			});
 		});
 		
 	</script>
 </head>
 <body>
 	<div class="contents message">
+		<form id="responseForm">
+			<input type="hidden" id="sender_name" name="sender">
+			<input type="hidden" id="sender_id" name="sender_id">
+		</form>
+		
 		<div class="margin15px">
-			<span id="msg_title">${detail.message_title }</span>
+			<span id="message_title"></span>
 		</div>
 		<div class="border-bottom">
 		</div>
@@ -51,7 +93,7 @@
 				<span class="font600 vertical-align-m">보낸 사람</span>
 			</div>
 			<div class="font600 margin15px msg_border height35 background-color-gray flex items-center">
-				<span id="sender_name" class="ml-05">${detail.sender }</span>
+				<span id="sender" class="ml-05"></span>
 			</div>
 		</div>
 		<div class=''>
@@ -60,7 +102,7 @@
 				<span class="font600 vertical-align-m">쪽지 내용</span>
 			</div>
 			<div class="margin15px msg_border min-height60 flex" >
-				<span class='pd-top05 ml-05'>${detail.message_contents }</span>
+				<span id="message_content" class='pd-top05 ml-05'></span>
 			</div>
 		</div>
 		<div class="border-bottom my-top-7">
@@ -68,14 +110,9 @@
 		
 		<div class="msgBtn_div my-top-4 margin15px ">
 			<button type="button" class="msgBtn mr-1" id="response"  style="cursor:pointer">쪽지 보내기</button>
+			<button type="button" class="msgBtn2" id="close"style="width: 4rem; cursor:pointer;" >닫기</button>
 		</div>
 		
-		<div class="">
-			<form id="responseForm" name="responseForm">
-				<input type="hidden" name="sender_id" value="${detail.sender_id }">
-				<input type="hidden" name="sender" value="${detail.sender }">
-			</form>
-		</div>
 	</div>
 </body>
 </html>

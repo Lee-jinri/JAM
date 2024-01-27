@@ -27,12 +27,14 @@
 				goPage();
 			})
 			
+			
 			$("#roomWriteBtn").click(function(){
 				var accessToken = localStorage.getItem("Authorization");
-			
-				if(accessToken == null) $(location).attr('href', '/member/login');
+				
+				if(accessToken != null) $(location).attr('href','/roomRental/roomRentalWrite');
 				else{
-					$(location).attr('href', '/roomRental/roomRentalWrite');
+					if(confirm("로그인 후 이용할 수 있는 서비스 입니다. 로그인 페이지로 이동하겠습니까?"))$(location).attr('href', '/member/login');
+					
 				}
 			})
 		})
@@ -101,14 +103,14 @@
 									<c:if test="${room.roomRental_status == 0}">
 										<span class="border-g " style="color:#04B431;">거래중</span>
 										<div class="inline-block my-bottom-4 ml-1">
-											<a class="font-weight-bold"  href="/roomRental/roomRentalDetail/${room.roomRental_no }">${room.roomRental_title }</a>
+											<a class="font-weight-bold"  href="/roomRental/board/${room.roomRental_no }">${room.roomRental_title }</a>
 										</div>
 										
 									</c:if>
 									<c:if test="${room.roomRental_status == 1}">
 										<span class="border" style="color:#A4A4A4;">거래 완료</span>
 										<div class="inline-block my-bottom-4 ml-1">
-											<a class="font-weight-bold" style="color:#A4A4A4;"href="/roomRental/roomRentalDetail/${room.roomRental_no }">${room.roomRental_title }</a>
+											<a class="font-weight-bold" style="color:#A4A4A4;"href="/roomRental/board/${room.roomRental_no }">${room.roomRental_title }</a>
 										</div>
 										
 									</c:if>

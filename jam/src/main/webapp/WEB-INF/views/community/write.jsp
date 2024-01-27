@@ -14,83 +14,99 @@
 	
 	
 	<script>
-		$(function(){
-			
-			
-			$("#write").click(function(){
-				let com_title = $("#com_title").val();
-				let com_content = $("#com_content").val();
-				
-				if(com_title.replace(/\s/g,"") == ""){
-					alert("제목을 입력하세요.");
-					$("#com_title").focus();
-					return false;
-				}
-				
-				if(com_content.replace(/\s/g,"") == ""){
-					alert("본문을 입력하세요.");
-					$("#com_content").focus();
-					return false;
-				}
-				
-				// 사용자 id, name 가져옴
-				fetch('http://localhost:8080/member/getUserInfo', {
-			        method: 'GET',
-			        headers: {
-			            'Authorization': localStorage.getItem("Authorization")
-			        },
-			    })
-			    .then(response => {
-			        if (response.ok) {
-			            user_id = response.headers.get('user_id');
-			            $("#user_id").val(user_id);
+	$(function () {
+
+        let loggedInUserId;
+	    let loggedInUsername;
+	    
+	    $("#write").click(async function () {
+	    	
+		    // 유효성 검사
+	        let com_title = $("#com_title").val();
+	        let com_content = $("#com_content").val();
+
+	        if (com_title.replace(/\s/g, "") == "") {
+	            alert("제목을 입력하세요.");
+	            $("#com_title").focus();
+	            return false;
+	        }
+
+	        if (com_content.replace(/\s/g, "") == "") {
+	            alert("본문을 입력하세요.");
+	            $("#com_content").focus();
+	            return false;
+	        }
+
+		    
+	        try {
+	        	// 사용자의 아이디와 닉네임을 가져옵니다. 
+	            await getUserInfo();
+	            
+	            var data = {
+	                'com_title': com_title,
+	                'com_content': com_content,
+	                'user_id': loggedInUserId,
+	                'user_name': loggedInUsername
+	            };
+
+	            const response = await fetch('/api/community/board', {
+	                method: 'POST',
+	                headers: {
+	                    'Content-Type': 'application/json'
+	                },
+	                body: JSON.stringify(data)
+	            });
+
+	            if (response.ok) {
+	            	alert("등록이 완료되었습니다.");
+	                const body = await response.text();
+	                if (body) {
+	                    $(location).attr('href', '/community/board/' + body);
+	                }
+	            } else {
+	                const errorText = await response.text();
+	                throw new Error(errorText);
+	            }
+	        } catch (error) {
+	            alert("게시글 작성을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+	            console.error('Error:', error);
+	        }
+	    });
+	    
+	    async function getUserInfo() {
+	        try {
+	            const response = await fetch('http://localhost:8080/api/member/getUserInfo', {
+	                method: 'GET',
+	                headers: {
+	                    'Authorization': localStorage.getItem("Authorization")
+	                },
+	            }).then(response => {
+	            	if (!response.ok) {
+	            		throw new Error('Network response was not ok');
 			            
-			            if(user_id == null) $(location).attr('href', '/member/login');
-			            
-			            return response.text();
-			        } else {
-			            throw new Error('Network response was not ok');
-			        }
-			    })
-			    .then((user_name) => {
-		        	if (user_name) {
-						$("#user_name").val(user_name);
-						
-						$("#comWrite").attr({
-							"action" : "/community/communityWrite",
-							"enctype": "multipart/form-data",
-							"method" : "post"
-						})
-						
-						$("#comWrite").submit();
-	                	
-						let result = $("#result").val();
-						
-						/* 글 작성 중 오류가 발생했을 때 */
-						if(result == 'error'){
-							alert("게시글 작성을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
-						}else alert("등록이 완료되었습니다.");
+			        } 
+	            	return response.json();
+	            }).then(data => {
+					loggedInUserId = data.user_id;
+					loggedInUsername = data.user_name;
+            		
+		            if(loggedInUserId == null || loggedInUsername == null) {
+		            	alert("로그인이 필요한 작업입니다. 로그인 후 다시 시도해 주세요.");
+		            	$(location).attr('href', '/member/login');
 		            }
-		        	else $(location).attr('href', '/member/login');
-				})
-			    .catch(error => {
-			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
-			    });
-				
-				
-			})
-			
-			
-			
-		})
+	            })	
+	        } catch (error) {
+	            console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+	            
+	            throw error;
+	        }
+	    }
+	});
 		
 	</script>
 </head>
 <body class="wrap">
 	<div class="rem-30">
-		<div>
-			<input type="hidden" id="result" value="${result }">
-		</div>
 		<div class="title flex justify-center">
 			<h2>커뮤니티</h2>
 		</div>

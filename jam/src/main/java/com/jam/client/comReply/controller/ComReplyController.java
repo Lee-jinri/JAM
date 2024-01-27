@@ -3,9 +3,6 @@ package com.jam.client.comReply.controller;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -38,17 +35,15 @@ public class ComReplyController {
 	private ComReplyService comreplyService;
 	
 	/***************************
-	 * @param Integer com_no
+	 * 커뮤니티 댓글을 조회하는 메서드입니다.
+	 * @param Long com_no 조회할 커뮤니티 글의 번호
 	 * @param ComReplyVO crvo	
-	 * @param MemberVO member
 	 * @return 커뮤니티 댓글 리스트
 	 ****************************/
 	@GetMapping(value = "/all/{com_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<ComReplyVO> replyList(@PathVariable("com_no") Integer com_no, @RequestParam(value = "user_id", required = false) String user_id, @ModelAttribute("data") ComReplyVO crvo, MemberVO member, HttpServletRequest request, Model model){
-		log.info("community reply list");
+	public List<ComReplyVO> replyList(@PathVariable("com_no") Long com_no, @RequestParam(value = "user_id", required = false) String user_id, @ModelAttribute("data") ComReplyVO crvo){
 		
-		List<ComReplyVO> reply = null;
-		reply = comreplyService.comReplyList(com_no);
+		List<ComReplyVO> reply = comreplyService.comReplyList(com_no);
 		
 		crvo.setUser_id(user_id);
    		
@@ -56,16 +51,13 @@ public class ComReplyController {
 	}
 	
 	/*************************
-	 * 커뮤니티 댓글 작성
+	 * 커뮤니티 댓글을 작성하는 메서드입니다.
 	 * @param ComReplyVO crvo
-	 * @param MemberVO member
 	 * @return 댓글 작성 실행 결과
 	 **************************/
 	@JsonFormat
-	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
-	public String replyInsert(@RequestBody ComReplyVO crvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
-		
-		log.info("community replyInsert");
+	@PostMapping(value="/reply",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
+	public String replyInsert(@RequestBody ComReplyVO crvo) {
 		
 		int result = 0;
 		
@@ -76,13 +68,13 @@ public class ComReplyController {
 	
 
 	/*******************************
-	 * 커뮤니티 댓글 수정
-	 * @param Integer comReply_no
-	 * @param ComReplyVO crvo
+	 * 커뮤니티 댓글을 수정하는 메서드입니다.
+	 * @param Long comReply_no 수정할 댓글 번호
+	 * @param ComReplyVO crvo 수정할 댓글 내용
 	 * @return 댓글 수정 결과 
 	 *******************************/
 	@PutMapping(value = "/{comReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
-	public String replyUpdate(@PathVariable("comReply_no") Integer comReply_no, @RequestBody ComReplyVO crvo) {
+	public String replyUpdate(@PathVariable("comReply_no") Long comReply_no, @RequestBody ComReplyVO crvo) {
 	
 		crvo.setComReply_no(comReply_no);
 		int result = comreplyService.replyUpdate(crvo);
@@ -91,12 +83,12 @@ public class ComReplyController {
 	}
 	
 	/*******************************
-	 * 커뮤니티 댓글 삭제
-	 * @param Integer comReply_no
+	 * 커뮤니티 댓글을 삭제하는 메서드입니다.
+	 * @param Long comReply_no 삭제할 댓글 번호
 	 * @return 댓글 삭제 결과
 	 ********************************/
 	@DeleteMapping(value = "/{comReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
-	public ResponseEntity<String> replyDelete(@PathVariable("comReply_no")Integer comReply_no){
+	public ResponseEntity<String> replyDelete(@PathVariable("comReply_no")Long comReply_no){
 
 		int result = comreplyService.replyDelete(comReply_no);
 		

@@ -11,77 +11,75 @@
 	<script type="text/javascript" src="/resources/include/dist/js/jquery-1.12.4.min.js"></script>
 	<script type="text/javascript" src="/resources/include/dist/js/common.js"></script>
 	
+	
 	<script>
 		$(function(){
 			// 현재 로그인한 사용자 아이디와 닉네임 변수
-			let now_userId = "";
-			let now_userName = "";
-
-			// 사용자 정보 가져옴
+			let loggedInUserId = "";
+			let loggedInUsername = "";
+			
+			// 사용자 정보를 가져오는 비동기 함수
 			async function getUserInfo() {
 			    try {
-			        const response = await fetch('http://localhost:8080/member/getUserInfo', {
+			        const response = await fetch('http://localhost:8080/api/member/getUserInfo', {
 			            method: 'GET',
 			            headers: {
 			                'Authorization': localStorage.getItem("Authorization")
 			            },
 			        });
+			        
+					if (!response.ok) throw new Error('Network response was not ok');
+						
+					const data = await response.json();
+	                
+					if (data || data.user_id || data.user_name) {
+	                    loggedInUserId = data.user_id;
+	                    loggedInUsername = data.user_name;
+	                    
+	                    $("#reply_name").text(data.user_name);
+	                }else{
+						// textarea를 readonly로 변경
+			            const textarea = document.getElementById('comReply_content');
+			            textarea.readOnly = true;
 
-			        if (response.ok) {
-			            now_userId = response.headers.get('user_id');
+			            // 로그인 메세지 생성
+			            const replyLogin = document.getElementById("reply_login");
 
-			            const user_name = await response.text();
-            			
-			            if (user_name) {
-			                now_userName = user_name;
-			            }
-			            if (now_userId == null || now_userId == "") {
-			                // textarea를 readonly로 변경
-			                const textarea = document.getElementById('comReply_content');
-			                textarea.readOnly = true;
+			            const span1 = document.createElement("span");
+			            span1.textContent = "댓글을 작성하려면 ";
 
-			                // 로그인 메세지 생성
-			                const replyLogin = document.getElementById("reply_login");
+			            const loginLink = document.createElement("a");
+			            loginLink.href = "/member/login";
+			            loginLink.textContent = "로그인";
+			            const span2 = document.createElement("span");
+			            span2.textContent = "이 필요합니다.";
 
-			                const span1 = document.createElement("span");
-			                span1.textContent = "댓글을 작성하려면 ";
-
-			                const loginLink = document.createElement("a");
-			                loginLink.href = "/member/login";
-			                loginLink.textContent = "로그인";
-			                const span2 = document.createElement("span");
-			                span2.textContent = "이 필요합니다.";
-
-			                replyLogin.appendChild(span1);
-			                replyLogin.appendChild(loginLink);
-			                replyLogin.appendChild(span2);
-			            }
-			        } else {
-			            throw new Error('Network response was not ok');
-			        }
+			            replyLogin.appendChild(span1);
+			            replyLogin.appendChild(loginLink);
+			            replyLogin.appendChild(span2);
+	                }
 			    } catch (error) {
 			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
 			    }
 			}
-
+			
 			// getUserInfo 함수 호출
 			getUserInfo().then(() => {
-			    console.log("now_userID : " + now_userId);
-			    console.log("now_userName : " + now_userName);
+			    console.log("loggedInUserId : " + loggedInUserId);
+			    console.log("loggedInUsername : " + loggedInUsername);
 			    
-			    listAll(com_no , now_userId);
+			    listAll(flea_no , loggedInUserId);
 			    
 			    /* 댓글 입력 */
 				$("#reply_insert").click(function(){
 					
-					let insertUrl = "/comreplies/replyInsert";
+					let insertUrl = "/fleareplies/reply";
 					
-					console.log("reply_insert : " +now_userId);
 					let value = JSON.stringify({
-						user_id : now_userId,
-						user_name : now_userName,
-						com_no:com_no,
-						comReply_content:$('#comReply_content').val()
+						user_id : loggedInUserId,
+						user_name : loggedInUsername,
+						flea_no:flea_no,
+						fleaReply_content:$('#fleaReply_content').val()
 					});
 					
 					$.ajax({
@@ -93,13 +91,12 @@
 						dataType:"text",
 						data:value,
 						error:function(xhr,textStatus, errorThrown){
-							console.log(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
-							alert("댓글 작성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+							alert(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
 						},
 						beforeSend:function(){
-							if($("#comReply_content").val().replace(/\s/g, "") == ""){
+							if($("#fleaReply_content").val().replace(/\s/g, "") == ""){
 								alert("댓글을 입력하세요.");
-								$("#comReply_content").focus();
+								$("#fleaReply_content").focus();
 								return false;
 							}
 						},
@@ -107,30 +104,30 @@
 							if(result=="SUCCESS"){
 								alert("댓글이 등록되었습니다.");
 								dataReset();
-								listAll(com_no , now_userId);
+								listAll(flea_no, loggedInUserId);
 							}
 						}
 					});
 					
 				})
-				
 				/* 수정 버튼 클릭*/
 				$(document).on("click","button[data-btn='upBtn']",function(){
-					let panel = $(this).parents("div.panel");
-					let comReply_no = panel.attr("data-num");
-					updateForm(comReply_no, panel);
+					let panel = $(this).parents("div.panel")
+					let fleaReply_no = panel.attr("data-num");
+					
+					updateForm(fleaReply_no, panel);
 				});
-			});
-		
-			let com_no = ${detail.com_no};
+			})
 			
-			/* 수정 할 댓글 html 구성 */
-			function updateForm(comReply_no, panel){
+			let flea_no = ${flea_no};
+			
+			
+			function updateForm(fleaReply_no, panel){
 				$("#user_name").val(panel.find(".panel-title .name").html());
 				$("#user_name").prop("readonly",true);
 				let content = panel.find(".panel-body").html();
-				content = content.replace(/(<br>|<br\/>|<br \/>)/g, '\r\n'); 
-				//$("#comReply_content").val(content);
+				content = content.replace(/(<br>|<br\/>|<br \/>)/g, '\r\n'); //<br><br/><br />
+
 				let id = panel.find(".panel-title .name");
 				let panelbody = panel.find(".panel-body");
 				panelbody.html("<textarea id='upReplyContent' rows='3' cols='30' id='tt_"+id+"'>"+content+"</textarea>");
@@ -138,34 +135,33 @@
 				let panelbtn = panel.find(".panel-btn");
 				panelbtn.html(
 					"<button type='button' id='cancel'>취소</button>" +
-					"<button type='button' id='replyUpdateBtn' data-comReply_no =" + comReply_no + ">등록</button>");
+					"<button type='button' id='replyUpdateBtn' data-fleaReply_no =" + fleaReply_no + ">등록</button>" );
 				
 			}			
 			
 			/* 수정 취소 버튼 클릭*/
 			$(document).on("click","#cancel",function(){
-				listAll(com_no , now_userId);
+				listAll(flea_no, loggedInUserId);
 			})
 			
 			/* 댓글 수정 */
 			$(document).on("click","#replyUpdateBtn",function(){
-				let comReply_no = $(this).attr("data-comReply_no");
+				let fleaReply_no = $(this).attr("data-fleaReply_no");
 				let panel_title = $(this).parents(".panel-title");
-				let comReply_contents = panel_title.find('.panel-body > #upReplyContent').val();
+				let fleaReply_contents = panel_title.find('.panel-body > #upReplyContent').val();
 				
 				$.ajax({
-					url:'/comreplies/'+comReply_no,
+					url:'/fleareplies/'+fleaReply_no,
 					type:'put',
 					headers: {
 						"Content-Type" : "application/json",
 						"X-HTTP-Method-Override" : "PUT"},
 					data:JSON.stringify({
-						comReply_content:comReply_contents,
+						fleaReply_content:fleaReply_contents,
 					}),
 					dataType:'text',
 					error:function(xhr, textStatus, errorThrown){
-						console.log(textStatus + " (HTTP-"+xhr.status+" / " + errorThrown + ")");
-						alert("댓글 수정 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+						alert(textStatus + " (HTTP-"+xhr.status+" / " + errorThrown + ")");
 					},
 					beforeSend:function(){
 						if(!checkForm("#upReplyContent","댓글 내용을")) return false;
@@ -175,67 +171,66 @@
 						if(result == "SUCCESS"){
 							alert("댓글 수정이 완료되었습니다.");
 							dataReset();
-							listAll(com_no , now_userId);
+							listAll(flea_no, loggedInUserId);
 						}
 					}
 				});
 			});
 			
-			/* 댓글 삭제 버튼 클릭 */
+			/* 삭제 버튼 클릭 */
 			$(document).on("click","button[data-btn='delBtn']",function(){
-				let comReply_no = $(this).parents("div.panel").attr("data-num");
-				deleteBtn(comReply_no, com_no, now_userId);
+				let fleaReply_no = $(this).parents("div.panel").attr("data-num");
+				deleteBtn(fleaReply_no, flea_no, loggedInUserId);
 			});
 		})
 		
-		function listAll(com_no, now_userId) {
-		    $(".reply").detach();
+		function listAll(flea_no, loggedInUserId){
+			$(".reply").detach();
+			
+			// 로그인 시 현재 user_id와 댓글 user_id 비교
+		    if(loggedInUserId == null){
+		    	url = "/fleareplies/all/" + flea_no;
+		    }else url = "/fleareplies/all/" + flea_no + "?user_id=" + loggedInUserId;
 		    
-		 	// 로그인 시 현재 user_id와 댓글 user_id 비교
-		    if(now_userId == null){
-		    	url = "/comreplies/all/" + com_no;
-		    }else url = "/comreplies/all/" + com_no + "?user_id=" + now_userId;
-		    
-		    $.getJSON(url, function(data){ 
+			
+			$.getJSON(url, function(data){ 
 				$(data).each(function(){
-					let comReply_no = this.comReply_no;
+					let fleaReply_no = this.fleaReply_no;
 					let user_id = this.user_id;
 					let user_name = this.user_name;
-					let comReply_content = this.comReply_content;
-					let comReply_date = this.comReply_date;
-					comReply_content = comReply_content.replace(/(\r\n|\r\n)/g, "<br/>");
-					template(comReply_no,user_name,comReply_content,comReply_date,user_id, now_userId);
+					let fleaReply_content = this.fleaReply_content;
+					let fleaReply_date = this.fleaReply_date;
+					fleaReply_content = fleaReply_content.replace(/(\r\n|\r\n)/g, "<br/>");
+					template(fleaReply_no,user_name,fleaReply_content,fleaReply_date,user_id, loggedInUserId);
 				});
 			}).fail(function(){
 				alert("댓글 목록을 불러오는데 실패하였습니다. 잠시후에 다시 시도해 주세요.");
 			});
-		    
 		}
 		
-		function template(comReply_no,user_name,comReply_content,comReply_date,user_id, now_userId){
+		function template(fleaReply_no,user_name,fleaReply_content,fleaReply_date,user_id ,loggedInUserId){
 			let $div = $('#reviewList');
 			
 			let $element = $('#item-template').clone().removeAttr('id');
-			$element.attr("data-num",comReply_no);
+			$element.attr("data-num",fleaReply_no);
 			$element.addClass("reply");
-			$element.find('.panel-heading > .panel-title > .name').html(user_name); 
-			
-			$element.find('.panel-heading > .panel-title > .frmPopup').attr("id", "frmPopup_" + comReply_no);
+			$element.find('.panel-heading > .panel-title > .name').html(user_name);
+			$element.find('.panel-heading > .panel-title > .frmPopup').attr("id", "frmPopup_" + fleaReply_no);
 			$element.find('.panel-heading > .panel-title > .frmPopup > #receiver_id').attr("value", user_id);
 			$element.find('.panel-heading > .panel-title > .frmPopup > #receiver').attr("value", user_name);
 			
-			$element.find('.panel-heading > .panel-title > .date').html(comReply_date);
 			
-			$element.find('.panel-body').html(comReply_content);
+			$element.find('.panel-heading > .panel-title > .date').html(fleaReply_date);
 			
+			$element.find('.panel-body').html(fleaReply_content);
 			
 			$div.append($element);
 			
 			/* 사용자가 로그인 중이면 */
-			if (now_userId != null) {
+			if (loggedInUserId != null) {
 				
 				/* 댓글 작성자와 사용자 아이디가 일치 시 댓글 수정 삭제 버튼 생성 */
-				if(now_userId == user_id ){
+				if(loggedInUserId == user_id ){
 					$element.find('.panel-heading > .panel-title > .panel-btn').html( 
 							"<button type='button' class='delBtn' data-btn='delBtn' >삭제</button>"
 							+ "<button type='button' class='upBtn' data-btn='upBtn'>수정</button>" );
@@ -247,8 +242,9 @@
 							+ "</button>");
 				}
 			}
+			
 			/* 메세지 버튼에 click 이벤트 */
-			$element.find('.panel-heading > .panel-title > .message > .send_message').attr("onclick", "sendMsg('" + comReply_no + "')");
+			$element.find('.panel-heading > .panel-title > .message > .send_message').attr("onclick", "sendMsg('" + fleaReply_no + "')");
 		}
 		
 		/*입력 폼 초기화*/
@@ -257,29 +253,28 @@
 				this.reset();
 			});
 			$("#replyForm button[type='button']").removeAttr("data-rnum");
-			$("#replyForm button[type='button']").attr("id","replyInsertBtn");
+			$("#replyForm button[type='button']").attr("id","reply_insert");
 		}
 		
 		/* 댓글 삭제 */
-		function deleteBtn(comReply_no, com_no, now_userId){
+		function deleteBtn(fleaReply_no, flea_no, loggedInUserId){
 			if(confirm("댓글을 삭제하겠습니까?")){
 				$.ajax({
-					url : "/comreplies/"+comReply_no,
+					url : "/fleareplies/"+fleaReply_no,
 					type: 'delete',
 					headers : {
 						"X-HTTP-Method-Override" : "DELETE"
 					},
 					dataType : 'text',
-					error : function(xhr, textStatus, errorThrown){ 
-						console.log(textStatus + " (HTTP -" +xhr.status + " / " + errorThrown + ")");
-						alert("댓글 삭제 중 오류가 발생했습니다. 잠시후 다시 이용해주세요");
+					error : function(xhr, textStatus, errorThrown){ //실행시 오류가 발생했을 경우
+						alert("댓글 삭제가 완료되지 않았습니다. 잠시후 다시 이용해주세요" + textStatus + " (HTTP -" +xhr.status + " / " + errorThrown + ")");
 					},
 					success : function(result){
 						console.log("result : "+result);
 						if(result == 'SUCCESS'){
 							alert("댓글 삭제가 완료되었습니다.");
 							dataReset();
-							listAll(com_no, now_userId);
+							listAll(flea_no, loggedInUserId);
 						}
 					}
 				});
@@ -287,7 +282,7 @@
 		}
 		
 		/* 쪽지 전송 팝업 */
-		function sendMsg(comReply_no){
+		function sendMsg(fleaReply_no){
 			
 			var url = "/message/send";
 			var option = "width=500, height=370, top=10, left=10";
@@ -295,7 +290,7 @@
 			
 			window.open("",name,option);
 			
-			let msg = "frmPopup_"+comReply_no;
+			let msg = "frmPopup_"+fleaReply_no;
 			
 			$("#" + msg).attr("action", url);
 			$("#" + msg).attr("target", name);
@@ -304,7 +299,6 @@
 			
 			
 		}
-	
 	</script>
 </head>
 <body class="wrap">
@@ -321,7 +315,7 @@
 						</tr>
 						<tr>
 							<td>
-								<textarea id="comReply_content" name="comReply_content" class="form-control" rows="3"></textarea>
+								<textarea id="fleaReply_content" name="fleaReply_content" class="form-control" rows="3"></textarea>
 							</td>
 						</tr>
 						<tr>
@@ -330,9 +324,7 @@
 					</table>
 				</div>	
 			</form>
-					
 		</div>
-		
 		
 		<%-- 댓글 리스트 --%>
 		<div id="reviewList">

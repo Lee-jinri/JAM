@@ -8,15 +8,15 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -28,7 +28,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import com.google.gson.JsonObject;
 import com.jam.client.community.service.CommunityService;
 import com.jam.client.community.vo.CommunityVO;
-import com.jam.client.member.vo.MemberVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.AllArgsConstructor;
@@ -47,146 +46,61 @@ public class CommunityController {
 	 * @param CommunityVO com_vo
 	 * @return 커뮤니티 글 리스트 
 	 ***************************************/
-	@RequestMapping(value="/communityList", method=RequestMethod.GET)
-	public String communityList(Model model, @ModelAttribute CommunityVO com_vo) {
+	@RequestMapping(value="/boards", method=RequestMethod.GET)
+	public String getBoards(Model model, @ModelAttribute CommunityVO com_vo) {
 		
-		List<CommunityVO> communityList = comService.communityList(com_vo);
+		List<CommunityVO> communityList = comService.getBoards(com_vo);
 		
 		model.addAttribute("communityList",communityList);
 		
 		// 페이징 처리
-		int total = comService.comListCnt(com_vo);
+		int total = comService.listCnt(com_vo);
 		model.addAttribute("pageMaker", new PageDTO(com_vo, total));
-		return "community/communityList";
+		return "community/boards";
 	}
 	
-	/****************************************
-	 * @param CommunityVO com_vo
-	 * @return 커뮤니티 상세페이지
-	 *****************************************/
-	@RequestMapping(value="/communityDetail/{com_no}", method=RequestMethod.GET)
-	public String communityDetail(@ModelAttribute("data")CommunityVO com_vo, Model model) throws Exception{
+	/**************************************************
+	 * 커뮤니티 글의 상세 페이지를 반환하는 메서드 입니다.
+	 * @param com_no 조회할 커뮤니티의 글 번호
+	 * @return 커뮤니티 상세 페이지
+	 **************************************************/
+	@RequestMapping(value = "/board/{com_no}", method = RequestMethod.GET)
+	public String communityDetail(@PathVariable("com_no") Long com_no, Model model) {
+		model.addAttribute("com_no", com_no);
 		
-		// 조회수 증가
-		comService.comReadCnt(com_vo);
-		
-		CommunityVO detail = comService.boardDetail(com_vo);
-		
-		model.addAttribute("detail",detail);
-		
-		return "community/communityDetail";
+	    return "community/board";
 	}
+	
 	
 	/***************************************
 	 * @return 커뮤니티 글 작성 페이지
 	 ***************************************/
-	@RequestMapping(value="/communityWrite", method=RequestMethod.GET)
-	public String communityWriteForm() throws Exception{
+	@RequestMapping(value="/board/write", method=RequestMethod.GET)
+	public String writeView() throws Exception{
 				
-		return "community/communityWrite";
+		return "community/write";
 	}
 	
-	/******************************
-	 * 커뮤니티 글 작성
-	 * @param MemberVO member
-	 * @param CommunityVO com_vo
-	 * @return 성공 시 작성한 커뮤니티 글 상세 페이지/ 실패 시 커뮤니티 글 작성 페이지
-	 *****************************/
-	@RequestMapping(value="/communityWrite", method=RequestMethod.POST)
-	public ModelAndView communityWrite(RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
-		
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			comService.comInsert(com_vo);
-			
-			mav.setViewName("redirect:/community/communityDetail/"+com_vo.getCom_no());
-
-			return mav;
-		} catch (Exception e) {
-			log.error("communityWrite 데이터 저장 중 오류 : " + e.getMessage());
-			
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/community/communityWrite");
-			
-			return mav;
-		}
-	}
+	
 	
 	/********************************
-	 * @param MemberVO member
-	 * @param CommunityVO com_vo
+	 *  커뮤니티 글의 수정 페이지를 반환하는 메서드 입니다.
+	 * @param com_no 수정할 커뮤니티의 글 번호
 	 * @return 커뮤니티 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/communityUpdateForm", method=RequestMethod.GET)
-	public ModelAndView communityUpdateForm(CommunityVO com_vo, Model model) throws Exception{
+	@RequestMapping(value="/board/edit/{com_no}", method=RequestMethod.GET)
+	public String updateView(@PathVariable("com_no") Long com_no, Model model) throws Exception{
 
-		ModelAndView mav = new ModelAndView();
-		
-		CommunityVO updateData = comService.comUpdateForm(com_vo);
-		
-		model.addAttribute("updateData", updateData);
-		
-		mav.setViewName("community/communityUpdate");
-		return mav;
+		model.addAttribute("com_no", com_no);
+		return "community/update";
 	}
 	
-	/***********************************
-	 * 커뮤니티 글 수정
-	 * @param MemberVO member
-	 * @param CommunityVO com_vo
-	 * @return 성공 시 수정한 커뮤니티 글 상세 페이지 / 실패 시 커뮤니티 글 수정 페이지
-	 ***********************************/
-	@RequestMapping(value="/communityUpdate", method=RequestMethod.POST)
-	public ModelAndView communityUpdate(RedirectAttributes rttr, CommunityVO com_vo, Model model) throws Exception{
-		
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			comService.comUpdate(com_vo);
-			
-			mav.setViewName("redirect:/community/communityDetail/"+com_vo.getCom_no());
-			
-			return mav;
-		} catch(Exception e) {
-			log.error("communityUpdate 데이터 수정 중 오류 : " + e.getMessage());
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/community/communityUpdate");
-			return mav;
-		}
-		
-	}
-	
-	/**********************************
-	 * 커뮤니티 글 삭제
-	 * @param MemberVO member
-	 * @param CommunityVO com_vo
-	 * @return 성공 시 커뮤니티 글 목록 / 실패 시 커뮤니티 글 상세 페이지
-	 **********************************/
-	@RequestMapping(value="/communityDelete", method=RequestMethod.POST)
-	public ModelAndView communityDelete(RedirectAttributes rttr, @ModelAttribute("data") CommunityVO com_vo, Model model) throws Exception{
-
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			comService.comDelete(com_vo);
-			
-			mav.setViewName("redirect:/community/communityList");
-			return mav;
-		} catch (Exception e) {
-			log.error("communityDelete 데이터 삭제 중 오류 : " + e.getMessage());
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/community/communityDetail/"+com_vo.getCom_no());
-			return mav;
-		}
-		
-	}
 	
 	/********************************
 	 * 커뮤니티 사진 업로드
 	 * @return String 사진 저장 경로
 	 ********************************/
-	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
+	@RequestMapping(value="/board/uploadImageFile", produces = "application/json; charset=utf8")
 	@ResponseBody
 	public String uploadImageFile(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request )  {
 		JsonObject jsonObject = new JsonObject();

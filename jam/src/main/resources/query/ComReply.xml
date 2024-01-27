@@ -11,7 +11,7 @@
 
 	<insert id="replyInsert" parameterType="comReply">
 	/*Reply - replyInsert*/
-		<selectKey keyProperty="comReply_no" resultType="int" order="BEFORE">
+		<selectKey keyProperty="comReply_no" resultType="Long" order="BEFORE">
 			select com_reply_seq.nextval from dual
 		</selectKey>
 			insert into comReply(comReply_no,com_no,comReply_content, comReply_date, user_id,user_name)

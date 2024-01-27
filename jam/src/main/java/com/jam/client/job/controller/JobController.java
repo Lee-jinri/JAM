@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,136 +44,52 @@ public class JobController {
 	 * @param JobVO job_vo
 	 * @return 구인구직 글 리스트 페이지
 	 ******************************/
-	@RequestMapping(value="/jobList", method=RequestMethod.GET)
+	@RequestMapping(value="/boards", method=RequestMethod.GET)
 	public String jobList(Model model, @ModelAttribute JobVO job_vo) {
 		
-		List<JobVO> jobList = jobService.jobList(job_vo);
+		List<JobVO> jobList = jobService.getBoards(job_vo);
 		model.addAttribute("jobList",jobList);
 		
 		// 페이징 처리
-		int total = jobService.jobListCnt(job_vo);
+		int total = jobService.listCnt(job_vo);
 		model.addAttribute("pageMaker", new PageDTO(job_vo, total));
-		return "job/jobList";
+		return "job/boards";
 	}
 	
-	/****************************************
-	 * @param JobVO job_vo
-	 * @return 구인구직 상세페이지
-	 *****************************************/
-	@RequestMapping(value="/jobDetail/{job_no}", method=RequestMethod.GET)
-	public String jobDetail(@ModelAttribute("data")JobVO job_vo, Model model) throws Exception{
+	/**************************************************
+	 * 구인구직 글의 상세 페이지를 반환하는 메서드 입니다.
+	 * @param job_no 조회할 구인구직 글 번호
+	 * @param model
+	 * @return 구인구직 상세 페이지
+	 **************************************************/
+	@RequestMapping(value = "/board/{job_no}", method = RequestMethod.GET)
+	public String jobDetail(@PathVariable("job_no") Long job_no, Model model) {
+		model.addAttribute("job_no", job_no);
 		
-		// 구인구직 조회수 증가
-		jobService.jobReadCnt(job_vo);
-		
-		JobVO detail = jobService.boardDetail(job_vo);
-		
-		model.addAttribute("detail",detail);
-		
-		return "job/jobDetail";
+	    return "job/board";
 	}
+	
 	
 	/***************************************
 	 * @return 구인구직 글 작성 페이지
 	 ***************************************/
-	@RequestMapping(value="/jobWrite", method=RequestMethod.GET)
-	public String jobWriteForm() throws Exception{
+	@RequestMapping(value="/board/write", method=RequestMethod.GET)
+	public String writeView() throws Exception{
 		
-		return "job/jobWrite";
-	}
-	
-	/******************************
-	 * 구인구직 글 작성
-	 * @param MemberVO member
-	 * @param JobVO job_vo
-	 * @return 성공 시 작성한 구인구직 글 상세 페이지 / 실패 시 구인구직 글 작성 페이지
-	 *****************************/
-	@RequestMapping(value="/jobWrite", method=RequestMethod.POST)
-	public ModelAndView jobWrite(RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
-	
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			jobService.jobInsert(job_vo);
-			
-			mav.setViewName("redirect:/job/jobDetail/"+job_vo.getJob_no());
-			
-			return mav;
-		}catch(Exception e) {
-			log.error("jobWrite 데이터 저장 중 오류 : " + e.getMessage());
-			
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/job/jobWrite");
-			return mav;
-		}
+		return "job/write";
 	}
 	
 	/********************************
-	 * @param MemberVO member
-	 * @param Job_VO job_vo
+	 * 구인구직 글의 수정 페이지를 반환하는 메서드 입니다.
+	 * @param job_no 수정할 구인구직 글 번호
 	 * @return 구인구직 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/jobUpdateForm", method=RequestMethod.GET)
-	public ModelAndView jobUpdateForm(JobVO job_vo, Model model) throws Exception{
+	@RequestMapping(value="/board/edit/{job_no}", method=RequestMethod.GET)
+	public String updateView(@PathVariable Long job_no, Model model){
 	
-		ModelAndView mav = new ModelAndView();
+		model.addAttribute("job_no", job_no);
 		
-		JobVO updateData = jobService.jobUpdateForm(job_vo);
-		model.addAttribute("updateData", updateData);
-		
-		mav.setViewName("job/jobUpdate");
-		return mav;
-	}
-	
-	/***********************************
-	 * 구인구직 글 수정
-	 * @param MemberVO member
-	 * @param Job_vo job_vo
-	 * @return 성공 시 수정한 구인구직 글 상세페이지 / 실패 시 구인구직 글 수정 페이지
-	 ***********************************/
-	@RequestMapping(value="/jobUpdate", method=RequestMethod.POST)
-	public ModelAndView jobUpdate(RedirectAttributes rttr, JobVO job_vo, Model model) throws Exception{
-		
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			jobService.jobUpdate(job_vo);
-
-			mav.setViewName("redirect:/job/jobDetail/"+job_vo.getJob_no());
-			return mav;
-		}catch(Exception e) {
-			log.error("jobUpdate 데이터 수정 중 오류 : " + e.getMessage());
-			
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/job/jobUpdate");
-			
-			return mav;
-		}
-	}
-	
-	/**********************************
-	 * 구인구직 글 삭제
-	 * @param MemberVO member
-	 * @param Job_VO job_vo
-	 * @return 성공 시 구인구직 글 목록 / 실패 시 구인구직 글 상세페이지
-	 **********************************/
-	@RequestMapping(value="/jobDelete", method=RequestMethod.POST)
-	public ModelAndView jobDelete(RedirectAttributes rttr, @ModelAttribute("data") JobVO job_vo, Model model) throws Exception{
-		
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			jobService.jobDelete(job_vo);
-			
-			mav.setViewName("redirect:/job/jobList");
-			return mav;
-		}catch(Exception e) {
-			log.error("jobDelete 데이터 수정 중 오류 : " + e.getMessage());
-			
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/job/jobDetail/"+job_vo.getJob_no());
-			return mav;
-		}
+		return "job/update";
 	}
 	
 	/********************************

@@ -1,10 +1,8 @@
 package com.jam.client.member.dao;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
-import org.apache.ibatis.annotations.Select;
 
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
@@ -29,8 +27,6 @@ public interface MemberDAO {
 	// 이메일 중복확인
 	public int emailCheck(String email) throws Exception;
 
-	// 로그인
-	public MemberVO login(MemberVO member);
 
 	// 마이페이지 내가 쓴 글 
 	public List<CommunityVO> comMyWrite(CommunityVO com_vo);
@@ -48,44 +44,32 @@ public interface MemberDAO {
 	// 마이페이지 - 회원 정보 페이지
 	public MemberVO account(String user_id);
 
-	// 마이페이지 - 회원 정보 수정
-	public int memberUpdate(MemberVO member);
-
 	// 아이디 찾기
 	public MemberVO findId(@Param("email") String email, @Param("phone") String phone);
 
 	// 비밀번호 찾기
 	public int findPw(@Param("user_id") String user_id, @Param("email") String email, @Param("phone") String phone);
 	
-	// 임시 비밀번호로 변경
+	// 비밀번호 변경
 	public int updatePw(@Param("user_id") String user_id, @Param("user_pw") String user_pw);
 
 	// 전화번호 변경
-	public int phoneModi(@Param("user_id") String user_id, @Param("phone") String phone);
+	public int updatePhone(MemberVO m_vo);
 	
 	// 비밀번호 확인
 	public String pwConfirm(MemberVO m_vo);
-	
-	// 비밀번호 변경
-	public int pwModi(MemberVO m_vo);
 
 	// 주소 변경
-	public int addressModi(MemberVO m_vo);
+	public int updateAddress(MemberVO m_vo);
 
 	// 회원 탈퇴
 	public int withDraw(String user_id);
 
-	// 카카오 정보 확인
-	public MemberVO findKakao(HashMap<String, Object> userInfo);
+	// 소셜 사용자 회원가입 여부 
+	public int findSocialUser(MemberVO member);
 
-	// 카카오 정보 저장
-	public void kakaoInsert(HashMap<String, Object> userInfo);
-
-	// 네이버 정보 확인
-	public MemberVO findNaver(HashMap<String, Object> userInfo);
-
-	// 네이버 정보 저장
-	public void naverInsert(HashMap<String, Object> userInfo);
+	// 소셜 사용자 회원가입
+	public void SocialRegister(MemberVO member);
 
 	// 사용자 정보 확인
 	public MemberVO findByUsername(String username);
@@ -98,6 +82,9 @@ public interface MemberDAO {
 
 	// refresh 토큰 삭제
 	public int deleteRefreshToken(String user_id);
+
+	// refresh 토큰 가져오기
+	public String getRefreshToken(String user_id);
 	
 	
 

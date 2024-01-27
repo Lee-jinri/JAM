@@ -8,7 +8,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class MessageVO extends CommonVO{
-	private int 	message_no;			// 메세지 번호
+	private Long 	message_no;			// 메세지 번호
 	private String 	sender;				// 보낸 사람
 	private String 	sender_id;			// 보낸 사람 아이디
 	private String 	receiver;			// 받는 사람

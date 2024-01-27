@@ -4,9 +4,11 @@ import java.util.List;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,6 +24,7 @@ import lombok.extern.log4j.Log4j;
 @Controller
 @RequestMapping("/message")
 @AllArgsConstructor
+@Log4j
 public class MessageController {
 	
 	@Autowired
@@ -39,13 +42,13 @@ public class MessageController {
 			
 			m_vo.setReceiver_id(user_id);
 				
-			List<MessageVO> rMessage = messageService.receiveMessage(m_vo);
-			model.addAttribute("rMessage",rMessage);
+			List<MessageVO> receiveMsg = messageService.receiveMessage(m_vo);
+			model.addAttribute("receiveMsg",receiveMsg);
 				
 			int total = messageService.receiveListCnt(m_vo);
 			model.addAttribute("pageMaker",new PageDTO(m_vo, total));
 			
-			url = "message/rMessageList";
+			url = "message/receiveMsgList";
 		}else {
 			url = "member/login";
 		}
@@ -72,7 +75,7 @@ public class MessageController {
 			int total = messageService.sendListCnt(m_vo);
 			model.addAttribute("pageMaker",new PageDTO(m_vo, total));
 			
-			url = "message/sMessageList";
+			url = "message/sendMsgList";
 		}else {
 			url = "member/login";
 		}
@@ -83,13 +86,12 @@ public class MessageController {
 	 * @param MessageVO message_vo
 	 * @return 받은 쪽지 상세 페이지
 	 ***********************************/
-	@RequestMapping(value="/rMessage_detail", method=RequestMethod.POST)
-	public String receiveMessageDetail(@ModelAttribute MessageVO message_vo, Model model) {
+	@RequestMapping(value="/receiveMsgDetail", method=RequestMethod.POST)
+	public String receiveMessageDetailPage(@ModelAttribute MessageVO message, Model model) {
 		
-		messageService.message_read(message_vo);
-		MessageVO detail = messageService.rMessageDetail(message_vo);
+		model.addAttribute("message_no", message.getMessage_no());
+		model.addAttribute("receiver_id", message.getReceiver_id());
 		
-		model.addAttribute("detail", detail);
 		return "/message/receiveMessageDetail";
 	}
 	
@@ -97,24 +99,25 @@ public class MessageController {
 	 * @param MessageVO message_vo
 	 * @return 보낸 쪽지 상세페이지
 	 ******************************/
-	@RequestMapping(value="/sMessage_detail", method=RequestMethod.POST)
-	public String sendMessageDetail(@ModelAttribute MessageVO message_vo, Model model) {
+	@RequestMapping(value="/sendMsgDetail", method=RequestMethod.POST)
+	public String sendMessageDetailPage(@ModelAttribute MessageVO message, Model model) {
 		
-		MessageVO detail = messageService.sMessageDetail(message_vo);
+		model.addAttribute("message_no", message.getMessage_no());
+		model.addAttribute("sender_id", message.getSender_id());
 		
-		model.addAttribute("detail", detail);
 		return "/message/sendMessageDetail";
 	}
 	
 	/********************************
 	 * @return 쪽지 전송 페이지
 	 ********************************/
-	@RequestMapping(value="/send", method=RequestMethod.POST)
-	public String sendForm(@ModelAttribute MessageVO message_vo, Model model) {
+	@RequestMapping(value = "/send", method = RequestMethod.POST)
+	public String sendMessage(@ModelAttribute MessageVO message_vo, Model model) {
+	    
+		model.addAttribute("receiver_id", message_vo.getReceiver_id());
+		model.addAttribute("receiver", message_vo.getReceiver());
 		
-		model.addAttribute("receiver",message_vo.getReceiver());
-		model.addAttribute("receiver_id",message_vo.getReceiver_id());
-		return "/message/send";
+		return "/message/send"; 
 	}
 	
 	/********************************
@@ -129,22 +132,11 @@ public class MessageController {
 		
 		model.addAttribute("receiver",receiver);
 		model.addAttribute("receiver_id",receiver_id);
+		
 		return "/message/response";
 	}
 	
-	/*******************************
-	 * 쪽지 전송
-	 * @param MessageVO message_vo
-	 * @return 쪽지 전송 결과 
-	 ****************************/
-	@ResponseBody
-	@RequestMapping(value="/messageWrite", method=RequestMethod.POST)
-	public String messageWrite(@ModelAttribute MessageVO message_vo, Model model) {
-
-		int result = messageService.messageWrite(message_vo);
-		
-		return(result == 1)? "SUCCESS" : "FAILURE";
-	}
+	
 	
 	
 }

@@ -20,7 +20,23 @@
 			
 			// 전송 버튼 클릭
 			$("#send").click(function(){
-				fetch('http://localhost:8080/member/getUserInfo', {
+				
+				let message_title = $("#message_title").val();
+				let message_contents = $("#message_area").val();
+				
+				if(message_title.replace(/\s/g,"") == ""){
+					alert("쪽지 제목을 입력하세요.");
+					$("#message_title").focus();
+					return false;
+				}
+				
+				if(message_contents.replace(/\s/g,"") == ""){
+					alert("쪽지 내용을 입력하세요.");
+					$("#message_area").focus();
+					return false;
+				}
+				/**/
+				fetch('/api/member/getUserInfo', {
 			        method: 'GET',
 			        headers: {
 			            'Authorization': localStorage.getItem("Authorization")
@@ -28,56 +44,41 @@
 			    })
 			    .then(response => {
 			        if (response.ok) {
-			        	let user_id = response.headers.get('user_id');
-			        	let user_name = response.headers.get('username');
-			        	
-			        	$("#sender_id").val(user_id);
-			        	$("#sender").val(user_name);
-			        	
-			        	$.ajax({
-					    	url: '/message/messageWrite',
-					        type: 'post',
-					        data: $('#message').serialize(),
-					        error:function(xhr,textStatus, errorThrown){
-								console.log(textStatus + "(HTTP-" +xhr.status+" / "+errorThrown+")");
-							},
-							beforeSend:function(){
-								
-								let message_title = $("#message_title").val();
-								let message_contents = $("#message_area").val();
-								
-								if(message_title.replace(/\s/g,"") == ""){
-									alert("쪽지 제목을 입력하세요.");
-									$("#message_title").focus();
-									return false;
-								}
-								
-								if(message_contents.replace(/\s/g,"") == ""){
-									alert("쪽지 내용을 입력하세요.");
-									$("#message_area").focus();
-									return false;
-								}
-							},
-					        success: function(result){
-					        	
-								console.log(result);
-					        	if(result=="SUCCESS"){  
-					            	alert("쪽지가 전송 되었습니다.");
-					            	
-					            	opener.parent.location.reload();
-									self.close();
-					           	}else{
-					            	alert("쪽지 전송에 실패했습니다. 잠시 후 다시 시도해주세요."); 
-					            	
-					            	opener.parent.location.reload();
-									self.close();
-					         	}
-					   		}
-						})
-			           
+			        	return response.json();
 			        } else {
 			            throw new Error('Network response was not ok');
 			        }
+			    }).then(data => {
+		        	
+		        	let messageData = {
+		        			sender_id: data.user_id,
+		        			sender: data.user_name,
+		        			receiver_id: "${receiver_id }",
+		        			receiver: "${receiver }",
+		        			message_title: message_title,
+		        			message_contents: message_contents
+		        	};
+		        	
+		        	fetch('/api/message/messageWrite',{
+		        		method: 'post',
+		        		headers: {
+		        			'Content-Type': 'application/json'
+		        		},
+		        		body: JSON.stringify(messageData)
+		        	}).then(response => {
+		        		console.log(response.status);
+		        		if(response.status == 200){
+		        			alert("쪽지가 전송되었습니다.");
+		        			opener.parent.location.reload();
+		        			self.close();
+		        		}
+		        	}).catch(error =>{
+		        		alert("쪽지 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+		        		console.log(error);
+		        		opener.parent.location.reload();
+		        		self.colse();
+		        	})
+		        
 			    })
 			    .catch(error => {
 			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
@@ -87,8 +88,8 @@
 			});
 			
 			
-			// 목록 버튼 클릭
-			$("#message_list").click(function(){
+			// 닫기 버튼 클릭
+			$("#close").click(function(){
 				self.close();
 			});
 		})
@@ -119,7 +120,7 @@
 			</div>
 			<div class="msgBtn_div  margin15px ">
 				<button type="button" class="msgBtn mr-1" id="send"  style="width: 4rem; cursor:pointer;">보내기</button>
-				<button type="button" class="msgBtn2" id="message_list"style="width: 4rem; cursor:pointer;" >목록</button>
+				<button type="button" class="msgBtn2" id="close"style="width: 4rem; cursor:pointer;" >닫기</button>
 			</div>
 		</div>
 		<div>

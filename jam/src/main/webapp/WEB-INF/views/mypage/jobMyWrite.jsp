@@ -58,20 +58,20 @@
 		
 
 		function getUserIDAndRedirect(redirectURL, search, keyword) {
-		    fetch('http://localhost:8080/member/getUser-id', {
+		    fetch('http://localhost:8080/api/member/getUserInfo', {
 		        method: 'GET',
 		        headers: {
 		            'Authorization': localStorage.getItem("Authorization")
 		        },
 		    })
 		    .then(response => {
-		        if (response.ok) {
-		            return response.headers.get('user_id');
-		        } else {
+		        if (!response.ok) {
 		            throw new Error('Network response was not ok');
 		        }
+		        return response.json();
 		    })
-		    .then((user_id) => {
+		    .then((data) => {
+		    	let user_id = data.user_id;
 		        if (user_id) {
 		        	$(location).attr('href', redirectURL + user_id + "&search=" + search + "&keyword=" + keyword);
 		        } else {
@@ -137,7 +137,7 @@
 							<c:forEach items="${jobMyWrite }" var="jobBoard" varStatus="status">
 								<tr class="text-center" data-num="${jobBoard.job_no}">
 									<td class="class">
-										<a class="" href="/job/jobDetail/${jobBoard.job_no }">${jobBoard.job_title}</a>
+										<a class="" href="/job/board/${jobBoard.job_no }">${jobBoard.job_title}</a>
 									</td>
 									<td class=" ">${jobBoard.job_date}</td>
 									<td class=" ">${jobBoard.job_hits }</td>

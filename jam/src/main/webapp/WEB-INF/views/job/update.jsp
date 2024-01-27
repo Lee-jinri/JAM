@@ -5,8 +5,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>JAM - 커뮤니티</title>
-
+<title>JAM - JOB</title>
   <!-- 서머노트를 위해 추가해야할 부분 -->
   <script src="/resources/include/dist/summernote/summernote-lite.js"></script>
   <script src="/resources/include/dist/summernote/summernote-ko-KR.js"></script>
@@ -16,24 +15,30 @@
 		$(function(){
 			
 			$("#update").click(function(){
-				let com_title = $("#com_title").val();
-				let com_content = $("#com_content").val();
+				let job_title = $("#job_title").val();
+				let job_content = $("#job_content").val();
+				let pay = $("#pay").val();
 				
-				if(com_title.replace(/\s/g,"") == ""){
+				if(pay.replace(/\s/g,"") == ""){
+					alert("급여를 입력하세요.");
+					$("#pay").focus();
+					return false;
+				}
+				
+				if(job_title.replace(/\s/g,"") == ""){
 					alert("제목을 입력하세요.");
-					$("#com_title").focus();
+					$("#job_title").focus();
 					return false;
 				}
 				
-				if(com_content.replace(/\s/g,"") == ""){
+				if(job_content.replace(/\s/g,"") == ""){
 					alert("본문을 입력하세요.");
-					$("#com_content").focus();
+					$("#job_content").focus();
 					return false;
 				}
 				
-
 				// 사용자 id, name 가져옴
-				fetch('http://localhost:8080/member/getUserInfo', {
+				fetch('http://localhost:8080/api/member/getUserInfo', {
 			        method: 'GET',
 			        headers: {
 			            'Authorization': localStorage.getItem("Authorization")
@@ -55,14 +60,13 @@
 		        	if (user_name) {
 						$("#user_name").val(user_name);
 						
-						$("#comWrite").attr({
-							"action" : "/community/communityUpdate",
+						$("#jobUpdate").attr({
+							"action" : "/job/jobUpdate",
 							"enctype": "multipart/form-data",
 							"method" : "post"
 						})
 						
-						$("#comWrite").submit();
-						
+						$("#jobUpdate").submit();
 						/* 글 수정 중 오류 발생 */
 						let result = $("#result");
 						
@@ -82,36 +86,54 @@
 	</script>
 </head>
 <body class="wrap">
-	<div class="rem-30">
-		<div>
-			<input type="hidden" value="${result }">
-		</div>
-		<div class="title flex justify-center">
-			<h2>커뮤니티</h2>
-			<span>JAM 회원들과 대화를 나눠보세요.</span>
+	<div>
+		<input type="hidden" value="${result }">
+	</div>
+	<div class="rem-30 my-top-15 my-bottom-15">
+		<div class="title flex justify-center my-bottom-8" >
+			<h2>구인 / 구직</h2>
 		</div>
 		<div class="content flex justify-center" >
-			<form id="comWrite">
+			<form id="jobUpdate">
 				<div>
-					<input type="hidden" name="user_id" >
+					<input type="hidden" name="user_id"> 
 					<input type="hidden" name="user_name">
-					<input type="hidden" name="com_no" value="${updateData.com_no }">
+					<input type="hidden" name="job_no" value="${updateData.job_no }">
 				</div>
 				<div>
+					<label class="my-bottom-4"><input type="checkbox" name="job_status" value=1> 구인,구직 완료 시 체크하세요.</label>
+				</div>
+				<div class="flex my-bottom-7 items-center">
+					<select name="job_category" class="mr-1">
+						<option value=0>구인</option>
+						<option value=1>구직</option>
+					</select><br/>
+					
+					<select name="pay_category" class="mr-2">
+						<option value=0>일급</option>
+						<option value=1>주급</option>
+						<option value=2>월급</option>
+					</select><br/>
+					
+					<label class="mr-1">급여</label>
+					<input type="number" name="pay" id="pay" value="${updateData.pay }">&nbsp;원
+				</div>
+				
+				<div class="my-bottom-4">
 					<label>제목</label>
 				</div>
-				<div>
-					<input type="text" class="com_title height4 border width-85 border-radius-10" id="com_title" name="com_title" value="${updateData.com_title }">
+				<div class="my-bottom-4">
+					<input type="text" class="job_title my-bottom-7 height4 border width-85 border-radius-10" id="job_title" name="job_title" value="${updateData.job_title }">
 				</div>
-				<div>
+				<div class="my-bottom-4">
 					<label>본문</label>
 				</div>
 				<div class="content">
-					<textarea id="com_content" class="summernote" name="com_content" style="resize:none;">${updateData.com_content }</textarea>    
+					<textarea id="job_content" class="summernote" name="job_content" style="resize:none;">${updateData.job_content }</textarea>
 				</div>
-				<div class=" flex justify-center my-top-8">
-					<button type="button" class="comWriteBtn" id="update">수정</button>
-					<a href="/community/communityList"  class="comWriteBtn text-center" id="cancel">취소</a>
+				<div class=" flex justify-right my-top-8">
+					<button type="button" class="jobUpdateBtn mr-1" id="update">수정</button>
+					<a href="/job/jobDetail/${updateData.job_no }"  class="jobUpdateBtn text-center" >취소</a>
 				</div>
 			</form>
 		</div>

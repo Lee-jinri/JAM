@@ -7,7 +7,7 @@ import com.jam.client.jobReply.vo.JobReplyVO;
 public interface JobReplyService {
 
 	// 구인구직 댓글 리스트
-	public List<JobReplyVO> jobReplyList(Integer job_no);
+	public List<JobReplyVO> jobReplyList(Long job_no);
 
 	// 구인구직 댓글 입력
 	public int replyInsert(JobReplyVO jrvo);
@@ -16,6 +16,6 @@ public interface JobReplyService {
 	public int replyUpdate(JobReplyVO jrvo);
 
 	// 구인구직 댓글 삭제
-	public int replyDelete(Integer jobReply_no);
+	public int replyDelete(Long jobReply_no);
 
 }

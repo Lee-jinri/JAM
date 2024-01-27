@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,7 +45,7 @@ public class RoomRentalController {
 	 * @param RoomRentalVO room_vo
 	 * @return 합주실/연습실 글 리스트 페이지
 	 ******************************/
-	@RequestMapping(value="/roomRentalList", method=RequestMethod.GET)
+	@RequestMapping(value="/boards", method=RequestMethod.GET)
 	public String roomList(Model model, @ModelAttribute RoomRentalVO room_vo) {
 		
 		List<RoomRentalVO> roomList = roomService.roomList(room_vo);
@@ -53,127 +54,41 @@ public class RoomRentalController {
 		// 페이징 처리
 		int total = roomService.roomListCnt(room_vo);
 		model.addAttribute("pageMaker", new PageDTO(room_vo, total));
-		return "roomRental/roomRentalList";
+		return "roomRental/boards";
 	}
 	
 	/****************************************
+	 * 합주실 글의 상세 페이지를 반환하는 메서드 입니다.
+	 * @param roomRental_no 조회할 합주실 글 번호
 	 * @return 합주실/연습실 상세페이지
 	 *****************************************/
-	@RequestMapping(value="/roomRentalDetail/{roomRental_no}", method=RequestMethod.GET)
-	public String roomDetail(@ModelAttribute("data")RoomRentalVO room_vo, Model model) throws Exception{
+	@RequestMapping(value="/board/{roomRental_no}", method=RequestMethod.GET)
+	public String roomDetail(@PathVariable("roomRental_no") Long roomRental_no, Model model) throws Exception{
 		
-		// 합주실/연습실 조회수 증가
-		roomService.roomReadCnt(room_vo);
+		model.addAttribute("roomRental_no",roomRental_no);
 		
-		RoomRentalVO detail = roomService.boardDetail(room_vo);
-		
-		model.addAttribute("detail",detail);
-		
-		return "roomRental/roomRentalDetail";
+		return "roomRental/board";
 	}
 	
 	/***************************************
-	 * @param RoomRentalVO room_vo
 	 * @return 합주실/연습실 글 작성 페이지
 	 ***************************************/
-	@RequestMapping(value="/roomRentalWrite", method=RequestMethod.GET)
+	@RequestMapping(value="/board/write", method=RequestMethod.GET)
 	public String roomWriteForm() throws Exception{
 
-		return "roomRental/roomRentalWrite";
-	}
-	
-	/******************************
-	 * 합주실/연습실 글 작성
-	 * @param MemberVO member
-	 * @param RoomRentalVO room_vo
-	 * @return 성공 시 작성한 합주실 글 상세 페이지 / 실패 시 합주실 글 작성 페이지
-	 *****************************/
-	@RequestMapping(value="/roomRentalInsert", method=RequestMethod.POST)
-	public ModelAndView roomWrite(RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
-		
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			roomService.roomInsert(room_vo);
-			
-			mav.setViewName("redirect:/roomRental/roomRentalDetail/"+room_vo.getRoomRental_no());
-			return mav;
-			
-		}catch(Exception e) {
-			log.error("roomRentalInsert 데이터 저장 중 오류 : " + e.getMessage());
-			
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/roomRental/roomRentalWrite");
-			return mav;
-		}
+		return "roomRental/write";
 	}
 	
 	/********************************
-	 * @param MemberVO member
-	 * @param RoomRentalVO room_vo
-	 * @return 합주실/연습실 글 수정 페이지
+	 * 합주실 글의 수정 페이지를 반환하는 메서드 입니다.
+	 * @param roomRental_no 수정할 합주실 글 번호
+	 * @return 합주실 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/roomRentalUpdateForm", method=RequestMethod.GET)
-	public ModelAndView roomUpdateForm(RoomRentalVO room_vo, Model model) throws Exception{
-	
-		ModelAndView mav = new ModelAndView();
-		
-		RoomRentalVO updateData = roomService.roomUpdateForm(room_vo);
-		
-		model.addAttribute("updateData", updateData);
-		
-		mav.setViewName("roomRental/roomRentalUpdate");
-		return mav;
-	}
-	
-	/***********************************
-	 * 합주실/연습실 글 수정
-	 * @param MemberVO member
-	 * @param RoomRentalVO room_vo
-	 * @return 성공 시 수정한 합주실 글 상세페이지 / 실패 시 합주실 글 수정 페이지
-	 ***********************************/
-	@RequestMapping(value="/roomRentalUpdate", method=RequestMethod.POST)
-	public ModelAndView roomUpdate(RedirectAttributes rttr, RoomRentalVO room_vo, Model model) throws Exception{
-		
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			roomService.roomUpdate(room_vo);
-			
-			mav.setViewName("redirect:/roomRental/roomRentalDetail/"+room_vo.getRoomRental_no());
-			return mav;
-		}catch(Exception e) {
-			log.error("roomRentalUpdate 데이터 수정 중 오류 : " + e.getMessage());
-			
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/roomRental/roomRentalUpdate");
-			return mav;
-		}
-	}
-	
-	/**********************************
-	 * 합주실/연습실 글 삭제
-	 * @param MemberVO member
-	 * @param RoomRentalVO room_vo
-	 * @return 성공 시 합주실 글 목록 / 실패 시 합주실 글 상세페이지
-	 **********************************/
-	@RequestMapping(value="/roomRentalDelete", method=RequestMethod.POST)
-	public ModelAndView roomDelete(RedirectAttributes rttr, @ModelAttribute("data") RoomRentalVO room_vo, Model model) throws Exception{
-		
-		ModelAndView mav = new ModelAndView();
-		
-		try {
-			roomService.roomDelete(room_vo);
-			mav.setViewName("redirect:/roomRental/roomRentalList");
-			
-			return mav;
-		}catch(Exception e){
-			log.error("roomRentalDelete 데이터 삭제 중 오류 : " + e.getMessage());
-			
-			rttr.addFlashAttribute("result", "error");
-			mav.setViewName("redirect:/roomRental/roomRentalDetail/"+room_vo.getRoomRental_no());
-			return mav;
-		}
+	@RequestMapping(value="/board/edit/{roomRental_no}", method=RequestMethod.GET)
+	public String updateView(@PathVariable("roomRental_no") Long roomRental_no, Model model) throws Exception{
+
+		model.addAttribute("roomRental_no", roomRental_no);
+		return "roomRental/update";
 	}
 	
 	/********************************

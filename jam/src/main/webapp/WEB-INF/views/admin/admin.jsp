@@ -12,21 +12,18 @@
 		const authorization = localStorage.getItem('Authorization');
 
 		if (authorization) {
-			fetch('http://localhost:8080/member/getUserInfo', {
+			fetch('http://localhost:8080/api/member/getUserInfo', {
 				method: 'GET',
 				headers: {
 					'Authorization': authorization
 				},
 			})
 			.then(response => {
-				if (response.ok) {
-					return response.headers.get("auth");
-				} else {
-					throw new Error('Network response was not ok');
-				}
+				if(!response.ok) throw new Error('Network response was not ok.');
+				return response.json();
 			})
-			.then(auth => {
-				if (!auth.includes("ROLE_ADMIN")) {
+			.then(data => {				
+				if (!data.role.includes("ROLE_ADMIN")) {
 					alert("접근 권한이 없는 페이지 입니다.");
 					window.location.href = "/";
 				}

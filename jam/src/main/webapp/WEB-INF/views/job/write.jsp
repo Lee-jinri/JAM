@@ -15,11 +15,19 @@
 	
 	<script>
 		$(function(){
-			$("#write").click(function(){
+			let loggedInUserId;
+			let loggedInUsername; 
+			
+			$("#write").click(async function(){
+				// 유효성 검사
 				let job_title = $("#job_title").val();
 				let job_content = $("#job_content").val();
 				let pay = $("#pay").val();
+				let job_category = $("#job_category").val();
+				let pay_category = $("#pay_category").val();
 				
+				console.log(job_category);
+				console.log(pay_category);
 				if(pay.replace(/\s/g,"") == ""){
 					alert("급여를 입력하세요.");
 					$("#pay").focus();
@@ -37,52 +45,76 @@
 					$("#job_content").focus();
 					return false;
 				}
-				// 사용자 id, name 가져옴
-				fetch('http://localhost:8080/member/getUserInfo', {
-			        method: 'GET',
-			        headers: {
-			            'Authorization': localStorage.getItem("Authorization")
-			        },
-			    })
-			    .then(response => {
-			        if (response.ok) {
-			        	user_id = response.headers.get('user_id');
-			            $("#user_id").val(user_id);
-			            
-			            if(user_id == null) $(location).attr('href', '/member/login');
-			            
-			            return response.text();
-			        } else {
-			            throw new Error('Network response was not ok');
-			        }
-			    })
-			    .then((user_name) => {
-		        	if (user_name) {
-		        		$("#user_name").val(user_name);
-
-						$("#jobWrite").attr({
-							"action" : "/job/jobWrite",
-							"enctype": "multipart/form-data",
-							"method" : "post"
-						})
-						
-						$("#jobWrite").submit();
-						
-						let result = $("#result").val();
-						
-						/* 글 작성 중 오류가 발생했을 때 */
-						if(result == 'error')	alert("게시글 작성을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
-						else alert("등록이 완료되었습니다.");
-	                
-		            }
-		        	else $(location).attr('href', '/member/login');
-				})
-			    .catch(error => {
-			        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
-			    });
 				
 				
-			})
+				try{
+					// 사용자의 아이디와 닉네임을 가져옵니다.
+					await getUserInfo();
+					
+					var data = {
+							'job_title':job_title,
+							'job_content':job_content,
+							'job_category':job_category,
+							'pay':pay,
+							'pay_category':pay_category,
+							'user_id':loggedInUserId,
+							'user_name':loggedInUsername
+					};
+					
+					const response = await fetch('/api/job/board',{
+						method: 'POST',
+						headers: {
+							'Content-Type':'application/json'
+						},
+						body: JSON.stringify(data)
+					});
+					
+					if(response.ok){
+						alert("등록이 완료되었습니다.");
+						const body = await response.text();
+						
+						if(body){
+							$(location).attr('href','/job/board/'+body);
+						}
+					}else{
+						const errorText = await response.text();
+						throw new Error(errorText);
+					}
+				}catch(error){
+					alert("게시글 작성을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+					console.error('Error:',error);
+				}
+			});
+			
+			async function getUserInfo() {
+		        try {
+		            const response = await fetch('http://localhost:8080/api/member/getUserInfo', {
+		                method: 'GET',
+		                headers: {
+		                    'Authorization': localStorage.getItem("Authorization")
+		                },
+		            }).then(response => {
+		            	if (!response.ok) {
+		            		throw new Error('Network response was not ok');
+				            
+				        } 
+		            	return response.json();
+		            }).then(data => {
+						loggedInUserId = data.user_id;
+						loggedInUsername = data.user_name;
+	            		
+			            if(loggedInUserId == null || loggedInUsername == null) {
+			            	alert("로그인이 필요한 작업입니다. 로그인 후 다시 시도해 주세요.");
+			            	$(location).attr('href', '/member/login');
+			            }
+		            })	
+		        } catch (error) {
+		            console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+		            
+		            throw error;
+		        }
+		    }
+			
 			
 		})
 	</script>
@@ -102,7 +134,7 @@
 					<input type="hidden" id="user_name" name="user_name">
 				</div>
 				<div class="flex my-bottom-7 items-center">
-					<select name="job_category" class="mr-1">
+					<select id="job_category" name="job_category" class="mr-1">
 						<option value=0>직원 구인</option>
 						<option value=1>직원 구직</option>
 						<option value=2>멤버 구인</option>
@@ -110,7 +142,7 @@
 					</select><br/>
 					
 					<div class="">
-						<select name="pay_category" class="mr-2">
+						<select id="pay_category" name="pay_category" class="mr-2">
 							<option value=0>일급</option>
 							<option value=1>주급</option>
 							<option value=2>월급</option>

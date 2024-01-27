@@ -3,7 +3,7 @@ package com.jam.client.member.service;
 
 import java.util.List;
 
-import org.springframework.security.core.Authentication;
+import org.springframework.http.ResponseEntity;
 
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
@@ -28,8 +28,6 @@ public interface MemberService {
 	// 이메일 중복확인
 	public int emailCheck(String email) throws Exception;
 
-	// 로그인
-	public MemberVO login(MemberVO member);
 
 	// 마이페이지
 	public List<CommunityVO> comMyWrite(CommunityVO com_vo);
@@ -46,9 +44,6 @@ public interface MemberService {
 	// 마이페이지 - 회원 정보 페이지
 	public MemberVO account(String user_id);
 
-	// 마이페이지 - 회원 정보 수정
-	public int memberUpdate(MemberVO member);
-
 	// 아이디 찾기
 	public MemberVO FindId(String email, String phone);
 
@@ -56,31 +51,22 @@ public interface MemberService {
 	public int FindPw(String user_id, String email, String phone);
 
 	// 임시 비밀번호로 변경
-	public int UpdatePw(String user_id, String email);
+	public ResponseEntity<String> updatePwAndSendEmail(String user_id, String email);
 
-	// 카카오 토큰 받기
-	public String getAccessToken(String code);
-	
-	// 카카오 로그인 정보 저장
-	public MemberVO getUserInfo(String access_Token);
-	
-	// 네이버 토큰 받기
-	public String getNaverToken(String code);
-	
 	// 네이버 로그인 정보 저장
-	public MemberVO getNaverInfo(String access_Token);
+	public int socialLoginOrRegister(MemberVO member);
 	
 	// 전화번호 변경
-	public int phoneModi(String user_id, String phone);
+	public int updatePhone(MemberVO m_vo);
 	
 	// 비밀번호 확인
 	public String pwConfirm(MemberVO m_vo);
 	
 	// 비밀번호 변경
-	public int pwModi(MemberVO m_vo);
+	public int updatePw(String user_id, String user_pw);
 
 	// 주소 변경
-	public int addressModi(MemberVO m_vo);
+	public int updateAddress(MemberVO m_vo);
 
 	// 회원 탈퇴
 	public void withDraw(String user_id);
@@ -93,6 +79,9 @@ public interface MemberService {
 
 	// refresh 토큰 삭제
 	public int deleteRefreshToken(String user_id);
+
+	// refresh 토큰 가져오기
+	public String getRefreshToken(String user_id);
 
 	
 

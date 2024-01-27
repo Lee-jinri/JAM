@@ -35,18 +35,39 @@
 
 	<script type="text/javascript">
 		$(function(){
+			let user_id =  '<%= request.getAttribute("user_id") %>';
+			let isSocialLogin;
+			let phone;
 			
-			let phone_result = "${phone_result}";
-			if(phone_result == "success") alert("전화번호가 변경되었습니다.");
-			else if (phone_result == "fail") alert("시스템 오류입니다. 잠시 후 다시 시도해주세요.");
+			getAccount();
 			
-			let pw_result = "${pw_result}";
-			if(pw_result == "success") alert("비밀번호가 변경되었습니다.");
-			else if (pw_result == "fail") alert("시스템 오류입니다. 잠시 후 다시 시도해주세요.");
-			
-			let add_result = "${add_result}";
-			if(add_result == "success") alert("주소가 변경되었습니다.");
-			else if (add_result == "fail") alert("시스템 오류입니다. 잠시 후 다시 시도해주세요.");
+			function getAccount(){
+				if(user_id == "" || user_id == null){
+					alert("회원 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요.");
+					$(location).attr('href', '/');
+				}else{
+
+					fetch('/api/member/account/' + user_id)
+					.then(response =>{
+						if(!response.ok){
+							throw new Error('Network response was not ok.');
+						}
+						return response.json();
+					})
+					.then((data) =>{
+						isSocialLogin = data.social_login;
+						phone = data.phone;
+						
+						$("#user_id").val(data.user_id);
+						$("#user_name").html(data.user_name);
+						$("#phone").val(data.phone);
+						$("#address").html(data.address);
+						
+					})
+				}
+				
+				
+			}
 			
 			
 			/* 전화번호 수정 버튼 클릭 */
@@ -60,68 +81,99 @@
 			
 			/* 전화번호 수정 확인 버튼 클릭 */
 			$("#phoneChange").click(function(){
-				let phone = $("#phone").val(); // 변경할 전화번호
-				let old_phone = "${account.phone}"; // 원래 전화번호
+				let new_phone = $("#phone").val(); // 변경할 전화번호
 				
-				if(phone.replace(/\s/g,"")==""){
+				
+				if(new_phone.replace(/\s/g,"")==""){
 					alert("전화번호를 입력하세요.");
 					$("#phone").focus();
 					return false;
 				} 
 				
-				if(phone == old_phone){
-					phone_cancel();
-				}else{
-					let regPhone = /^01([0|1|6|7|8|9])([0-9]{3,4})([0-9]{4})$/;
+				// 전화번호 유효성 검사 ()
+				let regPhone = /^01([016789])([0-9]{3,4})([0-9]{4})$/;
+				
+				if (regPhone.test(new_phone) == false) {
+					alert("사용할 수 없는 전화번호 입니다. 전화번호를 확인해주세요.");
+					$("#phone").val("");
+					$("#phone").focus();
 					
-					if (regPhone.test(phone) == false) {
-						alert("사용할 수 없는 전화번호 입니다. 전화번호를 확인해주세요.");
-						$("#phone").val("");
-						$("#phone").focus();
-						
-						return false;
-					}
-
-					$.ajax({
-						type : "post",
-						url : "/member/memberPhoneChk",
-						data : {phone : phone},
-						success : function(result){
-							if(result == 'success'){
-								$("#account_modi").attr({
-									"method" : "post",
-									"action" : "/member/phoneModi"
-								})
-								$("#account_modi").submit();
-								alert("전화번호가 변경되었습니다.");
-								
-							} else {
-								alert("이미 사용중인 전화번호 입니다.");
-								$("#phone").val("");
-								$("#phone").focus();
-							}		
-						}
-					});
+					return false;
 				}
 				
+				// 변경할 전화번호와 원래 전화번호가 같으면 변경 X 
+				if(phone == new_phone){
+					location.reload();
+				}else{
+					// 다른 회원의 전화번호와 같은지 확인
+					$.ajax({
+						type : "post",
+						url : "/api/member/phoneChk",
+						data : {phone : new_phone},
+						success : function(){
+							
+							fetch('/api/member/updatePhone', {
+								method: 'POST',
+								headers: {
+									'Content-Type': 'application/json'
+								},
+								body: JSON.stringify({
+									user_id: user_id,
+									phone: new_phone
+								}),
+							})
+							.then(response => {
+								if (!response.ok) throw new Error('Network response was not ok');
+					            alert('전화번호가 변경되었습니다.');
+					            location.reload();
+							})
+							.catch(error => {
+								alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+								console.error('Error:', error);
+							})
+						},
+						error: function (jqXHR, textStatus, errorThrown) {
+					    	if (jqXHR.status === 409) {
+					    		alert("이미 사용중인 전화번호 입니다.");
+								$("#phone").val("");
+								$("#phone").focus();
+					        }else if(jqXHR.status === 400){
+					        	alert("사용할 수 없는 전화번호 입니다. 전화번호를 확인해주세요.");
+								$("#phone").val("");
+								$("#phone").focus();
+								console.error(jqXHR.responseText);
+					        }else {
+					            console.error("Error:", textStatus, errorThrown);
+					            alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					        }
+					    }
+					});
+				}
 			})
+			
+			
 			
 			/* 전화번호 수정 취소 버튼 클릭 */
 			$("#phone_cancel").click(function(){
-				phone_cancel();
+				location.reload();
 			})
 			
 			/* 비밀번호 변경 버튼 클릭 */
 			$("#pw_modi_btn").click(function(){
+				if(isSocialLogin == 1) {
+					alert("소셜 로그인 회원은 비밀번호를 변경할 수 없습니다.");
+					return false;
+				}
+				
 				$("#pw_modi_btn").attr("type","hidden");
 				$("#pwConfirm").css("display","inline");
 				$("#user_pw").focus();
+				
 			})
 			
 			/* 비밀번호 확인 */
 			$("#pwConfirm_btn").click(function(){
 				let user_pw = $("#user_pw").val();
-				let user_id = $("#user_id").val();
 				
 				if(user_pw.replace(/\s/g,"")==""){
 					alert("비밀번호를 입력하세요.");
@@ -129,24 +181,31 @@
 					return false;
 				} 
 				
+				
 				$.ajax({
 					type : "post",
-					url : "/member/pwConfirm",
+					url : "/api/member/pwConfirm",
 					data : {
 						user_id : user_id,
 						user_pw : user_pw						
-					}, 	// '컨트롤에 넘길 데이터 이름' : '데이터(.userId에 입력되는 값)'
-					success : function(result){
-						if(result == 'success'){
-							alert("비밀번호 확인 완료");
-							$("#pwConfirm").css("display","none");
-							$("#pwModi_div").css("display","inline-block");
-							$("#new_pw").pocus();
-						} else {
-							alert("비밀번호가 일치하지 않습니다.");
-						}		
-					}
-				}); 
+					}, 	
+					success : function(){
+						alert("비밀번호 확인 완료");
+						$("#pwConfirm").css("display","none");
+						$("#pwModi_div").css("display","inline-block");
+						$("#new_pw").focus();
+					},
+				    error: function (jqXHR, textStatus, errorThrown) {
+				    	if (jqXHR.status === 400) {
+				            alert("비밀번호가 일치하지 않습니다.");
+				            $("#user_pw").val("");
+				            $("#user_pw").focus();
+				        }else {
+				            console.error("Error:", textStatus, errorThrown);
+				            alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+				        }
+				    }
+				});
 			})
 			
 			/* 비밀번호 변경 */
@@ -165,17 +224,37 @@
 				}
 				
 				// 비밀번호 정규식 : 영어 대,소문자, 숫자 8~20자 
-				let pw_legExp = /^[0-9a-zA-Z]{8,20}$/;
+				let pw_legExp = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
 				
 				if(!pw_legExp.test(new_pw)){
 					alert("비밀번호는 영어 대,소문자와 숫자를 포함하여 8자 ~ 20자로 입력하세요.");
 					return false;
 				}else {
-					$("#account_modi").attr({
-						"method" : "post",
-						"action" : "/member/pwModi"
+					fetch('/api/member/updatePw', {
+						method: 'POST',
+						headers: {
+							'Content-Type': 'application/json'
+						},
+						body: JSON.stringify({
+							user_id: user_id,
+							user_pw: new_pw
+						}),
 					})
-					$("#account_modi").submit();
+					.then(response => {
+						if (response.status === 400) {
+					        return response.text().then(errorMsg => {
+					            throw new Error(errorMsg);
+					        });
+					    }
+						if (!response.ok) throw new Error('Network response was not ok');
+			            alert('비밀번호가 변경되었습니다.');
+			            location.reload();
+						
+					})
+					.catch(error => {
+						alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+						console.error('Error:', error);
+					})
 				}
 			})
 			
@@ -229,7 +308,7 @@
 				
 				$.ajax({
 				    type: "POST",
-				    url: "/member/addressModi",
+				    url: "/api/member/updateAddress",
 				    data: { user_id: user_id, address: address },  
 				    success: function(data) {
 				    	alert("주소가 변경되었습니다.");
@@ -254,7 +333,7 @@
 
 					$.ajax({
 					    type: "POST",
-					    url: "/member/withDraw",
+					    url: "/api/member/withDraw",
 					    data: { user_id: user_id },  
 					    success: function(data) {
 					    	localStorage.removeItem("Authorization");
@@ -262,7 +341,7 @@
 					    	window.location.href = "/";
 					    },
 					    error: function(jqXHR, textStatus, errorThrown) {
-					        console.error("회원 탈퇴 중 오류 발생:", textStatus, errorThrown);
+					        console.error("회원 탈퇴 중 오류 발생 : ", textStatus, errorThrown);
 					        alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 					    }
 					});
@@ -272,11 +351,6 @@
 		})
 		
 		
-		function phone_cancel(){
-			$("#phone").attr("readonly","readonly");
-			$("#phone_btn").css("display","none");
-			$("#phone_modi_btn").attr("type","button");
-		}
 		
 		
 	</script>
@@ -289,30 +363,23 @@
 		<form id="account_modi">
 			<div class="my-top-8">
 				<!-- 소셜로그인이 아닐 때만 아이디 표시 -->
-				<c:choose>
-				    <c:when test="${account.social_login == 0}">
-				        <div class="info_box">
-				            <span class="link_set">아이디</span>
-				            <div>
-				                <input type="text" id="user_id" name="user_id" class="border-none" value="${account.user_id}">
-				            </div>
-				        </div>
-				    </c:when>
-				    <c:otherwise>
-				        <input type="hidden" id="user_id" name="user_id" class="border-none" value="${account.user_id}">
-				    </c:otherwise>
-				</c:choose>
+				<div class="info_box">
+					<span class="link_set">아이디</span>
+				    <div>
+				    	<input type="text" id="user_id" name="user_id" class="border-none" >
+				    </div>
+				</div>
 				
 				<div class="info_box">
 					<span class="link_set">이름</span>
 					<div>
-						<span class="">${account.user_name }</span>
+						<span id="user_name" class="user_name"></span>
 					</div>
 				</div>
 				<div class="info_box">
 					<span class="link_set">전화번호</span>
 					<div>
-						<input type="number" class="input-border-none" id="phone" name="phone" value="${account.phone }" readonly=readonly placeholder="전화번호 입력">
+						<input type="number" class="input-border-none" id="phone" name="phone"  readonly=readonly placeholder="전화번호 입력">
 						<input type="button" id="phone_modi_btn" class="float-right" value="수정">
 						<div id="phone_btn" style="display:none;">
 							<button type="button" id="phone_cancel" class="float-right ">취소</button>
@@ -321,41 +388,37 @@
 					</div>
 				</div>
 				
-				<!-- 소셜로그인이 아닐 때 비밀번호 변경 div 표시 -->
-				<c:if test="${account.social_login == 0}">
-				    <div id="password" class="info_box">
-						<span class="link_set">비밀번호</span>
-						<input type="button" id="pw_modi_btn" class="float-right" value="변경">
-						<div id="pwConfirm" style="display:none;">
-							<input type="text" id="user_pw" class="ml-1" placeholder="기존 비밀번호 입력">
-							<input type="button" id="pwConfirm_btn" class="float-right" value="확인">
-						</div>
-						<div id="pwModi_div" style="display:none; " class="my-top-4">
-							<span style="font-size: 1.5rem; color: #A4A4A4;">변경할 비밀번호를 입력하세요. </span><br>
-							<span style="color: #A4A4A4;">(8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력하세요.)</span>
-							<div class="my-top-4">
-								<p >변경할 비밀번호</p>
-								<input type="text" id="new_pw" name="user_pw" class=""><br>
-								<p class="my-top-4">비밀번호 확인</p>
-								<input type="text" id="pw_check" class="">
-							</div>
-							<button type="button" id="pwModi_btn" class="my-top-4">변경</button>
-						</div>
+				<div id="password" class="info_box">
+					<span class="link_set">비밀번호</span>
+					<input type="button" id="pw_modi_btn" class="float-right" value="변경">
+					<div id="pwConfirm" style="display:none;">
+						<input type="text" id="user_pw" class="ml-1" placeholder="기존 비밀번호 입력">
+						<input type="button" id="pwConfirm_btn" class="float-right" value="확인">
 					</div>
-				</c:if>
+					<div id="pwModi_div" style="display:none; " class="my-top-4">
+						<span style="font-size: 1.5rem; color: #A4A4A4;">변경할 비밀번호를 입력하세요. </span><br>
+						<span style="color: #A4A4A4;">(8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력하세요.)</span>
+						<div class="my-top-4">
+							<p>변경할 비밀번호</p>
+							<input type="text" id="new_pw" name="user_pw" class=""><br>
+							<p class="my-top-4">비밀번호 확인</p>
+							<input type="text" id="pw_check" class="">
+						</div>
+						<button type="button" id="pwModi_btn" class="my-top-4">변경</button>
+					</div>
+				</div>
 			</div>
 			
 			<div class="my-top-8">
 				<div class="info_box">
 					<p class="link_set">주소 관리</p>
-					<span class="">${account.address }</span>
+					<span id="address"></span>
 					<input type="button" id="address_modi_btn" class="float-right" value="수정">
 					<div id="address_div" style="display:none;" >
 						<input type="text" id="streetAddress" class="" placeholder="주소" readonly="readonly" style="width: 350px;">
 						<input type="text" id="detailAddress" class="" placeholder="상세주소 입력" style="width: 350px;" >
 						<button type="button" id="address_search">검색</button>
 						<button type="button" id="address_modi">변경</button>
-						<input type="hidden" id="address" name="address">
 					</div>
 				</div>
 			</div>

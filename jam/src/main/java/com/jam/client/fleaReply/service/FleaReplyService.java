@@ -7,7 +7,7 @@ import com.jam.client.fleaReply.vo.FleaReplyVO;
 public interface FleaReplyService {
 
 	// 중고거래 댓글 리스트
-	public List<FleaReplyVO> fleaReplyList(Integer flea_no);
+	public List<FleaReplyVO> fleaReplyList(Long flea_no);
 
 	// 중고거래 댓글 입력
 	public int replyInsert(FleaReplyVO frvo);
@@ -16,6 +16,6 @@ public interface FleaReplyService {
 	public int replyUpdate(FleaReplyVO frvo);
 
 	// 댓글 삭제
-	public int replyDelete(Integer fleaReply_no);
+	public int replyDelete(Long fleaReply_no);
 
 }

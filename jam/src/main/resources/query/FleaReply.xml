@@ -11,7 +11,7 @@
 	
 	<insert id="replyInsert" parameterType="fleaReply">
 	/*Reply - replyInsert*/
-		<selectKey keyProperty="fleaReply_no" resultType="int" order="BEFORE">
+		<selectKey keyProperty="fleaReply_no" resultType="Long" order="BEFORE">
 			select flea_reply_seq.nextval from dual
 		</selectKey>
 		INSERT INTO fleaReply(fleaReply_no, flea_no, fleaReply_content, fleaReply_date, user_id, user_name)

@@ -41,21 +41,21 @@ public class MessageServiceImpl implements MessageService {
 
 	// 쪽지 상태 읽음으로 변경
 	@Override
-	public void message_read(MessageVO message_vo) {
-		messageDao.message_read(message_vo);
+	public void message_read(Long message_no) {
+		messageDao.message_read(message_no);
 		
 	}
 
 	// 보낸 쪽지 상세페이지
 	@Override
-	public MessageVO rMessageDetail(MessageVO message_vo) {
-		return messageDao.rMessageDetail(message_vo);
+	public MessageVO receiveMsgDetail(Long message_no) {
+		return messageDao.receiveMsgDetail(message_no);
 	}
 
 	// 받은 쪽지 상세페이지
 	@Override
-	public MessageVO sMessageDetail(MessageVO message_vo) {
-		return messageDao.sMessageDetail(message_vo);
+	public MessageVO sendMsgDetail(Long message_no) {
+		return messageDao.sendMsgDetail(message_no);
 	}
 
 	// 쪽지 발송

@@ -14,66 +14,75 @@
 <script>
 	$(function() {
 		
-		/* 소셜 로그인 성공 후 파라미터로 jwt토큰 받음 */
+		/* 소셜 로그인 성공 후 파라미터로 jwt토큰을 받습니다. */
 		var search = location.search;
 		var params = new URLSearchParams(search);
 		var token = params.get('token');
 		
 		if(token != null){
-			// jwt 토큰 로컬 스토리지에 저장
+			// jwt 토큰 로컬 스토리지에 저장합니다.
+			localStorage.removeItem('Authorization');
         	localStorage.setItem('Authorization', token);
 		}
 		
-	        fetch('http://localhost:8080/member/getUserInfo', {
+	        fetch('/api/member/getUserInfo', {
 	            method: 'GET', 
 	            headers: {
 	            	'Authorization': localStorage.getItem("Authorization")
 	            },
 	        })
 	        .then(response => {
-	            if (response.ok) {
-	                // 응답이 성공적인 경우
-	                
-	                let auth = response.headers.get('auth');
-	                if(auth != "" && auth != null){
-	                	if(auth.includes("ROLE_ADMIN")){
-		                	const adminPageDiv = document.getElementById("adminPage");
-		                	
-		                	const adminButton = document.createElement("button");
-		                    adminButton.setAttribute("type", "button");
-		                    adminButton.setAttribute("id", "adminBtn");
-		                    adminButton.textContent = "관리자 페이지";
-
-		                    // 버튼을 "adminPage" div에 추가합니다.
-		                    adminPageDiv.appendChild(adminButton);
-		                }
-	                	return response.text();
-	                }
-	                
-	            } else {
-	                // 오류 응답 처리
-	                throw new Error('Network response was not ok');
-	            }
+	        	if(response.status == 401){
+	        		localStorage.removeItem('Authorization');
+	        		
+	        		alert("로그인 유효시간이 초과 되었습니다. 다시 로그인 해주세요.");
+	        		window.location.reload();
+	        	}else if (!response.ok) throw new Error('Network response was not ok');
+	        	
+	        	const Authorization = response.headers.get('Authorization');
+		        
+		        if(Authorization != null && Authorization != ""){
+		        	// jwt 토큰 로컬 스토리지에 저장
+		        	localStorage.removeItem('Authorization');
+		        	localStorage.setItem('Authorization', Authorization);
+		        }	
+	              
+				return response.json();   
 	        })
-	        .then((username) => {
-	        	if (username) {
-	                // username 헤더 값이 존재하는 경우
+	        .then((data) => {
+	        	let user_name = data.user_name;
+	        	let role = data.role;
+	        	
+	        	
+	        	if (data && user_name && role) {
+	        		// 헤더에 닉네임과 로그아웃 버튼 추가합니다.
 	                headerName = $('#header_name');
-	                headerName.html(username + "님");
+	                headerName.html(data.user_name + "님");
 	                
 	                $("#loggedOutDiv").css("display", "none");
 	                $("#loggedInDiv").css("display", "flex");
 	                
+	                // 로그인 한 사용자가 관리자라면 헤더에 관리자 버튼을 추가합니다.
+	                if(role.includes("ROLE_ADMIN")){
+	                	const adminPageDiv = document.getElementById("adminPage");
+	                	
+	                	const adminButton = document.createElement("button");
+	                    adminButton.setAttribute("type", "button");
+	                    adminButton.setAttribute("id", "adminBtn");
+	                    adminButton.textContent = "관리자 페이지";
+
+	                    // 버튼을 "adminPage" div에 추가
+	                    adminPageDiv.appendChild(adminButton);
+	                }
 	            }
 			})
 	        .catch(error => {
-	            // 오류 처리
 	            console.error('사용자 정보를 가져오는 중 오류 발생:', error);
 	        });
 
 		// 로그아웃
 		$("#logout").click(function() {
-			fetch('http://localhost:8080/member/logout', {
+			fetch('http://localhost:8080/api/member/logout', {
 	            method: 'GET', 
 		        headers: {
 		            'Authorization': localStorage.getItem("Authorization")
@@ -85,52 +94,49 @@
 	            	localStorage.removeItem('Authorization');
 	            	$(location).attr('href', "/");
 	            } else {
-	                // 오류 응답 처리
 	                throw new Error('Network response was not ok');
 	            }
 	        })
 	        .catch(error => {
-	            // 오류 처리
 	            console.error('사용자 데이터 삭제 중 오류 발생 : ', error);
 	        });
 		})
 		
+		
 		function getUserIDAndRedirect(redirectURL) {
-		    fetch('http://localhost:8080/member/getUserInfo', {
+		    fetch('http://localhost:8080/api/member/getUserInfo', {
 		        method: 'GET',
 		        headers: {
 		            'Authorization': localStorage.getItem("Authorization")
 		        },
 		    })
 		    .then(response => {
-		        if (response.ok) {
-		        	// 관리자 페이지 접속
-		        	 console.log("url " + redirectURL);
-		        	if(redirectURL.includes("admin")){
-		        		console.log("true");
-		        		let auth = response.headers.get("auth");
-		        		if(auth.includes("ROLE_ADMIN")){
-		        			return "관리자 페이지";
+		        if (!response.ok) {
+		        	throw new Error('Network response was not ok');
+		        }
+		        return response.json(); 
+		    })
+		    .then((data) => {
+		    	if(data && data.user_id){
+		    		// 관리자 페이지
+		    		if(redirectURL.includes("admin")){
+			    		let auth = data.role;
+			    		let user_id = data.user_id;
+			    		
+			    		if(auth.includes("ROLE_ADMIN")){
+			    			$(location).attr('href', redirectURL);
 		        		} else {
 		        			let error = "권한이 없는 페이지입니다.";
 		        			alert(error);
 				            throw new Error(error);
 				        }
-		        	}
-		            return response.headers.get('user_id');
-		        } else {
-		            throw new Error('Network response was not ok');
-		        }
-		    })
-		    .then((user_id) => {
-		    	if(user_id == "관리자 페이지"){
-		    		 $(location).attr('href', redirectURL);
+			    	}else{
+			    		$(location).attr('href', redirectURL + data.user_id);
+			    	}
+		    	}else{
+		    		alert("로그인이 필요한 페이지 입니다.");
+		    		$(location).attr('href', '/member/login');
 		    	}
-		    	else if (user_id) {
-		            $(location).attr('href', redirectURL + user_id);
-		        } else {
-		            $(location).attr('href', '/member/login');
-		        }
 		    })
 		    .catch(error => {
 		        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
@@ -164,8 +170,6 @@
 	
 </script>
 </head>
-<body>
-
 	<header>
 
 		<div class="border-bottom">
@@ -178,23 +182,23 @@
 					</a>
 				</div>
 				<div class="ml-5">
-					<a href="/" class="font-color-red font-size-2 font-weight-bold">HOME</a>
+					<a href="/" class="color_w font-size-2 font-weight-bold">HOME</a>
 				</div>
 				<div>
-					<a href="/job/jobList"
-						class="font-color-red font-size-2 font-weight-bold">구인&구직</a>
+					<a href="/job/boards"
+						class="color_w font-size-2 font-weight-bold">구인&구직</a>
 				</div>
 				<div>
-					<a href="/roomRental/roomRentalList"
-						class="font-color-red font-size-2 font-weight-bold">합주실&연습실</a>
+					<a href="/roomRental/boards"
+						class="color_w font-size-2 font-weight-bold">합주실&연습실</a>
 				</div>
 				<div>
-					<a href="/fleaMarket/fleaMarketList"
-						class="font-color-red font-size-2 font-weight-bold">중고악기</a>
+					<a href="/fleaMarket/boards"
+						class="color_w font-size-2 font-weight-bold">중고악기</a>
 				</div>
 				<div class="mr-11">
-					<a href="/community/communityList"
-						class="font-color-red font-size-2 font-weight-bold">커뮤니티</a>
+					<a href="/community/boards"
+						class="color_w font-size-2 font-weight-bold">커뮤니티</a>
 				</div>
 				<p></p>
 			</div>
@@ -231,10 +235,3 @@
 
 
 	</header>
-
-
-
-
-
-</body>
-</html>

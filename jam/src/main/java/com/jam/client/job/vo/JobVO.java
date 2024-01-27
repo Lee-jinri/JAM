@@ -9,7 +9,7 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper=false)
 public class JobVO extends CommonVO {
 
-	private int job_no;
+	private Long job_no;
 	private String job_title;
 	private String job_content;
 	private int job_category; // 0:구인 / 1:구직

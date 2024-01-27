@@ -7,7 +7,7 @@ import com.jam.client.comReply.vo.ComReplyVO;
 public interface ComReplyService {
 
 	// 커뮤니티 댓글 리스트
-	public List<ComReplyVO> comReplyList(Integer com_no);
+	public List<ComReplyVO> comReplyList(Long com_no);
 	
 	// 커뮤니티 댓글 입력
 	public int replyInsert(ComReplyVO crvo);
@@ -16,7 +16,7 @@ public interface ComReplyService {
 	public int replyUpdate(ComReplyVO crvo);
 	
 	// 커뮤니티 댓글 삭제
-	public int replyDelete(Integer comReply_no);
+	public int replyDelete(Long comReply_no);
 
 
 }

@@ -3,7 +3,7 @@
 <mapper namespace="com.jam.client.fleaMarket.dao.FleaMarketDAO">
 
 	<!-- 중고거래 list -->
-	<select id="fleaList" parameterType="flea" resultType="flea">
+	<select id="getBoards" parameterType="flea" resultType="flea">
 		<![CDATA[
 		SELECT flea_no, flea_title, to_char(flea_date,'YYYY/MM/DD HH24:MI') as flea_date, flea_reply_cnt, flea_hits, flea_category, price, sales_status, user_id , user_name
 		FROM (
@@ -21,7 +21,7 @@
 	</select>
 	
 	<!-- 전체 레코드 수 조회 -->
-	<select id="fleaListCnt" parameterType="flea" resultType="int">
+	<select id="listCnt" parameterType="flea" resultType="int">
 		SELECT count(*) FROM fleaMarket
 		<trim prefix="where(" suffix=")">
 			<include refid="fleaSearch"></include>
@@ -67,37 +67,37 @@
 	</sql>
 	
 	<!-- 중고거래 조회수 증가 -->
-	<update id="fleaReadCnt" parameterType="flea">
+	<update id="incrementReadCnt" parameterType="flea">
 		UPDATE fleaMarket 
 		SET	flea_hits = flea_hits + 1
 		WHERE flea_no = #{flea_no}
 	</update>
 	
-	<!-- 중고거래 detail -->
-	<select id="fleaDetail" resultType="flea">
+	<!-- 중고거래 상세 글 조회 -->
+	<select id="getBoardDetail" resultType="flea">
 		SELECT flea_no, flea_title, flea_content, flea_category, flea_hits, sales_status, to_char(flea_date,'YYYY/MM/DD HH24:MI:SS') as flea_date, price, user_name, user_id
 		FROM fleaMarket
 		WHERE flea_no = #{flea_no}
 	</select>
 	
-	<!-- 중고거래 insert -->
-	<insert id="fleaInsert" parameterType="flea">
-		<selectKey keyProperty="flea_no" resultType="int" order="BEFORE">
+	<!-- 중고거래 글 입력 -->
+	<insert id="writeBoard" parameterType="flea">
+		<selectKey keyProperty="flea_no" resultType="Long" order="BEFORE">
 			SELECT flea_seq.nextval from dual
 		</selectKey>
 		INSERT INTO fleaMarket(flea_no, user_id, user_name, flea_title, flea_content, flea_hits, flea_reply_cnt,flea_category, sales_status, price ,imageFileName)
-		VALUES (#{flea_no}, #{user_id}, #{user_name}, #{flea_title}, #{flea_content},0, 0, #{flea_category}, #{sales_status}, #{price}, #{imageFileName, jdbcType = VARCHAR})
+		VALUES (#{flea_no}, #{user_id}, #{user_name}, #{flea_title}, #{flea_content},0, 0, #{flea_category}, 0, #{price}, #{imageFileName, jdbcType = VARCHAR})
 	</insert>
 	
-	<!-- 중고거래 update Form -->
-	<select id="fleaUpdateForm" parameterType="flea"  resultType="flea">
-		SELECT flea_no, flea_title, flea_content, imageFileName, price
+	<!-- 중고거래 수정할 글 정보 조회 -->
+	<select id="getBoardById" parameterType="flea"  resultType="flea">
+		SELECT flea_no, flea_title, flea_content, imageFileName, price, flea_category, sales_status
 		FROM fleaMarket
 		WHERE flea_no = #{flea_no} 
 	</select>
 	
-	<!-- 중고거래 update -->
-	<update id="fleaUpdate" parameterType="flea">
+	<!-- 중고거래 글 수정 -->
+	<update id="editBoard" parameterType="flea">
 		UPDATE fleaMarket SET
 		flea_title = #{flea_title},
 		flea_content = #{flea_content},
@@ -111,8 +111,8 @@
 		where flea_no = #{flea_no}
 	</update>
 	
-	<!-- 중고거래 delete -->
-	<delete id="fleaDelete" parameterType="flea">
+	<!-- 중고거래 글 삭제 -->
+	<delete id="boardDelete" parameterType="flea">
 		DELETE FROM fleaMarket WHERE flea_no = #{flea_no}
 	</delete>
 	

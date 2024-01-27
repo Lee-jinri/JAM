@@ -3,8 +3,6 @@ package com.jam.client.fleaReply.controller;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,13 +20,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.jam.client.comReply.vo.ComReplyVO;
 import com.jam.client.fleaReply.service.FleaReplyService;
 import com.jam.client.fleaReply.vo.FleaReplyVO;
 import com.jam.client.member.vo.MemberVO;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping(value="/fleareplies")
@@ -38,14 +34,14 @@ public class FleaReplyController {
 	private FleaReplyService fleareplyService;
 	
 	/***************************
-	 * @param Integer flea_no
+	 * 중고악기 댓글을 조회하는 메서드입니다.
+	 * @param Long flea_no 조회할 중고악기 글 번호
 	 * @param FleaReplyVO frvo
-	 * @param MemberVO member
 	 * @return 댓글 리스트
 	 ****************************/
 	@DateTimeFormat 
 	@GetMapping(value = "/all/{flea_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<FleaReplyVO> replyList(@PathVariable("flea_no") Integer flea_no,@RequestParam(value = "user_id", required = false) String user_id,  @ModelAttribute("data") FleaReplyVO frvo, MemberVO member, HttpServletRequest request, Model model){
+	public List<FleaReplyVO> replyList(@PathVariable("flea_no") Long flea_no,@RequestParam(value = "user_id", required = false) String user_id,  @ModelAttribute("data") FleaReplyVO frvo, MemberVO member, HttpServletRequest request, Model model){
 		System.out.println("replyList 호출 성공");
 		
 		List<FleaReplyVO> reply = null;
@@ -57,13 +53,12 @@ public class FleaReplyController {
 	}
 	
 	/******************************
-	 * 중고악기 댓글 작성
+	 * 중고악기 댓글을 작성하는 메서드입니다.
 	 * @param FleaReplyVO frvo
-	 * @param MemberVO member
 	 * @return 댓글 작성 실행 결과
 	 **********************************/
 	@JsonFormat
-	@PostMapping(value="/replyInsert",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
+	@PostMapping(value="/reply",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public String replyInsert(@RequestBody FleaReplyVO frvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
 		
 		int result = 0;
@@ -74,13 +69,13 @@ public class FleaReplyController {
 	}
 	
 	/****************************
-	 * 중고악기 댓글 수정
-	 * @param Integer fleaReply_no
-	 * @param FleaReplyVO frvo
+	 * 중고악기 댓글을 수정하는 메서드입니다.
+	 * @param Long fleaReply_no 수정할 댓글 번호
+	 * @param FleaReplyVO frvo 수정할 댓글 내용
 	 * @return 댓글 수정 결과
 	 ****************************/
 	@PutMapping(value = "/{fleaReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
-	public String replyUpdate(@PathVariable("fleaReply_no") Integer fleaReply_no, @RequestBody FleaReplyVO frvo) {
+	public String replyUpdate(@PathVariable("fleaReply_no") Long fleaReply_no, @RequestBody FleaReplyVO frvo) {
 	
 		frvo.setFleaReply_no(fleaReply_no);
 		int result = fleareplyService.replyUpdate(frvo);
@@ -89,13 +84,13 @@ public class FleaReplyController {
 	}
 	
 	/*******************************
-	 * 중고악기 댓글 삭제
-	 * @param Integer fleaReply_no
+	 * 중고악기 댓글을 삭제하는 메서드입니다.
+	 * @param Long fleaReply_no 삭제할 댓글 번호
 	 * @return 댓글 삭제 결과
 	 **********************************/
 	
 	@DeleteMapping(value = "/{fleaReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
-	public ResponseEntity<String> replyDelete(@PathVariable("fleaReply_no")Integer fleaReply_no){
+	public ResponseEntity<String> replyDelete(@PathVariable("fleaReply_no")Long fleaReply_no){
 
 		int result = fleareplyService.replyDelete(fleaReply_no);
 		

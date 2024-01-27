@@ -1,11 +1,21 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib uri="http://www.springframework.org/tags" prefix="spring"%>
 <!DOCTYPE html>
-<html>
+
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="UTF-8">
 <title>JAM - 로그인</title>
+	<script type="text/javascript" src="http://code.jquery.com/jquery-1.11.3.min.js"></script>
+	<!-- 카카오 로그인 SDK -->
+	<script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
+  	<!-- 네이버 로그인 -->
+  	<script type="text/javascript" src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
+  	
+
+
 <style>
 #user_id, #user_pw {
 	width: 480px;
@@ -15,20 +25,43 @@
 <script type="text/javascript">
 		$(function(){
 			
-			var search = location.search;
-			var params = new URLSearchParams(search);
-			var error = params.get('error');
 			
-			if(error == 'error'){
-				const errorDiv = document.getElementById('error_div'); 
-	            errorDiv.innerHTML = '<div class="alert alert-danger">시스템 오류입니다. 잠시 후 다시 시도해주세요.</div>';
+			// Jwt 토큰 헤더에서 가져와서 로컬 스토리지에 저장 후 로그인 이전 페이지로 이동하는 함수
+			function setJwtTokenAndRedirect(response){
+				const Authorization = response.headers.get('Authorization');
+		        
+		        if(Authorization != null && Authorization != ""){
+		        	// jwt 토큰 로컬 스토리지에 저장
+		        	localStorage.removeItem('Authorization');
+		        	localStorage.setItem('Authorization', Authorization);
+		        	
+		        	// 로그인 이전 페이지로 이동
+		        	const prevPage = response.headers.get('prev-page');
+			        
+			        if (prevPage != null && prevPage != "") {
+						// 회원가입에서 로그인으로 넘어온 경우 "/"로 redirect
+						if (prevPage.includes("/member/join")) {
+							$(location).attr('href', "/");
+						} else {
+							$(location).attr('href', prevPage);
+						}
+					}else $(location).attr('href', "/");
+		        }
+		        else {
+		            return new Error("Authorization is null.");
+		        }
 			}
 			
+			
+			
+			
+			// 비밀번호 입력하고 엔터 눌렀을 때 로그인 실행
 			$('#user_pw').on('keypress', function(e){ 
 			    if(e.keyCode == '13'){ 
 			        $('#loginBtn').click(); 
 			    }
 			}); 
+			
 			
 			// 일반 로그인
 			$("#loginBtn").click(function(){
@@ -47,102 +80,112 @@
 					return false;
 				}
 				
-				fetch('http://localhost:8080/member/login-process', {
+				fetch('http://localhost:8080/api/member/login-process', {
 					method: 'POST',
 					headers : {
 						'Content-Type' : 'application/json',
 					},
-					body : JSON.stringify({ // 바디에 담긴 정보를 json 으로 변환해서 요청
+					body : JSON.stringify({
 						'user_id' : id,
 						'user_pw' : pw,
 					}),
 				}) 
 				.then((response) => {
-				    if (response.status === 200) {
-				        
-				        const Authorization = response.headers.get('Authorization');
-				        
-				        if(Authorization != null && Authorization != ""){
-				        	// jwt 토큰 로컬 스토리지에 저장
-				        	localStorage.setItem('Authorization', Authorization);
-				        	
-				        	// 로그인 이전 페이지로 이동
-				        	const prevPage = response.headers.get('prev-page');
-					        
-					        if (prevPage != null && prevPage != "") {
-								// 회원가입에서 로그인으로 넘어온 경우 "/"로 redirect
-								if (prevPage.includes("/member/join")) {
-									$(location).attr('href', "/");
-								} else {
-									$(location).attr('href', prevPage);
-								}
-							}else $(location).attr('href', "/");
-				        }
-				        return null;
+				    if (response.ok) {
+				    	
+				        return response;
 				        
 				    } else if(response.status === 401){
 				    	const errorDiv = document.getElementById('error_div'); 
 			            errorDiv.innerHTML = '<div class="alert alert-danger">로그인에 실패하였습니다. 올바른 아이디와 비밀번호를 입력하세요.</div>';
 			            return response.text();
-				    } else {
-				    	const errorDiv = document.getElementById('error_div'); 
-			            errorDiv.innerHTML = '<div class="alert alert-danger">시스템 오류입니다. 잠시 후 다시 시도해주세요.</div>';
-			            return response.text();
 				    }
-				     
 				})
+				.then(response => setJwtTokenAndRedirect(response))
 				.then((body) => {
-					if(body != null) console.log(body);
+					if(body != null) 
+						throw new Error("Authorization is null.");
 				})
-				.catch((error) => console.log("error" , error));
-			})
-			
-			// 네이버 로그인
-			$("#naverLogin").click(function(){
-				fetch('http://localhost:8080/member/naver_oauth', {
-					method: 'GET'
-				}) 
-				.then((response) => {
-				    if (response.status === 200) {
-				        const Authorization = response.headers.get('Authorization');
-				        
-				        if(Authorization != null && Authorization != ""){
-				        	// jwt 토큰 로컬 스토리지에 저장
-				        	localStorage.setItem('Authorization', Authorization);
-				        	
-				        	// 로그인 이전 페이지로 이동
-				        	const prevPage = response.headers.get('prev-page');
-					        
-					        if (prevPage != null && prevPage != "") {
-								// 회원가입에서 로그인으로 넘어온 경우 "/"로 redirect
-								if (prevPage.includes("/member/join")) {
-									$(location).attr('href', "/");
-								} else {
-									$(location).attr('href', prevPage);
-								}
-							}else $(location).attr('href', "/");
-				        }
-				        return null;
-				        
-				    } else if(response.status === 401){
-				    	const errorDiv = document.getElementById('error_div'); 
-			            errorDiv.innerHTML = '<div class="alert alert-danger">로그인에 실패하였습니다. 올바른 아이디와 비밀번호를 입력하세요.</div>';
-			            return response.text();
-				    } else {
-				    	const errorDiv = document.getElementById('error_div'); 
-			            errorDiv.innerHTML = '<div class="alert alert-danger">시스템 오류입니다. 잠시 후 다시 시도해주세요.</div>';
-			            return response.text();
-				    }
-				     
-				})
-				.then((body) => {
-					if(body != null) console.log(body);
-				})
-				.catch((error) => console.log("error" , error));
+				.catch((error) => {
+					const errorDiv = document.getElementById('error_div'); 
+		            errorDiv.innerHTML = '<div class="alert alert-danger">시스템 오류입니다. 잠시 후 다시 시도해주세요.</div>';
+					console.log(error);
+				});
 			})
 			
 			
+			let clientId = "<spring:eval expression="@environment.getProperty('social.client_id')" />";
+	        
+			var naverLogin = new naver.LoginWithNaverId({
+				clientId: clientId,
+				callbackUrl: "http://localhost:8080/member/naver_login",
+				isPopup: false, 
+				loginButton: {color: "green", type: 3, height: 52.5}
+			});
+				
+			naverLogin.init();
+			
+			// 네이버 로그인 이미지 변경
+		  	$("#naverIdLogin a img").attr("class", "socialLoginBtn");
+		  	$("#naverIdLogin a img").attr("src","/resources/include/images/btnG_완성형.png");
+		  	
+		  	
 			// 카카오 로그인
+			
+			// Kakao API 초기화
+			let kakaoKey = "<spring:eval expression="@environment.getProperty('social.kakao_key')" />";
+			
+		    Kakao.init(kakaoKey);
+			Kakao.isInitialized();
+			
+			$("#kakaoLogin").click(function() {
+				Kakao.Auth.login({
+					success: function (authObj) {
+						Kakao.Auth.setAccessToken(authObj.access_token); //access 토큰 값 저장
+						getKakaoInfo();
+					},
+					fail: function (error) {
+						const errorDiv = document.getElementById('error_div'); 
+			            errorDiv.innerHTML = '<div class="alert alert-danger">시스템 오류입니다. 잠시 후 다시 시도해주세요.</div>';
+						console.log(error);
+					},
+				});
+			});
+
+			function getKakaoInfo() {
+				Kakao.API.request({
+					url: "/v2/user/me",
+					success: function (res) {
+						var id = res.id;
+						var nickname = res.kakao_account.profile.nickname;
+		            	var email = res.kakao_account.email;
+						
+		            	kakaoLogin(id, nickname, email);
+					},
+					fail: function (error) {
+						alert("카카오 로그인 실패" + JSON.stringify(error));
+					},
+				});
+			}
+		      
+			function kakaoLogin(id, nickname, email){
+				fetch('/api/member/kakao_login',{
+					method: 'POST',
+					headers: {
+						'Content-Type':'application/json'
+					},
+					body: JSON.stringify({
+						'user_id': id,
+						'user_name': nickname,
+						'email': email
+					})
+				}).then(response =>{
+					setJwtTokenAndRedirect(response);
+				})
+			}
+		      
+			
+			
 			
 		})
 	</script>
@@ -179,14 +222,10 @@
 			<p class="login_sns_p">다른 서비스 계정으로 로그인</p>
 			<ul class="login_sns">
 				<li>
-					<a href="/member/kakao_oauth"> 
-						<img class="" src="/resources/include/images/kakao_login_large_wide.png">
-					</a>
+					<img id="kakaoLogin" class="socialLoginBtn" src="/resources/include/images/kakao_login_large_wide.png">
 				</li>
-				<li class="pd-top1">
-					<a href="/member/naver_oauth"> 
-						<img class="" id="naverLogin" src="/resources/include/images/btnG_완성형.png">
-					</a>
+				<li>
+					<div id="naverIdLogin"></div>
 				</li>
 			</ul>
 		</div>
