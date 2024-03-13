@@ -6,9 +6,9 @@ import com.jam.client.roomRental.vo.RoomRentalVO;
 
 public interface RoomRentalService {
 	
-	public List<RoomRentalVO> roomList(RoomRentalVO room_vo);
+	public List<RoomRentalVO> getBoards(RoomRentalVO room_vo);
 
-	public int roomListCnt(RoomRentalVO room_vo);
+	public int listCnt(RoomRentalVO room_vo);
 			
 	public void incrementReadCnt(Long room_no);
 				

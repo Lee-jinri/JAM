@@ -3,8 +3,10 @@
 <mapper namespace="com.jam.client.comReply.dao.ComReplyDAO">
 
 	<select id="replyList" resultType="comReply">
-		SELECT comReply_no, comReply_content, to_char(comReply_date,'YYYY.MM.DD HH24:MI') as comReply_date, user_id, user_name
-		FROM comReply
+		SELECT c.comReply_no, c.comReply_content, to_char(c.comReply_date,'YYYY.MM.DD HH24:MI') as comReply_date, c.user_id, m.user_name
+		FROM comReply c
+		LEFT JOIN Member m
+		ON c.user_id = m.user_id
 		WHERE com_no = #{com_no}
 		ORDER BY comReply_no DESC
 	</select>
@@ -14,8 +16,8 @@
 		<selectKey keyProperty="comReply_no" resultType="Long" order="BEFORE">
 			select com_reply_seq.nextval from dual
 		</selectKey>
-			insert into comReply(comReply_no,com_no,comReply_content, comReply_date, user_id,user_name)
-			values(#{comReply_no},#{com_no},#{comReply_content}, sysdate ,#{user_id},#{user_name})	
+			insert into comReply(comReply_no,com_no,comReply_content, comReply_date, user_id)
+			values(#{comReply_no},#{com_no},#{comReply_content}, sysdate ,#{user_id})	
 	</insert>
 	
 	<update id="replyUpdate" parameterType="comReply">

@@ -46,7 +46,7 @@
 			}
 			$("#searchForm").attr({
 				"method":"get",
-				"action":"/roomRental/roomRentalList/"
+				"action":"/roomRental/boards/"
 			});
 			$("#searchForm").submit();
 		}
@@ -77,8 +77,8 @@
 							<!-- <label>검색조건</label> -->
 							<select id="search" name="search" class="search">
 								<option value="all">전체</option>
-								<option value="roomRental_title">제목</option>
-								<option value="roomRental_content">내용</option>
+								<option value="room_title">제목</option>
+								<option value="room_content">내용</option>
 								<option value="user_name">작성자</option>
 							</select>
 							<input type="text" name="keyword" id="keyword" placeholder="구인구직 내에서 검색" class="border border-radius-43px rem-2 search"/>

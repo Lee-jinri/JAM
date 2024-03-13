@@ -5,41 +5,44 @@
 	<!-- 구인구직 검색 -->
 	<sql id="jobSearch">
 		<if test="search=='job_title'">
-			<![CDATA[job_title LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[j.job_title LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='job_content'">
-			<![CDATA[job_content LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[j.job_content LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='user_name'">
-			<![CDATA[user_name LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
 		</if>
 	</sql>
 	
 	<!-- 구인구직 list -->
 	<select id="getBoards" parameterType="job" resultType="job">
 		<![CDATA[
-		SELECT job_no, job_title, to_char(job_date,'YYYY/MM/DD HH24:MI') as job_date, job_reply_cnt, job_hits,job_status, job_category, user_id , user_name
+		SELECT job_no, job_title, to_char(job_date, 'YYYY/MM/DD HH24:MI') AS job_date, job_reply_cnt, job_hits, job_status, job_category, user_id , user_name
 		FROM (
-				SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
-					rownum as rnum, job_no, job_title, job_date, job_reply_cnt, job_hits,job_status, job_category, user_id , user_name
-				FROM job 
-				where ]]>
-				<trim prefix="(" suffix=") AND " prefixOverrides="AND">
-					<include refid="jobSearch"></include> 
-				</trim>
-			<![CDATA[ rownum <= #{pageNum} * #{amount}
-				) jobList
-			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
+				j.job_no, j.job_title, j.job_date, j.job_reply_cnt, j.job_hits, j.job_status, j.job_category, j.user_id , m.user_name,
+				ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
+			FROM job j
+			LEFT JOIN Member m ON j.user_id = m.user_id
 			]]>
+			<trim prefix="WHERE" suffixOverrides="AND |OR ">
+				<include refid="jobSearch"></include> 
+			</trim>
+		) 
+		<![CDATA[
+		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount}
+		]]>
 	</select>	
 	
-	<!-- 전체 레코드 수 조회 -->
-	<select id="listCnt" parameterType="job" resultType="int">
-		SELECT count(*) FROM job
-		<trim prefix=" where (" suffix=")" >
-			<include refid="jobSearch"></include>
-		</trim>
-	</select>	
+	<select id="listCnt" parameterType="room" resultType="int">
+	    SELECT count(*)
+	    FROM job j
+	    LEFT JOIN member m ON j.user_id = m.user_id
+	    <trim prefix="WHERE (" suffix=")" prefixOverrides="AND | OR">
+	        <include refid="jobSearch"></include>
+	    </trim>
+	</select>
 	
 	<!-- 구인구직 조회수 -->
 	<update id="incrementReadCnt" parameterType="job">
@@ -48,9 +51,10 @@
 	
 	<!-- 구인구직 상세페이지 -->
 	<select id="getBoardDetail" resultType="job">
-		SELECT job_no, job_title, job_content, job_hits, to_char(job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, job_category, job_status,pay_category, pay, user_name, user_id 
-		FROM job 
-		WHERE job_no = #{job_no}
+		SELECT j.job_no, j.job_title, j.job_content, j.job_hits, to_char(j.job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, j.job_category, j.job_status,j.pay_category, pay, m.user_name, j.user_id 
+		FROM job j
+		LEFT JOIN Member m ON j.user_id = m.user_id
+		WHERE j.job_no = #{job_no}
 	</select>
 	
 	<!-- 구인구직 글 입력 -->
@@ -58,8 +62,8 @@
 		<selectKey keyProperty="job_no" resultType="Long" order="BEFORE">
         	select job_seq.nextval from dual
     	</selectKey>
-		INSERT INTO job(job_no, user_id, job_title, job_content, job_category,job_status, user_name, pay_category, pay,  job_hits, job_reply_cnt, imageFileName)
-		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0, #{user_name}, #{pay_category}, #{pay}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
+		INSERT INTO job(job_no, user_id, job_title, job_content, job_category,job_status,  pay_category, pay,  job_hits, job_reply_cnt, imageFileName)
+		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0,  #{pay_category}, #{pay}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
 	</insert>
 	
 	<!-- 구인구직 글 수정페이지 -->

@@ -37,6 +37,13 @@
 			goPage();
 		})
 		
+		$("#keyword").keypress(function(event){
+		    if(event.keyCode == 13){ 
+		        event.preventDefault(); 
+		        $("#searchBtn").click();
+		    }
+		});
+		
 		$(".paginate_button a").click(function(e) {
 			e.preventDefault();
 			$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
@@ -140,7 +147,6 @@
 		<div class="title">
 			<p class="text-center my-7">쪽지</p>
 		</div>
-		
 		
 		<div class="py-2rem flex justify-right">
 			<div class="items-center">

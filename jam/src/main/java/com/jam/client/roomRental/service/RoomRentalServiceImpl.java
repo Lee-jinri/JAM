@@ -17,13 +17,13 @@ public class RoomRentalServiceImpl implements RoomRentalService {
 	
 	
 	@Override
-	public List<RoomRentalVO> roomList(RoomRentalVO room_vo) {
-		return roomDao.roomList(room_vo);
+	public List<RoomRentalVO> getBoards(RoomRentalVO room_vo) {
+		return roomDao.getBoards(room_vo);
 	}
 
 	@Override
-	public int roomListCnt(RoomRentalVO room_vo) {
-		return roomDao.roomListCnt(room_vo);
+	public int listCnt(RoomRentalVO room_vo) {
+		return roomDao.listCnt(room_vo);
 	}
 
 	@Override

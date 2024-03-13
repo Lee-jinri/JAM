@@ -22,16 +22,16 @@ public class RoomRentalMapperTest {
 	@Setter(onMethod_=@Autowired)
 	private RoomRentalDAO roomDao;
 	
-	/* 전체 글 조회  */
+	/* 전체 글 조회  
 	@Test
 	public void testRoomList() {
 		RoomRentalVO room_vo = new RoomRentalVO();
 	
 		log.info("글 조회");
-		log.info(roomDao.roomList(room_vo));
+		log.info(roomDao.getBoards(room_vo));
 	} 
 	
-	
+	*/
 	/* 상세 페이지 조회
 	@Test
 	public void testRoomDatail() {

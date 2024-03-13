@@ -9,10 +9,10 @@ import com.jam.client.roomRental.vo.RoomRentalVO;
 public interface RoomRentalDAO {
 	
 	// 합주,연습실 리스트
-	public List<RoomRentalVO> roomList(RoomRentalVO room_vo);
+	public List<RoomRentalVO> getBoards(RoomRentalVO room_vo);
 
 	// 합주,연습실 페이징
-	public int roomListCnt(RoomRentalVO room_vo);
+	public int listCnt(RoomRentalVO room_vo);
 
 	// 합주,연습실 조회수 증가
 	public void incrementReadCnt(Long room_no);

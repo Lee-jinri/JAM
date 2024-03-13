@@ -41,6 +41,13 @@
 			goPage();
 		})
 		
+		$("#keyword").keypress(function(event){
+		    if(event.keyCode == 13){ 
+		        event.preventDefault(); 
+		        $("#searchBtn").click();
+		    }
+		});
+		
 		$(".paginate_button a").click(function(e) {
 			e.preventDefault();
 			$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
@@ -67,7 +74,7 @@
 	    })
 	    .then(response => {
 	        if (!response.ok) throw new Error('Network response was not ok');
-	        	
+	        console.log(response);
 	        return response.json();
 	        
 	    })
@@ -77,7 +84,8 @@
             
 	    	console.log("getUserInfo : " +user_id);
             if(user_id == null) {
-            	$(location).attr('href', '/member/login');
+            	console.log("user_id is null.");
+            	//$(location).attr('href', '/member/login');
             	return false;
             }
             
@@ -93,6 +101,8 @@
 		if($("#search").val()=="all"){
 			$("#keyword").val("");
 		}
+		
+		
 		
 		getUserInfo()
 		.then(() => {

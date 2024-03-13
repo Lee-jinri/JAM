@@ -3,8 +3,10 @@
 <mapper namespace="com.jam.client.roomRentalReply.dao.RoomReplyDAO">
 	
 	<select id="replyList" resultType="roomReply">
-		SELECT roomReply_no, roomReply_content, to_char(roomReply_date,'YYYY.MM.DD HH24:MI') as roomReply_date, user_id, user_name
-		FROM roomRentalReply
+		SELECT r.roomReply_no, r.roomReply_content, to_char(r.roomReply_date,'YYYY.MM.DD HH24:MI') as roomReply_date, r.user_id, m.user_name
+		FROM roomRentalReply r
+		LEFT JOIN Member m
+		ON r.user_id = m.user_id
 		WHERE roomRental_no = #{roomRental_no}
 		ORDER BY roomReply_no DESC
 	</select>
@@ -14,8 +16,8 @@
 		<selectKey keyProperty="roomReply_no" resultType="Long" order="BEFORE">
 			select roomRentalReply_seq.nextval from dual
 		</selectKey>
-		INSERT INTO roomRentalReply(roomReply_no, roomRental_no, roomReply_content, roomReply_date, user_id, user_name)
-		VALUES(#{roomReply_no},#{roomRental_no},#{roomReply_content}, sysdate, #{user_id},#{user_name})
+		INSERT INTO roomRentalReply(roomReply_no, roomRental_no, roomReply_content, roomReply_date, user_id)
+		VALUES(#{roomReply_no},#{roomRental_no},#{roomReply_content}, sysdate, #{user_id})
 	</insert>
 	
 	<update id="replyUpdate" parameterType="roomReply">

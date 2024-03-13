@@ -45,7 +45,7 @@
 		}
 		$("#searchForm").attr({
 			"method":"get",
-			"action":"/fleaMarket/fleaMarketList/"
+			"action":"/fleaMarket/boards/"
 		});
 		$("#searchForm").submit();
 	}

@@ -48,11 +48,11 @@ public class RoomRentalController {
 	@RequestMapping(value="/boards", method=RequestMethod.GET)
 	public String roomList(Model model, @ModelAttribute RoomRentalVO room_vo) {
 		
-		List<RoomRentalVO> roomList = roomService.roomList(room_vo);
+		List<RoomRentalVO> roomList = roomService.getBoards(room_vo);
 		model.addAttribute("roomList",roomList);
 		
 		// 페이징 처리
-		int total = roomService.roomListCnt(room_vo);
+		int total = roomService.listCnt(room_vo);
 		model.addAttribute("pageMaker", new PageDTO(room_vo, total));
 		return "roomRental/boards";
 	}

@@ -5,41 +5,48 @@
 	<!-- 커뮤니티 검색 -->
 	<sql id="comSearch">
 		<if test="search=='com_title'">
-			<![CDATA[com_title LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[c.com_title LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='com_content'">
-			<![CDATA[com_content LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[c.com_content LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='user_name'">
-			<![CDATA[user_name LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
 		</if>
 	</sql>
 	
-	<!-- 커뮤니티 모든 글 조회 -->
+	<!-- 커뮤니티 레코드 수 조회 -->
+	<select id="listCnt" parameterType="community" resultType="int">
+	    SELECT count(*)
+	    FROM community c
+	    JOIN member m ON c.user_id = m.user_id
+	    <trim prefix="WHERE (" suffix=")" prefixOverrides="AND | OR">
+	        <include refid="comSearch"></include>
+	    </trim>
+	</select>
+
+	<!-- 커뮤니티 글 조회 -->
 	<select id="getBoards" parameterType="community" resultType="community">
 		<![CDATA[
-		SELECT com_no, com_title, to_char(com_date,'YYYY/MM/DD HH24:MI') as com_date, com_reply_cnt, com_hits, user_id , user_name
+		SELECT com_no, com_title, to_char(com_date, 'YYYY/MM/DD HH24:MI') AS com_date, com_reply_cnt, com_hits, user_id, user_name
 		FROM (
-				SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-					rownum as rnum, com_no, com_title, com_date, com_reply_cnt, com_hits, user_id , user_name
-				FROM community 
-				where ]]>
-				<trim prefix="(" suffix=") AND " prefixOverrides="AND">
-					<include refid="comSearch"></include> 
-				</trim>
-			<![CDATA[ rownum <= #{pageNum} * #{amount}
-				) communityList
-			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
+				c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
+				ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+			FROM community c
+			JOIN Member m ON c.user_id = m.user_id
 			]]>
-	</select>	
+			<trim prefix="WHERE" suffixOverrides="AND |OR ">
+				<include refid="comSearch"></include>
+			</trim>
+		) 
+		<![CDATA[
+		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
+		]]>
+	</select>
+
+
 	
-	<!-- 전체 레코드 수 조회 -->
-	<select id="listCnt" parameterType="community" resultType="int">
-		SELECT count(*) FROM community
-		<trim prefix=" where (" suffix=")" >
-			<include refid="comSearch"></include>
-		</trim>
-	</select>	
 	
 	<!-- 커뮤니티 조회수 증가  -->
 	<update id="incrementReadCnt" parameterType="Long">
@@ -48,8 +55,10 @@
 	
 	<!-- 커뮤니티 상세 페이지 -->
 	<select id="getBoardDetail" resultType="community">
-		SELECT com_no, com_title, com_content, com_hits, to_char(com_date,'YYYY/MM/DD HH24:MI:SS') as com_date, user_name, user_id 
-		FROM community 
+		SELECT c.com_no, c.com_title, c.com_content, c.com_hits, to_char(c.com_date,'YYYY/MM/DD HH24:MI:SS') as com_date, m.user_name, c.user_id 
+		FROM community c
+		LEFT JOIN Member m 
+		ON c.user_id = m.user_id
 		WHERE com_no = #{com_no}
 	</select>
 	
@@ -58,8 +67,8 @@
 		<selectKey keyProperty="com_no" resultType="Long" order="BEFORE">
         	select com_seq.nextval from dual
     	</selectKey>
-		INSERT INTO community(com_no, user_id, com_title, com_content, user_name, com_hits, com_reply_cnt, imageFileName)
-		VALUES(#{com_no},#{user_id}, #{com_title}, #{com_content},#{user_name}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
+		INSERT INTO community(com_no, user_id, com_title, com_content, com_hits, com_reply_cnt, imageFileName)
+		VALUES(#{com_no},#{user_id}, #{com_title}, #{com_content}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
 	</insert>
 	
 	<!-- 커뮤니티 수정 할 글 불러오기 -->

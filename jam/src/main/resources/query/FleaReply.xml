@@ -3,8 +3,10 @@
 <mapper namespace="com.jam.client.fleaReply.dao.FleaReplyDAO">
 	
 	<select id="replyList" resultType="fleaReply">
-		SELECT fleaReply_no, fleaReply_content, to_char(fleaReply_date,'YYYY.MM.DD HH24:MI') as fleaReply_date, user_id, user_name
-		FROM fleaReply
+		SELECT f.fleaReply_no, f.fleaReply_content, to_char(f.fleaReply_date,'YYYY.MM.DD HH24:MI') as fleaReply_date, f.user_id, m.user_name
+		FROM fleaReply f
+		LEFT JOIN Member m
+		ON f.user_id = m.user_id
 		WHERE flea_no = #{flea_no}
 		ORDER BY fleaReply_no DESC
 	</select>
@@ -14,8 +16,8 @@
 		<selectKey keyProperty="fleaReply_no" resultType="Long" order="BEFORE">
 			select flea_reply_seq.nextval from dual
 		</selectKey>
-		INSERT INTO fleaReply(fleaReply_no, flea_no, fleaReply_content, fleaReply_date, user_id, user_name)
-		VALUES(#{fleaReply_no},#{flea_no},#{fleaReply_content}, sysdate, #{user_id},#{user_name})
+		INSERT INTO fleaReply(fleaReply_no, flea_no, fleaReply_content, fleaReply_date, user_id)
+		VALUES(#{fleaReply_no},#{flea_no},#{fleaReply_content}, sysdate, #{user_id})
 	</insert>
 	
 	<update id="replyUpdate" parameterType="fleaReply">

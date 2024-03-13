@@ -5,40 +5,44 @@
 	<!-- 합주실 검색 -->
 	<sql id="roomSearch">
 		<if test="search=='room_title'">
-			<![CDATA[room_title LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[r.roomRental_title LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='room_content'">
-			<![CDATA[room_content LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[r.roomRental_content LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='user_name'">
-			<![CDATA[user_name LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
 		</if>
 	</sql>
 	
+	
 	<!-- 합주실 list -->
-	<select id="roomList" parameterType="room" resultType="room">
+	<select id="getBoards" parameterType="room" resultType="room">
 		<![CDATA[
-		SELECT roomRental_no, roomRental_title, to_char(roomRental_date,'YYYY/MM/DD HH24:MI') as roomRental_date, roomRental_reply_cnt, roomRental_hits,roomRental_status, user_id , user_name
+		SELECT roomRental_no, roomRental_title, to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') AS roomRental_date, roomRental_reply_cnt, roomRental_hits, roomRental_status, user_id , user_name
 		FROM (
-				SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
-					rownum as rnum, roomRental_no, roomRental_title, roomRental_date, roomRental_reply_cnt, roomRental_hits, roomRental_status, user_id , user_name
-				FROM roomRental 
-				where ]]>
-				<trim prefix="(" suffix=") AND " prefixOverrides="AND">
-					<include refid="roomSearch"></include> 
-				</trim>
-			<![CDATA[ rownum <= #{pageNum} * #{amount}
-				) roomList
-			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
+				r.roomRental_no, r.roomRental_title, r.roomRental_date, r.roomRental_reply_cnt, r.roomRental_hits, r.roomRental_status, r.user_id , m.user_name,
+				ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
+			FROM roomRental r
+			JOIN Member m ON r.user_id = m.user_id
 			]]>
+			<trim prefix="WHERE" suffixOverrides="AND |OR ">
+				<include refid="roomSearch"></include> 
+			</trim>
+		)
+		<![CDATA[ 
+		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
+		]]>
 	</select>
-
-	<!-- 전체 레코드 수 조회 -->
-	<select id="roomListCnt" parameterType="room" resultType="int">
-		SELECT count(*) FROM roomRental
-		<trim prefix=" where (" suffix=")">
-			<include refid="roomSearch"></include>
-		</trim>
+	
+	<select id="listCnt" parameterType="room" resultType="int">
+	    SELECT count(*)
+	    FROM roomRental r
+	    LEFT JOIN member m ON r.user_id = m.user_id
+	    <trim prefix="WHERE (" suffix=")" prefixOverrides="AND | OR">
+	        <include refid="roomSearch"></include>
+	    </trim>
 	</select>
 	
 	<!-- 합주실 조회수 -->
@@ -50,8 +54,9 @@
 	
 	<!-- 합주실 상세페이지 -->
 	<select id="getBoardDetail" parameterType="Long" resultType="room">
-		SELECT roomRental_no, roomRental_title, roomRental_content, roomRental_status, roomRental_hits, to_char(roomRental_date,'YYYY/MM/DD HH24:MI:SS') as roomRental_date, roomRental_price, user_name, user_id
-		FROM roomRental
+		SELECT r.roomRental_no, r.roomRental_title, r.roomRental_content, r.roomRental_status, r.roomRental_hits, to_char(r.roomRental_date,'YYYY/MM/DD HH24:MI:SS') as roomRental_date, r.roomRental_price, m.user_name, r.user_id
+		FROM roomRental r
+		LEFT JOIN Member m ON r.user_id = m.user_id
 		WHERE roomRental_no = #{roomRental_no}
 	</select>
 	
@@ -60,8 +65,8 @@
 		<selectKey keyProperty="roomRental_no" resultType="Long" order="BEFORE">
 			SELECT roomRental_seq.nextval from dual
 		</selectKey>
-		INSERT INTO roomRental(roomRental_no,  roomRental_title, roomRental_content,roomRental_status, roomRental_hits, roomRental_reply_cnt,roomRental_date, roomRental_price, user_id , user_name )
-		VALUES(#{roomRental_no}, #{roomRental_title}, #{roomRental_content}, 0, 0, 0, sysdate, #{roomRental_price}, #{user_id}, #{user_name})
+		INSERT INTO roomRental(roomRental_no,  roomRental_title, roomRental_content,roomRental_status, roomRental_hits, roomRental_reply_cnt,roomRental_date, roomRental_price, user_id)
+		VALUES(#{roomRental_no}, #{roomRental_title}, #{roomRental_content}, 0, 0, 0, sysdate, #{roomRental_price}, #{user_id})
 	</insert>
 	
 	<!-- 합주실 글 수정 페이지 -->
