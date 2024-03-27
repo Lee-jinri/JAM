@@ -18,6 +18,11 @@ public class RoomRentalVO  extends CommonVO{
 	private int roomRental_reply_cnt;
 	private String roomRental_date;
 	private int roomRental_price;
+	
+	private String city;
+	private String gu;
+	private String dong;
+	
 	private String user_id;
 	private String user_name;
 }                               

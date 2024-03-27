@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jam.client.roomRental.dao.RoomRentalDAO">
 	
-	<!-- 합주실 검색 -->
+	<!-- 합주실 키워드 검색 -->
 	<sql id="roomSearch">
 		<if test="search=='room_title'">
 			<![CDATA[r.roomRental_title LIKE '%' || #{keyword} || '%']]>
@@ -14,6 +14,19 @@
 			<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
 		</if>
 	</sql>
+	
+	<!-- 합주실 지역 검색 -->
+	<sql id="roomLocalSearch">
+		<if test="city != null and city != ''">
+	        <![CDATA[AND r.city = #{city}]]>
+	    </if>
+	    <if test="gu != null and gu != ''">
+	        <![CDATA[AND r.gu = #{gu}]]>
+	    </if>
+	    <if test="dong != null and dong != ''">
+	        <![CDATA[AND r.dong = #{dong}]]>
+	    </if>
+	</sql> 
 	
 	
 	<!-- 합주실 list -->
@@ -27,9 +40,11 @@
 			FROM roomRental r
 			JOIN Member m ON r.user_id = m.user_id
 			]]>
-			<trim prefix="WHERE" suffixOverrides="AND |OR ">
-				<include refid="roomSearch"></include> 
-			</trim>
+			<where>
+		        1=1
+		        <include refid="roomSearch"></include>
+		        <include refid="roomLocalSearch"></include>
+		    </where>
 		)
 		<![CDATA[ 
 		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 

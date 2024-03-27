@@ -37,7 +37,99 @@
 					
 				}
 			})
+			
+			
+			// 지역 선택
+			var accessToken = 'none';													
+			var errCnt = 0;
+			var accessTimeout;
+			
+			getAccessToken();		
+	     	
+		    function getAccessToken(){												
+		     	jQuery.ajax({																												
+		     		type:'GET', 																											
+		     		url: 'https://sgisapi.kostat.go.kr/OpenAPI3/auth/authentication.json',													
+		     		data:{																													
+		     		consumer_key : 'ba32b11e9af840f3b71f',																					
+		     		consumer_secret : 'b90c1515eac4400a9e3e',																				
+		     		},																														
+		     		success:function(data){	
+		     			console.log(data);
+		     			errCnt = 0;																									
+		     			accessToken = data.result.accessToken;
+		     			accessTimeout = data.result.accessTimeout + (4 * 60 * 60 * 1000); // 현재 시간부터 4시간 뒤 만료됨.
+		     			
+		     			//console.log(accessTimeout);
+		     			//getLocations('city');												
+		     		},																													
+		     		error:function(data) {	
+		     			
+		     		}																														
+		     	});																		
+		     }			
+		    
+			
+			$("#city").change(function(){
+				cd = $('option:selected', this).data('index');
+				
+				$("#gu option").not(":first").remove();
+				$("#dong option").not(":first").remove();
+				
+				getLocations('city');
+				
+			})
+			
+			$("#gu").change(function(){
+				cd = $('option:selected', this).data('index');
+				
+				$("#dong option").not(":first").remove();
+				
+				getLocations('gu');
+			})
+	     	
+			
+			
+			function getLocations(clickedType){
+				
+				let currentTime = Date.now();
+				
+				// accessToken이 없거나 토큰의 시간이 만료됐다면 재발급
+				if(accessToken == 'none' || currentTime > accessTimeout) getAccessToken();
+		    							
+				jQuery.ajax({																												
+					type:'GET', 																											
+					url: 'https://sgisapi.kostat.go.kr/OpenAPI3/addr/stage.json',													
+					data:{																													
+						accessToken : accessToken,																					
+						cd : cd,																				
+					},																														
+					success:function(data){	
+			     		
+			     		// 구 변경 
+			     		if(clickedType === 'city'){
+			     			data.result.forEach(item => {
+			     				$("#gu").append('<option value="' + item.addr_name + '" data-index="' + item.cd + '" class="gu">' + item.addr_name + '</option>');
+							});
+			     				
+			     			// 동 변경	
+			     		}else if(clickedType === 'gu'){
+			     			data.result.forEach(item => {
+			     				console.log(item);
+								$("#dong").append('<option value="' + item.addr_name + '" class="dong">' + item.addr_name + '</button>');
+				     		});
+			     		}
+			     	},																													
+			     	error:function(data) {	
+			     			
+			    	}																														
+				});																		
+			     		
+		    }
 		})
+		
+		
+		
 		
 		/*검색을 위한 실질적인 처리 함수*/
 		function goPage(){
@@ -73,8 +165,53 @@
 						<input type="hidden" name="pageNum" value="${pageMaker.cvo.pageNum }">
 						<input type="hidden" name="amount" value="${pageMaker.cvo.amount }">
 						
+						<div class="py-8">
+							<div class="flex">
+								<div>
+									<div class="block">
+										<select name="city" id="city">
+											<option value="" class="city">시·도</option>
+											<option value="서울" data-index="11" class="city">서울</option>
+											<option value="부산" data-index="21" class="city">부산</option>
+											<option value="대구" data-index="22" class="city">대구</option>
+											<option value="인천" data-index="23" class="city">인천</option>
+											<option value="광주" data-index="24" class="city">광주</option>
+											<option value="대전" data-index="25" class="city">대전</option>
+											<option value="울산" data-index="26" class="city">울산</option>
+											<option value="세종" data-index="29" class="city">세종</option>
+											<option value="경기" data-index="31" class="city">경기</option>
+											<option value="강원" data-index="32" class="city">강원</option>
+											<option value="충북" data-index="33" class="city">충북</option>
+											<option value="충남" data-index="34" class="city">충남</option>
+											<option value="전북" data-index="35" class="city">전북</option>
+											<option value="전남" data-index="36" class="city">전남</option>
+											<option value="경북" data-index="37" class="city">경북</option>
+											<option value="경남" data-index="38" class="city">경남</option>
+											<option value="제주" data-index="39" class="city">제주</option>
+										</select>
+									</div>
+								</div> 
+									
+								<div>
+									<div id="guDiv" class="">
+										<select name="gu" id="gu">
+											<option value="">시·구·군</option>
+										</select>
+									</div>
+								</div>
+									
+								<div>
+									<div id="dongDiv" class="">
+										<select name="dong" id="dong">
+											<option value="">동·읍·면</option>
+										</select>
+									</div>
+								</div>
+							</div>
+						</div>
+						
+						
 						<div class="items-center flex">
-							<!-- <label>검색조건</label> -->
 							<select id="search" name="search" class="search">
 								<option value="all">전체</option>
 								<option value="room_title">제목</option>
@@ -87,6 +224,9 @@
 					</form>
 				</div>
 			</div>	
+			
+			
+			
 			
 			<div>
 				<ul>
