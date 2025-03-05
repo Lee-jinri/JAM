@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.community.dao.CommunityDAO">
+	
+	<!-- 커뮤니티 검색 -->
+	<sql id="comSearch">
+		<if test="search=='com_title'">
+			<![CDATA[c.com_title LIKE '%' || #{keyword} || '%']]>
+		</if>
+		<if test="search=='com_content'">
+			<![CDATA[c.com_content LIKE '%' || #{keyword} || '%']]>
+		</if>
+		<if test="search=='user_name'">
+			<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
+		</if>
+	</sql>
+	
+	<!-- 커뮤니티 레코드 수 조회 -->
+	<select id="listCnt" parameterType="community" resultType="int">
+	    SELECT count(*)
+	    FROM community c
+	    JOIN member m ON c.user_id = m.user_id
+	    <trim prefix="WHERE (" suffix=")" prefixOverrides="AND | OR">
+	        <include refid="comSearch"></include>
+	    </trim>
+	</select>
+
+	<!-- 커뮤니티 글 조회 -->
+	<select id="getBoards" parameterType="community" resultType="community">
+		<![CDATA[
+		SELECT com_no, com_title, to_char(com_date, 'YYYY/MM/DD HH24:MI') AS com_date, com_reply_cnt, com_hits, user_id, user_name
+		FROM (
+			SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
+				c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
+				ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+			FROM community c
+			JOIN Member m ON c.user_id = m.user_id
+			]]>
+			<trim prefix="WHERE" suffixOverrides="AND |OR ">
+				<include refid="comSearch"></include>
+			</trim>
+		) 
+		<![CDATA[
+		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
+		]]>
+	</select>
+
+
+	
+	
+	<!-- 커뮤니티 조회수 증가  -->
+	<update id="incrementReadCnt" parameterType="Long">
+		UPDATE community SET com_hits = com_hits + 1 where com_no = #{com_no}
+	</update>
+	
+	<!-- 커뮤니티 상세 페이지 -->
+	<select id="getBoardDetail" resultType="community">
+		SELECT c.com_no, c.com_title, c.com_content, c.com_hits, to_char(c.com_date,'YYYY/MM/DD HH24:MI:SS') as com_date, m.user_name, c.user_id 
+		FROM community c
+		LEFT JOIN Member m 
+		ON c.user_id = m.user_id
+		WHERE com_no = #{com_no}
+	</select>
+	
+	<!-- 커뮤니티 글 작성 -->
+	<insert id="writeBoard" parameterType="community">
+		<selectKey keyProperty="com_no" resultType="Long" order="BEFORE">
+        	select com_seq.nextval from dual
+    	</selectKey>
+		INSERT INTO community(com_no, user_id, com_title, com_content, com_hits, com_reply_cnt, imageFileName)
+		VALUES(#{com_no},#{user_id}, #{com_title}, #{com_content}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
+	</insert>
+	
+	<!-- 커뮤니티 수정 할 글 불러오기 -->
+	<select id="getBoardById" parameterType="community"  resultType="community">
+		SELECT com_title, com_content, imageFileName, user_id
+		FROM community
+		WHERE com_no = #{com_no} 
+	</select>
+	
+	<!-- 커뮤니티 글 수정 -->
+	<update id="editBoard" parameterType="community">
+		UPDATE community SET
+		com_title = #{com_title},
+		com_content = #{com_content},
+		com_date = sysdate
+		<if test="imageFileName != ''">
+			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
+		</if>
+		WHERE com_no = #{com_no} AND user_id = #{user_id}
+	</update>
+	
+	<!-- 커뮤니티 글 삭제 -->
+	<delete id="boardDelete" parameterType="community">
+		DELETE FROM community WHERE com_no = #{com_no} AND user_id = #{user_id}
+	</delete>
+	
+	<!-- 댓글 개수 증감 -->
+	<update id="updateReplyCnt">
+		update community
+		set com_reply_cnt = com_reply_cnt + #{amount}
+		where com_no = #{com_no} 
+	</update>
+	
+	<!-- 특정 회원의 커뮤니티 글 조회 --> 
+	<select id="getPosts" resultType="community" parameterType="community">
+		<![CDATA[
+		SELECT com_no, com_title, to_char(com_date,'YYYY/MM/DD') as com_date, com_hits
+		FROM (
+				SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
+					rownum as rnum, com_no, com_title, com_date, com_hits
+				FROM community c
+				where ]]> 
+				<trim prefix="(" suffix=") AND" prefixOverrides="AND">
+					<include refid="comSearch"></include> 
+				</trim>
+			<![CDATA[ rownum <= #{pageNum} * #{amount} AND user_id  = #{user_id} 
+				) communityList
+			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			]]>
+	</select>
+	
+	<!-- 특정 회원의 커뮤니티 레코드 수 조회 -->
+	<select id="getUserPostCnt" parameterType="community" resultType="int">
+	    SELECT count(*)
+	    FROM community c
+	    WHERE user_id = #{user_id}
+	    <trim prefix="AND (" suffix=")" prefixOverrides="AND | OR">
+	        <include refid="comSearch"></include>
+	    </trim>
+	</select>
+	
+	
+</mapper>

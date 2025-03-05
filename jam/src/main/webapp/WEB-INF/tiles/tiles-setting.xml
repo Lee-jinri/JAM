@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- tiles 설정 파일 -->
+<!DOCTYPE tiles-definitions PUBLIC "-//Apache Software Foundation//DTD Tiles Configuration 3.0//EN"
+  "http://tiles.apache.org/dtds/tiles-config_3_0.dtd">
+
+<tiles-definitions>
+	<definition name="layout" template="/WEB-INF/views/template/client/layout.jsp">
+		<put-attribute name="title" value=""/>
+		<put-attribute name="header" value="/WEB-INF/views/template/client/header.jsp"/>
+		<put-attribute name="body" value=""/>
+		<put-attribute name="footer" value="/WEB-INF/views/template/client/footer.jsp"/>
+	</definition>
+	
+	<definition name="main" extends="layout">
+		<put-attribute name="title" value="JAM"/>
+		<put-attribute name="body" value="/WEB-INF/views/main.jsp"/>
+	</definition>
+	
+	<definition name="member/*" extends="layout">
+		<put-attribute name="title" value="JAM"/>
+		<put-attribute name="body" value="/WEB-INF/views/member/{1}.jsp"/>
+	</definition>
+	
+	<definition name="mypage/*" extends="layout">
+		<put-attribute name="title" value="JAM"/>
+		<put-attribute name="body" value="/WEB-INF/views/mypage/{1}.jsp"/>
+	</definition>
+	
+	<definition name="community/*" extends="layout">
+		<put-attribute name="title" value="JAM - COMMUNITY"/>
+		<put-attribute name="body" value="/WEB-INF/views/community/{1}.jsp"/>
+	</definition>
+	
+	<definition name="roomRental/*" extends="layout">
+		<put-attribute name="title" value="JAM - RENTAL"/>
+		<put-attribute name="body" value="/WEB-INF/views/roomRental/{1}.jsp"/>
+	</definition>
+	
+	<definition name="fleaMarket/*" extends="layout">
+		<put-attribute name="title" value="JAM - FLEAMARKET"/>
+		<put-attribute name="body" value="/WEB-INF/views/fleaMarket/{1}.jsp"/>
+	</definition>
+	
+	<definition name="job/*" extends="layout">
+		<put-attribute name="title" value="JAM - JOB"/>
+		<put-attribute name="body" value="/WEB-INF/views/job/{1}.jsp"/>
+	</definition>
+	
+	<definition name="message/*" extends="layout">
+		<put-attribute name="title" value="JAM - MESSAGE"/>
+		<put-attribute name="body" value="/WEB-INF/views/message/{1}.jsp"/>
+	</definition>
+	
+	<definition name="error/*" extends="content">
+		<put-attribute name="title" value=""/>
+		<put-attribute name="body" value="/WEB-INF/views/error/{1}.jsp"/>
+	</definition>
+	
+	<definition name="chat/*" extends="layout">
+		<put-attribute name="title" value=""/>
+		<put-attribute name="body" value="/WEB-INF/views/chat/{1}.jsp"/>
+	</definition>
+	
+	
+</tiles-definitions>

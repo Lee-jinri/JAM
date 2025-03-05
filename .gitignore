@@ -1,0 +1,12 @@
+# .gitignore
+
+# Ignore Eclipse metadata
+.metadata/
+
+# Ignore server configurations
+Servers/
+
+# Ignore application properties file
+application.properties
+
+root-context.xml

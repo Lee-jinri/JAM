@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.message.dao.MessageDAO">
+	
+	<!-- 받은 쪽지 -->
+	<select id="receiveMessage" parameterType="message" resultType="message" >
+		<![CDATA[
+		SELECT message_no, message_title, sender, to_char(sendTime,'YYYY/MM/DD HH24:MI') as sendTime, to_char(readTime,'YYYY/MM/DD HH24:MI') as readTime, read_chk
+		FROM (
+			SELECT /*+ INDEX_DESC(message SYS_C0028093) */
+				m.message_no, m.message_title, m.receiver_id, mem.user_name AS sender, m.sendTime, m.readTime, m.read_chk,
+				ROW_NUMBER() OVER (ORDER BY m.message_no DESC) AS rnum
+			FROM message m
+			JOIN member mem ON m.sender_id = mem.user_id
+			WHERE ]]> 
+			<trim prefix="(" suffix=") AND" prefixOverrides="AND">
+				<include refid="mSearch"></include> 
+			</trim>
+			m.receiver_id  = #{receiver_id}
+		) messageList
+		<![CDATA[ 
+		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
+		]]>
+	</select>
+	
+	
+	<!-- 보낸 쪽지 -->
+	<select id="sendMessage" resultType="message" parameterType="message">
+		<![CDATA[
+		SELECT message_no, message_title, receiver, to_char(sendTime,'YYYY/MM/DD HH24:MI') as sendTime, to_char(readTime,'YYYY/MM/DD HH24:MI') as readTime, read_chk
+		FROM (
+			SELECT /*+ INDEX_DESC(message SYS_C0028093) */
+				m.message_no, m.message_title, mem.user_name AS receiver, m.sendTime, m.readTime, m.read_chk,
+				ROW_NUMBER() OVER (ORDER BY m.message_no DESC) AS rnum
+			FROM message m
+			JOIN member mem ON m.receiver_id = mem.user_id
+			WHERE ]]> 
+			<trim prefix="(" suffix=") AND" prefixOverrides="AND">
+				<include refid="mSearch"></include> 
+			</trim>
+			m.sender_id  = #{sender_id} 
+		) messageList
+		<![CDATA[ 
+		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount}
+		]]>
+	</select>
+	
+	
+	
+	
+	<!-- 받은 쪽지 전체 레코드 수 조회 -->
+	<select id="receiveListCnt" parameterType="message" resultType="int">
+		SELECT count(*) 
+		FROM message m
+		JOIN member mem ON m.sender_id = mem.user_id
+		WHERE m.receiver_id  = #{receiver_id} 
+		<trim prefix=" and (" suffix=")" >
+			<include refid="mSearch"></include>
+		</trim>
+	</select>
+	
+	<!-- 보낸 쪽지 전체 레코드 수 조회 -->
+	<select id="sendListCnt" parameterType="message" resultType="int">
+		SELECT count(*) 
+		FROM message m
+		JOIN member mem ON m.receiver_id = mem.user_id
+		WHERE sender_id  = #{sender_id} 
+		<trim prefix="and (" suffix=")" >
+			<include refid="mSearch"></include>
+		</trim>
+	</select>
+	
+	<sql id="mSearch">
+	    <if test="search=='message_title'">
+	        <![CDATA[m.message_title LIKE '%' || #{keyword} || '%']]>
+	    </if>
+	    <if test="search=='sender'">
+	        <![CDATA[mem.user_name LIKE '%' || #{keyword} || '%']]>
+	    </if>
+	    <if test="search=='receiver'">
+	        <![CDATA[mem.user_name LIKE '%' || #{keyword} || '%']]>
+	    </if>
+	    <if test="search=='message_content'">
+	        <![CDATA[m.message_contents LIKE '%' || #{keyword} || '%']]>
+	    </if>
+	</sql>
+
+	
+	<!-- 쪽지 상태 읽음으로 변경 -->
+	<update id="message_read" parameterType="Long">
+		UPDATE message
+		SET read_chk = 1, readTime = sysdate
+		WHERE message_no = #{message_no}
+	</update>
+	
+	
+	<!-- 받은 쪽지 상세 페이지 -->
+	<select id="receiveMsgDetail" parameterType="map" resultType="message">
+		SELECT m.message_no, m.message_title, m.message_contents, m.sender_id, mem.user_name AS sender, m.receiver_id, m.sendTime, m.read_chk
+		FROM message m
+		LEFT JOIN Member mem ON m.sender_id = mem.user_id 
+		WHERE message_no = #{message_no} AND m.receiver_id = #{receiver_id}
+	</select>
+	
+	<!-- 보낸 쪽지 상세 페이지 -->
+	<select id="sendMsgDetail" parameterType="map" resultType="message">
+		SELECT m.message_no, m.message_title, m.message_contents, mem.user_name AS receiver, m.receiver_id, m.sendTime, m.sender_id
+		FROM message m
+		LEFT JOIN Member mem ON m.receiver_id = mem.user_id
+		WHERE message_no = #{message_no} AND m.sender_id = #{sender_id}
+	</select>
+	
+	<!-- 쪽지 전송 -->
+	<insert id="send" parameterType="message">
+		INSERT INTO message(message_no, sender_id, receiver_id, message_contents, message_title, sendTime, read_chk)
+		VALUES(message_seq.nextval, #{sender_id}, #{receiver_id}, #{message_contents}, #{message_title}, sysdate, 0)
+	</insert>
+</mapper>

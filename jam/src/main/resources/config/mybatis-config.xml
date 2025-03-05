@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- mybatis 환경설정 파일 : VO에 별칭주기 -->
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+
+
+	<typeAliases>
+		<typeAlias type="com.jam.client.member.vo.MemberVO" alias="member"/>
+		
+		<typeAlias type="com.jam.client.community.vo.CommunityVO" alias="community"/>
+		
+		<typeAlias type="com.jam.client.comReply.vo.ComReplyVO" alias="comReply"/>
+		
+		<typeAlias type="com.jam.client.fleaMarket.vo.FleaMarketVO" alias="flea"/>
+		
+		<typeAlias type="com.jam.client.fleaReply.vo.FleaReplyVO" alias="fleaReply"/>
+		
+		<typeAlias type="com.jam.client.job.vo.JobVO" alias="job"/>
+		
+		<typeAlias type="com.jam.client.jobReply.vo.JobReplyVO" alias="jobReply"/>
+		
+		<typeAlias type="com.jam.client.roomRental.vo.RoomRentalVO" alias="room"/>
+		
+		<typeAlias type="com.jam.client.roomRentalReply.vo.RoomReplyVO" alias="roomReply"/>
+		
+		<typeAlias type="com.jam.client.message.vo.MessageVO" alias="message"/>
+	</typeAliases>
+	<!-- 
+	<typeHandlers>java.sql.Date를 java.util.Date 형으로 반환 
+		<typeHandler javaType="java.sql.Time" handler="org.apache.ibatis.type.DateTypeHandler"/>
+		<typeHandler javaType="java.sql.Date" handler="org.apache.ibatis.type.DateTypeHandler"/>
+	</typeHandlers>
+-->
+</configuration>
