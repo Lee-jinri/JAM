@@ -20,8 +20,8 @@ public class JobVO extends CommonVO {
 	private int job_hits;
 	private int job_reply_cnt;
 	private String job_date;
-	private int pay_category; // 0:시급 1:월급 
-	private int pay;
+	private Integer pay_category; // 0:시급 1:월급 
+	private Integer pay;
 	private String position;
 	private List<String> positions;
 	

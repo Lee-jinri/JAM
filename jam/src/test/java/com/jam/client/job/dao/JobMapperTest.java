@@ -14,6 +14,7 @@ import com.jam.client.community.dao.ComMapperTest;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.config.RootConfig;
+import com.jam.util.ValueUtils;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;
@@ -26,7 +27,7 @@ public class JobMapperTest {
 	@Setter(onMethod_=@Autowired)
 	private JobDAO jobDao;
 	
-	/* 전체 글 조회 */
+	/* 전체 글 조회 
 	@Test
 	public void testJobList() {
 		JobVO vo = new JobVO();
@@ -47,7 +48,7 @@ public class JobMapperTest {
 		result.put("pageMaker", pageMaker);
 		
 		log.info("result :" +result);
-	}
+	}*/
 	
 	
 	/* 상세 페이지 조회
@@ -62,7 +63,7 @@ public class JobMapperTest {
 		jobDao.incrementReadCnt(33L);
 	}*/
 	
-	/* 글 작성 
+	/* 글 작성 */
 	@Test
 	public void testJobInsert() {
 		JobVO vo = new JobVO();
@@ -73,12 +74,14 @@ public class JobMapperTest {
 		vo.setJob_content("작성 테스트");
 		vo.setUser_id("abcd123");
 		vo.setUser_name("김철수");
-		vo.setJob_category(0);
-		vo.setPay_category(0);
-		vo.setPay(1000);
-		log.info(jobDao.writeBoard(vo));
+		vo.setJob_category(1);
+		vo.setCity("서울");
+		vo.setGu(ValueUtils.emptyToNull(vo.getGu()));
+		vo.setDong(ValueUtils.emptyToNull(vo.getDong()));
 		
-	}*/
+		vo.setPosition("piano");
+		log.info(jobDao.writeBoard(vo));
+	}
 	
 	/* 수정할 글 정보 
 	@Test

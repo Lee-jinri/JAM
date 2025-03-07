@@ -93,8 +93,8 @@
 		<selectKey keyProperty="job_no" resultType="Long" order="BEFORE">
         	select job_seq.nextval from dual
     	</selectKey>
-		INSERT INTO job(job_no, user_id, job_title, job_content, job_category,job_status,  pay_category, pay,  job_hits, job_reply_cnt, imageFileName, city, gu, dong)
-		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0,  #{pay_category}, #{pay}, 0 ,0, #{imageFileName, jdbcType = VARCHAR}, #{city}, #{gu}, #{dong})
+		INSERT INTO job(job_no, user_id, job_title, job_content, job_category, job_status,  pay_category, pay, position, job_hits, job_reply_cnt, imageFileName, city, gu, dong)
+		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0,  #{pay_category, jdbcType=INTEGER}, #{pay, jdbcType=INTEGER}, #{position}, 0 ,0, #{imageFileName, jdbcType = VARCHAR}, #{city}, #{gu, jdbcType = VARCHAR}, #{dong, jdbcType = VARCHAR})
 	</insert>
 	
 	<!-- 글 수정페이지 -->

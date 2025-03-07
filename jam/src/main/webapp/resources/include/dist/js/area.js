@@ -8,11 +8,34 @@ $(function(){
 		showGuList(cityName);
 		selectedCity = cityName;
 		updateSelectedArea(cityName, '', '');
+		
+		$(".city").css("background-color", "#fff");  
+		$(this).css("background-color", "#f0f5ff");  
 	})
 	
-	$(".gu-all").click(function(){
 		
-	}) 
+	$(document).on("click", ".gu", function() {
+	    $(".gu").css("background-color", "#fff");  
+	    $(this).css("background-color", "#f0f5ff");
+	});
+
+	
+	$(document).on("click", ".dong", function() {
+	    $(".dong").css("background-color", "#fff");  
+	    $(this).css("background-color", "#f0f5ff");
+	});
+
+	$('#citySelect').change(function() {
+        const selectedOption = $('#citySelect option:selected');
+        const cityName = selectedOption.data('city');
+        if (cityName) {
+            selectedOption.trigger('click');  // 기존 .city 클릭 이벤트 강제 호출
+        } else {
+            // 시 선택 해제 시 구/동 초기화
+            $('#guList').empty();
+            $('#dongList').html('<li class="placeholder">동 선택</li>');
+        }
+    });
 });
 
 let locationData = {};  // JSON 데이터를 담아둘 전역 변수
@@ -43,6 +66,7 @@ function showGuList(cityName) {
     const guAllLi = document.createElement('li');
     //guAllLi.classList.add('gu-all', 'cursor-pointer');
     guAllLi.textContent = '전체';
+    guAllLi.classList.add('gu');
     guAllLi.onclick = () => {
         updateSelectedArea(cityName, 'all', '');
         
@@ -58,6 +82,7 @@ function showGuList(cityName) {
             li.textContent = gu;
             li.dataset.gu = gu;
             li.classList.add('cursor-pointer');
+            li.classList.add('gu');
             li.onclick = () => {
 			    showDongList(cityName, gu);
 			    updateSelectedArea(cityName, gu);
@@ -74,8 +99,9 @@ function showDongList(cityName, guName) {
 	const dongListEl = document.getElementById('dongList');
     const dongAllLi = document.createElement('li');
     
-    dongListEl.innerHTML = ''
+    dongListEl.innerHTML = '';
     
+    dongAllLi.classList.add('dong');
     dongAllLi.textContent = '전체';
     dongAllLi.onclick = () => {
         updateSelectedArea(cityName, guName, 'all');
@@ -90,6 +116,7 @@ function showDongList(cityName, guName) {
             li.textContent = dong;
             li.dataset.dong = dong;
             li.classList.add('cursor-pointer');
+            li.classList.add('dong');
             li.onclick = () => updateSelectedArea(cityName, guName, dong);
             dongListEl.appendChild(li);
         });
@@ -99,9 +126,6 @@ function showDongList(cityName, guName) {
 function updateSelectedArea(selectedCity, selectedGu, selectedDong){
     let selectedArea = selectedCity;
     
-    console.log(selectedArea);
-    console.log(selectedCity);
-
     document.getElementById('city').value = selectedCity;
     document.getElementById('gu').value = '';
     document.getElementById('dong').value = '';
@@ -136,7 +160,7 @@ function updateSelectedArea(selectedCity, selectedGu, selectedDong){
             removeArea();
         });
 
-    $("#selectedLocation").append(removeBtn);
+    $("#selectedAreaWrapper").append(removeBtn);
 }
 
 function removeArea(){

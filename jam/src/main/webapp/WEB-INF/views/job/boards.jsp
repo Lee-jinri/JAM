@@ -102,6 +102,11 @@
     border-radius: 50%;
 }
 
+/* 기본 색상 (unchecked 상태일 때) */
+.slider {
+    background-color: #003366;  
+}
+
 input:checked + .slider {
     background-color: #ffdd77;
 }
@@ -737,7 +742,7 @@ function updateSelectedArea(city, gu, dong) {
             removeArea();  // 👈 이거 실행
         });
 
-    $("#selectedLocation").append(removeBtn);
+    $("#selectedAreaWrapper").append(removeBtn);
 }
 
 // 선택한 포지션 표시 함수
@@ -816,7 +821,7 @@ function setCompanyStyle() {
 				
 			</div>
 			<div class="selected-wrapper">
-			    <div id="selectedLocation" class="selected-location inline">
+			    <div id="selectedAreaWrapper" class="selected-location inline">
 			        <span id="selectedArea"></span>
 			    </div>
 			    <div id="selectedPosition" class="selected-position inline">
@@ -850,9 +855,9 @@ function setCompanyStyle() {
 					</div>
 					<div id="areaContainer" class="setting-filter">
 						<div class="setting-base-row">
-							<div class="setting-base__col setting-base__col--title">시</div>
-							<div class="setting-base__col setting-base__col--title">구</div>
-							<div class="setting-base__col setting-base__col--title">동</div>
+							<div class="setting-base__col setting-base__col--title">시·도</div>
+							<div class="setting-base__col setting-base__col--title">구·군</div>
+							<div class="setting-base__col setting-base__col--title">동·읍·면</div>
 						</div>
 						<div class="setting-base-row">
 							<div class="setting-base__col setting-base__col--list">
