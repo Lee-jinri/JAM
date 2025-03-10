@@ -22,11 +22,12 @@
 	<update id="replyUpdate" parameterType="jobReply">
 		UPDATE jobReply
 		set jobReply_content = #{jobReply_content}, jobReply_date = sysdate	
-		where jobReply_no = #{jobReply_no}
+		where jobReply_no = #{jobReply_no} AND user_id = #{user_id}
 	</update>
 	
-	<delete id="replyDelete" parameterType="jobReply">
-		delete from jobReply where jobReply_no = #{jobReply_no}
+	<delete id="replyDelete">
+		delete from jobReply 
+		WHERE jobReply_no = #{jobReply_no} AND user_id = #{user_id}
 	</delete>
 	
 	<select id="replyRead" resultType="jobReply">

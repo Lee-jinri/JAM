@@ -681,7 +681,7 @@ function loadPagination(pageMaker) {
 
 function formatRelativeTime(dateString) {
 	
-    const postDate = new Date(dateString.replaceAll('/', '-'));  // '2025/03/01' -> '2025-03-01'
+    const postDate = new Date(dateString.replaceAll('/', '-')); 
     const now = new Date();
 
     const diffMs = now - postDate;
@@ -691,8 +691,7 @@ function formatRelativeTime(dateString) {
     const diffDay = Math.floor(diffHour / 24);
 
     if (diffDay >= 7) {
-        // 7일 넘으면 원래 날짜 표시
-        return dateString;
+    	return dateString.slice(0, -3);
     } else if (diffDay >= 1) {
         return diffDay + '일 전';
     } else if (diffHour >= 1) {

@@ -48,13 +48,14 @@ public class JobReplyServiceImpl implements JobReplyService {
 
 	@Transactional
 	@Override
-	public int replyDelete(Long jobReply_no) {
+	public int replyDelete(Long jobReply_no, String user_id) {
 		
 		// 댓글 개수 감소
 		JobReplyVO vo = jobReplyDao.replyRead(jobReply_no);
 		jobDao.updateReplyCnt(vo.getJob_no(), reply_Del);
-				
-		return jobReplyDao.replyDelete(jobReply_no);
+	
+		System.out.println(jobReply_no);
+		return jobReplyDao.replyDelete(jobReply_no, user_id);
 	}
 
 

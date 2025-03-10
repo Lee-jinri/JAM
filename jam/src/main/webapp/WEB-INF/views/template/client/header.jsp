@@ -29,9 +29,6 @@
 			
 			let userName = data.userName;
         	let role = data.role;
-	        	
-        	console.log(userName);
-        	console.log(role);
         	
         	if (data && userName && role) {
         		// 헤더에 닉네임과 로그아웃 버튼 추가

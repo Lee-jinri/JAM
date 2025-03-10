@@ -16,6 +16,6 @@ public interface JobReplyService {
 	public int replyUpdate(JobReplyVO jrvo);
 
 	// 구인구직 댓글 삭제
-	public int replyDelete(Long jobReply_no);
+	public int replyDelete(Long jobReply_no, String user_id);
 
 }

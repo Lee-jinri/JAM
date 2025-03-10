@@ -82,7 +82,7 @@
 	
 	<!-- 상세페이지 -->
 	<select id="getBoardDetail" resultType="job">
-		SELECT j.job_no, j.job_title, j.job_content, j.job_hits, to_char(j.job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, j.job_category, j.job_status,j.pay_category, pay, m.user_name, j.user_id, j.city, j.gu, j.dong 
+		SELECT j.job_no, j.job_title, j.job_content, j.job_hits, to_char(j.job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, j.job_category, j.job_status,j.pay_category, pay, m.user_name, j.user_id, j.city, j.gu, j.dong, j.position
 		FROM job j
 		LEFT JOIN Member m ON j.user_id = m.user_id
 		WHERE j.job_no = #{job_no}
@@ -93,8 +93,8 @@
 		<selectKey keyProperty="job_no" resultType="Long" order="BEFORE">
         	select job_seq.nextval from dual
     	</selectKey>
-		INSERT INTO job(job_no, user_id, job_title, job_content, job_category,job_status,  pay_category, pay,  job_hits, job_reply_cnt, imageFileName, city, gu, dong)
-		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0,  #{pay_category}, #{pay}, 0 ,0, #{imageFileName, jdbcType = VARCHAR}, #{city}, #{gu}, #{dong})
+		INSERT INTO job(job_no, user_id, job_title, job_content, job_category, job_status,  pay_category, pay, position, job_hits, job_reply_cnt, imageFileName, city, gu, dong)
+		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0,  #{pay_category, jdbcType=INTEGER}, #{pay, jdbcType=INTEGER}, #{position}, 0 ,0, #{imageFileName, jdbcType = VARCHAR}, #{city}, #{gu, jdbcType = VARCHAR}, #{dong, jdbcType = VARCHAR})
 	</insert>
 	
 	<!-- 글 수정페이지 -->

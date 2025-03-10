@@ -40,8 +40,6 @@ public class JobRestController {
 	
 	@GetMapping(value = "boards")
 	public ResponseEntity<Map<String, Object>> getBoards(JobVO job_vo){
-		
-
 		try {
 			if (job_vo.getPositions() == null) {
 			    job_vo.setPositions(Collections.emptyList());
@@ -62,7 +60,6 @@ public class JobRestController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
 		}
-		
 	}
 	
 	
@@ -74,25 +71,49 @@ public class JobRestController {
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 ************************************/
 	@GetMapping(value = "/board/{job_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<JobVO> getBoardDetail(@PathVariable("job_no") Long job_no) throws Exception{
+	public ResponseEntity<JobVO> getBoardDetail(@PathVariable("job_no") Long job_no, HttpServletRequest request) throws Exception{
 		if (job_no == null) { 
 			log.error("job_no is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
+		// 조회수 증가
+		jobService.incrementReadCnt(job_no);
+					
 		try {
-	        // 조회수 증가
-			jobService.incrementReadCnt(job_no);
-			
-			// 상세 페이지 조회
 			JobVO detail = jobService.getBoardDetail(job_no);
-	       
-	        return new ResponseEntity<>(detail, HttpStatus.OK);
+			
+			detail.setPosition(getTranslatedPosition(detail.getPosition()));
+			detail.setAuthor(false);
+			
+			String userId = (String) request.getAttribute("userId");
+			if (userId != null && userId.equals(detail.getUser_id())) {
+			   detail.setAuthor(true);
+			}
+			
+			return ResponseEntity.ok(detail);
 	    } catch (Exception e) {
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+	    	log.error("Error fetching job detail for job_no: {}"+ job_no + e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	    }
 	}
 	
+	public String getTranslatedPosition(String position) {
+	    Map<String, String> positionMap = Map.of(
+	        "vocal", "보컬",
+	        "piano", "피아노",
+	        "guitar", "기타",
+	        "bass", "베이스",
+	        "drum", "드럼",
+	        "midi", "작곡·미디",
+	        "lyrics", "작사",
+	        "chorus", "코러스",
+	        "brass", "관악기",
+	        "string", "현악기"
+	    );
+	    return positionMap.getOrDefault(position, position); // 변환값 없으면 원래 값 반환
+	}
+
 	
 	/******************************
 	 * 구인 글을 작성하는 메서드 입니다.

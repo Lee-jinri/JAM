@@ -7,7 +7,7 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM</title>
-	<script src="/resources/include/dist/js/userToggle.js"></script>
+	
 	<script>
 		$(function(){
 
@@ -105,8 +105,10 @@
 		                <ul>
 		                    <li class="border-bottom">
 	                            <div class="my-top-4 my-bottom-4">
-	                                <span class="userName mr-2"></span>
-	                                <div class="userNameToggle"></div>
+	                                <div class="userName-wrapper">
+								        <span id="userName" class="userName"></span>  
+								        <div class="userNameToggle"></div> 
+								    </div>
 	                                <span class="listDate"></span>
 	                            </div>
 	                            <div class="flex float-right items-center width-13rem justify-between">
@@ -140,8 +142,10 @@
 		                <ul>
 		                    <li class="border-bottom">
 	                            <div class="my-top-4 my-bottom-4">
-	                                <span class="userName mr-2"></span>
-	                                <div class="userNameToggle"></div>
+	                                <div class="userName-wrapper">
+								        <span id="userName" class="userName"></span>  
+								        <div class="userNameToggle"></div> 
+								    </div>
 	                                <span class="listDate"></span>
 	                            </div>
 	                            <div class="flex float-right items-center width-13rem justify-between">
@@ -175,8 +179,10 @@
 							<li class="border-bottom">
 								
 								<div class="my-top-4 my-bottom-4">
-									<span class="userName mr-2"></span>
-									<div class="userNameToggle"></div>
+									<div class="userName-wrapper">
+								        <span id="userName" class="userName"></span>  
+								        <div class="userNameToggle"></div> 
+								    </div>
 	                                <span class="listDate"></span>
 								</div>
 								<div class="flex float-right items-center width-13rem justify-between">
@@ -208,8 +214,10 @@
 						<ul>
 							<li class="border-bottom">
 								<div class="my-top-4 my-bottom-4">
-									<span class="userName mr-2"></span>
-									<div class="userNameToggle"></div>
+									<div class="userName-wrapper">
+								        <span id="userName" class="userName"></span>  
+								        <div class="userNameToggle"></div> 
+								    </div>
 	                                <span class="listDate"></span>
 								</div>
 								<div class="flex float-right items-center width-13rem justify-between">

@@ -22,19 +22,19 @@ public class JobReplyMapperTest {
 	@Setter(onMethod_=@Autowired)
 	private JobReplyDAO jobreplyDao;
 	
-	/* 구인구직 댓글 리스트 
+	/* 구인 댓글 리스트 
 	@Test	
 	public void testJobReplyList(){
 		
-		log.info("구인구직 댓글 조회");
-		log.info(jobreplyDao.replyList(5));	
-	}
-*/
-	/* 구인구직 댓글 입력 
+		log.info("구인 댓글 조회");
+		log.info(jobreplyDao.replyList(5L));	
+	}*/
+
+	/* 구인 댓글 입력 
 	@Test
 	public void replyInsert() {
 		JobReplyVO jobreply_vo = new JobReplyVO();
-		jobreply_vo.setJob_no(4);
+		jobreply_vo.setJob_no(35L);
 		jobreply_vo.setJobReply_content("댓글 입력");
 		jobreply_vo.setUser_id("abcd123");
 		jobreply_vo.setUser_name("김철수");
@@ -42,29 +42,30 @@ public class JobReplyMapperTest {
 		log.info(jobreplyDao.replyInsert(jobreply_vo));
 	}*/
 
-	/* 구인구직 댓글 수정
+	/* 구인 댓글 수정
 	@Test
 	public void replyUpdate() {
 		JobReplyVO jobreply_vo = new JobReplyVO();
-		jobreply_vo.setJobReply_no(15);
+		jobreply_vo.setJobReply_no(15L);
 		jobreply_vo.setJobReply_content("댓글 수정");
+		jobreply_vo.setUser_id("abcd1234");
 		
 		log.info(jobreplyDao.replyUpdate(jobreply_vo));
-	}*/
-	 
-	
-	/* 구인구직 댓글 삭제
-	@Test
-	public void replyDelete() {
-		
-		log.info(jobreplyDao.replyDelete(15));
 	}
 	 */
 	
-	/* 구인구직 댓글의 글 번호 조회 
+	/* 구인 댓글 삭제
+	@Test
+	public void replyDelete() {
+		
+		log.info(jobreplyDao.replyDelete(15L));
+	}
+	 */
+	
+	/* 구인 댓글의 글 번호 조회 
 	@Test
 	public void replyRead() {
-		log.info(jobreplyDao.replyRead(17));
+		log.info(jobreplyDao.replyRead(17L));
 	}
 	*/	
 }

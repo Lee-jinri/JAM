@@ -23,6 +23,7 @@ function setUserToggle(currentUserId) {
     $(".userName").each(function() {
         let userId = $(this).attr("data-userId");
 
+console.log(userId);
         // 현재 로그인한 사용자와 아이디 비교
         if (userId !== currentUserId) {
             $(this).addClass("cursor-pointer");

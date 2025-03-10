@@ -36,4 +36,4 @@
 		
 		<script type="module" src="/resources/include/dist/js/chat.js"></script>
 		<script type="text/javascript" src="/resources/include/dist/js/chatui.js"></script>
-		
+		<script src="/resources/include/dist/js/userToggle.js"></script>

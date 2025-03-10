@@ -82,7 +82,7 @@
 	
 	<!-- 상세페이지 -->
 	<select id="getBoardDetail" resultType="job">
-		SELECT j.job_no, j.job_title, j.job_content, j.job_hits, to_char(j.job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, j.job_category, j.job_status,j.pay_category, pay, m.user_name, j.user_id, j.city, j.gu, j.dong 
+		SELECT j.job_no, j.job_title, j.job_content, j.job_hits, to_char(j.job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, j.job_category, j.job_status,j.pay_category, pay, m.user_name, j.user_id, j.city, j.gu, j.dong, j.position
 		FROM job j
 		LEFT JOIN Member m ON j.user_id = m.user_id
 		WHERE j.job_no = #{job_no}

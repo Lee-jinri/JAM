@@ -138,6 +138,20 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 	padding-right: 2rem;
 }
 
+
+.userName-wrapper {
+    position: relative; /* 기준점 설정 */
+    display: inline-flex;
+    align-items: center;
+}
+
+.userNameToggle {
+    position: absolute;
+    top: 100%; /* 닉네임 아래로 배치 */
+    left: -25px;
+    z-index: 9999;
+}
+
 #header-main {
 	font-size: 50px;
 }
@@ -574,25 +588,6 @@ ul {
 	display: none;
 }
 
-.delBtn:hover, .upBtn:hover, #reply_insert:hover, #comHeader:hover,
-	#comUpdateBtn:hover, #comDeleteBtn:hover, #fleaHeader:hover,
-	#fleaUpdateBtn:hover, #fleaDeleteBtn:hover, #roomHeader:hover,
-	#roomUpdateBtn:hover, #roomDeleteBtn:hover, #jobHeader:hover,
-	#jobUpdateBtn:hover, #jobDeleteBtn:hover, #replyUpdateBtn:hover,
-	#cancel:hover, #response:hover {
-	text-decoration: underline;
-}
-
-textarea
-
-#comUpdateBtn, #comDeleteBtn, #fleaUpdateBtn, #fleaDeleteBtn,
-	#roomRentalUpdateBtn, #roomRentalDeleteBtn, #jobUpdateBtn,
-	#jobDeleteBtn {
-	border: #E6E6E6 1px solid;
-	border-radius: 5px;
-	width: 45px;
-	height: 30px;
-}
 
 #jobHeader_text, #roomHeader_text, #fleaHeader_text, #comHeader_text {
 	/*color: #FAAC58;*/
@@ -609,9 +604,6 @@ textarea
 	cursor: pointer;
 }
 
-#btn_div {
-	margin-right: 10px;
-}
 
 #item-template {
 	display: none;
@@ -624,23 +616,30 @@ textarea
 	margin-bottom: 35px;
 }
 
-#comReply_content, #fleaReply_content, #jobReply_content,
+#comReply_content, #fleaReply_content, .reply_content,
 	#roomReply_content {
-	width: 857px;
+	width: 815px;
 	height: 90px;
 	border: none;
 	margin: 15px 0;
 }
 
-#reply_insert {
-	float: right;
-	border: none;
-	background-color: #BFC8EA;
-	border-radius: 10px;
-	width: 65px;
-	height: 40px;
-	color: #F8F9FC;
-	font-weight: 700;
+.replyInsert-btn {
+	padding: 8px 16px;
+    float: right;
+    border: none;
+    background-color: #BFC8EA;
+    border-radius: 10px;
+    color: #F8F9FC;
+    font-weight: 700;
+    font-size: 14px;
+    transition: all 0.2s ease-in-out;
+}
+
+.replyInsert-btn:hover{
+	background-color: #CAD1F0; /* hover 시 더 밝게 */
+    border-color: #bbb; /* 테두리도 변경 */
+    transform: scale(1.05); /* 살짝 커지는 효과 */
 }
 
 #upReplyContent {
@@ -672,10 +671,21 @@ textarea
 }
 
 .delBtn, .upBtn, #replyUpdateBtn, #cancel {
-	float: right;
-	border: none;
-	background-color: #fff;
-	font-size: 15px;
+    float: right;
+    border: none;
+    background-color: #fff;
+    font-size: 15px;
+    color: #444; /* 기존보다 약간 어두운 색상 */
+    padding: 4px 8px;
+    transition: all 0.2s ease-in-out; /* 부드러운 효과 */
+    cursor: pointer;
+}
+
+.delBtn:hover, .upBtn:hover, #replyUpdateBtn:hover, #cancel:hover {
+    background-color: #f0f0f0; /* hover 시 배경색 약간 변경 */
+    color: #222; /* hover 시 글자 색 더 강조 */
+    text-decoration: underline; /* 클릭 가능하다는 느낌 강조 */
+    opacity: 0.8; /* 살짝 흐려졌다가 클릭하면 돌아옴 */
 }
 
 .msg_border {

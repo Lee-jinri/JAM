@@ -8,5 +8,29 @@ Servers/
 
 # Ignore application properties file
 application.properties
+application.yml
 
-root-context.xml
+
+
+*.class
+*.log
+*.tmp
+*.bak
+*.swp
+*~.nib
+.metadata
+bin/
+tmp/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# Maven 관련
+target/
+
+# OS 관련
+.DS_Store
+Thumbs.db
