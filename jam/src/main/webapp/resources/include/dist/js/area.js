@@ -4,6 +4,7 @@ let selectedDong;
 $(function(){
 	
 	$(".city").click(function(){
+		console.log("??");
 		let cityName = this.dataset.city;
 		showGuList(cityName);
 		selectedCity = cityName;

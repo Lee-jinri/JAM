@@ -174,13 +174,22 @@ $(function(){
 	        	$("#dong").html(data.dong);
 		        	
 	        	$("#position").html(data.position);
+		        
+	        	if(data.job_category == 0){
+	        		const payCategoryMap = {
+	        			    0: "건별",
+	        			    1: "주급",
+	        			    2: "월급"
+	        		};
+
+	        		let pay_category = payCategoryMap[data.pay_category];
+
+	        		$("#pay_category").html(pay_category);
+	        		$("#pay").html(data.pay_category < 3 ? ${data.pay} + "원" : "협의 후 결정");
+
 		        	
-				let pay_category;
-	        	if(data.pay_category == 0) pay_category = "주급";
-	        	else if(data.pay_category == 1) pay_category = "월급";	        
-	        	$("#pay_category").html(pay_category);
-	        		
-	        	$("#pay").html(data.pay + " 원");
+	        	}else $(".pay-div").css("display", "none");
+				
 		        	
 	        	if(data.job_status == 1){
 	        		$("#job_status").css("display","block");
@@ -333,7 +342,7 @@ function formatRelativeTime(dateString) {
 		                <span id="dong"></span>
 		            </div>
 		        </div>
-		        <div class="job-meta-row">
+		        <div class="job-meta-row pay-div">
 		            <div class="job-meta-label">급여</div>
 		            <div class="job-meta-value">
 		                <span id="pay_category"></span> 

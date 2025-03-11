@@ -63,7 +63,7 @@ public class JobMapperTest {
 		jobDao.incrementReadCnt(33L);
 	}*/
 	
-	/* 글 작성 */
+	/* 글 작성 
 	@Test
 	public void testJobInsert() {
 		JobVO vo = new JobVO();
@@ -82,7 +82,7 @@ public class JobMapperTest {
 		vo.setPosition("piano");
 		log.info(jobDao.writeBoard(vo));
 	}
-	
+	*/
 	/* 수정할 글 정보 
 	@Test
 	public void testGetBoardById() {
@@ -102,6 +102,11 @@ public class JobMapperTest {
 		vo.setPay_category(1);
 		vo.setJob_status(1);
 		vo.setPay(2000);
+		vo.setUser_id("abcd1234");
+		vo.setCity("서울");
+		vo.setGu("전체");
+		vo.setDong("전체");
+		vo.setPosition("piano");
 		log.info(jobDao.editBoard(vo));
 	}
 	*/

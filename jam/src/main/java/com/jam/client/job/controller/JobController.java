@@ -85,7 +85,10 @@ public class JobController {
 	public String updateView(@PathVariable Long job_no, Model model){
 	
 		model.addAttribute("job_no", job_no);
+		JobVO board = jobService.getBoardById(job_no);
+		model.addAttribute("board", board);
 		
+		log.info(board);
 		return "job/update";
 	}
 	

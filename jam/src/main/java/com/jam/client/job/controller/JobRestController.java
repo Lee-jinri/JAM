@@ -124,7 +124,6 @@ public class JobRestController {
 	@RequestMapping(value="/board", method=RequestMethod.POST)
 	public ResponseEntity<String> writeBoard(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
 		
-		
 		if (jobVO == null) {
 	        log.error("jobVO is null");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("jobVO is null.");
@@ -176,33 +175,8 @@ public class JobRestController {
 	    // gu, dong 기본값 처리
 	    jobVO.setGu(ValueUtils.guNullToAll(jobVO.getGu()));
 	    jobVO.setDong(ValueUtils.emptyToNull(jobVO.getDong()));
-	}
-	
-	
-	/*******************************************
-	 * 구인의 수정할 글 정보(제목, 내용, 급여, 급여 지불 방법, 카테고리, 구인 완료 여부)를 불러오는 메서드 입니다.
-	 * @param job_no 수정을 위해 불러올 글 번호
-	 * @return ResponseEntity<JobVO> - 조회된 구인 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
-	 *******************************************/
-	@GetMapping(value = "/board/edit/{job_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<JobVO> getBoardById(@PathVariable Long job_no) {
-		if (job_no == null) { 
-			log.error("job_no is required");
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		}else {
-			try {
-				JobVO board = jobService.getBoardById(job_no);
-			    board.setJob_no(job_no);
-			    
-				return ResponseEntity.ok(board);
-			}catch (Exception e) {
-				log.error("구인 수정 글 불러오던 중 오류 : " + e.getMessage());
-				
-				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-			}
-		}
-		
+	    
+	   // jobVO.setPay(ValueUtils.)
 	}
 	
 	/***********************************
@@ -212,40 +186,30 @@ public class JobRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
 	@RequestMapping(value="/board", method=RequestMethod.PUT)
-	public ResponseEntity<String> editBoard(@RequestBody JobVO job_vo) throws Exception{
-		String errorMsg;
-		if (job_vo == null) { 
-			log.error("job_vo is null");
-			errorMsg = "job_vo is null.";
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
-		}
-		
-		// 유효성 검사
-		String job_title = job_vo.getJob_title();
-		String job_content = job_vo.getJob_content();
+	public ResponseEntity<String> editBoard(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
+		if (jobVO == null) {
+	        log.error("jobVO is null");
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("jobVO is null.");
+	    }
 
-		if (job_title == null) {
-			log.error("job_title is null.");
-			errorMsg = "job_title is null.";
-		    
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
-		}
-		if (job_content == null) {
-			log.error("job_content is null.");
-			errorMsg = "job_content is null.";
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
-		}
+	    // 유효성 검사
+	    String validationError = validateJobVO(jobVO);
+	    if (validationError != null) {
+	        log.error(validationError);
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
+	    }
+
+	    // 기본값 및 사용자 정보 세팅
+	    preprocessJobVO(jobVO, request);
 		
 		try {
-			jobService.editBoard(job_vo);
-			String job_no = job_vo.getJob_no().toString();
+			jobService.editBoard(jobVO);
+			String job_no = jobVO.getJob_no().toString();
 			
 			return new ResponseEntity<>(job_no, HttpStatus.OK);
 		} catch(Exception e) {
 			log.error("구인 editBoard 데이터 수정 중 오류 : " + e.getMessage());
-			String responseBody = e.getMessage();
+			String responseBody = "시스템 오류 입니다. 잠시 후 다시 시도하세요.";
 			
 			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
 		}

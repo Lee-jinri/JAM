@@ -99,7 +99,7 @@
 	
 	<!-- 글 수정페이지 -->
 	<select id="getBoardById" parameterType="job"  resultType="job">
-		SELECT job_no, job_title, job_content,job_status,pay_category, job_status, pay, imageFileName
+		SELECT job_no, job_title, job_content,job_status,pay_category, job_status, pay, position, city, gu, dong, imageFileName
 		FROM job
 		WHERE job_no = #{job_no} 
 	</select>
@@ -113,16 +113,20 @@
 		job_category = #{job_category},
 		pay_category = #{pay_category},
 		pay = #{pay},
+		position = #{position},
+		city = #{city},
+		gu = #{gu},
+		dong = #{dong},
 		job_date = sysdate
 		<if test="imageFileName != ''">
 			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
 		</if>
-		WHERE job_no = #{job_no}
+		WHERE job_no = #{job_no} AND user_id = #{user_id}
 	</update>
 	
 	<!-- 글 삭제 -->
 	<delete id="boardDelete" parameterType="job">
-		DELETE FROM job WHERE job_no = #{job_no}
+		DELETE FROM job WHERE job_no = #{job_no} AND user_id = {user_id}
 	</delete>
 	
 	<!-- 댓글 개수 증감 -->

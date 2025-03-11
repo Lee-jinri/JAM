@@ -13,6 +13,7 @@
 <link rel="stylesheet" href="/resources/include/dist/summernote/summernote-lite.css">
 <script src="/resources/include/dist/js/area.js"></script>	
 <style>
+/* layout.css에 추가했음 */
 .jam-card {
     background: #fff;  /* 흰색 카드 */
     padding: 20px;
@@ -465,13 +466,14 @@
 			// 유효성 검사
 			let job_title = $("#job_title").val();
 			let job_content = $("#job_content").val();
-			let pay = $("#pay").val();
+			let pay = 0;
 			let job_category = $('input[name="job_category"]:checked').val() || null;
 			let pay_category = $("#payNegotiable").is(":checked") ? '3' : $("#pay_category").val();
 			let city = $("#city").val() || null;
 			let gu = $("#gu").val() || null;
 			let dong = $("#dong").val() || null;
 			let position = $('input[name="position"]:checked').val() || null;
+			
 	
 			if(job_category == null){
 				alert("구인 종류를 선택하세요.");
@@ -492,7 +494,9 @@
 					$("#pay").focus();
 					
 					return false;
-				}	
+				}else{
+					pay = $("#pay").val();
+				}
 			}
 			
 			if(position == null){
@@ -551,9 +555,6 @@
 			.catch(error => {
 			    alert(error.message);
 			});
-
-			
-			
 		});
 	})
 </script>
@@ -661,9 +662,6 @@
 		    </div>
 		</div>
 
-		
-		
-		
 		
 		<div class="jam-card">
 			<div>

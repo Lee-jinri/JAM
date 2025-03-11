@@ -551,9 +551,11 @@ function companyRecruit(data){
 		$clone.find(".boardHits").text(board.job_hits);
 		$clone.find(".boardReplyCnt").text(board.job_reply_cnt);
 		$clone.find(".boardLink").attr("data-location", "/job/board/" + board.job_no);
-		
-		if(board.pay_category == 0) $clone.find(".boardPay").text("시급 " + board.pay + "원");
-		else if(board.pay_category == 1) $clone.find(".boardPay").text("월급 " + board.pay + "원");
+				
+		const payTexts = ["건별 ", "주급 ", "월급 ", "협의 후 결정"];
+		let payText = payTexts[board.pay_category] || "미정";
+		$clone.find(".boardPay").text(payText + (board.pay_category < 3 ? " " + board.pay + "원" : ""));
+
 		
 		let date = formatRelativeTime(board.job_date);
 		$clone.find(".boardDate").text(date);
@@ -738,7 +740,7 @@ function updateSelectedArea(city, gu, dong) {
         .addClass("area-remove-btn")
         .text("x")
         .on("click", function() {
-            removeArea();  // 👈 이거 실행
+            removeArea();  
         });
 
     $("#selectedAreaWrapper").append(removeBtn);

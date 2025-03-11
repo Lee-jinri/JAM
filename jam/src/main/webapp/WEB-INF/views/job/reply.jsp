@@ -12,27 +12,6 @@
 <script type="text/javascript" src="/resources/include/dist/js/common.js"></script>
 
 
-<style>
-
-.delBtn, .upBtn, #replyUpdateBtn, #cancel {
-    float: right;
-    border: none;
-    background-color: #fff;
-    font-size: 15px;
-    color: #444; /* 기존보다 약간 어두운 색상 */
-    padding: 4px 8px;
-    transition: all 0.2s ease-in-out; /* 부드러운 효과 */
-    cursor: pointer;
-}
-
-.delBtn:hover, .upBtn:hover, #replyUpdateBtn:hover, #cancel:hover {
-    background-color: #f0f0f0; /* hover 시 배경색 약간 변경 */
-    color: #222; /* hover 시 글자 색 더 강조 */
-    text-decoration: underline; /* 클릭 가능하다는 느낌 강조 */
-    opacity: 0.8; /* 살짝 흐려졌다가 클릭하면 돌아옴 */
-}
-
-</style>
 <script>
 $(function(){
 	listAll();
