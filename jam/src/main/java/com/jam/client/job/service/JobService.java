@@ -30,7 +30,7 @@ public interface JobService {
 	int editBoard(JobVO job_vo);
 		
 	// 구인구직 글 삭제
-	int boardDelete(Long job_no);
+	int boardDelete(Long job_no, String user_id);
 
 	List<JobVO> getPosts(JobVO job_vo);
 

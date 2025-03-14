@@ -16,37 +16,88 @@
 	</sql>
 	
 	<!-- 커뮤니티 레코드 수 조회 -->
-	<select id="listCnt" parameterType="community" resultType="int">
-	    SELECT count(*)
-	    FROM community c
-	    JOIN member m ON c.user_id = m.user_id
-	    <trim prefix="WHERE (" suffix=")" prefixOverrides="AND | OR">
-	        <include refid="comSearch"></include>
-	    </trim>
-	</select>
-
-	<!-- 커뮤니티 글 조회 -->
 	<select id="getBoards" parameterType="community" resultType="community">
-		<![CDATA[
-		SELECT com_no, com_title, to_char(com_date, 'YYYY/MM/DD HH24:MI') AS com_date, com_reply_cnt, com_hits, user_id, user_name
-		FROM (
-			SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-				c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
-				ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
-			FROM community c
-			JOIN Member m ON c.user_id = m.user_id
-			]]>
-			<trim prefix="WHERE" suffixOverrides="AND |OR ">
-				<include refid="comSearch"></include>
-			</trim>
-		) 
-		<![CDATA[
-		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
-		]]>
+	    <![CDATA[
+	    SELECT 
+	        com_no, com_title, 
+	        TO_CHAR(com_date, 'YYYY/MM/DD HH24:MI') AS com_date, 
+	        com_reply_cnt, com_hits, user_id, user_name,
+	        0 AS isFavorite  
+	    FROM (
+	        SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
+	            c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
+	            ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+	        FROM community c
+	        JOIN member m ON c.user_id = m.user_id
+	        ]]>
+	        <where>
+	        	1=1
+	        	<include refid="comSearch"></include>
+	        </where>
+	    ) 
+	    <![CDATA[ 
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
 	</select>
-
 
 	
+	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회 -->
+	<select id="getBoardsWithFavorite" parameterType="community" resultType="community">
+	    <![CDATA[
+		SELECT 
+		    c.com_no, c.com_title, 
+		    TO_CHAR(c.com_date, 'YYYY/MM/DD HH24:MI') AS com_date, 
+		    c.com_reply_cnt, c.com_hits, c.user_id, c.user_name,
+		    CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+		FROM (
+		    SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
+		        c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, 
+		        c.user_id, m.user_name,
+		        ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+		    FROM community c
+		    JOIN member m ON c.user_id = m.user_id
+		]]>
+		    <where>
+		        1=1
+		        <include refid="comSearch"></include>
+		    </where>
+		<![CDATA[
+		) c  
+		LEFT JOIN favorite f  
+			ON c.com_no = f.board_no  
+			AND f.board_type = 'community'  
+			AND f.user_id = #{user_id, jdbcType=VARCHAR}
+		WHERE rnum > (#{pageNum} - 1) * #{amount} 
+		AND rnum <= #{pageNum} * #{amount}
+		]]>
+
+	</select>
+	
+	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회
+	<select id="getBoardsWithFavorite" parameterType="community" resultType="community">
+	    <![CDATA[
+	    SELECT 
+	        c.com_no, c.com_title, 
+	        TO_CHAR(c.com_date, 'YYYY/MM/DD HH24:MI') AS com_date, 
+	        c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
+	        CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+	    FROM (
+	        SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
+	            c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
+	            ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+	        FROM community c
+	        JOIN member m ON c.user_id = m.user_id
+	    ) c
+	    LEFT JOIN favorite f  
+	        ON c.com_no = f.board_no  
+	        AND f.board_type = 'community'  
+	        AND f.user_id = #{user_id, jdbcType=VARCHAR}  
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select> -->
+
 	
 	<!-- 커뮤니티 조회수 증가  -->
 	<update id="incrementReadCnt" parameterType="Long">

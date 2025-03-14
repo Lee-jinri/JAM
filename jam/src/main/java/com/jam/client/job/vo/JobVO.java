@@ -24,11 +24,7 @@ public class JobVO extends CommonVO {
 	private Integer pay;
 	private String position;
 	private List<String> positions;
-	
-	private String city;
-	private String gu;
-	private String dong;
-	
+		
 	private String user_id;
 	private String user_name;
 	

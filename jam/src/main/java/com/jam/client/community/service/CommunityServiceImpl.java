@@ -1,5 +1,6 @@
 package com.jam.client.community.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +22,10 @@ public class CommunityServiceImpl implements CommunityService {
 	@Override
 	public List<CommunityVO>getBoards(CommunityVO com_vo){
 		
-		List<CommunityVO> list = comDao.getBoards(com_vo);
+		List<CommunityVO> list = new ArrayList<>();
+		
+		if(com_vo.getUser_id() == null) list = comDao.getBoards(com_vo);
+		else list = comDao.getBoardsWithFavorite(com_vo);
 		
 		return list;
 	}

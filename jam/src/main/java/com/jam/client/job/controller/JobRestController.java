@@ -39,15 +39,20 @@ public class JobRestController {
 	private JobService jobService;
 	
 	@GetMapping(value = "boards")
-	public ResponseEntity<Map<String, Object>> getBoards(JobVO job_vo){
+	public ResponseEntity<Map<String, Object>> getBoards(JobVO job_vo, HttpServletRequest request){
 		try {
 			if (job_vo.getPositions() == null) {
 			    job_vo.setPositions(Collections.emptyList());
 			}
-
+			
+			String user_id = (String)request.getAttribute("userId");
+			if(user_id != null) job_vo.setUser_id(user_id);
+			
 			Map<String, Object> result = new HashMap<>();
 
 			List<JobVO> jobList = jobService.getBoards(job_vo);
+			JobVO job = jobList.get(0);
+			
 			result.put("jobList", jobList);
 			
 			int total = jobService.listCnt(job_vo);
@@ -217,7 +222,6 @@ public class JobRestController {
 	}
 	
 
-	// 본인 확인 해야됨
 	/**********************************
 	 * 구인 글을 삭제하는 메서드 입니다.
 	 * @param Long job_no 삭제할 글 번호
@@ -225,15 +229,20 @@ public class JobRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
 	@RequestMapping(value="/board", method=RequestMethod.DELETE)
-	public ResponseEntity<String> boardDelete(@RequestParam("job_no") Long job_no) throws Exception{
+	public ResponseEntity<String> boardDelete(@RequestParam("job_no") Long job_no, HttpServletRequest request) throws Exception{
 		
 		if (job_no == null) { 
 			log.error("job_no is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("job_no is required");
 		}
 		
+		// 오류 메시지 수정
+		String user_id = (String)request.getAttribute("userId");
+		if(user_id == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 안됨.");
+		
+		// 이거 추가해야됨
 		try {
-			jobService.boardDelete(job_no);
+			jobService.boardDelete(job_no, user_id);
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {

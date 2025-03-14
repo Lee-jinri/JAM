@@ -114,10 +114,14 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         				"/api/member/password",
         				"/api/member/address",
         				"/api/member/withDraw",
-        				"/api/**/board/**",
+        				"/api/job/**",
+        				"/api/community/**",
+        				"/api/fleaMarket/**",
+        				"/api/roomRental/**",
         				"/api/**/posts",
         				"/jobReplies/**",
         				"/comReplies/**",
-        				"/api/chat/**");
+        				"/api/chat/**",
+        				"/api/favorite/**");
    }
 }

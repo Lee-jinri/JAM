@@ -19,7 +19,7 @@ public class CommonVO {
 	private String end_date = "";
 	
 	private int favorite_id;
-	private boolean isFavorited;  // 즐겨찾기 여부
+	private boolean isFavorite;  // 즐겨찾기 여부
 	private int board_no;
 	private String board_type; // community, roomRental, job, fleaMarket
 	

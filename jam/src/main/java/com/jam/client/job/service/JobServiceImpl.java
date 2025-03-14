@@ -1,11 +1,14 @@
 package com.jam.client.job.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.velocity.runtime.log.Log;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.job.dao.JobDAO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.service.MemberService;
@@ -22,54 +25,60 @@ public class JobServiceImpl implements JobService {
 	private MemberService memberService;
 	
 	
-	// 구인구직 
+	//  
 	@Override
 	public List<JobVO> getBoards(JobVO job_vo) {
+		List<JobVO> list = new ArrayList<>();
 		
-	    
-		return jobDao.getBoards(job_vo);
+		if(job_vo.getUser_id() == null) list = jobDao.getBoards(job_vo);
+		else {
+			System.out.println("jobservice : " + job_vo.getUser_id());
+			list = jobDao.getBoardsWithFavorite(job_vo);
+		}
+		
+		return list;
 	}
 
-	// 구인구직 페이징
+	//  페이징
 	@Override
 	public int listCnt(JobVO job_vo) {
 		return jobDao.listCnt(job_vo);
 	}
 
-	// 구인구직 조회수 증가 
+	//  조회수 증가 
 	@Override
 	public void incrementReadCnt(Long job_no) {
 		jobDao.incrementReadCnt(job_no);
 	}
 
-	// 구인구직 상세페이지
+	//  상세페이지
 	@Override
 	public JobVO getBoardDetail(Long job_no) {
 		return jobDao.getBoardDetail(job_no);
 	}
 
-	// 구인구직 글 작성
+	//  글 작성
 	@Override
 	public int writeBoard(JobVO job_vo) throws Exception {
 		return jobDao.writeBoard(job_vo);
 	}
 
-	// 구인구직 글 수정 페이지
+	//  글 수정 페이지
 	@Override
 	public JobVO getBoardById(Long job_no) {
 		return jobDao.getBoardById(job_no);
 	}
 
-	// 구인구직 글 수정
+	//  글 수정
 	@Override
 	public int editBoard(JobVO job_vo) {
 		return jobDao.editBoard(job_vo);
 	}
 
-	// 구인구직 글 삭제
+	//  글 삭제
 	@Override
-	public int boardDelete(Long job_no) {
-		return jobDao.boardDelete(job_no);
+	public int boardDelete(Long job_no, String user_id) {
+		return jobDao.boardDelete(job_no, user_id);
 	}
 	
 	@Override

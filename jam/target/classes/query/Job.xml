@@ -41,7 +41,11 @@
 	<!-- list -->
 	<select id="getBoards" parameterType="job" resultType="job">
 		<![CDATA[
-		SELECT job_no, job_title, to_char(job_date, 'YYYY/MM/DD') AS job_date, pay_category, pay, city, gu, dong, position
+		SELECT 
+			job_no, job_title, 
+			to_char(job_date, 'YYYY/MM/DD') AS job_date, 
+			pay_category, pay, city, gu, dong, position,
+			0 AS isFavorite  
 		FROM (
 			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
 				j.job_no, j.job_title, j.job_date, j.job_category, j.pay_category, j.pay, j.city, j.gu, j.dong, j.position,
@@ -61,6 +65,37 @@
 		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount}
 		]]>
 	</select>	
+	
+	<select id="getBoardsWithFavorite" parameterType="job" resultType="job">
+		<![CDATA[
+		SELECT 
+			job_no, job_title, 
+			to_char(job_date, 'YYYY/MM/DD') AS job_date, 
+			pay_category, pay, city, gu, dong, position,
+			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+		FROM (
+			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
+				j.job_no, j.job_title, j.job_date, j.job_category, j.pay_category, j.pay, j.city, j.gu, j.dong, j.position,
+				ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
+			FROM job j
+		]]>
+			<where>
+		        1=1
+		        AND j.job_status = 0 AND j.job_category = #{job_category}
+		        <include refid="jobSearch"></include>
+		        <include refid="jobLocalSearch"></include>
+		        <include refid="jobPositionSearch"/>
+		    </where>
+		<![CDATA[
+		) j 
+		LEFT JOIN favorite f  
+			ON j.job_no = f.board_no  
+			AND f.board_type = 'job'  
+			AND f.user_id = #{user_id, jdbcType=VARCHAR}
+		WHERE rnum > (#{pageNum} - 1) * #{amount} 
+		AND rnum <= #{pageNum} * #{amount}
+		]]>
+	</select>
 	
 	<select id="listCnt" parameterType="room" resultType="int">
 	    SELECT count(*)
@@ -126,7 +161,7 @@
 	
 	<!-- 글 삭제 -->
 	<delete id="boardDelete" parameterType="job">
-		DELETE FROM job WHERE job_no = #{job_no} AND user_id = {user_id}
+		DELETE FROM job WHERE job_no = #{job_no} AND user_id = #{user_id}
 	</delete>
 	
 	<!-- 댓글 개수 증감 -->

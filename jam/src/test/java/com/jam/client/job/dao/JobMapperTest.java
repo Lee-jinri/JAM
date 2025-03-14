@@ -1,5 +1,6 @@
 package com.jam.client.job.dao;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class JobMapperTest {
 	@Setter(onMethod_=@Autowired)
 	private JobDAO jobDao;
 	
-	/* 전체 글 조회 
+	/* 전체 글 조회 */
 	@Test
 	public void testJobList() {
 		JobVO vo = new JobVO();
@@ -35,11 +36,16 @@ public class JobMapperTest {
 		
 		Map<String, Object> result = new HashMap<>();
 		
+		vo.setUser_id("abcd1234");
 		vo.setJob_category(0);
-		vo.setCity("서울");
-		vo.setPositions(List.of("guitar"));
+		//vo.setCity("서울");
+		//vo.setPositions(List.of("guitar"));
 
-		List<JobVO> jobList = jobDao.getBoards(vo);
+		List<JobVO> jobList = new ArrayList<>();
+		// jobList = jobDao.getBoards(vo);
+		
+		jobList = jobDao.getBoardsWithFavorite(vo);
+		
 		result.put("jobList", jobList);
 		
 		int total = jobDao.listCnt(vo);
@@ -48,7 +54,7 @@ public class JobMapperTest {
 		result.put("pageMaker", pageMaker);
 		
 		log.info("result :" +result);
-	}*/
+	}
 	
 	
 	/* 상세 페이지 조회

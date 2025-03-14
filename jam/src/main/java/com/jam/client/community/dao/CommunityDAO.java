@@ -9,6 +9,7 @@ import com.jam.client.community.vo.CommunityVO;
 public interface CommunityDAO {
 	// 커뮤니티 전체 글 조회
 	public List<CommunityVO> getBoards(CommunityVO com_vo);
+	public List<CommunityVO> getBoardsWithFavorite(CommunityVO com_vo);
 
 	// 커뮤니티 페이징
 	public int listCnt(CommunityVO com_vo);

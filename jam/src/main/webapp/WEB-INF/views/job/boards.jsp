@@ -8,6 +8,7 @@
 <title>JAM - Jobs</title>
 <script src="/resources/include/dist/js/userToggle.js"></script>
 <script src="/resources/include/dist/js/area.js"></script>
+<script src="/resources/include/dist/js/favorite.js"></script>
 <style>
 .search-div {
     max-width: 700px;   /* 포지션/지역과 동일하게 맞춤 */
@@ -551,7 +552,15 @@ function companyRecruit(data){
 		$clone.find(".boardHits").text(board.job_hits);
 		$clone.find(".boardReplyCnt").text(board.job_reply_cnt);
 		$clone.find(".boardLink").attr("data-location", "/job/board/" + board.job_no);
-				
+		
+		let $favoriteSpan = $clone.find(".favoriteSpan");
+		$favoriteSpan.attr("data-board-no", board.job_no);
+		$favoriteSpan.attr("data-board-type", "job");
+		
+		let $icon = $favoriteSpan.find("i"); 
+		board.favorite ? $icon.addClass("fa-solid")
+					   : $icon.addClass("fa-regular");
+
 		const payTexts = ["건별 ", "주급 ", "월급 ", "협의 후 결정"];
 		let payText = payTexts[board.pay_category] || "미정";
 		$clone.find(".boardPay").text(payText + (board.pay_category < 3 ? " " + board.pay + "원" : ""));
@@ -919,9 +928,11 @@ function setCompanyStyle() {
 				<ul style="display:none">
 					<li id="boardTemplate" class="border-bottom">
 						<div id="boardDiv" class="pd-2rem job-list-row text-alignC items-center">
-							<span class="favorite">
-								<i class="fa-solid fa-star" style="color: #FFD43B; cursor: pointer;"></i> 
-								<i class="fa-regular fa-star" style="color: #FFD43B;"></i>
+							<span class="favoriteSpan">
+							
+							<!--  	<i class="fa-solid fa-star" style="color: #FFD43B; cursor: pointer;"></i> 
+								<i class="fa-regular fa-star" style="color: #FFD43B;"></i>-->
+								<i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
 							</span>
 							<span class="font-weight-bold font-size-5 boardTitle boardLink"  style="cursor: pointer;"></span>
 					        

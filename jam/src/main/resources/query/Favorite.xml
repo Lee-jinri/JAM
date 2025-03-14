@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.favorite.dao.FavoriteDAO">
+
+	<select id="getFavoriteCommunity" resultType="community">
+    SELECT c.com_no, c.com_title, c.com_hits, c.com_reply_cnt, m.user_name
+    FROM community c
+    JOIN member m ON c.user_id = m.user_id 
+    WHERE c.com_no IN (
+        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'community'
+    )
+	</select>
+	
+	<select id="getFavoriteJob" resultType="job">
+    SELECT j.job_no, j.job_title, j.job_category, j.job_status, j.job_hits, j.job_reply_cnt, j.job_date, j.pay_category, j.pay, j.position, j.city, j.gu, j.dong, m.user_name
+    FROM job j
+    JOIN member m ON j.user_id = m.user_id 
+    WHERE j.job_no IN (
+        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'job'
+    )
+	</select>
+	
+	
+	<select id="getFavoriteFlea" resultType="flea">
+    SELECT f.flea_no, f.flea_title, f.flea_category, f.sales_status, f.flea_hits, f.flea_reply_cnt, f.flea_date, m.user_name
+    FROM fleaMarket f
+    JOIN member m ON f.user_id = m.user_id 
+    WHERE f.flea_no IN (
+        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'fleaMarket'
+    )
+	</select>
+	
+	<select id="getFavoriteRoom" resultType="room">
+    SELECT r.roomRental_no, r.roomRental_title, r.roomRental_status, r.roomRental_hits, r.roomRental_reply_cnt, r.roomRental_date, r.city, r.gu, r.dong, m.user_name
+    FROM roomRental r
+    JOIN member m ON r.user_id = m.user_id 
+    WHERE r.roomRental_no IN (
+        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'roomRental'
+    )
+	</select>
+
+	
+	<insert id="addFavorite">
+		<selectKey keyProperty="favorite_id" resultType="Long" order="BEFORE">
+		    SELECT favorite_seq.NEXTVAL FROM dual
+		</selectKey>
+		INSERT INTO favorite(favorite_id, user_id, board_type, board_no)
+		VALUES(#{favorite_id}, #{user_id}, #{board_type}, #{board_no} )
+	</insert>
+	
+	<delete id="deleteFavorite">
+		DELETE 
+		FROM favorite
+		WHERE user_id = #{user_id} 
+			AND board_type=#{board_type} 
+			AND board_no = #{board_no}
+	</delete>
+
+	
+
+</mapper>

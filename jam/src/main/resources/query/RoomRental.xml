@@ -32,7 +32,12 @@
 	<!-- 합주실 list -->
 	<select id="getBoards" parameterType="room" resultType="room">
 		<![CDATA[
-		SELECT roomRental_no, roomRental_title, to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') AS roomRental_date, roomRental_reply_cnt, roomRental_hits, roomRental_status, roomRental_price, roomRental_duration, user_id , user_name, city, gu, dong
+		SELECT roomRental_no, roomRental_title, 
+			to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') AS roomRental_date, 
+			roomRental_reply_cnt, roomRental_hits, 
+			roomRental_status, roomRental_price, 
+			roomRental_duration, user_id , user_name, 
+			city, gu, dong
 		FROM (
 			SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
 				r.roomRental_no, r.roomRental_title, r.roomRental_date, r.roomRental_reply_cnt, r.roomRental_price, r.roomRental_duration, r.roomRental_hits, r.roomRental_status, r.user_id , m.user_name, r.city, r.gu, r.dong,
