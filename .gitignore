@@ -10,7 +10,7 @@ Servers/
 application.properties
 application.yml
 
-
+target/
 
 *.class
 *.log
