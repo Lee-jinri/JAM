@@ -6,17 +6,15 @@
 # Ignore server configurations
 Servers/
 
-# Ignore application properties file
+# 환경 설정 파일
 application.properties
 application.yml
 
-target/
-
-*.class
 *.log
 *.tmp
 *.bak
 *.swp
+log4j2.log
 *~.nib
 .metadata
 bin/
@@ -27,6 +25,7 @@ tmp/
 .classpath
 .project
 .settings/
+.springBeans
 
 # Maven 관련
 target/
@@ -34,3 +33,13 @@ target/
 # OS 관련
 .DS_Store
 Thumbs.db
+
+# IDE 관련
+.idea/
+.vscode/
+
+# 빌드 관련
+target/
+*.class
+*.war
+*.jar
