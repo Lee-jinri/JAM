@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -40,11 +42,14 @@ public class RoomRentalRestController {
 	
 	@GetMapping(value = "boards")
 	public ResponseEntity<Map<String, Object>> getBoards(
-			RoomRentalVO room_vo){
+			RoomRentalVO room_vo, HttpServletRequest request){
 		
 		try {
 			Map<String, Object> result = new HashMap<>();
 
+			String user_id = (String)request.getAttribute("userId");
+			if(user_id != null) room_vo.setUser_id(user_id);
+			
 			List<RoomRentalVO> roomList = roomService.getBoards(room_vo);
 			result.put("roomList", roomList);
 			

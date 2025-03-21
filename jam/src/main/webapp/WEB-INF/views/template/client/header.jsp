@@ -10,7 +10,21 @@
 <head>
 <meta charset="utf-8">
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<style>
+.mypage_toggle_btn:hover {
+    background-color: whitesmoke;
+}
 
+.mypage_toggle_btn:hover span {
+    background-color: whitesmoke;
+}
+
+.mypage_toggle_btn {
+    height: 3rem;
+}
+	
+
+</style>
 <script>
 	$(function() {
 		
@@ -86,6 +100,10 @@
 			$(location).attr('href','/community/comPosts?type=my');
 		})
 		
+		$("#myFavorite").click(function(){
+			$(location).attr('href','/member/favorite')
+		})
+		
 		$("#msg").click(function(){
 			$(location).attr('href','/message/receiveMessage')
 			//getUserIDAndRedirect('/message/receiveMessage');
@@ -104,6 +122,7 @@
 		
 		
 		$(".mypage_toggle").hide();
+		
 		$("#header_name").click(function() {
 			$('.mypage_toggle').toggle();
 		})
@@ -114,7 +133,6 @@
 		})
 	})
 
-	
 </script>
 </head>
 	<header>
@@ -157,10 +175,21 @@
 		
 							<div class="mypage_toggle absolute border border-radius-7px">
 								<ul>
-									<li class="pd-top1"><button type="button" id="account" class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">계정 정보</button></li>
-									<li class="pd-top1"><button type="button" id="myWrite" class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한 글</button></li>
-									<li class="pd-top1"><button type="button" id="msg" class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">쪽지</button></li>
-									<li class="pd-top1"><button type="button" id="chat" class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">채팅</button></li>
+									<li id="account" class="mypage_toggle_btn cursor-pointer">
+										<span class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">계정 정보</span>
+									</li>
+									<li id="myWrite" class="mypage_toggle_btn cursor-pointer">
+										<span class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한 글</span>
+									</li>
+									<li id="myFavorite" class="mypage_toggle_btn cursor-pointer">
+										<span class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">북마크</span>
+									</li>
+									<li id="msg" class="mypage_toggle_btn cursor-pointer">
+										<span class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">쪽지</span>
+									</li>
+									<li id="chat" class="mypage_toggle_btn cursor-pointer">
+										<span class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">채팅</span>
+									</li>
 								</ul>
 							</div>
 							

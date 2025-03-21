@@ -1,5 +1,6 @@
 package com.jam.client.fleaMarket.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,10 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	@Override
 	public List<FleaMarketVO> getBoards(FleaMarketVO flea_vo) {
 		
-		List<FleaMarketVO> list = fleaDao.getBoards(flea_vo);
+		List<FleaMarketVO> list = new ArrayList<>(); 
+		
+		if(flea_vo.getUser_id() == null) list = fleaDao.getBoards(flea_vo);
+		else list = fleaDao.getBoardsWithFavorite(flea_vo);
 		
 		return list;
 	}

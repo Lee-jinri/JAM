@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.favorite.dao.FavoriteDAO;
+import com.jam.client.favorite.vo.FavoriteVO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
@@ -17,23 +18,23 @@ public class FavoriteServiceImpl implements FavoriteService{
 	private FavoriteDAO favoriteDao;
 	
 	@Override
-	public List<CommunityVO> getFavoriteCommunity(String user_id) {
-		return favoriteDao.getFavoriteCommunity(user_id);
+	public List<FavoriteVO> getFavoriteCommunity(FavoriteVO favorite) {
+		return favoriteDao.getFavoriteCommunity(favorite);
 	}
 	
 	@Override
-	public List<JobVO> getFavoriteJob(String user_id){
-		return favoriteDao.getFavoriteJob(user_id);
+	public List<FavoriteVO> getFavoriteJob(FavoriteVO favorite){
+		return favoriteDao.getFavoriteJob(favorite);
 	}
 	
 	@Override
-	public List<FleaMarketVO> getFavoriteFlea(String user_id){
-		return favoriteDao.getFavoriteFlea(user_id);
+	public List<FavoriteVO> getFavoriteFlea(FavoriteVO favorite){
+		return favoriteDao.getFavoriteFlea(favorite);
 	}
 	
 	@Override
-	public List<RoomRentalVO> getFavoriteRoom(String user_id){
-		return favoriteDao.getFavoriteRoom(user_id);
+	public List<FavoriteVO> getFavoriteRoom(FavoriteVO favorite){
+		return favoriteDao.getFavoriteRoom(favorite);
 	}
 	
 	@Override
@@ -46,6 +47,11 @@ public class FavoriteServiceImpl implements FavoriteService{
 	public boolean deleteFavorite(String user_id, Long boardNo, String boardType) {
 		int result = favoriteDao.deleteFavorite(user_id, boardType, boardNo);
 		return result == 1;
+	}
+
+	@Override
+	public int listCnt(String boardType, String userId) {
+		return favoriteDao.listCnt(boardType, userId);
 	}
 	
 	

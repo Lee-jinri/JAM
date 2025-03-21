@@ -7,11 +7,48 @@
 <meta charset="UTF-8">
 <title>JAM - 커뮤니티</title>
 <script src="/resources/include/dist/js/userToggle.js"></script>
+<script src="/resources/include/dist/js/favorite.js"></script>
+
+<style>
+
+.title-container {
+	flex-grow: 1;
+    min-width: 250px;
+    max-width: 680px;
+    margin-left: 7rem;
+}
+
+.userName-div{
+	max-width: 150px;
+    flex: 1;
+    justify-content: center;
+}
+
+.date-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;  /* 오른쪽 정렬 */
+    flex-shrink: 0; /* 자동 크기 축소 방지 */
+    min-width: 120px; /* 너무 넓지 않게 조절 */
+    max-width: 170px; /* 필요 이상으로 커지지 않게 제한 */
+}
+
+.user_toggle {
+    left: -6rem;
+    top: 3rem;
+}
+
+
+</style>
 <script type="text/javascript">
 	$(function(){
-		toggleUserMenu();
 		
-		getBoards();
+		getBoards().then(() => {
+			toggleUserMenu(); 
+        })
+        .catch(error => {
+            console.error('Error while executing community boards:', error);
+        });
 		
 		$(document).on("click", ".boardLink", function (e) {
 		    e.preventDefault();
@@ -38,16 +75,16 @@
 		})
 			
 		$("#comWriteBtn").click(function(){
-			fetch('/api/member/checkAuthentication')
+			fetch('/api/member/decode-token')
 			.then(response =>{
 				if(!response.ok){
 					alert('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-					locaion.attr('/community/boards');
+					location.attr('/community/boards');
 				}
 				return response.json();
 			})
 			.then((data) => {
-				if(data.authenticated) $(location).attr('href', '/community/board/write');
+				if(data.userId) $(location).attr('href', '/community/board/write');
 				else if(confirm("로그인 후 이용할 수 있는 서비스 입니다. 로그인 하시겠습니까?"))$(location).attr('href', '/member/login');
 				
 			})
@@ -55,66 +92,67 @@
 	})
 	
 	function getBoards(){
-		let params = new URLSearchParams(window.location.search);
-	    let pageNum = params.get("pageNum") || "1";
-	    let search = params.get("search") || "all";
-	    let keyword = params.get("keyword") || "";
-	    
-		fetch('/api/community/boards?pageNum='+pageNum+'&search='+search+'&keyword='+keyword)
-		.then(response=>{
-			if(response.ok) return response.json();
-		}).then(data=>{
-			let $template = $("#boardTemplate");
-	        let $boardList = $("#boardList");
-	        
-	        $boardList.empty(); 
-
-	        data.communityList.forEach(board => {
-	            let $clone = $template.clone().removeAttr("id").show();
-	            $clone.find(".userName").text(board.user_name);
-	            $clone.find(".boardDate").text(board.com_date);
-	            $clone.find(".boardTitle").text(board.com_title);
-	            $clone.find(".boardHits").text(board.com_hits);
-	            $clone.find(".boardReplyCnt").text(board.com_reply_cnt);
-	            $clone.find(".boardLink").attr("data-location", "/community/board/" + board.com_no);
-
-	            $boardList.append($clone);
-	        });
-	        
-	        loadPagination(data.pageMaker);
+		return new Promise((resolve, reject) => {
+			let params = new URLSearchParams(window.location.search);
+		    let pageNum = params.get("pageNum") || "1";
+		    let search = params.get("search") || "all";
+		    let keyword = params.get("keyword") || "";
+		    
+		    fetch('/api/community/boards?pageNum='+pageNum+'&search='+search+'&keyword='+keyword)
+			.then(response=>{
+				if(response.ok) return response.json();
+			}).then(data=>{
+				renderList(data);
+				resolve();
+			})
+			.catch(error => {
+                console.error('Error:', error);
+                reject(error);
+            });
 		})
-		
-		$("#search").val(search);
-		$("#keyword").val(keyword);
+	}
+	
+	function renderList(data){
+		let $template = $("#boardTemplate");
+        let $boardList = $("#boardList");
+        
+        $boardList.empty(); 
+
+        data.communityList.forEach(board => {
+            let $clone = $template.clone().removeAttr("id").show();
+            
+            $clone.find(".userName").text(board.user_name);
+            $clone.find(".userName").attr("data-userId", board.user_id);
+            $clone.find(".boardDate").text(board.com_date);
+            $clone.find(".boardTitle").text(board.com_title);
+            $clone.find(".boardHits").text("👀" +board.com_hits);
+            $clone.find(".boardReplyCnt").text(board.com_reply_cnt);
+            $clone.find(".boardLink").attr("data-location", "/community/board/" + board.com_no);
+
+            let $favoriteSpan = $clone.find(".favoriteSpan");
+            $favoriteSpan.attr("data-board-no", board.com_no);
+    		$favoriteSpan.attr("data-board-type", "community");
+    		
+    		let $icon = $favoriteSpan.find("i"); 
+    		board.favorite ? $icon.addClass("fa-solid")
+    					   : $icon.addClass("fa-regular");
+    		
+            $boardList.append($clone);
+        });
+        
+        loadPagination(data.pageMaker);
+        
 	}
 	
 	function loadPagination(pageMaker) {
 	    const $pagination = $("#pagination");
 	    $pagination.empty(); // 기존 페이지 버튼 초기화
 
-	    // 이전 버튼
-	    if (pageMaker.prev) {
-	        $pagination.append(
-	            '<li class="paginate_button previous">' +
-	                '<a href="#" data-page="' + (pageMaker.startPage - 1) + '">Previous</a>' +
-	            '</li>'
-	        );
-	    }
-
 	    // 페이지 번호 버튼
 	    for (let num = pageMaker.startPage; num <= pageMaker.endPage; num++) {
 	        $pagination.append(
-	            '<li class="paginate_button ' + (pageMaker.cvo.pageNum === num ? 'active' : '') + '">' +
-	                '<a href="#" data-page="' + num + '" class="font-weight-bold">' + num + '</a>' +
-	            '</li>'
-	        );
-	    }
-
-	    // 다음 버튼
-	    if (pageMaker.next) {
-	        $pagination.append(
-	            '<li class="paginate_button next">' +
-	                '<a href="#" data-page="' + (pageMaker.endPage + 1) + '">Next</a>' +
+	            '<li class="paginate_button">' +
+	                '<a href="#" data-page="' + num + '" class="font-weight-bold ' + (pageMaker.cvo.pageNum === num ? 'selected_btn' : 'default_btn') + '">' + num + '</a>' +
 	            '</li>'
 	        );
 	    }
@@ -138,58 +176,81 @@
 </script>
 </head>
 <body class="wrap">
-	<div class="rem-20 my-top-15 my-bottom-15">
+	<div class="community my-top-15 my-bottom-15">
 		<div class="text-center my-top-7">
 			<p class="title font-color-blue">COMMUNITY</p>
 		</div>
 		<div class="content">
-			<div class="justify-between flex py-4">
-				<div class="write_btn write_btn_border flex items-center border-radius-7px">
-					<img class="icon" src="/resources/include/images/write.svg">
-					<button type="button" id="comWriteBtn" class="write_btn_font  border-none bColor_fff">작성하기</button>
+			<div class="search-div flex justify-center items-center border border-radius-43px">
+				<div class="search-bar-wrapper item-center flex justify-space-around">
+					
+					<% String searchParam = request.getParameter("search");
+					    if (searchParam == null || searchParam.isEmpty()) {
+					        searchParam = "all";
+					    }%> 
+					   
+					<select id="search" name="search" class="search border-none">
+						<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
+					    <option value="com_title" ${param.search == 'com_title' ? 'selected' : ''}>제목</option>
+					    <option value="com_content" ${param.search == 'com_content' ? 'selected' : ''}>내용</option>
+					    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>작성자</option>
+					</select>
+					
+					<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
+					value="${not empty param.keyword ? param.keyword : ''}" />
+					
+					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
+				</div>
+			</div>
+			<div class="justify-end flex py-4">
+				<div class="write_btn write_btn_border write_border flex items-center border-radius-7px mr-2">
+					<button type="button" id="comWriteBtn" class="write_btn_font border-none bColor_fff ">작성하기</button>
 				</div>
 			</div>
 			
-			<div class="border-top border-bottom py-2rem flex justify-center">
-				
-				<div class="items-center">
-					<div class="items-center flex">
-						<select id="search" name="search" class="search">
-							<option value="all">전체</option>
-							<option value="com_title">제목</option>
-							<option value="com_content">내용</option>
-							<option value="user_name">작성자</option>
-						</select>
-						<div>
-							<input type="text" name="keyword" id="keyword" placeholder="커뮤니티 내에서 검색" class="border border-radius-43px rem-2 search"/>
-						</div>
-						<img class="icon" id="searchBtn" style="cursor:pointer; width:3rem;" src="/resources/include/images/search.svg">
-					</div>
-				</div>
-			</div>	
+			
 			
 			<div>
-				<ul id="boardList">
-					<li id="boardTemplate" class="border-bottom">
-						<div class="pd-2rem boardLink" style="cursor: pointer;">
-							<div class="my-bottom-4">
-								<span class="padding-right-1 userName"></span>
-								<div class="userNameToggle absolute" style="z-index: 5;"></div>
-								<span class="padding-right-1  boardDate"></span>
-							</div>
-							<div class="my-bottom-4">
-					            <span class="font-weight-bold font-size-5 boardTitle"></span>
-					            <div class="flex float-right items-center width-13rem justify-center my-top-4">
-					                <img class="icon" style="width: 2.5rem;" src="/resources/include/images/hits.svg" alt="Views" />
-					                <span class="font-size-4 ml-05 boardHits"></span>
-					                <img class="icon ml-2" style="width: 2.5rem;" src="/resources/include/images/reply.svg" alt="Replies" />
-					                <span class="font-size-4 ml-05 boardReplyCnt"></span>
-					            </div>
-					        </div>
-						</div>
-					</li>
-				</ul>
+			    <ul id="boardList">
+			        <li id="boardTemplate" class="border-bottom">
+			            <div class="pd-2rem flex items-center" >
+			                
+			                <!-- 왼쪽: 즐겨찾기 -->
+			                <div class="flex items-center justify-center ml-2 mr-2" style="width: 3rem;">
+			                    <span class="favoriteSpan">
+			                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
+			                    </span>
+			                </div>
+			
+			                <!-- 중앙: 닉네임 (윗줄) + 제목 (아랫줄) -->
+			                <div class="title-container boardLink flex-1 flex items-center cursor-pointer">
+			                    <div>
+			                        <span class="font-weight-bold font-size-5 boardTitle"></span>
+			                    </div>
+			                </div>
+							<div class="userName-div my-bottom-2 flex">
+			                    <span class="userName"></span>
+			                    <div class="userNameToggle"></div>
+			                </div>
+			                
+			                <div class="date-container flex-1 text-right">
+			                    <div class="my-bottom-2">
+			                        <span class="boardDate"></span>
+			                    </div>
+			                    <div class="flex items-center justify-end my-top-2">
+			                        <span class="ml-05 boardHits"></span>
+			                        <span class="ml-05"><i class="fa-regular fa-comment-dots"></i></span>
+			                        <span class="ml-05 boardReplyCnt"></span>
+			                    </div>
+			                    
+			                </div>
+			
+			            </div>
+			        </li>
+			    </ul>
 			</div>
+			
+			
 			
 			<div>
 				<!-- 페이징 영역 -->

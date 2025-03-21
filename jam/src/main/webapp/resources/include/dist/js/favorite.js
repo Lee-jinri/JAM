@@ -1,5 +1,8 @@
 $(function(){
-	$(document).on("click", ".favorite", function () {
+	$(document).on("click", ".favorite", function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		
 	    $icon = $(this);
 	    let isFavorite = $icon.hasClass("fa-solid"); // 현재 즐겨찾기 여부 확인
 	    
@@ -20,11 +23,25 @@ $(function(){
 function removeFavorite(boardNo, boardType, $icon){
 	let url = '/api/favorite/'+boardNo + '?boardType=' + boardType;
 	
+	if(!boardNo || !boardType) {
+		alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
+		return false;
+	}
+	
+	
 	fetch(url,{
 		method: "DELETE",
 	})
 	.then(response=>{
-		if(response.ok) $icon.removeClass("fa-solid").addClass("fa-regular"); // 즐겨찾기 해제
+		if(response.ok) {
+			// 북마크 페이지에서만 실행됨.
+			const $item = $icon.closest(".bookmark-item");
+			if ($item.length > 0) {
+			    $item.remove(); 
+			}
+
+			$icon.removeClass("fa-solid").addClass("fa-regular"); // 즐겨찾기 해제
+		}
 		else {
 			return response.text().then(errorMessage => {
                 throw { status: response.status, message: errorMessage };
@@ -40,11 +57,16 @@ function removeFavorite(boardNo, boardType, $icon){
             alert(error.message);
             console.error("즐겨찾기 삭제 에러 :", error);
         }
-	});
+	}); 
 }
 		
 function addFavorite(boardNo, boardType, $icon){
 	let url = '/api/favorite/'+boardNo + '?boardType=' + boardType;
+	
+	if(!boardNo || !boardType) {
+		alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
+		return false;
+	}
 	
 	fetch(url,{
 		method: "POST",

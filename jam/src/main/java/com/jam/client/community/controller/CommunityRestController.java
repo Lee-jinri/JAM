@@ -52,6 +52,7 @@ public class CommunityRestController {
 	 */
 	@GetMapping(value = "boards")
 	public ResponseEntity<Map<String, Object>> getBoards(
+			HttpServletRequest request,
 			@RequestParam (defaultValue = "1")int pageNum,
 			@RequestParam(required=false) String search,
 			@RequestParam(required=false) String keyword){
@@ -62,6 +63,9 @@ public class CommunityRestController {
 			com_vo.setSearch(search);
 			com_vo.setKeyword(keyword);
 			
+			String user_id = (String)request.getAttribute("userId");
+			if(user_id != null) com_vo.setUser_id(user_id);
+			
 			Map<String, Object> result = new HashMap<>();
 
 			List<CommunityVO> communityList = comService.getBoards(com_vo);
@@ -71,10 +75,9 @@ public class CommunityRestController {
 			PageDTO pageMaker = new PageDTO(com_vo, total);
 	        result.put("pageMaker", pageMaker);
 
-	        
 	        return ResponseEntity.ok(result);
 		}catch(Exception e) {
-			log.error(e.getStackTrace());
+			log.error(e.getMessage());
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
 		}

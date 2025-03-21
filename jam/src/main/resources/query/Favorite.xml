@@ -2,41 +2,90 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jam.client.favorite.dao.FavoriteDAO">
 
-	<select id="getFavoriteCommunity" resultType="community">
-    SELECT c.com_no, c.com_title, c.com_hits, c.com_reply_cnt, m.user_name
-    FROM community c
-    JOIN member m ON c.user_id = m.user_id 
-    WHERE c.com_no IN (
-        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'community'
-    )
+	<select id="getFavoriteCommunity" parameterType="favorite" resultType="favorite">
+	    <![CDATA[
+	    SELECT com_no AS board_no , com_title AS board_title, TO_CHAR(com_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	            c.com_no, c.com_title, c.com_date,
+	            ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+	        FROM community c
+	        WHERE c.com_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'community'
+	        )
+	    ) 
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
 	</select>
 	
-	<select id="getFavoriteJob" resultType="job">
-    SELECT j.job_no, j.job_title, j.job_category, j.job_status, j.job_hits, j.job_reply_cnt, j.job_date, j.pay_category, j.pay, j.position, j.city, j.gu, j.dong, m.user_name
-    FROM job j
-    JOIN member m ON j.user_id = m.user_id 
-    WHERE j.job_no IN (
-        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'job'
-    )
+	
+	<select id="getFavoriteJob" parameterType="favorite" resultType="favorite">
+	    <![CDATA[
+	    SELECT job_no AS board_no, job_title AS board_title, TO_CHAR(job_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	            j.job_no, j.job_title, j.job_date,
+	            ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
+	        FROM job j
+	        WHERE j.job_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'job'
+	        )
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
 	</select>
 	
 	
-	<select id="getFavoriteFlea" resultType="flea">
-    SELECT f.flea_no, f.flea_title, f.flea_category, f.sales_status, f.flea_hits, f.flea_reply_cnt, f.flea_date, m.user_name
-    FROM fleaMarket f
-    JOIN member m ON f.user_id = m.user_id 
-    WHERE f.flea_no IN (
-        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'fleaMarket'
-    )
+	<select id="getFavoriteFlea" parameterType="favorite" resultType="favorite">
+		<![CDATA[
+		SELECT flea_no AS board_no, flea_title AS board_title, TO_CHAR(flea_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	           	f.flea_no, f.flea_title, f.flea_date,
+	            ROW_NUMBER() OVER (ORDER BY f.flea_no DESC) AS rnum
+	        FROM fleaMarket f
+	        WHERE f.flea_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'fleaMarket'
+	        )
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
 	</select>
 	
-	<select id="getFavoriteRoom" resultType="room">
-    SELECT r.roomRental_no, r.roomRental_title, r.roomRental_status, r.roomRental_hits, r.roomRental_reply_cnt, r.roomRental_date, r.city, r.gu, r.dong, m.user_name
-    FROM roomRental r
-    JOIN member m ON r.user_id = m.user_id 
-    WHERE r.roomRental_no IN (
-        SELECT board_no FROM favorite WHERE user_id = #{user_id} AND board_type = 'roomRental'
-    )
+	<select id="getFavoriteRoom" parameterType="favorite" resultType="favorite">
+	    <![CDATA[
+	    SELECT roomRental_no AS board_no, roomRental_title AS board_title, TO_CHAR(roomRental_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	           	r.roomRental_no, r.roomRental_title, r.roomRental_date,
+	            ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
+	        FROM roomRental r
+	        WHERE r.roomRental_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'roomRental'
+	        )
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
 	</select>
 
 	
@@ -56,6 +105,12 @@
 			AND board_no = #{board_no}
 	</delete>
 
-	
+	<select id="listCnt" parameterType="map" resultType="int">
+	    SELECT COUNT(*)
+	    FROM favorite
+	    WHERE user_id = #{user_id}
+	    	AND board_type = #{board_type}
+	</select>
+		
 
 </mapper>

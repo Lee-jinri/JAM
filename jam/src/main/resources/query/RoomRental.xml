@@ -32,18 +32,23 @@
 	<!-- 합주실 list -->
 	<select id="getBoards" parameterType="room" resultType="room">
 		<![CDATA[
-		SELECT roomRental_no, roomRental_title, 
+		SELECT 
+			roomRental_no, roomRental_title, 
 			to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') AS roomRental_date, 
 			roomRental_reply_cnt, roomRental_hits, 
 			roomRental_status, roomRental_price, 
 			roomRental_duration, user_id , user_name, 
-			city, gu, dong
+			city, gu, dong,
+			0 AS isFavorite  
 		FROM (
 			SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
-				r.roomRental_no, r.roomRental_title, r.roomRental_date, r.roomRental_reply_cnt, r.roomRental_price, r.roomRental_duration, r.roomRental_hits, r.roomRental_status, r.user_id , m.user_name, r.city, r.gu, r.dong,
+				r.roomRental_no, r.roomRental_title, r.roomRental_date, 
+				r.roomRental_reply_cnt, r.roomRental_price, r.roomRental_duration, 
+				r.roomRental_hits, r.roomRental_status, r.user_id , 
+				m.user_name, r.city, r.gu, r.dong,
 				ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
 			FROM roomRental r
-			JOIN Member m ON r.user_id = m.user_id
+			LEFT JOIN Member m ON r.user_id = m.user_id
 			]]>
 			<where>
 		        1=1
@@ -54,6 +59,41 @@
 		<![CDATA[ 
 		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
 		]]>
+	</select>
+	
+	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회 -->
+	<select id="getBoardsWithFavorite" parameterType="room" resultType="room">
+	    <![CDATA[
+		SELECT 
+		    roomRental_no, roomRental_title, 
+			to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') AS roomRental_date, 
+			roomRental_reply_cnt, roomRental_hits, 
+			roomRental_status, roomRental_price, 
+			roomRental_duration, r.user_id , user_name, 
+			city, gu, dong,
+			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+		FROM (
+		    SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
+				r.roomRental_no, r.roomRental_title, r.roomRental_date, r.roomRental_reply_cnt, r.roomRental_price, r.roomRental_duration, r.roomRental_hits, r.roomRental_status, r.user_id , m.user_name, r.city, r.gu, r.dong,
+				ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
+			FROM roomRental r
+			JOIN Member m ON r.user_id = m.user_id
+		]]>
+		    <where>
+		        1=1
+		        <include refid="roomSearch"></include>
+		        <include refid="roomLocalSearch"></include>
+		    </where>
+		<![CDATA[
+		) r
+		LEFT JOIN favorite f  
+			ON r.roomRental_no = f.board_no  
+			AND f.board_type = 'roomRental'  
+			AND f.user_id = #{user_id, jdbcType=VARCHAR}
+		WHERE rnum > (#{pageNum} - 1) * #{amount} 
+		AND rnum <= #{pageNum} * #{amount}
+		]]>
+
 	</select>
 	
 	<select id="listCnt" parameterType="room" resultType="int">
@@ -131,7 +171,7 @@
 		FROM (
 				SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
 					rownum as rnum, roomRental_no, roomRental_title, roomRental_date, roomRental_hits
-				FROM roomRental r 
+				FROM roomRental r
 				where ]]> 
 				<trim prefix="(" suffix=") AND" prefixOverrides="AND">
 					<include refid="roomSearch"></include> 

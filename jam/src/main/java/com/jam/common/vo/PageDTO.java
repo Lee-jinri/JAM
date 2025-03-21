@@ -16,7 +16,15 @@ public class PageDTO {
 	public PageDTO(CommonVO cvo, int total) {
 		this.cvo = cvo;
 		this.total = total;
-		
+		this.calculatePaging(cvo.getPageNum(), cvo.getAmount());
+	}
+	
+    public PageDTO(int pageNum, int amount, int total) {
+        this.total = total;
+        this.calculatePaging(pageNum, amount);
+    }
+
+	private void calculatePaging(int pageNum, int amount) {
 		/*페이징의 끝번호(endPage) 구하기
 		 * this.endPage = (int) (Math.ceil 정수로 반올림 (페이지번호 / 10.0)) * 10;*/
 		this.endPage = (int) (Math.ceil(cvo.getPageNum() / 10.0)) * 10; 

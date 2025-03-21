@@ -11,7 +11,47 @@
 <script type="text/javascript" src="/resources/include/dist/js/jquery-3.7.1.min.js"></script>
 <script type="text/javascript" src="/resources/include/dist/js/common.js"></script>
 
+<style>
 
+.replyContainer {
+    width: 100%;
+    margin-bottom: 3rem;
+}
+
+.reply_div {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    max-width: 800px; /* 최대 너비 지정 (선택 사항) */
+    margin: 0 auto;
+}
+
+.reply-input-container {
+    width: 100%;
+    margin-top: 10px;
+}
+
+textarea.reply_content {
+    width: 100%; /* 부모 크기만큼 확장 */
+    min-height: 100px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    resize: vertical;
+}
+
+.replyInsert-btn {
+    margin-top: 10px;
+    align-self: flex-end; /* 버튼을 오른쪽으로 정렬 */
+    padding: 8px 15px;
+    background-color: #a5b4fc;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+	
+</style>
 <script>
 $(function(){
 	listAll();
@@ -183,7 +223,8 @@ async function listAll() {
 	        data.forEach(reply => {
             let { jobReply_no, user_id, user_name, jobReply_content, jobReply_date } = reply;
             jobReply_content = jobReply_content.replace(/(\r\n|\n)/g, "<br/>");
-	            // 댓글을 UI에 추가
+	        
+            // 댓글을 UI에 추가
             template(jobReply_no, user_name, jobReply_content, jobReply_date, user_id, loggedInUserId);
         });
 	    } catch (error) {
@@ -192,13 +233,14 @@ async function listAll() {
     }
 }
 	
-function template(jobReply_no,user_name,jobReply_content,jobReply_date,user_id, loggedInUserId){
+function template(jobReply_no,user_name,jobReply_content, jobReply_date, user_id, loggedInUserId){
 	let $div = $('#reviewList');
 	
 	let $element = $('#item-template').clone().removeAttr('id');
 	$element.attr("data-num",jobReply_no);
 	$element.addClass("reply");
 	$element.find('.panel-heading > .panel-title > .userName').html(user_name);
+	$element.find('.panel-heading > .panel-title > .replyUserName').attr("data-userId", user_id);
 	
 	$element.find('.panel-heading > .panel-title > .frmPopup').attr("id", "frmPopup_" + jobReply_no);
 	$element.find('.panel-heading > .panel-title > .frmPopup > #receiver_id').attr("value", user_id);
@@ -208,7 +250,9 @@ function template(jobReply_no,user_name,jobReply_content,jobReply_date,user_id, 
 	$element.find('.panel-body').html(jobReply_content);
 	
 	$div.append($element);
-		
+
+	toggleUserMenu();
+	
 	// 사용자가 로그인 중	
 	if (loggedInUserId != null) {
 		
@@ -225,6 +269,7 @@ function template(jobReply_no,user_name,jobReply_content,jobReply_date,user_id, 
 					+ "</button>");
 		}
 	}
+	
 }
 	
 //입력 폼 초기화
@@ -293,26 +338,30 @@ function replyInputUi(){
 </head>
 <body class="wrap">
 	<div>
+	
 		<!-- 댓글 작성부 -->
 		<div class="replyContainer">
-			<input type="hidden" id="job_no" value="${job_no }">
-			<div class="reply_div">
-				<div id="reply_login"></div>
-				<table>
-					<tr id="reply_userName">
-						<td id="reply_name"></td>
-					</tr>
-					<tr>
-						<td>
-							<textarea id="jobReply_content" name="jobReply_content" class="reply_content form-control" rows="3"></textarea>
-						</td>
-					</tr>
-					<tr>
-						<td><button type="button" id="reply_insert" class="replyInsert-btn">등록</button></td>
-					</tr>
-				</table>
-			</div>	
+		    <input type="hidden" id="job_no" value="${job_no }">
+		
+		    <div class="reply_div">
+		        <!-- 로그인 정보 -->
+		        <div id="reply_login"></div>
+		
+		        <!-- 닉네임 -->
+		        <div id="reply_userName">
+		            <span id="reply_name"></span>
+		        </div>
+		
+		        <!-- 댓글 입력창 -->
+		        <div class="reply-input-container">
+		            <textarea id="jobReply_content" name="jobReply_content" class="reply_content form-control" rows="3"></textarea>
+		        </div>
+		
+		        <!-- 등록 버튼 -->
+		        <button type="button" id="reply_insert" class="replyInsert-btn">등록</button>
+		    </div>
 		</div>
+	
 		
 		
 		<%-- 댓글 리스트 --%>
@@ -320,7 +369,7 @@ function replyInputUi(){
 			<div id="item-template" class="panel">
 				<div class="panel-heading">
 					<div class="panel-title">
-						<span class="cursor-pointer userName" id="user_name"></span>
+						<span class="cursor-pointer userName replyUserName" id="user_name"></span>
 						<div class="userNameToggle"></div> 
 						<span class="date"></span>
 						<div class="panel-btn"></div>

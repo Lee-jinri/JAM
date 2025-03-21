@@ -31,7 +31,7 @@ public class ComMapperTest {
 		com_vo.setUser_id("abcd1234");
 		
 		// 로그인 X 즐겨찾기 글 조회 X
-		log.info(communityDao.getBoards(com_vo));
+		//log.info(communityDao.getBoards(com_vo));
 		
 		// 즐겨찾기 한 글 조회
 		log.info(communityDao.getBoardsWithFavorite(com_vo));

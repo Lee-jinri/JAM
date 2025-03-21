@@ -113,35 +113,41 @@ function currentUserIsAuthor(isAuthor){
 </script>
 </head>
 <body class="wrap">
-	<div class="rem-30 my-top-15 my-bottom-15">
+	<div class=" my-top-15 my-bottom-15">
 		<input type="hidden" id="com_no" name="com_no" value="${com_no }" />
-
-		<div class="py-8 text-center">
-			<h1 id="com_title" class="font-weight-bold"></h1>
-		</div>
-		<div class="content flex items-center float-right">
-			<div>
-				<span id="user_name" class="userName relative"></span>
-				<div class="userNameToggle absolute" style="z-index: 5;"></div>
+		
+		<div class="board-detail-container">
+			<div class="board-header">
+			    <p id="com_title" class="com_title board-title"></p>
+			    <div class="board-info">
+					<span id="userName" class="userName boardUserName"></span>  
+					<div class="userNameToggle"></div> 
+			      	<span class="divider">|</span>
+			       	<span id="com_date"></span>
+			        <span class="divider">|</span>
+			        <span class="com-hits board-hits">
+			            <span id="com_hits"></span>
+			        </span>
+			    </div>
 			</div>
-
-			<div id="msgDiv"></div>
-
-			<span id="com_date" class="ml-1"></span> <img class="icon ml-2" style="width: 3rem;" src="/resources/include/images/hits.svg"> <span id="com_hits" class="ml-05"></span>
-		</div>
-		<div class="my-top-8 py-8 border-top border-bottom m-height350">
-			<p id="com_content"></p>
-		</div>
-		<div class="text-right my-top-7">
-			<div id="btn_div"></div>
-		</div>
-		<div class="py-8">
-			<jsp:include page="reply.jsp" />
-		</div>
-		<div class="text-center">
-			<a id="comList" href="/community/boards">목록</a>
-		</div>
+			
+			
+			<!-- 본문 영역 -->
+			<div class="com-content board-content">
+			    <p id="com_content"></p>
+			</div>
+			
+			<!-- 버튼 영역 -->
+			<div class="board-buttons">
+			    <div id="btn-div" class="author-buttons"></div>
+			    <a href="/community/boards" class="board-btn">목록</a>
+			</div>
+			
+			<!-- 댓글 -->
+			<div class="com-reply">
+				<jsp:include page="reply.jsp" />
+			</div>
+		</div>	
 	</div>
-
 </body>
 </html>

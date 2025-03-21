@@ -27,6 +27,14 @@ public class FleaMarketMapperTest {
 		
 		log.info("중고악기 전체 글  조회");
 		log.info(fleaDao.getBoards(flea_vo));
+		
+		flea_vo.setUser_id("abcd1234");
+		
+		// 로그인 X 즐겨찾기 글 조회 X
+		//log.info(fleaDao.getBoards(flea_vo));
+		
+		// 즐겨찾기 한 글 조회
+		log.info(fleaDao.getBoardsWithFavorite(flea_vo));
 	}
 	
 	/* 상세 페이지 조회

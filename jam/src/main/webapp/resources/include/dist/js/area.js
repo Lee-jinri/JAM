@@ -47,7 +47,6 @@ async function loadLocationData() {
     try {
         const response = await fetch('/resources/include/dist/json/locationData.json'); 
         locationData = await response.json();
-        console.log("지역 데이터 로드 완료:", locationData);
     } catch (error) {
         console.error("지역 데이터 로드 실패:", error);
         alert("지역 데이터를 불러오는데 실패했습니다.");

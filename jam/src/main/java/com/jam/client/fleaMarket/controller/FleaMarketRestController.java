@@ -1,5 +1,6 @@
 package com.jam.client.fleaMarket.controller;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
+import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.AllArgsConstructor;
@@ -34,6 +36,31 @@ public class FleaMarketRestController {
 
 	@Autowired
 	private FleaMarketService fleaService;
+	
+	@GetMapping(value = "boards")
+	public ResponseEntity<Map<String, Object>> getBoards(FleaMarketVO flea_vo, HttpServletRequest request){
+		try {
+			String user_id = (String)request.getAttribute("userId");
+			if(user_id != null) flea_vo.setUser_id(user_id);
+			
+			Map<String, Object> result = new HashMap<>();
+
+			List<FleaMarketVO> fleaMarketList = fleaService.getBoards(flea_vo);
+			
+			result.put("fleaMarketList", fleaMarketList);
+			
+			int total = fleaService.listCnt(flea_vo);
+			
+			PageDTO pageMaker = new PageDTO(flea_vo, total);
+	        result.put("pageMaker", pageMaker);
+
+	        return ResponseEntity.ok(result);
+		}catch(Exception e) {
+			log.error(e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
+		}
+	}
 
 	/**********************************
 	 * 중고악기 글 상세정보를 조회하는 메서드입니다.

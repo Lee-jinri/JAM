@@ -5,7 +5,11 @@
 	<!-- 중고거래 list -->
 	<select id="getBoards" parameterType="flea" resultType="flea">
 		<![CDATA[
-		SELECT flea_no, flea_title, to_char(flea_date, 'YYYY/MM/DD HH24:MI') as flea_date, flea_reply_cnt, flea_hits, flea_category, price, sales_status, user_id, user_name
+		SELECT 
+			flea_no, flea_title, 
+			to_char(flea_date, 'YYYY/MM/DD HH24:MI') as flea_date, 
+			flea_reply_cnt, flea_hits, flea_category, price, 
+			sales_status, user_id, user_name
 		FROM (
 			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
 				f.flea_no, f.flea_title, f.flea_date, f.flea_reply_cnt, f.flea_hits, f.flea_category, f.price, f.sales_status, f.user_id , m.user_name,
@@ -21,6 +25,37 @@
 		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
 		]]>
 	</select>
+	
+	<select id="getBoardsWithFavorite" parameterType="flea" resultType="flea">
+		<![CDATA[
+		SELECT 
+			f.flea_no, f.flea_title, 
+			to_char(f.flea_date, 'YYYY/MM/DD HH24:MI') as flea_date, 
+			f.flea_reply_cnt, f.flea_hits, f.flea_category, f.price, 
+			f.sales_status, f.user_id, f.user_name,
+			CASE WHEN fav.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+		FROM (
+			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
+				f.flea_no, f.flea_title, f.flea_date, f.flea_reply_cnt, f.flea_hits, f.flea_category, f.price, f.sales_status, f.user_id, m.user_name,
+				ROW_NUMBER() OVER (ORDER BY f.flea_no DESC) AS rnum
+			FROM fleaMarket f
+			JOIN member m ON f.user_id = m.user_id
+		]]>
+			<where>
+		        1=1
+		        <include refid="fleaSearch"></include>
+		    </where>
+		<![CDATA[
+		) f
+		LEFT JOIN favorite fav  
+			ON f.flea_no = fav.board_no  
+			AND fav.board_type = 'fleaMarket'  
+			AND fav.user_id = #{user_id, jdbcType=VARCHAR}
+		WHERE rnum > (#{pageNum} - 1) * #{amount} 
+		AND rnum <= #{pageNum} * #{amount}
+		]]>
+	</select>
+
 	
 	<!-- 전체 레코드 수 조회 -->
 	<select id="listCnt" parameterType="flea" resultType="int">

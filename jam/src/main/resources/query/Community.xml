@@ -15,7 +15,7 @@
 		</if>
 	</sql>
 	
-	<!-- 커뮤니티 레코드 수 조회 -->
+	
 	<select id="getBoards" parameterType="community" resultType="community">
 	    <![CDATA[
 	    SELECT 
@@ -41,7 +41,6 @@
 	    ]]>
 	</select>
 
-	
 	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회 -->
 	<select id="getBoardsWithFavorite" parameterType="community" resultType="community">
 	    <![CDATA[
@@ -56,7 +55,7 @@
 		        c.user_id, m.user_name,
 		        ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
 		    FROM community c
-		    JOIN member m ON c.user_id = m.user_id
+		    JOIN Member m ON c.user_id = m.user_id
 		]]>
 		    <where>
 		        1=1
@@ -71,8 +70,18 @@
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
 		AND rnum <= #{pageNum} * #{amount}
 		]]>
-
 	</select>
+	
+	<!-- 커뮤니티 레코드 수 조회 -->
+	<select id="listCnt" parameterType="community" resultType="int">
+	    SELECT count(*)
+	    FROM community c
+	    LEFT JOIN member m ON c.user_id = m.user_id
+	    <where>
+			1=1
+		    <include refid="comSearch"></include>
+		</where>
+	</select>	
 	
 	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회
 	<select id="getBoardsWithFavorite" parameterType="community" resultType="community">

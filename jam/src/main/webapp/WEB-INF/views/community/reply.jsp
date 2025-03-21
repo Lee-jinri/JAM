@@ -289,28 +289,27 @@
 	<div>
 		<!-- 댓글 작성부 -->
 		<div class="replyContainer">
-			
-			<form id="replyForm">
-				<div class="reply_div">
-					<div id="reply_login"></div>
-					<table>
-						<tr id="reply_userName">
-							<td id="reply_name"></td>
-							
-						</tr>
-						<tr>
-							<td>
-								<textarea id="comReply_content" name="comReply_content" class="form-control" rows="3"></textarea>
-							</td>
-						</tr>
-						<tr>
-							<td><button type="button" id="reply_insert">등록</button></td>
-						</tr>
-					</table>
-				</div>	
-			</form>
-					
+		    <input type="hidden" id="com_no" value="${com_no }">
+		
+		    <div class="reply_div">
+		        <!-- 로그인 정보 -->
+		        <div id="reply_login"></div>
+		
+		        <!-- 닉네임 -->
+		        <div id="reply_userName">
+		            <span id="reply_name"></span>
+		        </div>
+		
+		        <!-- 댓글 입력창 -->
+		        <div class="reply-input-container">
+		            <textarea id="comReply_content" name="comReply_content" class="reply_content form-control" rows="3"></textarea>
+		        </div>
+		
+		        <!-- 등록 버튼 -->
+		        <button type="button" id="reply_insert" class="replyInsert-btn">등록</button>
+		    </div>
 		</div>
+		
 				
 		<%-- 댓글 리스트 --%>
 		<div id="reviewList">

@@ -35,22 +35,61 @@ p{
 	appearance: none;
 	border: none;
 }
-
-#password-box{
-    border: solid 1px;
-    height: 150px;
-    border-radius: 30px;
-    display: flex;
-    flex-direction: column; /* 수직 정렬 */
-    justify-content: space-between; /* 위쪽과 아래쪽 공간 분배 */
-    padding: 20px; /* 모달 안쪽 여백 */
+#password-box {
+    display: none; /* 기본적으로 숨김 */
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* 📌 화면 중앙 정렬 */
+    background: white;
+    width: 350px;
+    padding: 25px;
+    border-radius: 12px; /* 🎨 둥글게 */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); /* ✨ 은은한 그림자 */
+    text-align: center;
 }
 
+#password-box .section {
+    margin-bottom: 15px; /* 각 요소 간격 조정 */
+}
 
-.section {
-    display: flex;
-    justify-content: center; /* 가로로 가운데 정렬 */
-    align-items: center; /* 세로로 가운데 정렬 */
+#password-box p {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#passwordInput {
+    width: 85%;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 8px; /* ✅ 입력창 둥글게 */
+    font-size: 16px;
+    text-align: center;
+    transition: all 0.3s ease-in-out;
+}
+
+#passwordInput:focus {
+    border-color: #6A5ACD; /* ✨ 포커스 시 강조 */
+    outline: none;
+    box-shadow: 0 0 8px rgba(106, 90, 205, 0.3);
+}
+
+#submitBtn {
+    width: 25%;
+    padding: 7px 10px;
+    background: #F4A261;
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+#submitBtn:hover {
+    background: #E78B44; 
+    transition: background 0.3s ease-in-out;
 }
 
 
@@ -105,19 +144,19 @@ $(function(){
 			})
 			.then(response =>{
 				if(response.ok){
-					alert("비밀번호 확인 완료");
+					alert("비밀번호가 확인되었습니다.");
 					passwordConfirmUi('true');
 					getAccount();
 					
 				}else if(response.status === 401){
-					alert("비밀번호가 일치하지 않습니다.");
+					alert("비밀번호가 틀렸습니다. 다시 입력해 주세요.");
 			        $("#passwordInput").val("");
 			        $("#passwordInput").focus();
-				}else throw new Error("비밀번호 확인 중 오류가 발생했습니다.");
+				}else throw new Error("비밀번호 확인 중 오류가 발생");
 			       
 			})
 			.catch(error =>{
-				alert('오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+				alert('일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
 				console.error('Password confirm Error: ' , error);
 				$(location).attr('href', '/');
 			})
@@ -152,7 +191,7 @@ $(function(){
 				$("#password-box").css('display','none');
 				$("#info-box").css('display','block');
 			}else{ // 인증 안됨
-				$("#password-box").css('display','flex');
+				$("#password-box").css('display','block');
 				$("#info-box").css("display", "none");
 			}
 		}

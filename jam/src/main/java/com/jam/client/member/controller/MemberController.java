@@ -192,5 +192,13 @@ public class MemberController {
 		
 		return "member/joinFind";
 	}
+	
+	/***********************************
+	 * @return 북마크 페이지
+	 ***********************************/
+	@RequestMapping(value="/favorite", method = RequestMethod.GET)
+	public String favoritePage() {
+		return "member/favorite";
+	}
 
 }

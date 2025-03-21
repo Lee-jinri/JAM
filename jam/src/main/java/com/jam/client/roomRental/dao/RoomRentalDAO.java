@@ -10,6 +10,8 @@ public interface RoomRentalDAO {
 	
 	// 합주,연습실 리스트
 	public List<RoomRentalVO> getBoards(RoomRentalVO room_vo);
+	
+	public List<RoomRentalVO> getBoardsWithFavorite(RoomRentalVO room_vo);
 
 	// 합주,연습실 페이징
 	public int listCnt(RoomRentalVO room_vo);

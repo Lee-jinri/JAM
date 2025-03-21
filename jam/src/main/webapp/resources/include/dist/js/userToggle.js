@@ -23,9 +23,8 @@ function setUserToggle(currentUserId) {
     $(".userName").each(function() {
         let userId = $(this).attr("data-userId");
 
-console.log(userId);
         // 현재 로그인한 사용자와 아이디 비교
-        if (userId !== currentUserId) {
+        if (userId !== currentUserId && userId) {
             $(this).addClass("cursor-pointer");
 
             let userToggleDiv = $("<div>").addClass("user_toggle absolute border border-radius-7px bColor_fff text-alignC");

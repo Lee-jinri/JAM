@@ -7,7 +7,82 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM</title>
+<style>
+.contents {
+    width: 100%;
+    margin: 40px auto;
+}
+.contents {
+    width: 90%;
+    margin: 40px auto;
+}
+
+.mainDiv {
+    width: 100%;
+    margin-bottom: 30px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+}
+
+.mainDiv:hover {
+    transform: translateY(-3px); 
+}
+
+.mainListDiv {
+    padding: 15px;
+    font-size: 18px;
+    font-weight: bold;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    color: white;
+    cursor: pointer;
+    transition: background 0.3s ease-in-out;
+}
+
+.board-list {
+    list-style: none;
+    padding: 0;
+}
+
+.board-item {
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.2s ease-in-out;
+}
+
+.board-item:hover {
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 8px;
+}
+
+.listTitle {
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.listTitle:hover {
+    text-decoration: underline;
+    color: #4A90E2;
+}
+
+.meta-info {
+    font-size: 14px;
+    color: #666;
+    display: flex;
+    gap: 15px;
+}
+
 	
+
+</style>	
 	<script>
 		$(function(){
 
@@ -63,178 +138,79 @@
 
 
 		function renderList(list, targetSelector, templateSelector, linkPrefix, listType) {
+			
+		    const $targetUl = $(targetSelector); 
+		    $targetUl.empty(); // 기존 목록 초기화
+
 		    list.forEach(item => {
-		        const $targetDiv = $(targetSelector);
-		        
-		        let $templateElement = $(templateSelector).clone().removeAttr('id');
-		        
-		        const datePropertyName = listType + '_date';
 		        const hitsPropertyName = listType + '_hits';
 		        const replyCntPropertyName = listType + '_reply_cnt';
 		        const titlePropertyName = listType + '_title';
-				const numberPropertyName = listType + '_no';
-				
-				
-				$templateElement.find(".userName").attr("data-userId", item.user_id);
-				$templateElement.find(".userName").html(item.user_name);
-		        $templateElement.find(".listDate").html(item[datePropertyName]);
-		        $templateElement.find(".listHits").html(item[hitsPropertyName]);
-		        $templateElement.find(".listReplyCnt").html(item[replyCntPropertyName]);
-		        $templateElement.find(".listTitle").html(item[titlePropertyName]);
-		        $templateElement.find(".listTitle").attr("href", linkPrefix + item[numberPropertyName]);
+		        const numberPropertyName = listType + '_no';
 
-		        $targetDiv.append($templateElement);
+		        let $listItem = $("<li>").addClass("board-item");
+
+		        let $titleLink = $("<a>")
+		            .addClass("listTitle")
+		            .attr("href", linkPrefix + item[numberPropertyName])
+		            .text(item[titlePropertyName]);
+
+		        let $metaInfo = $("<span>")
+		            .addClass("meta-info")
+		            .text('조회 ' +  item[hitsPropertyName] + ' | 댓글 ' + item[replyCntPropertyName]);
+
+		        $listItem.append($titleLink, $metaInfo);
+
+		        $targetUl.append($listItem);
 		    });
 		}
 	</script>
 
 </head>
+<body>
+<div class="contents">
+	<!-- Jobs -->
+    <div class="mainDiv">
+        <div class="mainListDiv" id="jobHeader">📌 Jobs</div>
+        <ul id="jobList" class="board-list">
+            <li class="board-item">
+                <a class="listTitle" href="#"></a>
+                <span class="meta-info"></span>
+            </li>
+        </ul>
+    </div>
 
-	<div class="contents rem-20 ">
-	    <div class="flex flex-container my-top-15">
-	        <!-- 구인구직 글 리스트 -->
-	        <div class="w-45rem mainDiv">
-	            <div class="mainListDiv" id="jobHeader">
-	                <div class="ml-2">
-	                    <span id="jobHeader_text" class=" font-size-3 font600">Jobs</span>
-	                </div>
-	            </div>
-	
-	            <div id="jobList" class="my-top-8 mr-1 ml-1">
-	            	<div id="jobTemplate">
-		                <ul>
-		                    <li class="border-bottom">
-	                            <div class="my-top-4 my-bottom-4">
-	                                <div class="userName-wrapper">
-								        <span id="userName" class="userName"></span>  
-								        <div class="userNameToggle"></div> 
-								    </div>
-	                                <span class="listDate"></span>
-	                            </div>
-	                            <div class="flex float-right items-center width-13rem justify-between">
-	                                <img class="hitsIcon icon" style="width:2rem;">
-	                                <span><i class="fa-regular fa-eye"></i></span>
-	                                <span class="listHits font-size-1 ml-05"></span>
-	                                <img class="replyIcon icon ml-2"style="width:2rem;">
-	                                <span><i class="fa-regular fa-comment-dots"></i></span>
-	                                <span class="listReplyCnt ml-05"></span>
-	                                
-	                            </div>
-	                            <div class="my-bottom-4">
-	                                <a class="listTitle font-weight-bold font-size-1" ></a>
-	                            </div>
-		                    </li>
-		                </ul>
-	                </div>
-	            </div>
-	        </div>
+	<!-- 중고악기 -->
+    <div class="mainDiv">
+        <div class="mainListDiv" id="fleaHeader">🎸 중고악기</div>
+        <ul id="fleaList" class="board-list">
+            <li class="board-item">
+                <a class="listTitle" href="#"></a>
+                <span class="meta-info"></span>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- 합주실 -->
+    <div class="mainDiv">
+        <div class="mainListDiv" id="roomHeader">🎵 합주실/연습실</div>
+        <ul id="roomList" class="board-list">
+            <li class="board-item">
+                <a class="listTitle" href="#"></a>
+                <span class="meta-info"></span>
+            </li>
+        </ul>
+    </div>
 
-	        <!-- 합주실 글 리스트 -->   
-	        <div class="w-45rem mainDiv">
-	            <div class="mainListDiv" id="roomHeader">
-	                <div class="ml-2">
-	                    <span id="roomHeader_text" class=" font-size-3 font600">합주실/연습실</span>
-	                </div>
-	            </div>
-	
-	            <div id="roomList" class="my-top-8 mr-1 ml-1">
-	            	<div id="roomTemplate">
-		                <ul>
-		                    <li class="border-bottom">
-	                            <div class="my-top-4 my-bottom-4">
-	                                <div class="userName-wrapper">
-								        <span id="userName" class="userName"></span>  
-								        <div class="userNameToggle"></div> 
-								    </div>
-	                                <span class="listDate"></span>
-	                            </div>
-	                            <div class="flex float-right items-center width-13rem justify-between">
-	                                <span><i class="fa-regular fa-eye"></i></span>
-	                                <span class="ml-05 listHits"></span>
-	                                <span><i class="fa-regular fa-comment-dots"></i></span>
-	                                <span class="ml-05 listReplyCnt"></span>
-	                            </div>
-	                            <div class="my-bottom-4">
-	                                <a class="font-weight-bold font-size-1 listTitle"></a>
-	                            </div>
-		                    </li>
-		                </ul>
-	                </div>
-	            </div>
-       		</div>
-    	</div>
-		<div class="flex flex-container my-top-15">
-			<!-- 중고악기 글 리스트 -->
-			<div class="w-45rem mainDiv">
-				<div class="mainListDiv" id="fleaHeader">
-					<div class="ml-2">
-						<span id="fleaHeader_text" class=" font-size-3 font600">중고 악기</span>
-					</div>
-				</div>
-			
-					
-				<div id="fleaList" class="my-top-8 mr-1 ml-1">
-					<div id="fleaTemplate">
-						<ul>
-							<li class="border-bottom">
-								
-								<div class="my-top-4 my-bottom-4">
-									<div class="userName-wrapper">
-								        <span id="userName" class="userName"></span>  
-								        <div class="userNameToggle"></div> 
-								    </div>
-	                                <span class="listDate"></span>
-								</div>
-								<div class="flex float-right items-center width-13rem justify-between">
-									<span><i class="fa-regular fa-eye"></i></span>
-									<span class="listHits font-size-1 ml-05"></span>
-									<span><i class="fa-regular fa-comment-dots"></i></span>
-									<span class="listReplyCnt ml-05"></span>
-								</div>
-								<div class="my-bottom-4">
-									<a class="listTitle font-weight-bold font-size-1"></a>
-								</div>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		
-			<!-- 커뮤니티 글 리스트 -->
-			<div class="w-45rem mainDiv">
-				
-				<div class="mainListDiv" id="comHeader">
-					<div class="ml-2">
-						<span id="comHeader_text" class=" font-size-3 font600">커뮤니티</span>
-					</div>
-				</div>
-				
-				<div id="comList" class="my-top-8 mr-1 ml-1">
-					<div id="comTemplate">
-						<ul>
-							<li class="border-bottom">
-								<div class="my-top-4 my-bottom-4">
-									<div class="userName-wrapper">
-								        <span id="userName" class="userName"></span>  
-								        <div class="userNameToggle"></div> 
-								    </div>
-	                                <span class="listDate"></span>
-								</div>
-								<div class="flex float-right items-center width-13rem justify-between">
-									
-									<span><i class="fa-regular fa-eye"></i></span>
-									<span class="listHits font-size-1 ml-05"></span>
-									<span><i class="fa-regular fa-comment-dots"></i></span>
-									<span class="listReplyCnt ml-05"></span>
-								</div>
-								<div class="my-bottom-4">
-									<a class="listTitle font-weight-bold font-size-1" ></a>
-								</div>
-							</li>
-						</ul>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
-	
+	<!-- 커뮤니티 -->
+    <div class="mainDiv">
+        <div class="mainListDiv" id="comHeader">💬 커뮤니티</div>
+        <ul id="comList" class="board-list">
+            <li class="board-item">
+                <a class="listTitle" href="#"></a>
+                <span class="meta-info"></span>
+            </li>
+        </ul>
+    </div>
+</div>
+</body>

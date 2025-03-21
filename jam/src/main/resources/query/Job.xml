@@ -48,7 +48,9 @@
 			0 AS isFavorite  
 		FROM (
 			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
-				j.job_no, j.job_title, j.job_date, j.job_category, j.pay_category, j.pay, j.city, j.gu, j.dong, j.position,
+				j.job_no, j.job_title, j.job_date, 
+				j.job_category, j.pay_category, j.pay, 
+				j.city, j.gu, j.dong, j.position,
 				ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
 			FROM job j
 			LEFT JOIN Member m ON j.user_id = m.user_id
@@ -97,7 +99,7 @@
 		]]>
 	</select>
 	
-	<select id="listCnt" parameterType="room" resultType="int">
+	<select id="listCnt" parameterType="job" resultType="int">
 	    SELECT count(*)
 	    FROM job j
 	    LEFT JOIN member m ON j.user_id = m.user_id

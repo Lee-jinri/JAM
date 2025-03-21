@@ -7,46 +7,6 @@
 <meta charset="UTF-8">
 <title>JAM - JOB</title>
 <style>
-.job-detail-container {
-    margin: 0 auto;
-    padding: 20px;
-    border: 1px solid #ddd;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.job-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin: 0 10px 16px 10px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 8px;
-}
-
-.job-content{
-	min-height: 100px;
-}
-
-.job-title {
-    font-size: 24px;
-    font-weight: bold;
-    margin: 0;
-}
-
-.job-info {
-	display: flex;
-	gap: 10px;
-    text-align: right;
-    font-size: 14px;
-    color: #666;
-}
-
-.job-info .job-hits img {
-    width: 16px;
-    vertical-align: middle;
-}
 
 .job-meta-box {
     background-color: #f9f9f9;
@@ -83,58 +43,12 @@
     border-radius: 4px;
 }
 
-.job-content {
-    margin: 16px 0;
-    line-height: 1.6;
+
+
+/* 이거 지우면 안됨 */
+.user_toggle {
+    top: 2rem;
 }
-
-.job-buttons {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-    margin-top: 16px;
-    margin-bottom: 16px;
-    justify-content: flex-end;
-}
-
-
-
-.job-btn {
-    padding: 8px 16px;  /* 버튼 크기 키우기 */
-    background-color: #f8f9fa; /* 연한 그레이 톤 */
-    border: 2px solid #ddd; /* 좀 더 도톰한 테두리 */
-    border-radius: 12px; /* 둥글게 */
-    font-size: 14px; /* 글자 크기 적당히 */
-    font-weight: 600; /* 글자 좀 더 귀엽게 */
-    color: #333;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-    box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* 살짝 입체감 */
-}
-
-.job-btn:hover{
-    background-color: #e9ecef; /* hover 시 더 밝게 */
-    border-color: #bbb; /* 테두리도 변경 */
-    transform: scale(1.05); /* 살짝 커지는 효과 */
-}
-#btn-div{
-	display: flex;
-    gap: 10px;
-}
-
-.userName-wrapper {
-    position: relative; /* 기준점 설정 */
-    display: inline-flex;
-    align-items: center;
-}
-
-.userNameToggle {
-    position: absolute;
-    top: 100%; /* 닉네임 아래로 배치 */
-    left: -25px;
-}
-
-
 
 </style>
 	
@@ -163,7 +77,7 @@ $(function(){
 		        	
 	        	$("#job_title").html(data.job_title);
 	        	$("#userName").html(data.user_name);
-	        	$(".userName").attr("data-userId", data.user_id);
+	        	$(".boardUserName").attr("data-userId", data.user_id);
 				
 	        	$("#job_date").html('🕒' +formatRelativeTime(data.job_date));
 	        	$("#job_hits").html('👀' +data.job_hits);
@@ -214,14 +128,14 @@ $(function(){
 	        var updateButton = document.createElement("button");
 	        updateButton.type = "button";
 	        updateButton.id = "jobUpdateBtn";
-	        updateButton.classList.add("job-btn");
+	        updateButton.classList.add("board-btn");
 	        updateButton.textContent = "수정"; 
 			
 	        // 삭제 버튼 생성
 	        var deleteButton = document.createElement("button");
 	        deleteButton.type = "button";
 	        deleteButton.id = "jobDeleteBtn";
-	        deleteButton.classList.add("job-btn");
+	        deleteButton.classList.add("board-btn");
 	        deleteButton.textContent = "삭제";
 
 	        btnDiv.appendChild(updateButton);
@@ -303,7 +217,7 @@ function formatRelativeTime(dateString) {
 </script>
 </head>
 <body class="wrap">
-	<div class="rem-30 my-top-15 my-bottom-15">
+	<div class="my-top-15 my-bottom-15">
 		<input type="hidden" id="job_no" name="job_no" value="${job_no }"/>
 		
 		<form name="formPopup" id="formPopup">
@@ -312,21 +226,17 @@ function formatRelativeTime(dateString) {
 		</form>
 		
 		<!--  -->
-		<div class="job-detail-container">
+		<div class="board-detail-container">
 		    <!-- 제목 & 작성자 정보 -->
-		    <div class="job-header">
-		        <h1 id="job_title" class="job-title"></h1>
-		        <div class="job-info"><!-- 
-		        	<span id="userName" class="userName"></span>          
-		        	<div class="userNameToggle"></div> --> 
-		        	<div class="userName-wrapper">
-				        <span id="userName" class="userName"></span>  
-				        <div class="userNameToggle"></div> 
-				    </div>
+		    <div class="board-header">
+		        <p id="job_title" class="board-title"></p>
+		        <div class="board-info">
+				    <span id="userName" class="userName boardUserName"></span>  
+				    <div class="userNameToggle"></div> 
 		        	<span class="divider">|</span>
 		        	<span id="job_date"></span>
 		        	<span class="divider">|</span>
-		            <span class="job-hits">
+		            <span class="board-hits">
 		                <span id="job_hits"></span>
 		            </span>
 		        </div>
@@ -361,14 +271,14 @@ function formatRelativeTime(dateString) {
 		    <div class="job-status" id="job_status" style="display: none;"></div>
 		
 		    <!-- 본문 영역 -->
-		    <div class="job-content">
+		    <div class="board-content">
 		        <p id="job_content"></p>
 		    </div>
 		
 		    <!-- 버튼 영역 -->
-		    <div class="job-buttons">
+		    <div class="board-buttons">
 		        <div id="btn-div" class="author-buttons"></div>
-		        <a href="/job/boards" class="job-btn">목록</a>
+		        <a href="/job/boards" class="board-btn">목록</a>
 		    </div>
 		
 		    <!-- 댓글 -->

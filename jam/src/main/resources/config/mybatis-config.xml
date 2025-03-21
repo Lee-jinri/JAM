@@ -25,6 +25,8 @@
 		<typeAlias type="com.jam.client.roomRentalReply.vo.RoomReplyVO" alias="roomReply"/>
 		
 		<typeAlias type="com.jam.client.message.vo.MessageVO" alias="message"/>
+		
+		<typeAlias type="com.jam.client.favorite.vo.FavoriteVO" alias="favorite"/>
 	</typeAliases>
 	<!-- 
 	<typeHandlers>java.sql.Date를 java.util.Date 형으로 반환 

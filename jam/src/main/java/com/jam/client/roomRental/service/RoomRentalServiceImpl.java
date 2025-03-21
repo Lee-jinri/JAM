@@ -1,10 +1,12 @@
 package com.jam.client.roomRental.service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.member.service.MemberService;
 import com.jam.client.roomRental.dao.RoomRentalDAO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
@@ -21,7 +23,12 @@ public class RoomRentalServiceImpl implements RoomRentalService {
 	
 	@Override
 	public List<RoomRentalVO> getBoards(RoomRentalVO room_vo) {
-		return roomDao.getBoards(room_vo);
+		List<RoomRentalVO> list = new ArrayList<>(); 
+		
+		if(room_vo.getUser_id() == null) list = roomDao.getBoards(room_vo);
+		else list = roomDao.getBoardsWithFavorite(room_vo);
+		
+		return list;
 	}
 
 	@Override

@@ -134,6 +134,8 @@ input:checked + .slider:before {
     padding: 10px;
 }
 
+
+
 .setting-base-row {
     display: flex;
     justify-content: space-between;
@@ -549,8 +551,6 @@ function companyRecruit(data){
 		$clone.find(".boardArea").text(board.gu + "\u00A0\u00A0\u00A0" + board.dong);
 		$clone.find(".boardPosition").text(positionMap[board.position]);
 		$clone.find(".boardTitle").text(board.job_title);
-		$clone.find(".boardHits").text(board.job_hits);
-		$clone.find(".boardReplyCnt").text(board.job_reply_cnt);
 		$clone.find(".boardLink").attr("data-location", "/job/board/" + board.job_no);
 		
 		let $favoriteSpan = $clone.find(".favoriteSpan");
@@ -605,8 +605,6 @@ function memberRecruit(data){
 		$clone.find(".boardArea").text(board.gu + "\u00A0\u00A0\u00A0" + board.dong);
 		$clone.find(".boardPosition").text(positionMap[board.position]);
 		$clone.find(".boardTitle").text(board.job_title);
-		$clone.find(".boardHits").text(board.job_hits);
-		$clone.find(".boardReplyCnt").text(board.job_reply_cnt);
 		$clone.find(".boardLink").attr("data-location", "/job/board/" + board.job_no);
 		
 		let date = formatRelativeTime(board.job_date);
@@ -798,9 +796,10 @@ function setCompanyStyle() {
 
 </script>
 </head>
+
 <body class="wrap" data-recruit-type="0">
 	<div class="content company-mode" >
-		<div class="rem-20 my-top-15 my-bottom-15">
+		<div class="my-top-15 my-bottom-15">
 			<div class="title job-title">
 				<p class="text-center font-color-blue">Jobs</p>
 			</div>
@@ -826,10 +825,10 @@ function setCompanyStyle() {
 					<input type="hidden" id="gu">
 					<input type="hidden" id="dong">
 					
-					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass""></i>
+					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
 				</div>
-				
 			</div>
+			
 			<div class="selected-wrapper">
 			    <div id="selectedAreaWrapper" class="selected-location inline">
 			        <span id="selectedArea"></span>
@@ -919,19 +918,15 @@ function setCompanyStyle() {
 				    </label>
 				    <span class="switch-label">멤버 모집🏕️</span>
 				</div>
-				<div class="write_btn write_btn_border job_write_border flex items-center border-radius-7px">
+				<div class="write_btn write_btn_border write_border flex items-center border-radius-7px">
 					<button type="button" id="jobWriteBtn" class="write_btn_font border-none bColor_fff ">작성하기</button>
 				</div>
 			</div>
-			<!-- <h2>pay를 숫자말고 String으로 변경 해서(db도) 협의 후 결정도 포함해야 할 듯</h2> -->
 			<div>
 				<ul style="display:none">
 					<li id="boardTemplate" class="border-bottom">
 						<div id="boardDiv" class="pd-2rem job-list-row text-alignC items-center">
 							<span class="favoriteSpan">
-							
-							<!--  	<i class="fa-solid fa-star" style="color: #FFD43B; cursor: pointer;"></i> 
-								<i class="fa-regular fa-star" style="color: #FFD43B;"></i>-->
 								<i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
 							</span>
 							<span class="font-weight-bold font-size-5 boardTitle boardLink"  style="cursor: pointer;"></span>

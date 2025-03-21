@@ -11,6 +11,8 @@ public interface FleaMarketDAO {
 
 	// 중고거래 list
 	public List<FleaMarketVO> getBoards(FleaMarketVO flea_vo);
+	
+	public List<FleaMarketVO> getBoardsWithFavorite(FleaMarketVO flea_vo);
 
 	// 중고거래 페이징
 	public int listCnt(FleaMarketVO flea_vo);
