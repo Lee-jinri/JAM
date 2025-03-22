@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.client.member.dao.MemberBoardDAO">
+
+	<select id="getFavoriteCommunity" parameterType="memberBoard" resultType="memberBoard">
+	    <![CDATA[
+	    SELECT com_no AS board_no , com_title AS board_title, TO_CHAR(com_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	            c.com_no, c.com_title, c.com_date,
+	            ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+	        FROM community c
+	        WHERE c.com_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'community'
+	        )
+	    ) 
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+	
+	
+	<select id="getFavoriteJob" parameterType="memberBoard" resultType="memberBoard">
+	    <![CDATA[
+	    SELECT job_no AS board_no, job_title AS board_title, TO_CHAR(job_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	            j.job_no, j.job_title, j.job_date,
+	            ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
+	        FROM job j
+	        WHERE j.job_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'job'
+	        )
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+	
+	
+	<select id="getFavoriteFlea" parameterType="memberBoard" resultType="memberBoard">
+		<![CDATA[
+		SELECT flea_no AS board_no, flea_title AS board_title, TO_CHAR(flea_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	           	f.flea_no, f.flea_title, f.flea_date,
+	            ROW_NUMBER() OVER (ORDER BY f.flea_no DESC) AS rnum
+	        FROM fleaMarket f
+	        WHERE f.flea_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'fleaMarket'
+	        )
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+	
+	<select id="getFavoriteRoom" parameterType="memberBoard" resultType="memberBoard">
+	    <![CDATA[
+	    SELECT roomRental_no AS board_no, roomRental_title AS board_title, TO_CHAR(roomRental_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    FROM (
+	        SELECT 
+	           	r.roomRental_no, r.roomRental_title, r.roomRental_date,
+	            ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
+	        FROM roomRental r
+	        WHERE r.roomRental_no IN (
+	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
+	                board_no 
+	            FROM favorite 
+	            WHERE user_id = #{user_id} 
+	            AND board_type = 'roomRental'
+	        )
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
+	    AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+
+	
+	<insert id="addFavorite">
+		<selectKey keyProperty="favorite_id" resultType="Long" order="BEFORE">
+		    SELECT favorite_seq.NEXTVAL FROM dual
+		</selectKey>
+		INSERT INTO favorite(favorite_id, user_id, board_type, board_no)
+		VALUES(#{favorite_id}, #{user_id}, #{board_type}, #{board_no} )
+	</insert>
+	
+	<delete id="deleteFavorite">
+		DELETE 
+		FROM favorite
+		WHERE user_id = #{user_id} 
+			AND board_type=#{board_type} 
+			AND board_no = #{board_no}
+	</delete>
+
+	<select id="listCnt" parameterType="map" resultType="int">
+	    SELECT COUNT(*)
+	    FROM favorite
+	    WHERE user_id = #{user_id}
+	    	AND board_type = #{board_type}
+	</select>
+	
+	
+	<!-- 작성한 글 -->
+	
+	<!-- 커뮤니티 -->
+	<select id="getWrittenCommunity" resultType="memberBoard" parameterType="memberBoard">
+	    <![CDATA[
+	    SELECT *
+	    FROM (
+	        SELECT 
+	            c.com_no AS board_no, c.com_title AS board_title, c.com_hits AS board_hits,
+	            TO_CHAR(c.com_date,'YYYY/MM/DD') AS created_at,
+	            ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+	        FROM community c
+	        WHERE user_id = #{user_id}
+	    ]]>
+	    <trim prefix="AND (" suffix=")" prefixOverrides="AND">
+	        <include refid="writtenSearch"/>
+	    </trim>
+	    <![CDATA[
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount}
+	      AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+	
+	<!-- 중고악기 -->
+	<select id="getWrittenFlea" parameterType="memberBoard" resultType="memberBoard">
+	    <![CDATA[
+	    SELECT *
+	    FROM (
+	        SELECT 
+	            f.flea_no AS board_no, f.flea_title AS board_title, f.flea_hits AS board_hits,
+	            TO_CHAR(f.flea_date,'YYYY/MM/DD') AS created_at,
+	            ROW_NUMBER() OVER (ORDER BY f.flea_no DESC) AS rnum
+	        FROM fleaMarket f
+	        WHERE user_id = #{user_id}
+	    ]]>
+	    <trim prefix="AND (" suffix=")" prefixOverrides="AND">
+	        <include refid="writtenSearch"/>
+	    </trim>
+	    <![CDATA[
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount}
+	      AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+	
+	<!-- JOBS -->
+	<select id="getWrittenJob" resultType="memberBoard" parameterType="memberBoard">
+	    <![CDATA[
+	    SELECT *
+	    FROM (
+	        SELECT
+	            j.job_no AS board_no, j.job_title AS board_title, j.job_hits AS board_hits,
+	            TO_CHAR(j.job_date,'YYYY/MM/DD') AS created_at,
+	            ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
+	        FROM job j
+	        WHERE user_id = #{user_id}
+	    ]]>
+	    <trim prefix="AND (" suffix=")" prefixOverrides="AND">
+	        <include refid="writtenSearch"/>
+	    </trim>
+	    <![CDATA[
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount}
+	      AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+	
+	<!-- 합주실 -->
+	<select id="getWrittenRoom" resultType="memberBoard" parameterType="memberBoard">
+	    <![CDATA[
+	    SELECT *
+	    FROM (
+	        SELECT 
+	            r.roomRental_no AS board_no, r.roomRental_title AS board_title, r.roomRental_hits AS board_hits,
+	            TO_CHAR(r.roomRental_date,'YYYY/MM/DD') AS created_at,
+	            ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
+	        FROM roomRental r
+	        WHERE user_id = #{user_id}
+	    ]]>
+	    <trim prefix="AND (" suffix=")" prefixOverrides="AND">
+	        <include refid="writtenSearch"/>
+	    </trim>
+	    <![CDATA[
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount}
+	      AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+
+	
+	<!-- 마이페이지 커뮤니티 글 레코드 수 조회 -->
+	<select id ="writtenListCnt" parameterType="memberBoard" resultType="int">
+		SELECT count(*) 
+		FROM 
+		<choose>
+			<when test="board_type == 'community'">community</when>
+			<when test="board_type == 'job'">job</when>
+			<when test="board_type == 'fleaMarket'">fleaMarket</when>
+			<when test="board_type == 'roomRental'">roomRental</when>
+		</choose>
+		WHERE user_id  = #{user_id}
+		<trim prefix=" and (" suffix=")">
+			<include refid="writtenSearch"/>
+		</trim>
+	</select> 
+	
+	
+	<!-- 마이페이지 작성 글 검색 
+	<sql id="writtenSearch">
+		<if test="search != null and search == 'board_title'">
+			<![CDATA[board_title LIKE '%' || #{keyword} || '%']]>
+		</if>
+		
+		<if test="search != null and search== 'board_content'">
+			<![CDATA[board_content LIKE '%' || #{keyword} || '%']]>
+		</if>
+	</sql>-->
+	
+	<sql id="writtenSearch">
+		<if test="search != null and search != ''">
+			<![CDATA[ ${search} LIKE '%' || #{keyword} || '%' ]]>
+		</if>
+	</sql>
+	
+		
+
+</mapper>
