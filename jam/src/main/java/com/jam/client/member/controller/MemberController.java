@@ -200,5 +200,14 @@ public class MemberController {
 	public String favoritePage() {
 		return "member/favorite";
 	}
+	
+	/*************************************
+	 * @return 작성한 글 페이지
+	 ************************************/
+	@RequestMapping(value="/written", method = RequestMethod.GET)
+	public String writtenPage() {
+		return "member/written";
+	}
+	
 
 }

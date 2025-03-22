@@ -122,6 +122,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         				"/jobReplies/**",
         				"/comReplies/**",
         				"/api/chat/**",
-        				"/api/favorite/**");
+        				"/api/favorite/**",
+        				"/api/written/boards");
    }
 }

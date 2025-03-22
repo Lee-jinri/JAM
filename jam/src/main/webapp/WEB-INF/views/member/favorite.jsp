@@ -142,7 +142,7 @@ $(function(){
         let newUrl = window.location.pathname + "?boardType=" + newBoardType;
         window.history.pushState(null, "", newUrl);
         
-        getFavorite($(this).attr("data-boardType"), 1);
+        getFavorite(newBoardType, 1);
     });
 	
 	$(document).on("click", ".boardLink", function (e) {
@@ -198,7 +198,7 @@ function renderFavorite(favoriteList, boardType){
 	        color: "#666"
 	    });
 
-	    const $span = $("<span>").text("북마크한 글이 아직 없어요.🫠");
+	    const $span = $("<span>").text("아직 북마크한 글이 없어요.🫠");
 	    $li.append($span);
 
 	    $bookmarkList.append($li);
@@ -257,10 +257,6 @@ function loadPagination(pageMaker, boardType) {
 </head>
 <body class="wrap">
 	<div class="content">
-		<div class="my-top-15 my-bottom-15">
-	        <ul id="bookmarkList">
-	        </ul>
-		</div>
 		<h2 class="bookmark-title">📌 북마크</h2>
         
         <div class="button-group">
