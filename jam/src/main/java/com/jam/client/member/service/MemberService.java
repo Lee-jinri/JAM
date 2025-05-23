@@ -43,10 +43,7 @@ public interface MemberService {
 	public int myFleaListCnt(FleaMarketVO flea_vo);
 	public int myJobListCnt(JobVO jov_vo);
 	public int myRoomListCnt(RoomRentalVO room_vo);
-		
-	// 마이페이지 - 회원 정보 페이지
-	public MemberVO account(String user_id);
-
+	
 	// 아이디 찾기
 	public String FindId(String email, String phone);
 
@@ -56,8 +53,8 @@ public interface MemberService {
 	// 임시 비밀번호로 변경
 	public ResponseEntity<String> updatePwAndSendEmail(String user_id, String email);
 
-	// 네이버 로그인 정보 저장
-	public int socialLoginOrRegister(MemberVO member);
+	// 소셜 로그인 정보 저장
+	public void socialLoginOrRegister(Map<String, Object> userInfo);
 	
 	// 닉네임 변경
 	public int updateUserName(MemberVO member);
@@ -77,8 +74,6 @@ public interface MemberService {
 	// 회원 탈퇴
 	public void withDraw(String user_id);
 	
-	public Map<String, Boolean> validateToken(String accessToken, boolean autoLogin);
-
 	// 아이디로 닉네임 가져오기
 	public String getUserName(String user_id);
 	
@@ -96,6 +91,9 @@ public interface MemberService {
 
 	public MemberVO getUserInfo(String refreshToken);
 	
-	public String generateToken(Authentication authentication, String user_id, String user_name, boolean autoLogin);
+	MemberVO getUserProfile(String user_id);
 
+	Authentication authenticateSocialUser(String user_id, String user_name);
+	
+	
 }

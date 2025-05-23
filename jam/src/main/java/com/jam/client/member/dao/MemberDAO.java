@@ -69,13 +69,13 @@ public interface MemberDAO {
 	int withDraw(String user_id);
 
 	// 소셜 사용자 회원가입 여부 
-	int findSocialUser(MemberVO member);
+	int findSocialUser(String user_id);
 
 	// 소셜 사용자 회원가입
-	void SocialRegister(MemberVO member);
+	void SocialRegister(Map<String, Object> userInfo);
 
 	// 사용자 정보 확인
-	MemberVO findByUsername(String username);
+	MemberVO findByUserInfo(String username);
 
 	// 회원 닉네임 가져오기
 	String getUserName(String user_id);
@@ -94,5 +94,6 @@ public interface MemberDAO {
 
 	MemberVO getUserInfo(String refreshToken);
 	
-
+	// 사용자 프로필 가져오기
+	MemberVO getUserProfile(String user_id);
 }

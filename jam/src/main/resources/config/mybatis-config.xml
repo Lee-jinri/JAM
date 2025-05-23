@@ -26,7 +26,7 @@
 		
 		<typeAlias type="com.jam.client.message.vo.MessageVO" alias="message"/>
 		
-		<typeAlias type="com.jam.client.member.vo.MemberBoardVO" alias="memberBoard"/>
+		<typeAlias type="com.jam.client.mypage.vo.MemberBoardVO" alias="memberBoard"/>
 	</typeAliases>
 	<!-- 
 	<typeHandlers>java.sql.Date를 java.util.Date 형으로 반환 

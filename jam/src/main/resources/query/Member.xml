@@ -44,9 +44,8 @@
   		WHERE email = #{email}
   	</select>
   	
-  	
   	<!-- 사용자 정보 확인 -->
-  	<select id="findByUsername" resultType="member">
+  	<select id="findByUserInfo" resultType="member">
   		SELECT user_id, user_pw, user_name, address, phone, email, role
   		FROM member
   		WHERE user_id = #{user_id}
@@ -86,14 +85,6 @@
   		FROM member
   		WHERE user_id = #{user_id}
   	</select>
-	
-	
-	<!-- 마이페이지 - 회원 정보 페이지 -->
-	<select id="account" resultType="member" parameterType="String">
-		SELECT user_id, user_name, address, phone, social_login
-		FROM member
-		WHERE user_id = #{user_id}
-	</select>
 	
   	<!-- 아이디 찾기 -->
   	<select id="findId" parameterType="String" resultType="String">
@@ -153,8 +144,8 @@
 	</delete>
 	
 	
-	<!-- 네이버 회원 정보 찾기 -->
-	<select id="findSocialUser" parameterType="member" resultType="int">
+	<!-- 저장된 소셜 회원인지 확인 -->
+	<select id="findSocialUser" parameterType="String" resultType="int">
 		<![CDATA[
 		select COUNT(*)
 		from member 
@@ -162,10 +153,10 @@
 		]]>
 	</select>
 	
-	<!-- 네이버 회원 정보 저장 -->
-	<insert id="SocialRegister" parameterType="member">
-		INSERT INTO member(user_id, user_name, user_pw, email, phone, role, social_login)
-		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, #{phone},'MEMBER', 1)
+	<!-- 소셜 회원 정보 저장 -->
+	<insert id="SocialRegister" parameterType="map">
+		INSERT INTO member(user_id, user_name, user_pw, email, role, social_login)
+		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email},'MEMBER', 1)
 	</insert>
 	
 	<!-- refresh token으로 회원 아이디, 닉네임, 권한 조회 -->
@@ -173,6 +164,13 @@
 		SELECT user_id, user_name, role
 		FROM member
 		WHERE refreshToken = #{refreshToken}
+	</select>
+	
+	<!-- 사용자 프로필 조회 -->
+	<select id="getUserProfile" parameterType="String" resultType="member">
+		SELECT user_name
+		FROM member
+		WHERE user_id = #{user_id}
 	</select>
 	
 </mapper>

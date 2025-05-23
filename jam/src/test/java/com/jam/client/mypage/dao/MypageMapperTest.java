@@ -1,4 +1,4 @@
-package com.jam.client.member.dao;
+package com.jam.client.mypage.dao;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.jam.client.member.vo.MemberBoardVO;
+import com.jam.client.mypage.vo.MemberBoardVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
@@ -15,10 +15,10 @@ import lombok.extern.log4j.Log4j;
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
 @Log4j
-public class MemberBoardMapperTest {
+public class MypageMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
-	private MemberBoardDAO memberBoardDao;
+	private MypageDAO mypageDao;
 	
 	/*
 	@Test
@@ -28,8 +28,8 @@ public class MemberBoardMapperTest {
 		favorite.setUser_id("abcd1234");
 		favorite.setPageNum(1);
 		
-		log.info(memberBoardDao.getFavoriteCommunity(favorite));
-		log.info(memberBoardDao.listCnt("community", "abcd1234"));
+		log.info(mypageDao.getFavoriteCommunity(favorite));
+		log.info(mypageDao.listCnt("community", "abcd1234"));
 	}
 	
 	
@@ -42,8 +42,8 @@ public class MemberBoardMapperTest {
 		favorite.setUser_id("abcd1234");
 		favorite.setPageNum(1);
 		
-		log.info(memberBoardDao.getFavoriteJob(favorite));
-		log.info(memberBoardDao.listCnt("job", "abcd1234"));
+		log.info(mypageDao.getFavoriteJob(favorite));
+		log.info(mypageDao.listCnt("job", "abcd1234"));
 	}
 	
 	@Test
@@ -53,9 +53,9 @@ public class MemberBoardMapperTest {
 		favorite.setUser_id("abcd1234");
 		favorite.setPageNum(1);
 		
-		log.info(memberBoardDao.listCnt("flaeMarket", "abcd1234"));
+		log.info(mypageDao.listCnt("flaeMarket", "abcd1234"));
 		
-		log.info(memberBoardDao.getFavoriteFlea(favorite));
+		log.info(mypageDao.getFavoriteFlea(favorite));
 	}
 	@Test
 	public void testGetFavoriteRoom() {
@@ -66,15 +66,15 @@ public class MemberBoardMapperTest {
 		favorite.setUser_id("abcd1234");
 		favorite.setPageNum(1);
 		
-		log.info(memberBoardDao.listCnt("flaeMarket", "abcd1234"));
+		log.info(mypageDao.listCnt("flaeMarket", "abcd1234"));
 		
-		log.info(memberBoardDao.getFavoriteRoom(favorite));
+		log.info(mypageDao.getFavoriteRoom(favorite));
 	}
 	*/
 	/*
 	@Test
 	public void testAddFavorite() {
-		log.info(memberBoardDao.addFavorite("abcd1234", "job", 42L));
+		log.info(mypageDao.addFavorite("abcd1234", "job", 42L));
 	}*/
 	
 	/** 작성한 글 조회 */
@@ -89,8 +89,8 @@ public class MemberBoardMapperTest {
 		//written.setKeyword("1");
 		written.setBoard_type("community");
 		
-		log.info(memberBoardDao.getWrittenCommunity(written));
-		log.info(memberBoardDao.writtenListCnt(written));
+		log.info(mypageDao.getWrittenCommunity(written));
+		log.info(mypageDao.writtenListCnt(written));
 	}
 	/*
 	
@@ -106,8 +106,8 @@ public class MemberBoardMapperTest {
 		written.setKeyword("1");
 		written.setBoard_type("job");
 		
-		log.info(memberBoardDao.getFavoriteJob(written));
-		log.info(memberBoardDao.writtenListCnt(written));
+		log.info(mypageDao.getFavoriteJob(written));
+		log.info(mypageDao.writtenListCnt(written));
 	}
 	
 	@Test
@@ -121,9 +121,9 @@ public class MemberBoardMapperTest {
 		written.setBoard_type("fleaMarket");
 		
 		
-		log.info(memberBoardDao.writtenListCnt(written));
+		log.info(mypageDao.writtenListCnt(written));
 		
-		log.info(memberBoardDao.getFavoriteFlea(written));
+		log.info(mypageDao.getFavoriteFlea(written));
 	}
 	@Test
 	public void testGetWrittenRoom() {
@@ -137,9 +137,16 @@ public class MemberBoardMapperTest {
 		written.setKeyword("1");
 		written.setBoard_type("roomRental");
 		
-		log.info(memberBoardDao.writtenListCnt(written));
+		log.info(mypageDao.writtenListCnt(written));
 		
-		log.info(memberBoardDao.getFavoriteRoom(written));
+		log.info(mypageDao.getFavoriteRoom(written));
 	}
 	*/
+	
+	/* 회원 정보*/
+	@Test
+	public void testAccount() {
+		String user_id="abcd1234";
+		log.info(mypageDao.account(user_id));
+	}
 }

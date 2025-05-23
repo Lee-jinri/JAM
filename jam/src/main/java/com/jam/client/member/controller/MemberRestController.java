@@ -1,6 +1,5 @@
 package com.jam.client.member.controller;
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -9,39 +8,28 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
-import com.jam.security.JwtTokenProvider;
-import com.jam.security.TokenInfo;
-import com.jam.security.TokenInfo.TokenStatus;
+import com.jam.global.jwt.JwtTokenManager;
+import com.jam.global.jwt.JwtTokenProvider;
+import com.jam.global.jwt.TokenInfo.TokenStatus;
 
 import io.jsonwebtoken.Claims;
 import lombok.AllArgsConstructor;
@@ -65,11 +53,7 @@ public class MemberRestController {
     
 	@Autowired
 	private JwtTokenProvider jwtTokenProvider;
-
-	@Autowired
-	private AuthenticationManager authenticationManager;
 	
-
 	/**
 	 * 회원 가입
 	 *
@@ -116,121 +100,31 @@ public class MemberRestController {
 
 	}
 	
-	/**
-	 * 사용자의 로그인을 처리합니다.
-	 * 
-	 * @param member 사용자가 입력한 아이디와 비밀번호를 포함한 객체
-	 * @return HTTP 응답 상태 코드와 이전 페이지 URI
-	 */
-	@PostMapping(value = "/login-process", produces = MediaType.TEXT_PLAIN_VALUE + ";charset=UTF-8")
-	@ResponseBody
-	public ResponseEntity<String> login(@RequestBody Map<String, Object> member, HttpServletRequest request, HttpServletResponse response) {
-		try {
-			String user_id = (String)member.get("user_id");
-			String user_pw = (String)member.get("user_pw");
-			
-			Boolean autoLogin = (Boolean) member.get("autoLogin");
-
-			// 사용자 이름과 비밀번호로 인증 객체 생성
-			Authentication authentication = authenticationManager
-					.authenticate(new UsernamePasswordAuthenticationToken(user_id, user_pw));
-
-			// SecurityContextHolder에 현재 사용자의 정보를 설정합니다.
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-	    
-			String user_name = memberService.getUserName(user_id);
-			
-			// JWT 토큰 생성
-			TokenInfo token = jwtTokenProvider.generateToken(authentication, user_name, autoLogin);
-
-			String refreshToken = token.getRefreshToken();
-
-			try {
-				// refresh 토큰 저장
-				int addRefreshToken = memberService.addRefreshToken(user_id, refreshToken);
-				if (addRefreshToken != 1) {
-					return ResponseEntity.status(500).body("Internal Server Error: Refresh Token 저장 중 오류 발생");
-				}
-			} catch (Exception e) {
-				log.error("Failed to add refresh token", e);
-				return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
-			}
-			
-			// http 세션에 로그인 여부 저장
-			HttpSession session = request.getSession();
-			session.setAttribute("isLogin", "true");
-			session.setMaxInactiveInterval(3 * 60 * 60); // 30분 동안 비활성 시 세션 만료
-			
-			// 쿠키에 jwt 토큰 저장
-		    Cookie jwtCookie = new Cookie("Authorization", token.getAccessToken());
-		    jwtCookie.setHttpOnly(true);  // 자바스크립트에서 접근 불가능
-		    jwtCookie.setPath("/");       // 해당 쿠키의 유효 경로 설정
-		    jwtCookie.setMaxAge(24 * 60 * 60);	  // 세션 쿠키로 설정 (브라우저 끄면 쿠키 삭제됨)
-
-		    Cookie refreshTokenCookie  = new Cookie("RefreshToken", token.getRefreshToken());
-		    refreshTokenCookie .setHttpOnly(true);
-		    refreshTokenCookie.setPath("/");
-		    
-		    int maxAge = autoLogin? 365 * 24 * 60 * 60 : 24 * 60 * 60;
-		    refreshTokenCookie.setMaxAge(maxAge);
-		    
-		    // 쿠키를 응답에 추가
-		    response.addCookie(jwtCookie);
-		    response.addCookie(refreshTokenCookie);
-
-			// 로그인 이전 페이지
-			String prevPage = (String) request.getSession().getAttribute("prevPage");
-
-			return ResponseEntity.ok().header("prev-page", prevPage).body("success");
-			
-		} catch (AuthenticationException e) {
-			//유효하지 않은 로그인 정보
-			log.error("Authentication failed: " + e.getMessage(), e);
-			return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
-		} catch (Exception e) {
-			log.error("An error occurred during login", e);
-			return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
-		}
+	
+	@GetMapping(value="/loginType")
+	public ResponseEntity<String> getLoginType(HttpServletRequest request) {
+		
+		// jwt 토큰 claim의 로그인 타입 가져옴 
+    	Cookie[] cookies = request.getCookies();
+    	
+    	String token = jwtTokenProvider.getAccessTokenFromCookies(cookies);
+    	
+    	if(token == null) {
+    		// 모든 세션 만료
+    		request.getSession().invalidate();
+    		
+    		return ResponseEntity.status(401).body("Unauthorized");
+    	}
+    	
+    	try {
+            Claims claims = jwtTokenProvider.getClaims(token);
+            String loginType = (String) claims.get("loginType");
+            return ResponseEntity.ok(loginType);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
+        }
 	}
 	
-	/**
-	 * 사용자의 로그아웃을 처리합니다.
-	 * 
-	 * @return HTTP 응답 상태 코드
-	 */
-	@GetMapping(value = "/logout")
-	public ResponseEntity<String> logout(HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-        try {
-    		String userId = (String) request.getAttribute("userId");
-        	
-    		memberService.deleteRefreshToken(userId);
-    		
-    		deleteCookies(response);
-    	    
-    	    // http 세션에 저장된 로그인 여부 삭제
-    	    request.getSession().removeAttribute("isLogin");
-    	    
-    		return ResponseEntity.ok().body("Logout success");
-    	}catch(Exception e) {
-    		return ResponseEntity.status(500).body("Internal Server Error: Refresh Token 삭제 중 오류 발생 : " + e.getMessage());
-    	}
-	}
-
-	// 쿠키에서 Access Token 추출
-	private String extractAccessToken(HttpServletRequest request) {
-	    String accessToken = "";
-	    Cookie[] cookies = request.getCookies();
-
-	    if (cookies != null) {
-	        for (Cookie cookie : cookies) {
-	            if (cookie.getName().equals("Authorization")) {
-	                accessToken = cookie.getValue();
-	            }
-	        }
-	    }
-	    return accessToken;
-	}
 	
 	private void deleteCookies(HttpServletResponse response) {
 		// Authorization 쿠키 삭제
@@ -238,7 +132,7 @@ public class MemberRestController {
 	    cookie.setHttpOnly(true);
 	    cookie.setSecure(true);
 	    cookie.setPath("/");
-	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정 (즉시 삭제)
+	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
 	    
 	    response.addCookie(cookie);
 	    
@@ -251,7 +145,7 @@ public class MemberRestController {
 	}
 	
 	/**
-	 * JWT 토큰 검증 후 사용자의 아이디와 닉네임, 권한 정보를 반환합니다.
+	 * JWT 토큰 검증 후 JWT 토큰에 저장된 사용자의 아이디와 닉네임, 권한 정보를 반환합니다.
 	 * 
 	 * @return HTTP 응답 상태 코드와 사용자 정보를 포함한 객체
 	 */
@@ -264,7 +158,7 @@ public class MemberRestController {
 			if(response.getStatus() == 200) {
 				String userId = (String) request.getAttribute("userId");
 				String auth = (String) request.getAttribute("auth");
-				String userName = (String) request.getAttribute("userName");
+				String userName = (String)request.getSession().getAttribute("userName");
 				
 				if(userId != null && userName != null && auth != null) {
 					
@@ -287,31 +181,23 @@ public class MemberRestController {
 	}
 	
 	/**
-	 * JWT 토큰 검증하지 않고 사용자의 아이디, 닉네임, 권한을 반환합니다.
+	 * 세션에 저장된 사용자의 아이디, 닉네임, 권한을 반환합니다.
 	 * 
 	 * @param request
 	 * @return HTTP 응답 상태 코드와 사용자 정보
 	 */
-	@GetMapping("/decode-token")
-    public ResponseEntity<Map<String, String>> decodeToken(HttpServletRequest request, HttpServletResponse res) {
-		Cookie[] cookies = request.getCookies();
+	@GetMapping("/me")
+    public ResponseEntity<Map<String, String>> decodeToken(HttpSession session , HttpServletResponse res) {
 		
-		String token = jwtTokenProvider.getAccessTokenFromCookies(cookies);
-		
-		if(token == null) return ResponseEntity.ok(Collections.emptyMap());
-
-		Claims claims = jwtTokenProvider.getClaims(token); 
-        
-		if (claims == null) {
-			deleteCookies(res);
-			return ResponseEntity.ok(Collections.emptyMap());
-		}
+		log.info(session.getAttribute("userId"));
 		
         Map<String, String> response = new HashMap<>();
-        response.put("userId", claims.getSubject());
-        response.put("userName", claims.get("userName", String.class));
-        response.put("role", claims.get("auth", String.class));
+        
+        response.put("userId", (String)session.getAttribute("userId"));
+        response.put("userName", (String)session.getAttribute("userName"));
 
+        log.info(response);
+        
         return ResponseEntity.ok(response);
     }
 	
@@ -556,175 +442,6 @@ public class MemberRestController {
 		}
 	}
 
-
-	/**
-	 * 카카오 로그인
-	 * @param code 인가코드
-	 * @return 메인 페이지 or 로그인 이전 페이지
-	 */
-	@PostMapping(value = "/kakao_login")
-	public ResponseEntity<String> kakaoLogin(@RequestBody MemberVO member, HttpServletRequest request, HttpServletResponse response) {
-		
-		try {
-			member.setUser_pw(encoder.encode("kakaoLoginPassword"));
-			int kakaoUser = memberService.socialLoginOrRegister(member);
-	
-			if(kakaoUser != 1)return ResponseEntity.internalServerError().body("Unable to complete membership");
-			
-			// 사용자 이름과 비밀번호로 인증 객체 생성
-			Authentication authentication = authenticationManager
-					.authenticate(new UsernamePasswordAuthenticationToken(member.getUser_id(), "kakaoLoginPassword"));
-
-			/********* 이거 잘되는지 확인해야 됨 
-			 * 아래 오토 로그인도 클라이언트 측 코드 추가해야됨!!
-			 * 
-			 * 
-			 * */
-			String userName = member.getUser_name();
-			
-			boolean autoLogin = false;
-			
-			// JWT 토큰 생성
-			TokenInfo token = jwtTokenProvider.generateToken(authentication, userName, autoLogin);
-			
-			// refresh 토큰
-			String refreshToken = token.getRefreshToken();
-
-			try {
-				// refresh 토큰 저장
-				int addRefreshToken = memberService.addRefreshToken(member.getUser_id(), refreshToken);
-				if (addRefreshToken != 1) {
-					return ResponseEntity.status(500).body("Internal Server Error: Refresh Token 저장 중 오류 발생");
-				}
-			} catch (Exception e) {
-				log.error("Failed to add refresh token", e);
-				return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
-			}
-			
-			request.getSession().setAttribute("username", member.getUser_name());
-
-			// 쿠키에 jwt 토큰 저장
-		    Cookie jwtCookie = new Cookie("Authorization", token.getAccessToken());
-		    jwtCookie.setHttpOnly(true);  // 자바스크립트에서 접근 불가능
-		    jwtCookie.setPath("/");       // 해당 쿠키의 유효 경로 설정
-		    jwtCookie.setMaxAge(24 * 60 * 60); // 쿠키 유효 기간 설정 (1일)
-
-		    // 쿠키를 응답에 추가
-		    response.addCookie(jwtCookie);
-		    
-			// 로그인 이전 페이지
-			String prevPage = (String) request.getSession().getAttribute("prevPage");
-
-			return ResponseEntity.ok().header("prev-page", prevPage).body("success");
-
-		} catch (AuthenticationException e) {
-			/*유효하지 않은 로그인 정보*/
-			log.error("Authentication failed: " + e.getMessage(), e);
-			return ResponseEntity.status(401).body("Authentication failed: " + e.getMessage());
-		} catch (Exception e) {
-			log.error("An error occurred during login", e);
-			return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
-		}
-	}
-
-
-	/*****************************************
-	 * 네이버 로그인
-	 * @param code    인가코드
-	 * @param state
-	 * @param request
-	 * @return 메인 페이지 or 로그인 이전 페이지
-	 ****************************************/
-	@PostMapping(value = "/naver_login")
-	public ResponseEntity<String> naverLogin(@RequestBody MemberVO member, HttpServletRequest request, HttpServletResponse response) {
-
-		try {
-			
-			member.setUser_pw(encoder.encode("naverLoginPassword"));
-			
-			int naverUser = memberService.socialLoginOrRegister(member);
-
-			if(naverUser != 1)return ResponseEntity.internalServerError().body("Unable to complete membership");
-			
-			// 사용자 이름과 비밀번호로 인증 객체 생성
-			Authentication authentication = authenticationManager
-					.authenticate(new UsernamePasswordAuthenticationToken(member.getUser_id(), "naverLoginPassword"));
-
-			/******************카카오랑 네이버 이거 잘되는지 확인*/
-			String userName = member.getUser_name();
-			
-			boolean autoLogin = false;
-			
-			// JWT 토큰 생성
-			TokenInfo token = jwtTokenProvider.generateToken(authentication, userName, autoLogin);
-			
-			// refresh 토큰
-			String refreshToken = token.getRefreshToken();
-
-			try {
-				// refresh 토큰 db에 저장
-				int addRefreshToken = memberService.addRefreshToken(member.getUser_id(), refreshToken);
-				if (addRefreshToken != 1) {
-					log.error("Internal Server Error: Refresh Token 저장 중 오류 발생");
-					return ResponseEntity.internalServerError().body("Internal Server Error: Refresh Token 저장 중 오류 발생");
-				}
-			} catch (Exception e) {
-				log.error("Failed to add refresh token", e);
-				log.error(e.getMessage());
-				return ResponseEntity.internalServerError().body(e.getMessage());
-			}
-			
-			request.getSession().setAttribute("username",member.getUser_name());
-			
-			// 쿠키에 jwt 토큰 저장
-		    Cookie jwtCookie = new Cookie("Authorization", token.getAccessToken());
-		    jwtCookie.setHttpOnly(true);  // 자바스크립트에서 접근 불가능
-		    jwtCookie.setPath("/");       // 해당 쿠키의 유효 경로 설정
-		    jwtCookie.setMaxAge(24 * 60 * 60); // 쿠키 유효 기간 설정 (1일)
-
-		    // 쿠키를 응답에 추가
-		    response.addCookie(jwtCookie);
-		    
-			// 로그인 이전 페이지
-			String prevPage = (String) request.getSession().getAttribute("prevPage");
-
-			return ResponseEntity.ok().header("prev-page", prevPage).body("success");
-			
-		} catch (AuthenticationException e) {
-			log.error("Authentication failed: " + e.getMessage(), e);
-			return ResponseEntity.internalServerError().body(e.getMessage());
-		} catch (Exception e) {
-			log.error("An error occurred during login", e);
-			return ResponseEntity.internalServerError().body(e.getMessage());
-		}
-	}
-	
-	/**
-	 * 마이페이지 - 사용자 정보 조회
-	 * 
-	 * @return HTTP 응답 상태코드, 사용자 아이디, 닉네임, 주소, 전화번호, 소셜로그인 여부 
-	 */
-	@GetMapping(value = "/account", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<MemberVO> getAccount(HttpServletRequest request, HttpServletResponse response){
-		try {
-			boolean isPasswordVerified = isPasswordVerified(request);
-			
-			MemberVO account = new MemberVO();
-			
-			if(isPasswordVerified) {
-				if(response.getStatus() == 200) {
-					String userId = (String) request.getAttribute("userId");
-					
-					account = memberService.account(userId);
-				}
-			}
-			return ResponseEntity.ok().body(account);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-	}
-
 	/**
 	 * 사용자의 닉네임을 변경합니다.
 	 * 
@@ -937,44 +654,29 @@ public class MemberRestController {
 	}
 
 	/**
-	 * 회원의 탈퇴를 처리합니다.
+	 * 회원 탈퇴
 	 * 
 	 * @return HTTP 응답 상태 코드
 	 * 		- 200 OK: 회원 탈퇴 완료
 	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
 	 */
-	
 	@DeleteMapping("/withDraw")
     public ResponseEntity<Void> withDraw(HttpServletRequest request, HttpServletResponse response) {
         try {
+        	
+        	request.getSession().invalidate();
+        	
+        	deleteCookies(response);
+    	    
     		String userId = (String) request.getAttribute("userId");
         	
         	// 회원 정보 삭제
             memberService.withDraw(userId);
-            
-            // Authorization 쿠키 삭제
-    	    Cookie cookie = new Cookie("Authorization", null);
-    	    cookie.setHttpOnly(true);
-    	    cookie.setSecure(true);
-    	    cookie.setPath("/");
-    	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정 (즉시 삭제)
-    	    
-    	    response.addCookie(cookie);
-    	    
-    	    // refreshToken 쿠키 삭제
-    	    Cookie refreshCookie = new Cookie("RefreshToken", null);
-    	    refreshCookie.setHttpOnly(true);
-    	    refreshCookie.setSecure(true);
-    	    refreshCookie.setPath("/");
-    	    refreshCookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정 (즉시 삭제)
-    	    
-    	    response.addCookie(refreshCookie);
-    	    
-    	    request.getSession().removeAttribute("isLogin");
 
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+	
 }

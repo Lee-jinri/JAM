@@ -107,7 +107,7 @@ $(document).on('click', '.otherPosts', function() {
 	
 	let userId = $(this).closest('.userNameToggle').prev('.userName').attr("data-userid");
 
-	location.href = "/community/comPosts?type=other&userId=" + userId;
+	location.href = "/mypage/written?boardType=community&user_id=" + userId;
 });
 
 $(document).on('click', '.send', function(){

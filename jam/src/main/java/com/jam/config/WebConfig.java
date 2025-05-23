@@ -107,7 +107,8 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         		.addPathPatterns(
         				"/api/member/getUserInfo", 
         				"/api/member/logout", 
-        				"/api/member/account", 
+        				"/oauth/kakao/logout",
+        				"/oauth/naver/logout",
         				"/api/member/userName",
         				"/api/member/phone",
         				"/api/member/password/confirm",
@@ -122,7 +123,8 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         				"/jobReplies/**",
         				"/comReplies/**",
         				"/api/chat/**",
-        				"/api/favorite/**",
-        				"/api/written/boards");
+        				"/api/mypage/favorite/**",
+        				"/api/mypage/written/boards",
+        				"/api/mypage/account");
    }
 }

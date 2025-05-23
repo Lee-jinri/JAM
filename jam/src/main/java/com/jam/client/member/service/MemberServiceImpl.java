@@ -11,18 +11,16 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -114,93 +112,6 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.emailCheck(email);
 	}
 	
-	// 토큰 검증
-	@Override
-	public Map<String, Boolean> validateToken(String accessToken, boolean autoLogin) {
-		
-		Map<String, Boolean> result = new HashMap<>();
-		result.put("isAccessTokenUpdated", false);
-		
-		try {
-			// Access Token 유효성 확인
-			TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
-	        if (tokenStatus == TokenStatus.VALID) {
-	        	
-	        	// SecurityContextHolder에 저장된 사용자의 정보 
-		        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		        	
-		        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-	   
-	        	String user_id = userDetails.getUsername();
-	        	    
-	        	String refreshToken = getRefreshToken(user_id);
-	        	    
-	        	// refresh Token 유효성 확인
-	        	TokenStatus refreshTokenStatus = jwtTokenProvider.validateToken(refreshToken);
-	        	if(refreshTokenStatus == TokenStatus.VALID) {
-	        	   	
-	        		String user_name = getUserName(user_id);
-		        	// 사용자 인증 불가(401)
-	        	    if(user_name == null) return result;
-	        	    
-	        	    // 새로운 access Token과 refresh Token 발급
-	        	    accessToken = generateToken(authentication, user_id, user_name, autoLogin);
-	        	    
-	        	    if(accessToken == null) return result;
-		        	    
-	        	    // accessToken 새로 발급 받음
-	        	    result.put("isAccessTokenUpdated", true);
-	        	    
-	        	    // accessToken 인증 성공
-	        	    result.put("validateToken", true);
-	        	    
-		       }else {
-	        		// 사용자 인증 불가(401) 
-	        		log.error("refreshToken is not validate");
-	        	    	
-	        		return result;
-	        	}
-	        }else {
-	        	// accessToken 인증 성공
-	        	result.put("validateToken", true);
-	        }
-		}catch (Exception e) {
-			
-			// 사용자 인증 불가(401)
-			log.error(e.getMessage());
-			result.put("validateToken", false);
-			
-	        return result;
-		}
-		
-		return result;
-	}
-	
-	/****************************************
-	 * access Token이 만료됐을 때 refreshToken이 유효한지 확인하고 새로운 accessToken 발급
-	 * @param authentication 
-	 * @param user_id
-	 * @param user_name
-	 * @return accessToken
-	 ***************************************/
-	@Override
-	public String generateToken(Authentication authentication, String user_id, String user_name, boolean autoLogin) {
-		
-		TokenInfo token = jwtTokenProvider.generateToken(authentication, user_name, autoLogin);
-		String refreshToken = token.getRefreshToken();
-
-		try {
-			// refresh 토큰 저장
-			addRefreshToken(user_id, refreshToken);
-			
-			return token.getAccessToken();
-			
-		} catch (Exception e) {
-			
-			log.error("Failed to add refresh token");
-			return null;
-		}
-	}
 	
 
 	public String getAccessToken(HttpServletRequest request) {
@@ -265,11 +176,7 @@ public class MemberServiceImpl implements MemberService {
 
 
 	
-	// 마이페이지 - 회원 정보 페이지
-	@Override
-	public MemberVO account(String user_id) {
-		return memberDao.account(user_id);
-	}
+	
 	
 	// 아이디 찾기
 	@Override
@@ -354,34 +261,21 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 소셜 회원가입 여부 확인
 	@Override
-	public int socialLoginOrRegister(MemberVO member) {
+	public void socialLoginOrRegister(Map<String, Object> userInfo) {
 	
-		if(member.getUser_id() == null || member.getEmail() == null || member.getUser_name() == null || member.getPhone() == null) 
-			return 0;
-		
 		//member.setUser_pw(encoder.encode("naverLoginPassword"));
 		
-		log.info(member);
 		try {
 			
 			// 가입 여부 확인
-			int result = memberDao.findSocialUser(member);
+			int result = memberDao.findSocialUser((String)userInfo.get("user_id"));
 			
-			// 회원 정보 없을 때
-			if(result == 0) {
-				// 네이버 사용자 회원가입
-				memberDao.SocialRegister(member);
-				
-				result = memberDao.findSocialUser(member);
-				
-				return result;
-			}
+			// 회원 정보 없으면 회원가입
+			if(result == 0) memberDao.SocialRegister(userInfo); 
 			
-			return result;
 		}catch(Exception e) {
 			log.error(e.getMessage());
 		}
-		return 0;
 	}
 	
 	// 닉네임 변경
@@ -470,6 +364,70 @@ public class MemberServiceImpl implements MemberService {
 	public MemberVO getUserInfo(String refreshToken) {
 		
 		return memberDao.getUserInfo(refreshToken);
+	}
+
+	
+	/**
+	 * TODO: 현재는 닉네임만 반환하지만, 추후 프로필 이미지 등 확장 예정
+	 * 
+	 * @param String user_id
+	 * @return MemberVO 닉네임 
+	 **/
+	@Override
+	public MemberVO getUserProfile(String user_id) {
+		return memberDao.getUserProfile(user_id);
+	}
+
+
+	/*
+	@Override
+	public Authentication loginProcess(Map<String, Object> member)  {
+		String user_id = (String)member.get("user_id");
+		String user_pw = (String)member.get("user_pw");
+
+		try {
+			AuthenticationManager authenticationManager = authenticationConfiguration.getAuthenticationManager();
+		    
+			Authentication authentication = authenticationManager.authenticate(
+		        new UsernamePasswordAuthenticationToken(user_id, user_pw)
+		    );
+			
+			// SecurityContextHolder에 현재 사용자의 정보를 설정합니다.
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			
+			return authentication;
+			
+		} catch (AuthenticationException e) {
+	        log.error("인증 실패", e);
+	        throw e; 
+	    } catch (Exception e) {
+	        log.error("로그인 처리 중 오류 발생", e);
+	        throw new RuntimeException("로그인 처리 중 오류 발생", e); // 커스터마이징 가능
+	    }
+	}
+	
+*/
+	public Authentication authenticateSocialUser(String user_id, String user_name) {
+		
+		try {
+			Authentication authentication = new UsernamePasswordAuthenticationToken(
+					user_id,
+				    null,
+				    List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
+				);
+			
+			// SecurityContextHolder에 현재 사용자의 정보를 설정합니다.
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			
+			return authentication;
+			
+		} catch (AuthenticationException e) {
+	        log.error("인증 실패", e);
+	        throw e; 
+	    } catch (Exception e) {
+	        log.error("로그인 처리 중 오류 발생", e);
+	        throw new RuntimeException("로그인 처리 중 오류 발생", e); // 커스터마이징 가능
+	    }
 	}
 
 	

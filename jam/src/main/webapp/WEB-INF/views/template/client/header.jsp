@@ -172,45 +172,48 @@ header {
 
                 	// 요소 추가
                 	headerNav.appendChild(anchor);
-                }
+                }*/
             }
 	    })
 	    .catch(error => {
 	        console.error("에러 발생:", error);
 	    });
 		
+
 		// 로그아웃
 		$("#logout").click(function() {
-			
-			fetch('/api/member/logout', {
-	            method: 'GET'
-	        })
-	        .then(response => {
-	        	return response.text();
-	        })
-	        .then(data => {
-	        	if (data === "Logout success") {
-	                // 로그아웃 후 메인 페이지로 리다이렉트
-	                $(location).attr('href', "/");
-	            } else {
-	                throw new Error('Unexpected response message: ' + data);
-	            }
-	        })
-	        .catch(error => {
-	            console.error('로그아웃 중 오류 발생 : ', error);
-	        });
+			fetch('/api/member/loginType')
+			.then(res => {
+				if(res.status == 200) return res.text();
+				else if(res.status == 401) {
+					alert('로그인이 만료되었습니다. 메인 페이지로 이동합니다.');
+			        $(location).attr('href', "/");
+			        return;
+				} else {
+			    	throw new Error('응답 상태: ' + res.status);
+			    }
+			})
+			.then(loginType => {
+				console.log(loginType);
+				logout(loginType);
+			})
+			.catch(error => {
+				console.error("오류:", error);
+				alert('알 수 없는 오류가 발생했습니다.');
+			});
 		})
 		
 		$("#account").click(function() {
-			$(location).attr('href', '/member/account');
+			$(location).attr('href', '/mypage/account');
 		});
 		
 		$("#written").click(function(){
-			$(location).attr('href','/member/written');
+			let user_id = $(this).attr("data-userId");
+			$(location).attr('href','/mypage/written?user_id='+user_id);
 		})
 		
 		$("#myFavorite").click(function(){
-			$(location).attr('href','/member/favorite')
+			$(location).attr('href','/mypage/favorite')
 		})
 		
 		$("#msg").click(function(){
@@ -242,6 +245,27 @@ header {
 		})
 	})
 
+function logout(loginType){
+	let uri;
+		
+	if (loginType === 'kakao') {
+		uri = '/oauth/kakao/logout';
+	}else if(loginType === 'naver'){
+		uri = '/oauth/naver/logout';	
+	}else {
+		uri = '/api/member/logout';
+	}
+			
+	fetch(uri, {
+	    method: 'POST'
+    })
+    .then(() => {
+    	location.reload();
+     })
+    .catch(error => {
+        console.error('로그아웃 중 오류 발생 : ', error);
+    });
+}
 </script>
 </head>
 <header>
@@ -313,8 +337,5 @@ header {
 			<button type="button" id="logout"
 				class="logoutA mr-2 bColor_fff font-color-blue">로그아웃</button>
 		</div>
-
 	</div>
-
-
 </header>

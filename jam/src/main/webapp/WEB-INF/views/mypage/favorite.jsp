@@ -157,7 +157,7 @@ $(function(){
 })
 
 function getFavorite(boardType, pageNum) {
-    let url = '/api/favorite/boards?boardType=' + boardType + '&pageNum=' + pageNum;
+    let url = '/api/mypage/favorite/boards?boardType=' + boardType + '&pageNum=' + pageNum;
     
     fetch(url)
     .then(response => {
@@ -248,7 +248,7 @@ function loadPagination(pageMaker, boardType) {
         e.preventDefault();
         let pageNum = $(this).data("page") || 1; 
 	    
-	    let url = "/member/favorite?pageNum="+pageNum + "&boardType=" + boardType;
+	    let url = "/mypage/favorite?pageNum="+pageNum + "&boardType=" + boardType;
         
 		window.location.href = url;
     });

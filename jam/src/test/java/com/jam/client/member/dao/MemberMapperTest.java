@@ -114,12 +114,7 @@ public class MemberMapperTest {
 		
 	}*/
 	
-	/* 마이페이지 회원 정보 페이지 
-	@Test
-	public void testAccount() {
-		String user_id="abcd1234";
-		log.info(memberDao.account(user_id));
-	}*/
+	
 	
 	/* 아이디 찾기 
 	@Test

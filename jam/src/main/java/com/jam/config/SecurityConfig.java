@@ -41,15 +41,11 @@ import lombok.Setter;
 @ComponentScan(basePackages = "com.jam")
 public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 
-	@Setter
-	private DataSource dataSource;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final CustomLoginSuccessHandler customSuccessHandler;
+    private final CustomLoginFailureHandler customFailureHandler;
+    private final CustomLogoutHandler customLogoutHandler;
 	
-	@Autowired
-	private MemberService memberService;
-
-	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
-
     @Bean
     public PasswordEncoder passwordEncoder(){
         return new BCryptPasswordEncoder();
@@ -106,23 +102,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 				//.antMatchers("/admin/admin").hasRole("ROLE_ADMIN")
 				.antMatchers("/**").permitAll()
 			.and()
-				.formLogin().disable()
-				//.loginPage("/member/login") // 커스텀 로그인 페이지 URL
-				//.loginProcessingUrl("/member/login-process")
-				//.usernameParameter("user_id") 
-	            //.passwordParameter("user_pw") 
-				//.failureUrl("/member/login?error")
-				//.defaultSuccessUrl("/")
-				//.successHandler(customSuccessHandler())
-				//.failureHandler(customFailureHandler())
-	            /*로그인 실패하면 기본적으로 /login?error로 리디렉션*/
-            //.and()
+				.formLogin()
+				.loginPage("/member/login") // 커스텀 로그인 페이지
+				.loginProcessingUrl("/api/member/login-process")
+				.successHandler(customSuccessHandler)
+				.failureHandler(customFailureHandler)
+            .and()
             	.logout()
-            	.logoutRequestMatcher(new AntPathRequestMatcher("/logout", "POST"))  // POST 방식으로 로그아웃 처리
+            	.logoutRequestMatcher(new AntPathRequestMatcher("/api/member/logout", "POST"))  // POST 방식으로 로그아웃 처리
                 .invalidateHttpSession(true)
             	.deleteCookies("remember-me","JSESSTION_ID")
             	.deleteCookies("JSESSIONID")
-            	.addLogoutHandler(new CustomLogoutHandler(jwtTokenProvider, memberService))  // 커스텀 로그아웃 핸들러 추가
+            	.addLogoutHandler(customLogoutHandler) 
             	.logoutSuccessHandler(new CustomLogoutSuccessHandler())  // 로그아웃 성공 핸들러
                 
             	// 시큐리티는 기본적으로 세션을 사용
@@ -138,7 +129,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
             	.csrf().disable();
     }
 	
-	/*customUserService 인증 되면 -> 스프링 시큐리티가 Authentication 객체를 자동으로 생성 -> */
+	/* customUserService 인증 되면 -> 스프링 시큐리티가 Authentication 객체를 자동으로 생성 -> */
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception{
 		auth.userDetailsService(customUserService()).passwordEncoder(passwordEncoder());
