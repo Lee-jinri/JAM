@@ -4,7 +4,6 @@ package com.jam.client.member.service;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 

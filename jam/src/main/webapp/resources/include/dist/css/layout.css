@@ -192,7 +192,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 }
 
 .common-box {
-	padding: 40px 40px;
+	padding: 40px;
 	width: 560px;
 	height: 700px;
 	margin: auto;

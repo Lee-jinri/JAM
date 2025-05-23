@@ -139,7 +139,6 @@
 			let params = new URLSearchParams(window.location.search);
 			
 		    let queryString = new URLSearchParams(window.location.search);
-		    //let url = "/api/community/posts" + (queryString ? "?" + queryString : "");
 		    let url = "/api/community/posts?"+queryString;
 		    console.log(url);
 		    

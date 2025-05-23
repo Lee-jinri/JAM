@@ -1,15 +1,16 @@
 let selectedCity;
 let selectedGu;
 let selectedDong;
-$(function(){
-	
-	$(".city").click(function(){
+
+$(function() {
+
+	$(".city").click(function() {
 		console.log("??");
 		let cityName = this.dataset.city;
 		showGuList(cityName);
 		selectedCity = cityName;
 		updateSelectedArea(cityName, '', '');
-		
+
 		$(".city").css("background-color", "#fff");  
 		$(this).css("background-color", "#f0f5ff");  
 	})
@@ -44,13 +45,13 @@ let locationData = {};  // JSON 데이터를 담아둘 전역 변수
 
 // 1. JSON 파일 로드 (페이지 로드 시)
 async function loadLocationData() {
-    try {
-        const response = await fetch('/resources/include/dist/json/locationData.json'); 
-        locationData = await response.json();
-    } catch (error) {
-        console.error("지역 데이터 로드 실패:", error);
-        alert("지역 데이터를 불러오는데 실패했습니다.");
-    }
+	try {
+		const response = await fetch('/resources/include/dist/json/locationData.json');
+		locationData = await response.json();
+	} catch (error) {
+		console.error("지역 데이터 로드 실패:", error);
+		alert("지역 데이터를 불러오는데 실패했습니다.");
+	}
 }
 
 // 2. 시 클릭 시 해당 시의 구 리스트 표시

@@ -1,6 +1,5 @@
 package com.jam.client.job.controller;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;

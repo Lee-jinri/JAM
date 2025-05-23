@@ -1,11 +1,8 @@
 package com.jam.client.chat.vo;
 
-import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;

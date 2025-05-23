@@ -10,291 +10,371 @@
 <script src="/resources/include/dist/js/area.js"></script>
 <script src="/resources/include/dist/js/favorite.js"></script>
 <style>
+.search-container {
+	display: flex;
+	align-items: center;
+	background-color: white;
+	border: 1px solid #ddd;
+	border-radius: 9999px; /* pill shape */
+	padding: 8px 8px;
+	width: 100%;
+	max-width: 600px;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+	height: 53px;
+}
+
+.search-icon {
+	color: #333;
+	font-size: 20px;
+}
+
+.search-input {
+	border: none;
+	flex: 1;
+	outline: none;
+	font-size: 14px;
+}
+
+.search-select {
+	border: none;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	background-color: #f2eadd;
+	border-radius: 9999px;
+	padding: 8px 25px;
+	font-size: 14px;
+	cursor: pointer;
+	text-align-last: center;
+	padding-right: 2em;
+	background-image:
+		url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 24 24' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+	background-repeat: no-repeat;
+	background-position: right 0.75em center;
+	background-size: 0.8em;
+}
+
+
+
+.search-select option {
+	direction: rtl;
+	text-align: center;
+}
+
+/*******************************? r검색바 디자인 아래가 원래 위가 새로/
 .search-div {
     max-width: 700px;   /* 포지션/지역과 동일하게 맞춤 */
-    width: 100%;
-    margin: 0 auto;     /* 가운데 정렬 */
-    padding: 1rem 2rem;
-    margin-top: 30px;
+width
+:
+ 
+100
+%;
+
+    
+margin
+:
+ 
+0
+ 
+auto
+; /* 가운데 정렬 */
+
+    
+padding
+:
+ 
+1rem
+ 
+2rem
+;
+
+    
+margin-top
+:
+ 
+30px
+;
+
+
 }
-.search-input{
+.search-input {
 	border: none;
-    border-bottom: 1px solid #e5e7eb;
+	border-bottom: 1px solid #e5e7eb;
 }
 
 .search-bar-wrapper {
-    display: flex;
-    gap: 8px; /* 요소 간 간격 */
-    width: 100%;
-    max-width: 800px; /* 포지션/지역과 동일한 폭 */
+	display: flex;
+	gap: 8px; /* 요소 간 간격 */
+	width: 100%;
+	max-width: 800px; /* 포지션/지역과 동일한 폭 */
 }
 
 .search-bar-wrapper select {
-    flex: 0.2;  /* select는 전체의 20%만 차지 */
-    min-width: 100px; /* 너무 작아지는 거 방지 */
+	flex: 0.2; /* select는 전체의 20%만 차지 */
+	min-width: 100px; /* 너무 작아지는 거 방지 */
 }
 
 .search-bar-wrapper input {
-    flex: 1;  /* input은 나머지 공간 차지 */
-    min-width: 0;
-    box-sizing: border-box;
+	flex: 1; /* input은 나머지 공간 차지 */
+	min-width: 0;
+	box-sizing: border-box;
 }
 
 .search-bar-wrapper .glass_icon {
-    cursor: pointer;
-    font-size: 18px;
-    align-self: center;
+	cursor: pointer;
+	font-size: 18px;
+	align-self: center;
 }
-
 
 .selected-wrapper {
-    max-width: 600px; 
-    width: 100%;
-    margin: 10px auto;
-    text-align: left;
-    margin-bottom: 8px;
-    min-height: 23px;
+	max-width: 600px;
+	width: 100%;
+	margin: 10px auto;
+	text-align: left;
+	margin-bottom: 8px;
+	min-height: 23px;
 }
 
-.selected-location, .selected-position{
-    font-weight: bold;
-    font-size: 14px;
-    color: #333;
+.selected-location, .selected-position {
+	font-weight: bold;
+	font-size: 14px;
+	color: #333;
 }
 
 .switch-container {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin: 20px 0;
-    font-weight: bold;
-    font-size: 16px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	margin: 20px 0;
+	font-weight: bold;
+	font-size: 16px;
 }
 
 .switch {
-    position: relative;
-    display: inline-block;
-    width: 50px;
-    height: 26px;
+	position: relative;
+	display: inline-block;
+	width: 50px;
+	height: 26px;
 }
 
 .switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
+	opacity: 0;
+	width: 0;
+	height: 0;
 }
 
 .slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #ddd;
-    transition: 0.4s;
-    border-radius: 34px;
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ddd;
+	transition: 0.4s;
+	border-radius: 34px;
 }
 
 .slider:before {
-    position: absolute;
-    content: "";
-    height: 20px; width: 20px;
-    left: 3px; bottom: 3px;
-    background-color: white;
-    transition: 0.4s;
-    border-radius: 50%;
+	position: absolute;
+	content: "";
+	height: 20px;
+	width: 20px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: 0.4s;
+	border-radius: 50%;
 }
 
 /* 기본 색상 (unchecked 상태일 때) */
 .slider {
-    background-color: #003366;  
+	background-color: #003366;
 }
 
-input:checked + .slider {
-    background-color: #ffdd77;
+input:checked+.slider {
+	background-color: #ffdd77;
 }
 
-input:checked + .slider:before {
-    transform: translateX(24px);
+input:checked+.slider:before {
+	transform: translateX(24px);
 }
 
-.filterBtnContainer{
-    gap: 10px; /* 버튼 사이 간격 */
-    align-items: center; /* 버튼 높이 정렬 */
+.filterBtnContainer {
+	gap: 10px; /* 버튼 사이 간격 */
+	align-items: center; /* 버튼 높이 정렬 */
 	max-width: 700px;
-    margin: 10px auto;	
+	margin: 10px auto;
 }
+
 .setting-filter {
-    display: none;
-    overflow: hidden;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    background-color: #fff;
-    max-width: 800px;  /* 컨테이너 최대 너비 (원하는 값으로 조절 가능) */
-    margin: 0 auto;  /* 중앙정렬 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  /* 살짝 그림자 */
-    padding: 10px;
+	display: none;
+	overflow: hidden;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background-color: #fff;
+	max-width: 800px; /* 컨테이너 최대 너비 (원하는 값으로 조절 가능) */
+	margin: 0 auto; /* 중앙정렬 */
+	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); /* 살짝 그림자 */
+	padding: 10px;
 }
-
-
 
 .setting-base-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 8px;  /* 각 컬럼 사이 간격 */
+	display: flex;
+	justify-content: space-between;
+	gap: 8px; /* 각 컬럼 사이 간격 */
 }
 
 .setting-base__col--title {
-    flex: 1;
-    height: 40px;
-    line-height: 40px;
-    font-weight: 600;
-    font-size: 1.2rem;
-    text-align: center;
-    border-bottom: 1px solid #e5e8ec;
-    color: #4c515b;
-    background-color: #f7f8fa;
-    border-right: 1px solid #e5e8ec;
+	flex: 1;
+	height: 40px;
+	line-height: 40px;
+	font-weight: 600;
+	font-size: 1.2rem;
+	text-align: center;
+	border-bottom: 1px solid #e5e8ec;
+	color: #4c515b;
+	background-color: #f7f8fa;
+	border-right: 1px solid #e5e8ec;
 }
 
-
-
 .setting-base__col {
-    flex: 1;  /* 3등분으로 균등 배분 */
-    border: 1px solid #e5e8ec;
-    border-radius: 4px;
-    background-color: #f9f9f9;
-    overflow: hidden;
+	flex: 1; /* 3등분으로 균등 배분 */
+	border: 1px solid #e5e8ec;
+	border-radius: 4px;
+	background-color: #f9f9f9;
+	overflow: hidden;
 }
 
 .setting-base__col--list {
-    max-height: 200px;  /* 높이 제한 (스크롤 추가 가능) */
-    overflow-y: auto;
-    background-color: #fff;
-    padding: 8px;
-    border: 1px solid #e5e8ec;
-    border-radius: 4px;
+	max-height: 200px; /* 높이 제한 (스크롤 추가 가능) */
+	overflow-y: auto;
+	background-color: #fff;
+	padding: 8px;
+	border: 1px solid #e5e8ec;
+	border-radius: 4px;
 }
 
 .setting-base__col--list ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+	list-style: none;
+	padding: 0;
+	margin: 0;
 }
 
 .setting-base__col--list li {
-    padding: 8px 12px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s;
-    border-bottom: 1px solid #f0f0f0;
+	padding: 8px 12px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 0.2s;
+	border-bottom: 1px solid #f0f0f0;
 }
 
 .setting-base__col--list li:last-child {
-    border-bottom: none;
+	border-bottom: none;
 }
 
 .setting-base__col--list li:hover {
-    background-color: #f0f5ff;
+	background-color: #f0f5ff;
 }
 
 .setting-base__col--list .placeholder {
-    color: #aaa;
-    font-style: italic;
-    text-align: center;
+	color: #aaa;
+	font-style: italic;
+	text-align: center;
 }
 
-	
 .button-group {
-    display: flex;
-    gap: 10px; /* 버튼 간격 */
+	display: flex;
+	gap: 10px; /* 버튼 간격 */
 }
 
 .filter-btn {
-    position: relative;
-    padding: 10px 16px;
-    font-size: 14px;
-    color: #333;
-    background-color: #f9f9f9;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 6px; /* 텍스트와 아이콘 간격 */
-    font-weight: 500;
-    transition: background-color 0.3s;
+	position: relative;
+	padding: 10px 16px;
+	font-size: 14px;
+	color: #333;
+	background-color: #f9f9f9;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	gap: 6px; /* 텍스트와 아이콘 간격 */
+	font-weight: 500;
+	transition: background-color 0.3s;
 }
 
 .filter-btn:hover {
-    background-color: #f0f0f0;
+	background-color: #f0f0f0;
 }
 
 .filter-btn .icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .filter-btn i {
-    font-size: 12px;
-    color: #555;
+	font-size: 12px;
+	color: #555;
 }
 
 #positionContainer {
-    background: #f9f9f9;
-    padding: 16px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    max-width: 800px; /* 필요 시 조정 */
-    margin-top: 8px;
+	background: #f9f9f9;
+	padding: 16px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	max-width: 800px; /* 필요 시 조정 */
+	margin-top: 8px;
 }
 
 /* 포지션 그리드 레이아웃 */
 .position-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* 반응형 */
-    gap: 8px; /* 항목 간격 */
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* 반응형 */
+	gap: 8px; /* 항목 간격 */
 }
 
 /* 개별 포지션 항목 (체크박스 + 라벨) */
 .position-grid label {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: #fff;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.2s, box-shadow 0.2s;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 12px;
+	background: #fff;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	font-size: 14px;
+	cursor: pointer;
+	transition: background-color 0.2s, box-shadow 0.2s;
 }
 
 /* 선택 시 강조 */
-.position-grid input:checked + span {
-    font-weight: bold;
-    color: #007bff;
+.position-grid input:checked+span {
+	font-weight: bold;
+	color: #007bff;
 }
 
 /* hover 시 효과 */
 .position-grid label:hover {
-    background-color: #f0f0f0;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	background-color: #f0f0f0;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* 기본 체크박스 숨기고 커스텀 디자인 */
 .position-grid input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    accent-color: #007bff; /* 체크 색상 */
+	width: 16px;
+	height: 16px;
+	accent-color: #007bff; /* 체크 색상 */
 }
 
-.remove-btn, .area-remove-btn{
-    background: none;
-    border: none;
-    color: #ff6b6b;
-    font-weight: bold;
-    font-size: 14px;
-    cursor: pointer;
+.remove-btn, .area-remove-btn {
+	background: none;
+	border: none;
+	color: #ff6b6b;
+	font-weight: bold;
+	font-size: 14px;
+	cursor: pointer;
 }
 </style>
 <script type="text/javascript">
@@ -650,7 +730,6 @@ function updateUrl(newParams){
     
     
     let newUrl = "/job/boards?" + currentParams.toString();
-    console.log(newUrl);
     
     location.href = newUrl;
 }
@@ -828,6 +907,19 @@ function setCompanyStyle() {
 					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
 				</div>
 			</div>
+			
+			<div class="search-container">
+				<i id="searchBtn" class="fa-solid fa-magnifying-glass search-icon"></i>
+				<input type="text" placeholder="검색어를 입력하세요" class="search-input" name="keyword" />
+				<select id="search" name="search" class="search-select">
+					<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
+				    <option value="job_title" ${param.search == 'job_title' ? 'selected' : ''}>제목</option>
+				    <option value="job_content" ${param.search == 'job_content' ? 'selected' : ''}>내용</option>
+				    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>작성자</option>
+				</select>
+			</div>
+			
+			
 			
 			<div class="selected-wrapper">
 			    <div id="selectedAreaWrapper" class="selected-location inline">

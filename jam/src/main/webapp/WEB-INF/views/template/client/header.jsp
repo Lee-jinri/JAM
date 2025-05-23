@@ -319,8 +319,8 @@ function logout(loginType){
 						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">계정
 							정보</span></li>
 					<li id="written" class="mypage_toggle_btn cursor-pointer"><span
-						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한
-							글</span></li>
+						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한 글</span>
+							</li>
 					<li id="myFavorite" class="mypage_toggle_btn cursor-pointer">
 						<span
 						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">북마크</span>

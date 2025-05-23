@@ -21,7 +21,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRentalReply.service.RoomReplyService;
 import com.jam.client.roomRentalReply.vo.RoomReplyVO;
 

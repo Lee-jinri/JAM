@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
-import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.job.vo.JobVO;
 
 public interface JobDAO {

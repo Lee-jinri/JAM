@@ -1,12 +1,8 @@
 package com.jam.client.chat.service;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.springframework.data.domain.Pageable;
-
-import java.util.Optional;
 
 import com.jam.client.chat.vo.ChatVO;
 

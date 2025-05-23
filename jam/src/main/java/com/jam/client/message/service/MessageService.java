@@ -2,8 +2,6 @@ package com.jam.client.message.service;
 
 import java.util.List;
 
-import javax.servlet.http.Cookie;
-
 import com.jam.client.message.vo.MessageVO;
 
 public interface MessageService {

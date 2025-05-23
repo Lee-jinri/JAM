@@ -23,7 +23,6 @@ public class AdminController {
 	
 	@GetMapping("/admin")
 	public String doAdmin() {
-		log.info("admin page");
 		
 		return "/admin/admin";
 	}

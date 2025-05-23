@@ -2,8 +2,6 @@ package com.jam.client.job.service;
 
 import java.util.List;
 
-import org.springframework.web.bind.annotation.RequestParam;
-
 import com.jam.client.job.vo.JobVO;
 
 public interface JobService {

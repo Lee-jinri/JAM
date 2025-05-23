@@ -98,479 +98,483 @@ p{
 <script type="text/javascript">	
 $(function(){
 	let isSocialLogin;
-		let phone;
-		let user_name;
+	let phone;
+	let user_name;
+	
+	
+	/*
+	1. 로그인 타입 가져옴 (local/naver/kakao)
+	2. local이면 비밀번호 검증 
+	*/
+	passwordConfirm();
 		
-		passwordConfirm();
-		
-		function passwordConfirm(){
-			fetch('/api/member/isPasswordVerified')
-			.then(response =>{
-				if(!response.ok){
-					alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-					$(location).attr('href', '/');
-				}
-				return response.text();
-			})
-			.then((data) =>{
-				let isPasswordVerified = data === 'true'; // Boolean으로 변환
-				
-				if (isPasswordVerified) {
-					getAccount();
-	            }
-	            passwordConfirmUi(isPasswordVerified);
-			})
-		}
-		
-		document.getElementById("passwordInput").addEventListener("keydown", function (event) {
-		    if (event.key === "Enter") { 
-		        event.preventDefault(); 
-		        document.getElementById("submitBtn").click(); // 확인 버튼 클릭
-		    }
-		});
-		
-		$("#submitBtn").click(function(){
-			let password = $("#passwordInput").val();
-			if(password.replace(/\s/g,"")=="" || password.replace(/\s/g,"")==""){
-				alert("비밀번호를 입력하세요.");
-				return false;
-			}
-			fetch('/api/member/password/confirm',{
-				method: 'POST',
-			    headers: {
-			        'Content-Type': 'application/json'
-			    },
-			    body: JSON.stringify({ user_pw: password }) 
-			})
-			.then(response =>{
-				if(response.ok){
-					alert("비밀번호가 확인되었습니다.");
-					passwordConfirmUi('true');
-					getAccount();
-					
-				}else if(response.status === 401){
-					alert("비밀번호가 틀렸습니다. 다시 입력해 주세요.");
-			        $("#passwordInput").val("");
-			        $("#passwordInput").focus();
-				}else throw new Error("비밀번호 확인 중 오류가 발생");
-			       
-			})
-			.catch(error =>{
-				alert('일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
-				console.error('Password confirm Error: ' , error);
+	function passwordConfirm(){
+		fetch('/api/mypage/isPasswordVerified')
+		.then(response =>{
+			if(!response.ok){
+				alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 				$(location).attr('href', '/');
-			})
-		})
-		
-		function getAccount(){
-			
-			fetch('/api/member/account')
-			.then(response =>{
-				if(!response.ok){
-					alert("회원 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요.");
-					$(location).attr('href', '/');
-					throw new Error('Network response was not ok.');
-				}
-				return response.json();
-			})
-			.then((data) =>{
-				isSocialLogin = data.social_login;
-				phone = data.phone;
-				user_name = data.user_name;
-					
-				$("#user_id").val(data.user_id);
-				$("#user_name").val(data.user_name);
-				$("#phone").val(data.phone);
-				$("#address").html(data.address);
-			})
-		}
-		
-		function passwordConfirmUi(isPasswordVerified){
-			// 비밀번호 인증 됨
-			if(isPasswordVerified){
-				$("#password-box").css('display','none');
-				$("#info-box").css('display','block');
-			}else{ // 인증 안됨
-				$("#password-box").css('display','block');
-				$("#info-box").css("display", "none");
 			}
-		}
+			return response.text();
+		})
+		.then((data) =>{
+			let isPasswordVerified = data === 'true'; // Boolean으로 변환
+			
+			if (isPasswordVerified) {
+				getAccount();
+            }
+            passwordConfirmUi(isPasswordVerified);
+		})
+	}
 		
-		/* 닉네임 수정 버튼 클릭 */
-		$("#name_modi_btn").click(function(){
-			$("#user_name").removeAttr("readonly"); 
+	document.getElementById("passwordInput").addEventListener("keydown", function (event) {
+	    if (event.key === "Enter") { 
+	        event.preventDefault(); 
+	        document.getElementById("submitBtn").click(); // 확인 버튼 클릭
+	    }
+	});
+	
+	$("#submitBtn").click(function(){
+		let password = $("#passwordInput").val();
+		if(password.replace(/\s/g,"")=="" || password.replace(/\s/g,"")==""){
+			alert("비밀번호를 입력하세요.");
+			return false;
+		}
+		fetch('/api/member/password/confirm',{
+			method: 'POST',
+		    headers: {
+		        'Content-Type': 'application/json'
+		    },
+		    body: JSON.stringify({ user_pw: password }) 
+		})
+		.then(response =>{
+			if(response.ok){
+				alert("비밀번호가 확인되었습니다.");
+				passwordConfirmUi('true');
+				getAccount();
+				
+			}else if(response.status === 401){
+				alert("비밀번호가 틀렸습니다. 다시 입력해 주세요.");
+		        $("#passwordInput").val("");
+		        $("#passwordInput").focus();
+			}else throw new Error("비밀번호 확인 중 오류가 발생");
+		       
+		})
+		.catch(error =>{
+			alert('일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
+			console.error('Password confirm Error: ' , error);
+			$(location).attr('href', '/');
+		})
+	})
+	
+	function getAccount(){
+			
+		fetch('/api/mypage/account')
+		.then(response =>{
+			if(!response.ok){
+				alert("회원 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요.");
+				$(location).attr('href', '/');
+				throw new Error('Network response was not ok.');
+			}
+			return response.json();
+		})
+		.then((data) =>{
+			isSocialLogin = data.social_login;
+			phone = data.phone;
+			user_name = data.user_name;
+				
+			$("#user_id").val(data.user_id);
+			$("#user_name").val(data.user_name);
+			$("#phone").val(data.phone);
+			$("#address").html(data.address);
+		})
+	}
+	
+	function passwordConfirmUi(isPasswordVerified){
+		// 비밀번호 인증 됨
+		if(isPasswordVerified){
+			$("#password-box").css('display','none');
+			$("#info-box").css('display','block');
+		}else{ // 인증 안됨
+			$("#password-box").css('display','block');
+			$("#info-box").css("display", "none");
+		}
+	}
+	
+	/* 닉네임 수정 버튼 클릭 */
+	$("#name_modi_btn").click(function(){
+		$("#user_name").removeAttr("readonly"); 
+		$("#user_name").focus();
+		$("#name_modi_btn").attr("type", "hidden");
+		$("#name_btn").css("display","inline");
+		$("#user_name").val("");
+	})
+	
+	
+	/* 닉네임 수정 확인 버튼 클릭 */
+	$("#nameChange").click(function(){
+			
+		let new_name = $("#user_name").val();
+			
+		if(new_name.replace(/\s/g,"")==""){
+			alert("닉네임을 입력하세요.");
 			$("#user_name").focus();
-			$("#name_modi_btn").attr("type", "hidden");
-			$("#name_btn").css("display","inline");
+			return false;
+		} 
+			
+		// 닉네임 유효성 검사
+		let name_legExp = /^.{3,10}$/;
+		if (name_legExp.test(new_name) == false) {
+			console.log(new_name);
+			alert("사용할 수 없는 닉네임 입니다. 닉네임을 확인해주세요.");
 			$("#user_name").val("");
-		})
-		
-		
-		/* 닉네임 수정 확인 버튼 클릭 */
-		$("#nameChange").click(function(){
+			$("#user_name").focus();
 			
-			let new_name = $("#user_name").val();
+			return false;
+		}
 			
-			if(new_name.replace(/\s/g,"")==""){
-				alert("닉네임을 입력하세요.");
-				$("#user_name").focus();
-				return false;
-			} 
-			
-			// 닉네임 유효성 검사
-			let name_legExp = /^.{3,10}$/;
-			if (name_legExp.test(new_name) == false) {
-				console.log(new_name);
-				alert("사용할 수 없는 닉네임 입니다. 닉네임을 확인해주세요.");
-				$("#user_name").val("");
-				$("#user_name").focus();
-				
-				return false;
-			}
-			
-			// 변경할 닉네임과 원래 닉네임이 같으면 변경하지 않음
-			if(user_name == new_name){
-				setEditFlag();
-				location.reload();
-			}else{
-				// 닉네임 중복 확인
-			    fetch('/api/member/userName/check?userName='+new_name, {
-			        method: 'GET',
-			    })
-			    .then(response => {
-			        if (!response.ok) {
-			            if (response.status === 409) {
-			                throw new Error("이미 사용중인 닉네임입니다.");
-			            } else if (response.status === 400) {
-			                throw new Error("사용할 수 없는 닉네임입니다. 닉네임을 확인해주세요.");
-			            } else {
-			                throw new Error("닉네임 확인 중 오류가 발생했습니다.");
-			            }
-			        }
-			    })
-			    .then(() => {
-			        // 닉네임 변경 요청
-			        return fetch('/api/member/userName', {
-			            method: 'PUT',
-			            headers: {
-			                'Content-Type': 'application/json',
-			            },
-			            body: JSON.stringify({
-			                user_name: new_name,
-			            }),
-			        });
-			    })
-			    .then(response => {
-			        if (!response.ok) {
-			            throw new Error("닉네임 변경 중 오류가 발생했습니다.");
-			        }
-			        alert('닉네임이 변경되었습니다.');
-			        setEditFlag();
-			        location.reload();
-			    })
-			    .catch(error => {
-			        alert(error.message || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-			        console.error('Error:', error);
-			    });
-			}	
-		})
-		
-		// 전화번호 수정 버튼 클릭했을 때 바꿀 전화번호 입력하도록 스타일 변경
-		$("#phone_modi_btn").click(function(){
-			$("#phone").removeAttr("readonly"); 
-			$("#phone").focus();
-			$("#phone_modi_btn").attr("type", "hidden");
-			$("#phone_btn").css("display","inline");
-			$("#phone").val("");
-		})
-		
-		// 전화번호 수정
-		$("#phoneChange").click(function(){
-			let new_phone = $("#phone").val(); 
-			
-			if(new_phone.replace(/\s/g,"")==""){
-					alert("전화번호를 입력하세요.");
-				$("#phone").focus();
-				return false;
-			} 
-			
-			// 전화번호 유효성 검사
-			let regPhone = /^01([016789])([0-9]{3,4})([0-9]{4})$/;
-			
-			if (regPhone.test(new_phone) == false) {
-				alert("사용할 수 없는 전화번호 입니다. 전화번호를 확인해주세요.");
-				$("#phone").val("");
-				$("#phone").focus();
-				
-				return false;
-			}
-				
-			// 변경할 전화번호와 원래 전화번호가 같으면 변경하지 않음
-			if(phone == new_phone){
-				setEditFlag();
-				location.reload();
-			}else{
-			// 전화번호 중복 확인
-				fetch('/api/member/phone/check?phone=' + encodeURIComponent(new_phone), {
-				    method: 'GET',
-				})
-			    .then(response => {
-			        if (!response.ok) {
-			            if (response.status === 409) {
-			                throw new Error("이미 사용중인 전화번호입니다.");
-			            } else if (response.status === 400) {
-			                throw new Error("사용할 수 없는 전화번호입니다. 전화번호를 확인해주세요.");
-			            } else {
-			                throw new Error("전화번호 확인 중 오류가 발생했습니다.");
-			            }
-			        }
-			        return Promise.resolve();
-			    })
-			    .then(() => {
-			        // 전화번호 변경 요청
-			        return fetch('/api/member/phone', {
-			            method: 'PUT',
-			            headers: {
-			                'Content-Type': 'application/json',
-			            },
-			            body: JSON.stringify({
-			                phone: new_phone,
-			            }),
-			        });
-			    })
-			    .then(response => {
-			        if (!response.ok) {
-			            throw new Error("전화번호 변경 중 오류가 발생했습니다.");
-			        }
-			        alert("전화번호가 변경되었습니다.");
-			        setEditFlag();
-			        location.reload();
-			    })
-			    .catch(error => {
-			        alert(error.message || "오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-			    	console.error("Error:", error);
-				});
-
-			}
-		})
-				
-		// 비밀번호 변경 버튼 클릭
-		$("#pw_modi_btn").click(function(){
-			// 소셜로그인 확인
-			if(isSocialLogin == 1) {
-				alert("소셜 회원은 비밀번호를 변경할 수 없습니다.");
-				return false;
-			}
-			
-			$("#pw_modi_btn").attr("type","hidden");
-			$("#pwConfirm").css("display","inline");
-			$("#user_pw").focus();
-			
-		})
-		
-		// 사용자의 비밀번호 확인 
-		$("#pwConfirm_btn").click(function(){
-			let user_pw = $("#user_pw").val();
-			
-			if(user_pw.replace(/\s/g,"")==""){
-				alert("비밀번호를 입력하세요.");
-				$("#user_pw").focus();
-				return false;
-			} 
-			
-			fetch('/api/member/password/confirm',{
-				method: 'POST',
-			    headers: {
-			        'Content-Type': 'application/json'
-			    },
-			    body: JSON.stringify({ user_pw: user_pw }) 
-			})
-			.then(response =>{
-				if(response.ok){
-					alert("비밀번호 확인 완료");
-					$("#pwConfirm").css("display","none");
-					$("#pwModi_div").css("display","inline-block");
-					$("#new_pw").focus();
-				}else if(response.status === 401){
-					alert("비밀번호가 일치하지 않습니다.");
-		            $("#user_pw").val("");
-		            $("#user_pw").focus();
-				}else throw new Error("비밀번호 확인 중 오류가 발생했습니다.");
-		        
-			})
-			.catch(error =>{
-				alert('오류가 발생했습니다. 잠시 후 다시 시도하세요.');
-				console.error('Password confirm Error: ' , error);
-			})
-		})
-		
-		// 비밀번호 변경
-		$("#pwModi_btn").click(function(){
-			let new_pw = $("#new_pw").val();
-			let pw_check = $("#pw_check").val();
-			
-			if(new_pw.replace(/\s/g,"")=="" || pw_check.replace(/\s/g,"")==""){
-				alert("변경할 비밀번호를 입력하세요.");
-				return false;
-			}else if(new_pw != pw_check) {
-				alert("비밀번호가 일치하지 않습니다. 비밀번호를 확인하세요.");
-				$("#new_pw").val("");
-				$("#pw_check").val("");
-				return false;
-			}
-			
-			// 비밀번호 정규식 : 영어 대,소문자, 숫자 8~20자 
-			let pw_legExp = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
-			
-			if(!pw_legExp.test(new_pw)){
-				alert("비밀번호는 영어 대,소문자와 숫자를 포함하여 8자 ~ 20자로 입력하세요.");
-				return false;
-			}else {
-				fetch('/api/member/password', {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						user_pw: new_pw
-					}),
-				})
-				.then(response => {
-					if (response.status === 400) {
-				        return response.text().then(errorMsg => {
-				            throw new Error(errorMsg);
-				        });
-				    }
-					if (!response.ok) throw new Error('Network response was not ok');
-		            alert('비밀번호가 변경되었습니다.');
-		            setEditFlag();
-		            location.reload();
-				})
-				.catch(error => {
-					alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-					console.error('Error:', error);
-				})
-			}
-		})
-		
-		
-		// 주소 수정 버튼 클릭
-		$("#address_modi_btn").click(function(){
-			$("#address_div").css("display","inline-block");
-			$("#address_modi_btn").attr("type","hidden");
-		})
-		
-			
-		// 주소 검색 (카카오 주소 API)
-		$("#address_search").click(function(){
-			new daum.Postcode({
-				oncomplete: function(data) {
-		            	
-					var addr = ''; // 주소 변수
-		
-					//사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
-					if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
-						addr = data.roadAddress;
-					} else { // 사용자가 지번 주소를 선택했을 경우
-		                addr = data.jibunAddress;
+		// 변경할 닉네임과 원래 닉네임이 같으면 변경하지 않음
+		if(user_name == new_name){
+			setEditFlag();
+			location.reload();
+		}else{
+			// 닉네임 중복 확인
+		    fetch('/api/member/userName/check?userName='+new_name, {
+		        method: 'GET',
+		    })
+		    .then(response => {
+		        if (!response.ok) {
+		            if (response.status === 409) {
+		                throw new Error("이미 사용중인 닉네임입니다.");
+		            } else if (response.status === 400) {
+		                throw new Error("사용할 수 없는 닉네임입니다. 닉네임을 확인해주세요.");
+		            } else {
+		                throw new Error("닉네임 확인 중 오류가 발생했습니다.");
 		            }
-			
-		            $("#streetAddress").val(addr);
-		            
-		            // 커서를 상세주소 필드로 이동한다.
-					$("#detailAddress").focus();
-				}
-			}).open();
-		})
+		        }
+		    })
+		    .then(() => {
+		        // 닉네임 변경 요청
+		        return fetch('/api/member/userName', {
+		            method: 'PUT',
+		            headers: {
+		                'Content-Type': 'application/json',
+		            },
+		            body: JSON.stringify({
+		                user_name: new_name,
+		            }),
+		        });
+		    })
+		    .then(response => {
+		        if (!response.ok) {
+		            throw new Error("닉네임 변경 중 오류가 발생했습니다.");
+		        }
+		        alert('닉네임이 변경되었습니다.');
+		        setEditFlag();
+		        location.reload();
+		    })
+		    .catch(error => {
+		        alert(error.message || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+		        console.error('Error:', error);
+		    });
+		}	
+	})
 		
-		// 주소 변경
-		$("#address_modi").click(function(){
-			let streetAddress = $("#streetAddress").val();
-			let detailAddress = $("#detailAddress").val();
-				
-			if(streetAddress.replace(/\s/g,"")==""){
-				alert("주소를 검색하세요.");
-				$("#streetAddress").focus();
-				return false;
-			}else if(detailAddress.replace(/\s/g,"")==""){
-				alert("상세 주소를 입력하세요.");
-				$("#detailAddress").focus();
-				return false;
-			}
+	// 전화번호 수정 버튼 클릭했을 때 바꿀 전화번호 입력하도록 스타일 변경
+	$("#phone_modi_btn").click(function(){
+		$("#phone").removeAttr("readonly"); 
+		$("#phone").focus();
+		$("#phone_modi_btn").attr("type", "hidden");
+		$("#phone_btn").css("display","inline");
+		$("#phone").val("");
+	})
+		
+	// 전화번호 수정
+	$("#phoneChange").click(function(){
+		let new_phone = $("#phone").val(); 
+		
+		if(new_phone.replace(/\s/g,"")==""){
+			alert("전화번호를 입력하세요.");
+			$("#phone").focus();
+			return false;
+		} 
+		
+		// 전화번호 유효성 검사
+		let regPhone = /^01([016789])([0-9]{3,4})([0-9]{4})$/;
 			
-			var address = streetAddress + " " + detailAddress;
-			var user_id = $("#user_id").val();
+		if (regPhone.test(new_phone) == false) {
+			alert("사용할 수 없는 전화번호 입니다. 전화번호를 확인해주세요.");
+			$("#phone").val("");
+			$("#phone").focus();
 			
-			fetch('/api/member/address',{
+			return false;
+		}
+			
+		// 변경할 전화번호와 원래 전화번호가 같으면 변경하지 않음
+		if(phone == new_phone){
+			setEditFlag();
+			location.reload();
+		}else{
+		// 전화번호 중복 확인
+			fetch('/api/member/phone/check?phone=' + encodeURIComponent(new_phone), {
+			    method: 'GET',
+			})
+		    .then(response => {
+		        if (!response.ok) {
+		            if (response.status === 409) {
+		                throw new Error("이미 사용중인 전화번호입니다.");
+		            } else if (response.status === 400) {
+		                throw new Error("사용할 수 없는 전화번호입니다. 전화번호를 확인해주세요.");
+		            } else {
+		                throw new Error("전화번호 확인 중 오류가 발생했습니다.");
+		            }
+		        }
+		        return Promise.resolve();
+		    })
+		    .then(() => {
+		        // 전화번호 변경 요청
+		        return fetch('/api/member/phone', {
+		            method: 'PUT',
+		            headers: {
+		                'Content-Type': 'application/json',
+		            },
+		            body: JSON.stringify({
+		                phone: new_phone,
+		            }),
+		        });
+		    })
+		    .then(response => {
+		        if (!response.ok) {
+		            throw new Error("전화번호 변경 중 오류가 발생했습니다.");
+		        }
+		        alert("전화번호가 변경되었습니다.");
+		        setEditFlag();
+		        location.reload();
+		    })
+		    .catch(error => {
+		        alert(error.message || "오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+		    	console.error("Error:", error);
+			});
+		}
+	})
+			
+	// 비밀번호 변경 버튼 클릭
+	$("#pw_modi_btn").click(function(){
+		// 소셜로그인 확인
+		if(isSocialLogin == 1) {
+			alert("소셜 회원은 비밀번호를 변경할 수 없습니다.");
+			return false;
+		}
+		
+		$("#pw_modi_btn").attr("type","hidden");
+		$("#pwConfirm").css("display","inline");
+		$("#user_pw").focus();
+		
+	})
+	
+	// 사용자의 비밀번호 확인 
+	$("#pwConfirm_btn").click(function(){
+		let user_pw = $("#user_pw").val();
+		
+		if(user_pw.replace(/\s/g,"")==""){
+			alert("비밀번호를 입력하세요.");
+			$("#user_pw").focus();
+			return false;
+		} 
+		
+		fetch('/api/member/password/confirm',{
+			method: 'POST',
+		    headers: {
+		        'Content-Type': 'application/json'
+		    },
+		    body: JSON.stringify({ user_pw: user_pw }) 
+		})
+		.then(response =>{
+			if(response.ok){
+				alert("비밀번호 확인 완료");
+				$("#pwConfirm").css("display","none");
+				$("#pwModi_div").css("display","inline-block");
+				$("#new_pw").focus();
+			}else if(response.status === 401){
+				alert("비밀번호가 일치하지 않습니다.");
+	            $("#user_pw").val("");
+	            $("#user_pw").focus();
+			}else throw new Error("비밀번호 확인 중 오류가 발생했습니다.");
+	        
+		})
+		.catch(error =>{
+			alert('오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+			console.error('Password confirm Error: ' , error);
+		})
+	})
+	
+	// 비밀번호 변경
+	$("#pwModi_btn").click(function(){
+		let new_pw = $("#new_pw").val();
+		let pw_check = $("#pw_check").val();
+		
+		if(new_pw.replace(/\s/g,"")=="" || pw_check.replace(/\s/g,"")==""){
+			alert("변경할 비밀번호를 입력하세요.");
+			return false;
+		}else if(new_pw != pw_check) {
+			alert("비밀번호가 일치하지 않습니다. 비밀번호를 확인하세요.");
+			$("#new_pw").val("");
+			$("#pw_check").val("");
+			return false;
+		}
+		
+		// 비밀번호 정규식 : 영어 대,소문자, 숫자 8~20자 
+		let pw_legExp = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
+		
+		if(!pw_legExp.test(new_pw)){
+			alert("비밀번호는 영어 대,소문자와 숫자를 포함하여 8자 ~ 20자로 입력하세요.");
+			return false;
+		}else {
+			fetch('/api/member/password', {
 				method: 'PUT',
 				headers: {
-	                'Content-Type': 'application/json',
-	            },
-	            body: JSON.stringify({
-	                address: address,
-	            }), 
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					user_pw: new_pw
+				}),
 			})
 			.then(response => {
+				if (response.status === 400) {
+			        return response.text().then(errorMsg => {
+			            throw new Error(errorMsg);
+			        });
+			    }
+				if (!response.ok) throw new Error('Network response was not ok');
+	            alert('비밀번호가 변경되었습니다.');
+	            setEditFlag();
+	            location.reload();
+			})
+			.catch(error => {
+				alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+				console.error('Error:', error);
+			})
+		}
+	})
+		
+		
+	// 주소 수정 버튼 클릭
+	$("#address_modi_btn").click(function(){
+		$("#address_div").css("display","inline-block");
+		$("#address_modi_btn").attr("type","hidden");
+	})
+	
+		
+	// 주소 검색 (카카오 주소 API)
+	$("#address_search").click(function(){
+		new daum.Postcode({
+			oncomplete: function(data) {
+	            	
+				var addr = ''; // 주소 변수
+	
+				//사용자가 선택한 주소 타입에 따라 해당 주소 값을 가져온다.
+				if (data.userSelectedType === 'R') { // 사용자가 도로명 주소를 선택했을 경우
+					addr = data.roadAddress;
+				} else { // 사용자가 지번 주소를 선택했을 경우
+	                addr = data.jibunAddress;
+	            }
+		
+	            $("#streetAddress").val(addr);
+	            
+	            // 커서를 상세주소 필드로 이동한다.
+				$("#detailAddress").focus();
+			}
+		}).open();
+	})
+	
+	// 주소 변경
+	$("#address_modi").click(function(){
+		let streetAddress = $("#streetAddress").val();
+		let detailAddress = $("#detailAddress").val();
+			
+		if(streetAddress.replace(/\s/g,"")==""){
+			alert("주소를 검색하세요.");
+			$("#streetAddress").focus();
+			return false;
+		}else if(detailAddress.replace(/\s/g,"")==""){
+			alert("상세 주소를 입력하세요.");
+			$("#detailAddress").focus();
+			return false;
+		}
+		
+		var address = streetAddress + " " + detailAddress;
+		var user_id = $("#user_id").val();
+		
+		fetch('/api/member/address',{
+			method: 'PUT',
+			headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                address: address,
+            }), 
+		})
+		.then(response => {
+			if(response.ok){
+				alert('주소가 변경되었습니다.');
+				setEditFlag();
+				location.reload();
+			}else throw new Error;
+		})
+		.catch(error =>{
+			alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+			console.error('Error : ' + error);
+		})
+	})
+	
+	// 전화번호, 닉네임, 비밀번호, 주소 수정 취소 버튼 클릭하면 새로고침
+	$(".account_cancel").click(function(){
+		console.log("?");
+		setEditFlag();
+		location.reload();
+	})
+	
+	// 회원 탈퇴 버튼 클릭 
+	$("#delete_account_btn").click(function(){
+		var result = confirm("정말 탈퇴 하시겠습니까?");
+		
+		if(result){
+			
+			fetch('/api/member/withDraw',{
+				method: 'DELETE',
+			})
+			.then(response =>{
 				if(response.ok){
-					alert('주소가 변경되었습니다.');
-					setEditFlag();
-					location.reload();
-				}else throw new Error;
+					alert("회원 탈퇴가 완료되었습니다.");
+			    	window.location.href = "/";
+				}else{
+					throw new Error('Network response was not ok');
+				}
 			})
 			.catch(error =>{
 				alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-				console.error('Error : ' + error);
+				console.error('Error: ' , error);
 			})
-		})
-		
-		// 전화번호, 닉네임, 비밀번호, 주소 수정 취소 버튼 클릭하면 새로고침
-		$(".account_cancel").click(function(){
-			console.log("?");
-			setEditFlag();
-			location.reload();
-		})
-		
-		// 회원 탈퇴 버튼 클릭 
-		$("#delete_account_btn").click(function(){
-			var result = confirm("정말 탈퇴 하시겠습니까?");
-			
-			if(result){
-				
-				fetch('/api/member/withDraw',{
-					method: 'DELETE',
-				})
-				.then(response =>{
-					if(response.ok){
-						alert("회원 탈퇴가 완료되었습니다.");
-				    	window.location.href = "/";
-					}else{
-						throw new Error('Network response was not ok');
-					}
-				})
-				.catch(error =>{
-					alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-					console.error('Error: ' , error);
-				})
-			}
-		})	
-	})
-	
-	function setEditFlag(){
-		localStorage.setItem("isEditing", "true");
-	}
-	
-	// 페이지를 이동하면 세션에 저장된 passwordChecked 토큰을 삭제합니다.
-	window.addEventListener("beforeunload", function () {
-		let isEditing = localStorage.getItem("isEditing");
+		}
+	})	
+})
 
-		alert(isEditing);
-	    // 수정 중이 아닐 경우에만 sendBeacon 실행
-	    if (!isEditing) {
-	    	navigator.sendBeacon("/api/member/clearPasswordToken");
-	    } else {
-	    	localStorage.removeItem("isEditing"); // 플래그 삭제\
-	    }
-	});
+function setEditFlag(){
+	localStorage.setItem("isEditing", "true");
+}
+	
+// 페이지를 이동하면 세션에 저장된 passwordChecked 토큰을 삭제합니다.
+window.addEventListener("beforeunload", function () {
+	let isEditing = localStorage.getItem("isEditing");
+
+	alert(isEditing);
+    // 수정 중이 아닐 경우에만 sendBeacon 실행
+    if (!isEditing) {
+    	navigator.sendBeacon("/api/member/clearPasswordToken");
+    } else {
+    	localStorage.removeItem("isEditing"); // 플래그 삭제\
+    }
+});
 </script>
 </head>
 <body class="wrap">
