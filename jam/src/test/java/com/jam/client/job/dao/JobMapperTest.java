@@ -15,7 +15,7 @@ import com.jam.client.community.dao.ComMapperTest;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.config.RootConfig;
-import com.jam.util.ValueUtils;
+import com.jam.global.util.ValueUtils;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j;

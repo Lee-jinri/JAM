@@ -12,13 +12,10 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.chat.vo.ChatVO;
-import com.jam.client.member.vo.MemberVO;
-import com.jam.config.RedisConfig;
+import com.jam.global.redis.RedisConfig;
 
-import lombok.Setter;
 import lombok.extern.log4j.Log4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)

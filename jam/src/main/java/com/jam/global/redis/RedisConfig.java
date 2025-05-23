@@ -1,4 +1,4 @@
-package com.jam.config;
+package com.jam.global.redis;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.DisposableBean;
@@ -13,19 +13,15 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.repository.configuration.EnableRedisRepositories;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
-import com.jam.client.chat.vo.ChatVO;
 
 import io.lettuce.core.resource.DefaultClientResources;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 @Configuration
 @EnableRedisRepositories
 @PropertySource("classpath:application.properties")
@@ -41,6 +37,12 @@ public class RedisConfig implements DisposableBean {
     @Bean
     public ObjectMapper objectMapper() {
         return new ObjectMapper();
+    }
+
+    
+    @Bean
+    public RestTemplate restTemplate() {
+        return new RestTemplate();
     }
     
     @Bean
@@ -86,7 +88,9 @@ public class RedisConfig implements DisposableBean {
 
         // Value Serializer (ChatVO 설정)
         Jackson2JsonRedisSerializer<Object> valueSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
-        ObjectMapper objectMapper = new ObjectMapper();
+        
+        ObjectMapper objectMapper = objectMapper(); 
+        
         objectMapper.activateDefaultTyping(
             BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build(),
             ObjectMapper.DefaultTyping.NON_FINAL,

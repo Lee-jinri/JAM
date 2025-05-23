@@ -1,4 +1,4 @@
-package com.jam.security;
+package com.jam.global.security;
 
 import java.util.Collection;
 

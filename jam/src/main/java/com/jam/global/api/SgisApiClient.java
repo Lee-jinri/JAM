@@ -1,20 +1,25 @@
-package com.jam.util;
+package com.jam.global.api;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.*;
 
-public class ApiUtil {
+@Component
+public class SgisApiClient {
 
-    private static final RestTemplate restTemplate = new RestTemplate();
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+	private final RestTemplate restTemplate;
 
+    public SgisApiClient(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
+    
     /**
      * SGIS API 인증 토큰 발급
      */
-    public static String getAccessToken(String url) {
+    public String getAccessToken(String url) {
         try {
             JsonNode response = restTemplate.getForObject(url, JsonNode.class);
             if (response != null && response.has("result")) {
@@ -29,7 +34,7 @@ public class ApiUtil {
     /**
      * SGIS API를 통해 지역 목록 조회
      */
-    public static List<Location> getLocations(String apiUrl, Map<String, String> params) {
+    public List<Location> getLocations(String apiUrl, Map<String, String> params) {
         StringBuilder urlWithParams = new StringBuilder(apiUrl + "?");
         params.forEach((k, v) -> urlWithParams.append(k).append("=").append(v).append("&"));
 
@@ -52,29 +57,5 @@ public class ApiUtil {
             e.printStackTrace();
         }
         throw new RuntimeException("Failed to fetch locations");
-    }
-
-    /**
-     * 내부에서 사용할 Location 클래스 (LocationController에 따로 있어도 무방)
-     */
-    public static class Location {
-        private String cd;
-        private String addrName;
-
-        public String getCd() {
-            return cd;
-        }
-
-        public void setCd(String cd) {
-            this.cd = cd;
-        }
-
-        public String getAddrName() {
-            return addrName;
-        }
-
-        public void setAddrName(String addrName) {
-            this.addrName = addrName;
-        }
     }
 }

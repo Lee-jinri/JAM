@@ -1,4 +1,4 @@
-package com.jam.util;
+package com.jam.global.util;
 
 public class ValueUtils {
 	private ValueUtils() { }  // 생성자 private 처리 (유틸 클래스는 인스턴스화 금지)

@@ -1,4 +1,4 @@
-package com.jam.config;
+package com.jam.global.redis;
 
 import java.nio.charset.StandardCharsets;
 
