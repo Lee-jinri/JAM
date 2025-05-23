@@ -30,43 +30,19 @@ import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
-import com.jam.security.JwtTokenProvider;
-import com.jam.security.TokenInfo;
-import com.jam.security.TokenInfo.TokenStatus;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @Service
 @Log4j
+@RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
-	@Autowired
-	private MemberDAO memberDao;
-	
-	private final PasswordEncoder encoder;
-	
-	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
-
-    @Autowired
-    public MemberServiceImpl(PasswordEncoder encoder) {
-        this.encoder = encoder;
-    }
-    
-    private RedisTemplate<String, String> stringRedisTemplate;
-    
-    @Autowired
-    public void setStringRedisTemplate(RedisTemplate<String, String> stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
-    
-    /*
-	@Autowired
-	private BCryptPasswordEncoder encoder;
-*/
-    
-	@Autowired
-	private JavaMailSender mailSender;
+	private final MemberDAO memberDao;
+	private final PasswordEncoder encoder;    
+    private final RedisTemplate<String, String> stringRedisTemplate;
+	private final JavaMailSender mailSender;
 	
 	// 회원가입
 	@Override

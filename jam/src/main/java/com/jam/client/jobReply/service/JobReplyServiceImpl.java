@@ -2,7 +2,6 @@ package com.jam.client.jobReply.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,19 +9,17 @@ import com.jam.client.job.dao.JobDAO;
 import com.jam.client.jobReply.dao.JobReplyDAO;
 import com.jam.client.jobReply.vo.JobReplyVO;
 
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JobReplyServiceImpl implements JobReplyService {
 
 	private final static int reply_Add = 1;
 	private final static int reply_Del = -1;
 	
-	@Setter(onMethod_=@Autowired)
-	private JobReplyDAO jobReplyDao;
-	
-	@Setter(onMethod_=@Autowired)
-	private JobDAO jobDao;
+	private final JobReplyDAO jobReplyDao;
+	private final JobDAO jobDao;
 	
 	
 	@Override

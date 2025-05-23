@@ -15,6 +15,8 @@ import org.springframework.web.servlet.view.UrlBasedViewResolver;
 import org.springframework.web.servlet.view.tiles3.TilesConfigurer;
 import org.springframework.web.servlet.view.tiles3.TilesView;
 
+import com.jam.client.chat.webSocket.WebSocketConfig;
+
 @EnableWebMvc
 /*
 @ComponentScan(

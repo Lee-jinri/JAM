@@ -2,7 +2,6 @@ package com.jam.client.fleaReply.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,19 +9,17 @@ import com.jam.client.fleaMarket.dao.FleaMarketDAO;
 import com.jam.client.fleaReply.dao.FleaReplyDAO;
 import com.jam.client.fleaReply.vo.FleaReplyVO;
 
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class FleaReplyServiceImpl implements FleaReplyService {
 
 	private final static int reply_Add = 1;
 	private final static int reply_Del = -1;
 	
-	@Setter(onMethod_=@Autowired)
-	private FleaReplyDAO fleareplyDao;
-	
-	@Setter(onMethod_=@Autowired)
-	private FleaMarketDAO fleaDao;
+	private final FleaReplyDAO fleareplyDao;
+	private final FleaMarketDAO fleaDao;
 
 	@Override
 	public List<FleaReplyVO> fleaReplyList(Long flea_no) {

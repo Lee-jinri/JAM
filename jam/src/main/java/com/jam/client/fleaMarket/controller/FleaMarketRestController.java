@@ -7,7 +7,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,20 +21,18 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
-import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("/api/fleaMarket/")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Log4j
 public class FleaMarketRestController {
 
-	@Autowired
-	private FleaMarketService fleaService;
+	private final FleaMarketService fleaService;
 	
 	@GetMapping(value = "boards")
 	public ResponseEntity<Map<String, Object>> getBoards(FleaMarketVO flea_vo, HttpServletRequest request){

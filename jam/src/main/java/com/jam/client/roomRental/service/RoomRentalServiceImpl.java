@@ -1,25 +1,23 @@
 package com.jam.client.roomRental.service;
 
 import java.util.ArrayList;
+
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.member.service.MemberService;
 import com.jam.client.roomRental.dao.RoomRentalDAO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
 
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class RoomRentalServiceImpl implements RoomRentalService {
 
-	@Autowired
-	private RoomRentalDAO roomDao;
-	
-	@Autowired
-	private MemberService memberService;
+	private final RoomRentalDAO roomDao;
+	private final MemberService memberService;
 	
 	@Override
 	public List<RoomRentalVO> getBoards(RoomRentalVO room_vo) {

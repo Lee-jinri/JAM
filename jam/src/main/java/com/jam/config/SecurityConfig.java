@@ -2,9 +2,7 @@ package com.jam.config;
 
 import java.util.Arrays;
 
-import javax.sql.DataSource;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -25,15 +23,15 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import com.jam.client.member.service.MemberService;
-import com.jam.security.CustomLogoutHandler;
-import com.jam.security.CustomLogoutSuccessHandler;
-import com.jam.security.CustomUserDetailsService;
-import com.jam.security.JwtAuthenticationFilter;
-import com.jam.security.JwtTokenProvider;
+import com.jam.global.handler.CustomLoginFailureHandler;
+import com.jam.global.handler.CustomLoginSuccessHandler;
+import com.jam.global.handler.CustomLogoutHandler;
+import com.jam.global.handler.CustomLogoutSuccessHandler;
+import com.jam.global.jwt.JwtTokenProvider;
+import com.jam.global.security.CustomUserDetailsService;
+import com.jam.global.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 @Configuration
 @EnableWebSecurity()

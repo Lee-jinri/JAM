@@ -23,11 +23,11 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 public class RedisTest {
 	
-	@Setter(onMethod_=@Autowired)
+	@Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
-	@Setter(onMethod_=@Autowired)
-	private RedisTemplate<String, String> stringRedisTemplate;
+    @Autowired
+    private RedisTemplate<String, String> stringRedisTemplate;
 	/*
 	@Test
     public void testRedisSerialization() {

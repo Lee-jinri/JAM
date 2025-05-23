@@ -2,30 +2,20 @@ package com.jam.client.message.service;
 
 import java.util.List;
 
-import javax.servlet.http.Cookie;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
-import com.jam.client.message.controller.MessageController;
 import com.jam.client.message.dao.MessageDAO;
 import com.jam.client.message.vo.MessageVO;
-import com.jam.security.JwtTokenProvider;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @Service
+@RequiredArgsConstructor
 @Log4j
 public class MessageServiceImpl implements MessageService {
 
-
-	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
-	
-	@Autowired
-	private MessageDAO messageDao;
+	private final MessageDAO messageDao;
 
 	// 받은 쪽지
 	@Override

@@ -20,10 +20,13 @@ import com.jam.client.job.vo.JobVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.jam.client.service.MainService;
 
+import lombok.RequiredArgsConstructor;
+
 @Controller
+@RequiredArgsConstructor
 public class MainController {
-	@Autowired
-	private MainService mainService;
+	
+	private final MainService mainService;
 	
 	@GetMapping("/")
 	public String homePage() {

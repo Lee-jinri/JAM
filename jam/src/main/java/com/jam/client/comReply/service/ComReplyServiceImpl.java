@@ -2,7 +2,6 @@ package com.jam.client.comReply.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,19 +9,17 @@ import com.jam.client.comReply.dao.ComReplyDAO;
 import com.jam.client.comReply.vo.ComReplyVO;
 import com.jam.client.community.dao.CommunityDAO;
 
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class ComReplyServiceImpl implements ComReplyService {
 	
 	private final static int reply_Add = 1;
 	private final static int reply_Del = -1;
 	
-	@Setter(onMethod_=@Autowired)
-	private ComReplyDAO comreplyDao;
-	
-	@Setter(onMethod_=@Autowired)
-	private CommunityDAO comDao;
+	private final ComReplyDAO comreplyDao;
+	private final CommunityDAO comDao;
 	
 	@Override
 	public List<ComReplyVO> comReplyList(Long com_no) {

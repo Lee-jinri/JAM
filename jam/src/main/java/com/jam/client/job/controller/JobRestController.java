@@ -8,7 +8,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -20,23 +19,21 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
-import com.jam.util.ValueUtils;
+import com.jam.global.util.ValueUtils;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("/api/job/")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Log4j
 public class JobRestController {
 
-	@Autowired
-	private JobService jobService;
+	private final JobService jobService;
 	
 	@GetMapping(value = "boards")
 	public ResponseEntity<Map<String, Object>> getBoards(JobVO job_vo, HttpServletRequest request){

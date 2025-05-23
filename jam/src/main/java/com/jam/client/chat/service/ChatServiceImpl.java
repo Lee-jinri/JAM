@@ -1,67 +1,36 @@
 package com.jam.client.chat.service;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.redis.core.ListOperations;
-import org.springframework.data.redis.core.RedisCallback;
-import org.springframework.data.redis.core.RedisOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.gson.Gson;
 import com.jam.client.chat.vo.ChatVO;
-import com.jam.config.JsonUtils;
-import com.jam.config.RedisConfig;
 
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @Service
 @Log4j
+@RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
-	
-	private RedisTemplate<String, Object> redisTemplate;
-    private RedisTemplate<String, String> stringRedisTemplate;
-    private ObjectMapper objectMapper;
-    private UserServiceAdapter userServiceAdapter;
-
-    @Autowired
-    public void setRedisTemplate(RedisTemplate<String, Object> redisTemplate) {
-        this.redisTemplate = redisTemplate;
-    }
-
-    @Autowired
-    public void setStringRedisTemplate(RedisTemplate<String, String> stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
-
-    @Autowired
-    public void setObjectMapper(ObjectMapper objectMapper) {
-        this.objectMapper = objectMapper;
-    }
-
-    @Autowired
-    public void setUserServiceAdapter(UserServiceAdapter userServiceAdapter) {
-        this.userServiceAdapter = userServiceAdapter;
-    }
+    
+    private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, String> stringRedisTemplate;
+    private final ObjectMapper objectMapper;
+    private final UserServiceAdapter userServiceAdapter;
     
 	/*
 	 * 사용자 아이디를 키로 참여한 채팅방 저장

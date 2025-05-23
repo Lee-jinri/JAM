@@ -2,7 +2,6 @@ package com.jam.client.roomRentalReply.service;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,19 +9,17 @@ import com.jam.client.roomRental.dao.RoomRentalDAO;
 import com.jam.client.roomRentalReply.dao.RoomReplyDAO;
 import com.jam.client.roomRentalReply.vo.RoomReplyVO;
 
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class RoomReplyServiceImpl implements RoomReplyService {
 
 	private final static int reply_Add = 1;
 	private final static int reply_Del = -1;
 	
-	@Setter(onMethod_=@Autowired)
-	private RoomReplyDAO roomreplyDao;
-	
-	@Setter(onMethod_=@Autowired)
-	private RoomRentalDAO roomDao;
+	private final RoomReplyDAO roomreplyDao;
+	private final RoomRentalDAO roomDao;
 
 	@Override
 	public List<RoomReplyVO> roomReplyList(Long roomRental_no) {

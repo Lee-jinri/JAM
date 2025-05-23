@@ -3,7 +3,6 @@ package com.jam.client.fleaMarket.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jam.client.community.vo.CommunityVO;
@@ -11,14 +10,14 @@ import com.jam.client.fleaMarket.dao.FleaMarketDAO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.member.service.MemberService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class FleaMarketServiceImpl implements FleaMarketService {
 
-	@Autowired
-	private FleaMarketDAO fleaDao;
-	
-	@Autowired
-	private MemberService memberService;
+	private final FleaMarketDAO fleaDao;
+	private final MemberService memberService;
 	
 	@Override
 	public List<FleaMarketVO> getBoards(FleaMarketVO flea_vo) {

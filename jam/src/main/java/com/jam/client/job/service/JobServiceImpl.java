@@ -3,27 +3,20 @@ package com.jam.client.job.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.velocity.runtime.log.Log;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.job.dao.JobDAO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.service.MemberService;
 
-import lombok.Setter;
+import lombok.RequiredArgsConstructor;
 
 @Service
+@RequiredArgsConstructor
 public class JobServiceImpl implements JobService {
 
-	@Autowired
-	private JobDAO jobDao;
-	
-	@Autowired
-	private MemberService memberService;
-	
+	private final JobDAO jobDao;
+	private final MemberService memberService;
 	
 	//  
 	@Override

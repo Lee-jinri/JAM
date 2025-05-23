@@ -1,50 +1,30 @@
 package com.jam.client.message.controller;
 
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.member.service.MemberService;
 import com.jam.client.message.service.MessageService;
 import com.jam.client.message.vo.MessageVO;
-import com.jam.security.JwtTokenProvider;
+import com.jam.global.jwt.JwtTokenProvider;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("/api/message")
-@AllArgsConstructor
+@RequiredArgsConstructor 
 @Log4j
 public class MessageRestController {
 	
-	@Autowired
-	private MessageService messageService;
-
-	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
-	
-	@Autowired
-	private MemberService memberService;
+	private final MessageService messageService;
+	private final JwtTokenProvider jwtTokenProvider;
+	private final MemberService memberService;
 	
 	/*******************************
 	 * 쪽지 전송

@@ -3,21 +3,20 @@ package com.jam.client.community.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.jam.client.community.dao.CommunityDAO;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.member.service.MemberService;
 
+import lombok.RequiredArgsConstructor;
+
 @Service
+@RequiredArgsConstructor
 public class CommunityServiceImpl implements CommunityService {
 	
-	@Autowired
-	private CommunityDAO comDao;
-	
-	@Autowired
-	private MemberService memberService;
+	private final CommunityDAO comDao;
+	private final MemberService memberService;
 	
 	@Override
 	public List<CommunityVO>getBoards(CommunityVO com_vo){

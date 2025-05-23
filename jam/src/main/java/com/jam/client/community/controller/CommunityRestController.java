@@ -5,47 +5,37 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
-import org.apache.commons.beanutils.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.community.service.CommunityService;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.common.vo.PageDTO;
-import com.jam.security.JwtTokenProvider;
+import com.jam.global.jwt.JwtTokenProvider;
 
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("/api/community/")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Log4j
 public class CommunityRestController {
 
-	@Autowired
-	private CommunityService comService;
-	
-	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
+	private final CommunityService comService;
+	private final JwtTokenProvider jwtTokenProvider;
 	
 	/**
 	 * 
