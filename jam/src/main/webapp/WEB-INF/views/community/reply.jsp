@@ -131,7 +131,7 @@
 	}) // end
 		
 	function listAll() {
-	    fetch('/api/member/decode-token')
+	    fetch('/api/member/me')
 	        .then(response => {
 	        	if(response.status === 401) {
 	        		setList(null);

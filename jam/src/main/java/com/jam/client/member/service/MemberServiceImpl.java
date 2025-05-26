@@ -353,35 +353,6 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.getUserProfile(user_id);
 	}
 
-
-	/*
-	@Override
-	public Authentication loginProcess(Map<String, Object> member)  {
-		String user_id = (String)member.get("user_id");
-		String user_pw = (String)member.get("user_pw");
-
-		try {
-			AuthenticationManager authenticationManager = authenticationConfiguration.getAuthenticationManager();
-		    
-			Authentication authentication = authenticationManager.authenticate(
-		        new UsernamePasswordAuthenticationToken(user_id, user_pw)
-		    );
-			
-			// SecurityContextHolder에 현재 사용자의 정보를 설정합니다.
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			
-			return authentication;
-			
-		} catch (AuthenticationException e) {
-	        log.error("인증 실패", e);
-	        throw e; 
-	    } catch (Exception e) {
-	        log.error("로그인 처리 중 오류 발생", e);
-	        throw new RuntimeException("로그인 처리 중 오류 발생", e); // 커스터마이징 가능
-	    }
-	}
-	
-*/
 	public Authentication authenticateSocialUser(String user_id, String user_name) {
 		
 		try {

@@ -1,10 +1,10 @@
 function toggleUserMenu() {
 	$(".user_toggle").hide();
 
-	fetch('/api/member/decode-token')
+	fetch('/api/member/me')
 	.then(response =>{
 		if (!response.ok) {
-            throw new Error('JWT 디코딩 실패');
+            throw new Error('사용자 정보 가져오기 실패');
         }
         return response.json();
 	})

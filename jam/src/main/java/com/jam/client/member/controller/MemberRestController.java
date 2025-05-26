@@ -158,23 +158,19 @@ public class MemberRestController {
 	}
 	
 	/**
-	 * 세션에 저장된 사용자의 아이디, 닉네임, 권한을 반환합니다.
+	 * 세션에 저장된 사용자의 아이디, 닉네임을 반환합니다.
 	 * 
 	 * @param request
 	 * @return HTTP 응답 상태 코드와 사용자 정보
 	 */
 	@GetMapping("/me")
-    public ResponseEntity<Map<String, String>> decodeToken(HttpSession session , HttpServletResponse res) {
-		
-		log.info(session.getAttribute("userId"));
+    public ResponseEntity<Map<String, String>> getCurrentUser(HttpSession session , HttpServletResponse res) {
 		
         Map<String, String> response = new HashMap<>();
         
         response.put("userId", (String)session.getAttribute("userId"));
         response.put("userName", (String)session.getAttribute("userName"));
 
-        log.info(response);
-        
         return ResponseEntity.ok(response);
     }
 	

@@ -136,31 +136,33 @@ header {
 </style>
 <script>
 	$(function() {
-		
 		/* 소셜 로그인 성공 후 파라미터로 jwt토큰을 받습니다. */
 		var search = location.search;
 		var params = new URLSearchParams(search);
 		
-		fetch('/api/member/decode-token')
+		fetch('/api/member/me')
 		.then(response =>{
 			if (!response.ok) {
-	            throw new Error('JWT 디코딩 실패');
+	            throw new Error('사용자 정보 가져오기 실패');
 	        }
 	        return response.json(); 
 		})
 		.then(data => {
 			
 			let userName = data.userName;
-        	let role = data.role;
         	
-        	if (data && userName && role) {
+        	if (data && userName) {
         		// 헤더에 닉네임과 로그아웃 버튼 추가
                 headerName = $('#header_name');
                 headerName.html(data.userName + "님");
                 
                 $("#loggedOutDiv").css("display", "none");
                 $("#loggedInDiv").css("display", "flex");
-	                
+	            
+                $("#written").attr("data-userId", data.userId);
+                
+                /*
+                //TODO: 사용자 정보 페이지에서 jwt토큰 검증하고 관리자 버튼 만들면 좋을 것 같아요옹
                 // 로그인 한 사용자가 관리자라면 헤더에 관리자 버튼을 추가
                 if(role.includes("ROLE_ADMIN")){
                 	let headerNav = document.getElementById("headerNav");

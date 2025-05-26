@@ -126,7 +126,7 @@ public class CommunityRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
 	@RequestMapping(value="/board", method=RequestMethod.POST)
-	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO com_vo, HttpServletRequest request) throws Exception{
+	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO com_vo, HttpSession session) throws Exception{
 		
 		if (com_vo == null) {
 	        log.error("Request body (com_vo) is missing.");
@@ -143,8 +143,8 @@ public class CommunityRestController {
 	    }
 		
 		try {
-			String userId = (String)request.getAttribute("userId");
-			String userName = (String)request.getAttribute("userName");
+			String userId = (String)session.getAttribute("userId");
+			String userName = (String)session.getAttribute("userName");
 			
 			if(userId == null || userName == null) {
 				log.error("User is not Authenticated.");

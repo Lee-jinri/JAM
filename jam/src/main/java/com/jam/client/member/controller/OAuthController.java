@@ -363,7 +363,7 @@ public class OAuthController {
 	    // jwt 토큰, 카카오 accessToken 쿠키 삭제
 	    deleteCookies(response, "kakaoAccessToken");
 	    
-	    // 세션 삭제
+	    // 모든 세션 만료
 	    request.getSession().invalidate();
 
 	    // 4. 서비스 회원 탈퇴
@@ -653,10 +653,10 @@ public class OAuthController {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("userId 없음");
 	    }
 	    
-	 // jwt 토큰, 네이버 accessToken 쿠키 삭제
+	    // jwt 토큰, 네이버 accessToken 쿠키 삭제
 	    deleteCookies(response, "naverAccessToken");
 	    
-	    // 세션 삭제
+	    // 모든 세션 만료
 	    request.getSession().invalidate();
 
 	    // 4. 서비스 회원 탈퇴

@@ -188,8 +188,8 @@ function updateForm(jobReply_no, panel){
 	
 async function getUserInfo() {
 	try {
-		const response = await fetch('/api/member/decode-token');
-        if (!response.ok) throw new Error('JWT 디코딩 실패');
+		const response = await fetch('/api/member/me');
+        if (!response.ok) throw new Error('사용자 정보 가져오기 실패');
 	
         const data = await response.json();
         return data ? { userId: data.userId, userName: data.userName } : null;
