@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
@@ -43,17 +42,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 	private final CustomLoginSuccessHandler customSuccessHandler;
     private final CustomLoginFailureHandler customFailureHandler;
     private final CustomLogoutHandler customLogoutHandler;
+    private final PasswordEncoder passwordEncoder;
 	
-    @Bean
-    public PasswordEncoder passwordEncoder(){
-        return new BCryptPasswordEncoder();
-    }
-    
     @Bean
     public UserDetailsService customUserService() {
     	return new CustomUserDetailsService();
     }
-    
     
     @Bean
     @Override
@@ -130,8 +124,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 	/* customUserService 인증 되면 -> 스프링 시큐리티가 Authentication 객체를 자동으로 생성 -> */
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception{
-		auth.userDetailsService(customUserService()).passwordEncoder(passwordEncoder());
-		//web.ignoring().antMatchers("/profileUploads/**","/messageUploads/**", "/js/**","/webjars/**");
+		auth.userDetailsService(customUserService()).passwordEncoder(passwordEncoder);
 	}
 	
 	
