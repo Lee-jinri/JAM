@@ -14,17 +14,17 @@ import lombok.extern.log4j.Log4j;
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
 
-	private final JwtUtils jwtUtils;
+	private final JwtService jwtService;
 
 	
-	public JwtInterceptor(JwtUtils jwtUtils) {
-		this.jwtUtils = jwtUtils;
+	public JwtInterceptor(JwtService jwtService) {
+		this.jwtService = jwtService;
 	}
 	
 	@Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		
-		Map<String, String> userMap = jwtUtils.getUserInfo(request.getCookies(), request, response);
+		Map<String, String> userMap = jwtService.getUserInfo(request.getCookies(), request, response);
 		setRequestAttributes(request, userMap);
 		
 		return true;

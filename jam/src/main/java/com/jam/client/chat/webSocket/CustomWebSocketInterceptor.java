@@ -15,7 +15,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
-import com.jam.global.jwt.JwtUtils;
+import com.jam.global.jwt.JwtService;
 
 import lombok.extern.log4j.Log4j;
 
@@ -23,10 +23,10 @@ import lombok.extern.log4j.Log4j;
 @Component
 public class CustomWebSocketInterceptor implements HandshakeInterceptor {
 
-	private final JwtUtils jwtUtils;
+	private final JwtService jwtService;
 
-	public CustomWebSocketInterceptor(JwtUtils jwtUtils) {
-		this.jwtUtils = jwtUtils;
+	public CustomWebSocketInterceptor(JwtService jwtService) {
+		this.jwtService = jwtService;
 	}
 	
 	@Override
@@ -46,7 +46,7 @@ public class CustomWebSocketInterceptor implements HandshakeInterceptor {
 	        Cookie[] cookies = httpRequest.getCookies();
 	        
 	        if (cookies != null) {
-	        	userMap = jwtUtils.getUserInfo(cookies, httpRequest, httpResponse); 
+	        	userMap = jwtService.getUserInfo(cookies, httpRequest, httpResponse); 
 	        }
 	        
 	        if(userMap != null) {

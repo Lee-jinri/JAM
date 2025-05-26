@@ -34,7 +34,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.member.service.MemberService;
-import com.jam.global.jwt.JwtTokenManager;
+import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 
 import io.jsonwebtoken.io.IOException;
@@ -47,18 +47,12 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 public class OAuthController {
 	
-	//FIXME:  로그인 프로세스 + 세션에 아이디, 닉네임 저장 이거 대규모 수정해야됨...
-	/* 로그인 했을 때 jwt 토큰 저장하는거 흐름 확인하고
-	 * isLogin 플래그 뺐음 ! 아이디랑 닉네임 세션에 저장하도록 할 것 (jwt 토큰은 그냥 인증 용도로만 사용하고 나는 부하가 너무 크니까 그냥 세션에 저장하는 걸로 하자)
-	 *  decode-token 메서드(memberRestController) 자체를 그냥 없애야 됨(jwt토큰 확인하지 않고 사용자 정보를 반환하는 것은 문제임)
-	 *  그리고 refreshToken으로 로그인 갱신하는 거 잘 되는지 확인이 안됨 흐름을 봤을 때 아마 안될 것 같음
-	 *    
-	 * */
+	//FIXME: refreshToken으로 로그인 갱신하는 거 잘 되는지 확인이 안됨 아마 안 될 듯
 	//TODO: 카카오/네이버 access token 발급 메서드 통합 예정
 	//TODO: getUserInfo()도 공통화하여 provider 기반으로 처리하도록 개선
 
 	private final MemberService memberService;
-	private final JwtTokenManager jwtTokenManager;
+	private final JwtService jwtService;
 	
 	@Value("${oauth.kakao.clientId}")
     private String kakao_clientId;
@@ -156,7 +150,7 @@ public class OAuthController {
 		// 4. 서비스 로그인
 		Authentication authentication = memberService.authenticateSocialUser((String) userInfo.get("user_id"), (String) userInfo.get("user_name"));
 
-		TokenInfo token = jwtTokenManager.generateTokenFromAuthentication(authentication, false, "kakao");
+		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "kakao");
 		
 		// RefreshToken DB에 저장
 		memberService.addRefreshToken((String)userInfo.get("user_id"), token.getRefreshToken());
@@ -164,14 +158,11 @@ public class OAuthController {
 		// 5. JWT 쿠키, 세션 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
 		
-		request.getSession().setAttribute("userId", userInfo.get("user_id"));
-		request.getSession().setAttribute("userName", userInfo.get("user_name"));
+		session.setAttribute("userId", userInfo.get("user_id"));
+		session.setAttribute("userName", userInfo.get("user_name"));
 	    
 		// 6. 로그인 이전 페이지로 리다이렉트
 		String prevPage = (String) request.getSession().getAttribute("prevPage");
-		
-		
-		log.info(prevPage);
 		
 		if (prevPage != null && !prevPage.isBlank()) {
 		    URI uri = URI.create(prevPage);
@@ -195,7 +186,7 @@ public class OAuthController {
 
 	        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 	        params.add("grant_type", "authorization_code");
-	        params.add("client_id", "5e18a572e50f01203a5cf31c55ec073d");
+	        params.add("client_id", kakao_clientId);
 	        params.add("redirect_uri", "http://localhost:8080/oauth/kakao/callback");
 	        params.add("code", code);
 
@@ -469,13 +460,13 @@ public class OAuthController {
 		
 		Authentication authentication = memberService.authenticateSocialUser((String) userInfo.get("user_id"), (String) userInfo.get("user_name"));
 
-		TokenInfo token = jwtTokenManager.generateTokenFromAuthentication(authentication, false, "naver");
+		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "naver");
 		
 		// 5. JWT 쿠키, 세션 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
 		
-		request.getSession().setAttribute("userId", userInfo.get("user_id"));
-		request.getSession().setAttribute("userName", userInfo.get("user_name"));
+		session.setAttribute("userId", userInfo.get("user_id"));
+		session.setAttribute("userName", userInfo.get("user_name"));
 	    
 		// 6. 로그인 이전 페이지로 리다이렉트
 		//FIXME: 로그인 페이지나 회원가입 페이지면 메인 페이지로 이동하기, 네이버도

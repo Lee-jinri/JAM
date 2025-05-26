@@ -13,19 +13,19 @@ import org.springframework.security.web.authentication.AuthenticationSuccessHand
 import org.springframework.stereotype.Component;
 
 import com.jam.client.member.service.MemberService;
-import com.jam.global.jwt.JwtTokenManager;
+import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 
 @Component
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	private final MemberService memberService;
-    private final JwtTokenManager jwtTokenManager;
+    private final JwtService jwtService;
 
     public CustomLoginSuccessHandler(@Lazy MemberService memberService,
-                                     JwtTokenManager jwtTokenManager) {
+    		JwtService jwtService) {
         this.memberService = memberService;
-        this.jwtTokenManager = jwtTokenManager;
+        this.jwtService = jwtService;
     }
 
     @Override
@@ -37,7 +37,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
         boolean autoLogin = Boolean.parseBoolean(request.getParameter("autoLogin"));
 
-        TokenInfo token = jwtTokenManager.generateTokenFromAuthentication(authentication, autoLogin, "local");
+        TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
         memberService.addRefreshToken(userId, token.getRefreshToken());
 
         // FIXME: AccessToken은 쿠키❌ Authorization 헤더로 변경할 것

@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,32 +26,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
-import com.jam.global.jwt.JwtTokenManager;
+import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.JwtTokenProvider;
 import com.jam.global.jwt.TokenInfo.TokenStatus;
 
-import io.jsonwebtoken.Claims;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
 @RequestMapping("/api/member")
-@AllArgsConstructor
+@RequiredArgsConstructor
 @Log4j
 public class MemberRestController {
 
-	@Autowired
-	private MemberService memberService;
+	private final MemberService memberService;
 
 	private final PasswordEncoder encoder;
 
-    @Autowired
-    public MemberRestController(PasswordEncoder encoder) {
-        this.encoder = encoder;
-    }
-    
-	@Autowired
-	private JwtTokenProvider jwtTokenProvider;
+	private final JwtTokenProvider jwtTokenProvider;
+	
+	private final JwtService jwtService;
 	
 	/**
 	 * 회원 가입
@@ -104,25 +97,9 @@ public class MemberRestController {
 	@GetMapping(value="/loginType")
 	public ResponseEntity<String> getLoginType(HttpServletRequest request) {
 		
-		// jwt 토큰 claim의 로그인 타입 가져옴 
-    	Cookie[] cookies = request.getCookies();
+    	String loginType = jwtService.extractLoginType(request);
     	
-    	String token = jwtTokenProvider.getAccessTokenFromCookies(cookies);
-    	
-    	if(token == null) {
-    		// 모든 세션 만료
-    		request.getSession().invalidate();
-    		
-    		return ResponseEntity.status(401).body("Unauthorized");
-    	}
-    	
-    	try {
-            Claims claims = jwtTokenProvider.getClaims(token);
-            String loginType = (String) claims.get("loginType");
-            return ResponseEntity.ok(loginType);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid token");
-        }
+    	return ResponseEntity.ok(loginType);
 	}
 	
 	
