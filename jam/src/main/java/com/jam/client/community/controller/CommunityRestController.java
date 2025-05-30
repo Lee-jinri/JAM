@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.client.community.service.CommunityService;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.common.vo.PageDTO;
-import com.jam.global.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -35,11 +34,7 @@ import lombok.extern.log4j.Log4j;
 public class CommunityRestController {
 
 	private final CommunityService comService;
-	private final JwtTokenProvider jwtTokenProvider;
 	
-	/**
-	 * 
-	 */
 	@GetMapping(value = "boards")
 	public ResponseEntity<Map<String, Object>> getBoards(
 			HttpServletRequest request,
@@ -99,16 +94,14 @@ public class CommunityRestController {
 			Map<String, Object> response = new HashMap<>();
 			response.put("detail", detail);
 			
-			String accessToken = jwtTokenProvider.getAccessTokenFromCookies(request.getCookies());
+			String userId = (String)request.getAttribute("userId");
+			
 			boolean isAuthor = false;
 			
-			if (accessToken != null) {
-	            String userId = jwtTokenProvider.getUserIdFormToken(accessToken);
-	            if (userId != null && userId.equals(detail.getUser_id())) {
-	                isAuthor = true;
-	            }
+	        if (userId != null && userId.equals(detail.getUser_id())) {
+	            isAuthor = true;
 	        }
-
+	        
 	        response.put("isAuthor", isAuthor);
 			
 	        return new ResponseEntity<>(response, HttpStatus.OK);

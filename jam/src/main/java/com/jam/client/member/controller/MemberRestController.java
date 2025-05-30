@@ -96,8 +96,8 @@ public class MemberRestController {
 	
 	@GetMapping(value="/loginType")
 	public ResponseEntity<String> getLoginType(HttpServletRequest request) {
-		
-    	String loginType = jwtService.extractLoginType(request);
+		Cookie[] cookies = request.getCookies();
+    	String loginType = jwtService.extractLoginType(request, cookies);
     	
     	return ResponseEntity.ok(loginType);
 	}

@@ -23,7 +23,6 @@ import lombok.extern.log4j.Log4j;
 public class MessageRestController {
 	
 	private final MessageService messageService;
-	private final JwtTokenProvider jwtTokenProvider;
 	private final MemberService memberService;
 	
 	/*******************************
@@ -41,8 +40,7 @@ public class MessageRestController {
 	    }
 		
 	    try {
-	    	String accessToken = jwtTokenProvider.getAccessTokenFromCookies(request.getCookies());
-	    	String user_id = jwtTokenProvider.getUserIdFormToken(accessToken); 
+	    	String user_id = (String)request.getAttribute("userId");
 	    		
 	    	if(user_id != null) {
 	    		message.setSender_id(user_id);	

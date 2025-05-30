@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.jam.client.message.vo.MessageVO;
 import com.jam.common.vo.PageDTO;
-import com.jam.global.jwt.JwtTokenProvider;
 import com.jam.client.message.service.MessageService;
 
 import lombok.RequiredArgsConstructor;
@@ -26,23 +25,17 @@ import lombok.extern.log4j.Log4j;
 public class MessageController {
 	
 	private final MessageService messageService;
-	private final JwtTokenProvider jwtTokenProvider;
 	
 	/***********************************************
 	 * @return 받은 쪽지 목록 페이지
 	 ***********************************************/
 	@RequestMapping(value = "/receiveMessage", method = RequestMethod.GET)
 	public String receiveMessage(@ModelAttribute MessageVO message, Model model, HttpServletRequest request) {
-	    
-		String accessToken = jwtTokenProvider.getAccessTokenFromCookies(request.getCookies());
-
-	    if (accessToken.isEmpty()) {
-	        return "member/login";
-	    }
-
+		
+		
 	    try {
-	        String receiverId = jwtTokenProvider.getUserIdFormToken(accessToken);
-
+	    	String receiverId = (String)request.getAttribute("userId");
+	    	
 	        if (receiverId == null) {
 	            return "member/login";
 	        }
@@ -68,16 +61,10 @@ public class MessageController {
 	@RequestMapping(value = "/sendMessage", method = RequestMethod.GET)
 	public String sendMessage(@ModelAttribute MessageVO message, Model model, HttpServletRequest request) {
 	    
-		String accessToken = jwtTokenProvider.getAccessTokenFromCookies(request.getCookies());
-
-	    if (accessToken.isEmpty()) {
-	        return "member/login";
-	    }
-
 	    try {
-	        String sender_id = jwtTokenProvider.getUserIdFormToken(accessToken);
+	    	String sender_id = (String)request.getAttribute("userId");
+	    	
 
-	        log.info(sender_id);
 	        if (sender_id == null) {
 	            return "member/login";
 	        }
@@ -105,8 +92,7 @@ public class MessageController {
 	@RequestMapping(value="/receiveMsgDetail/{message_no}", method=RequestMethod.GET)
 	public String receiveMessageDetailPage(@PathVariable("message_no") Long message_no, Model model, HttpServletRequest request) {
 		
-		String accessToken = jwtTokenProvider.getAccessTokenFromCookies(request.getCookies());
-		String receiver_id = jwtTokenProvider.getUserIdFormToken(accessToken);
+		String receiver_id = (String)request.getAttribute("userId");
 		
 		if(message_no == null) {
 			log.error("receiveMessageDetailPage message_no is required.");
@@ -137,8 +123,7 @@ public class MessageController {
 	@RequestMapping(value="/sendMsgDetail/{message_no}", method=RequestMethod.GET)
 	public String sendMessageDetailPage(@PathVariable("message_no") Long message_no, Model model, HttpServletRequest request) {
 		
-		String accessToken = jwtTokenProvider.getAccessTokenFromCookies(request.getCookies());
-		String sender_id = jwtTokenProvider.getUserIdFormToken(accessToken);
+		String sender_id = (String) request.getAttribute("userId");
 		
 		if(message_no == null) {
 			log.error("receiveMessageDetailPage message_no is required.");
