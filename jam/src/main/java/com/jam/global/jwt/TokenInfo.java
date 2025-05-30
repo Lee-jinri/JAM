@@ -10,7 +10,6 @@ import lombok.Data;
 public class TokenInfo {
 	private String accessToken;
 	private String refreshToken;
-	private String grantType; // JWT 인증 타입 - Bearer 
 	
 	public enum TokenStatus {
         VALID,          // 정상 토큰
@@ -19,7 +18,4 @@ public class TokenInfo {
         EMPTY
     }
 	
-	public String getAuthorizationHeader() {
-	    return grantType + accessToken;
-	}
 }

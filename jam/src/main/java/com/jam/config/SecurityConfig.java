@@ -69,9 +69,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
         config.setAllowCredentials(true);
         config.setAllowedOrigins(Arrays.asList("http://localhost:8080"));
         config.setAllowedMethods(Arrays.asList("HEAD","POST","GET","DELETE","PUT"));
-        config.addExposedHeader("Authorization"); // 클라이언트에서 서버로부터 받은 'Authorization' 헤더에 접근할 수 있도록 허용하는 설정
         config.setAllowedHeaders(Arrays.asList("*"));
-
+        
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config); //  모든 엔드포인트에 CORS 설정을 적용
         
@@ -92,10 +91,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 				.authorizeRequests()
 				//.antMatchers("/admin/**").access("hasRole('ADMIN')")
 				//.antMatchers("/admin/admin").hasRole("ROLE_ADMIN")
+				.antMatchers("/.well-known/**").denyAll() // 차단
 				.antMatchers("/**").permitAll()
 			.and()
 				.formLogin()
-				.loginPage("/member/login") // 커스텀 로그인 페이지
+				.loginPage("/member/login") 
 				.loginProcessingUrl("/api/member/login-process")
 				.successHandler(customSuccessHandler)
 				.failureHandler(customFailureHandler)
@@ -106,16 +106,14 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
             	.deleteCookies("remember-me","JSESSTION_ID")
             	.deleteCookies("JSESSIONID")
             	.addLogoutHandler(customLogoutHandler) 
-            	.logoutSuccessHandler(new CustomLogoutSuccessHandler())  // 로그아웃 성공 핸들러
-                
-            	// 시큐리티는 기본적으로 세션을 사용
-                // 여기서는 세션을 사용하지 않기 때문에 세션 설정을 Stateless 로 설정
+            	.logoutSuccessHandler(new CustomLogoutSuccessHandler()) 
             .and()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)	
             .and()
             // 스프링 시큐리티 실행전에 JwtAuthenticationFilter의 doFilter가 실행됨 
-            /*UsernamePasswordAuthenticationFilter 클래스를 기준으로 JwtAuthenticationFilter를 이 필터 앞에 추가하도록 지정하고 있습니다. 즉, JwtAuthenticationFilter가 UsernamePasswordAuthenticationFilter보다 먼저 실행*/
+            /*UsernamePasswordAuthenticationFilter 클래스를 기준으로 JwtAuthenticationFilter를 이 필터 앞에 추가하도록 지정하고 있습니다. 
+             * 즉, JwtAuthenticationFilter가 UsernamePasswordAuthenticationFilter보다 먼저 실행*/
             	.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider), UsernamePasswordAuthenticationFilter.class)
     
             	.csrf().disable();

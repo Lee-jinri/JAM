@@ -47,7 +47,6 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 public class OAuthController {
 	
-	//FIXME: refreshToken으로 로그인 갱신하는 거 잘 되는지 확인이 안됨 아마 안 될 듯
 	//TODO: 카카오/네이버 access token 발급 메서드 통합 예정
 	//TODO: getUserInfo()도 공통화하여 provider 기반으로 처리하도록 개선
 

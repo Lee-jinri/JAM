@@ -7,8 +7,6 @@ import java.util.Date;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import javax.servlet.http.Cookie;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -35,14 +33,8 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @PropertySource("classpath:application.properties")
 public class JwtTokenProvider {
-	/*Jwt 토큰 발급, 인증, 갱신하는 클래스
-	 * 
-	 * */
-	// FIXME: 순수 JWT 처리 전용으로 책임 분리할 것
 	
-	// Key 타입은 암호화, 서명, 해시 등과 같은 다양한 보안 작업에서 사용되는 키를 표현
 	private final Key key;
-	public static final String BEARER_PREFIX = "Bearer "; 
 
     public JwtTokenProvider(@Value("${jwt.secret}") String secretKey) {
         
@@ -63,7 +55,6 @@ public class JwtTokenProvider {
                 .setSubject(authentication.getName())
                 .claim("auth", authorities)
                 .claim("loginType", loginType)
-                //.setExpiration(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 3 * 3600 * 1000)) // 유효 기간 3시간
                 .signWith(key, SignatureAlgorithm.HS256)
                 .setHeaderParam("typ","JWT")
@@ -74,7 +65,6 @@ public class JwtTokenProvider {
         
         // Access Token과 Refresh Token을 발급
         return TokenInfo.builder()
-                .grantType("Bearer ")
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
@@ -84,7 +74,7 @@ public class JwtTokenProvider {
     public String generateRefreshToken(boolean autoLogin, String loginType) {
     	
     	// 자동 로그인이면 유효 기간 30일, 아니면 1일 
-        int expirationTime = autoLogin ? 30 * 24 * 3600 * 1000 : 24 * 3600 * 1000;
+        long expirationTime = autoLogin ? 30L * 24 * 3600 * 1000 : 24L * 3600 * 1000;
         
         // Refresh Token을 생성하고 서명
         String refreshToken = Jwts.builder()
@@ -138,16 +128,16 @@ public class JwtTokenProvider {
 
             return TokenStatus.VALID; // 유효한 토큰
         } catch (ExpiredJwtException e) {
-            log.info("Expired JWT Token Claims: {}" + e.getClaims(), e);
+            //log.info("Expired JWT Token Claims: {}" + e.getClaims(), e);
             return TokenStatus.EXPIRED; // 만료된 토큰
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("Invalid JWT Token", e);
+            //log.info("Invalid JWT Token", e);
             return TokenStatus.INVALID; // 변조된 토큰
         } catch (UnsupportedJwtException e) {
-            log.info("Unsupported JWT Token", e);
+            //log.info("Unsupported JWT Token", e);
             return TokenStatus.INVALID; // 변조된 토큰
         } catch (IllegalArgumentException e) {
-            log.info("Invalid JWT format or corrupted token.", e);
+            //log.info("Invalid JWT format or corrupted token.", e);
             return TokenStatus.INVALID; // 잘못된 형식의 토큰
         }
     }
@@ -176,34 +166,6 @@ public class JwtTokenProvider {
 		return null;
 		
     }
-    
-    
-	public String getAccessTokenFromCookies(Cookie[] cookies) {
-		
-		if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("Authorization")) { 
-                	return cookie.getValue();
-                }
-            }
-        }
-		
-		return null;
-	}
-	
-	public String getUserIdFormToken(String accessToken) {
-	    try {
-	        Authentication user = getAuthentication(accessToken);
-	        if (user == null || "anonymousUser".equals(user.getPrincipal())) {
-	            throw new IllegalStateException("Authentication failed or user is anonymous");
-	        }
-	        UserDetails userDetails = (UserDetails) user.getPrincipal();
-	        return userDetails.getUsername();
-	    } catch (Exception e) {
-	        log.error("Failed to get ID from token: " + e.getMessage());
-	        return null;
-	    }
-	}
 
 	/** 사용자 인증 상태 확인을 위한 JWT 토큰 생성  (Account 정보 조회 시 인증 여부 확인 용도)  
 	 * 

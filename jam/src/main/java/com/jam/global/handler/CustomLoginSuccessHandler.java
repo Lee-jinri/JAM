@@ -6,6 +6,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.velocity.runtime.log.Log;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -36,18 +37,17 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         String userId = userDetails.getUsername();
 
         boolean autoLogin = Boolean.parseBoolean(request.getParameter("autoLogin"));
+        
+        System.out.println("CustomLoginSuccessHandler autoLogin : " +autoLogin);
 
         TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
         memberService.addRefreshToken(userId, token.getRefreshToken());
-
-        // FIXME: AccessToken은 쿠키❌ Authorization 헤더로 변경할 것
-        // token.getAuthorizationHeader() = Bearer + accessToken
-        // refreshToken은 쿠키 O
+        
         Cookie accessTokenCookie = new Cookie("Authorization", token.getAccessToken());
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
         response.addCookie(accessTokenCookie);
-
+        
         Cookie refreshTokenCookie = new Cookie("RefreshToken", token.getRefreshToken());
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");

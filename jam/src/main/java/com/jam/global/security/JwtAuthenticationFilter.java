@@ -6,6 +6,7 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.security.core.Authentication;
@@ -30,8 +31,8 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-		
-		String token = resolveToken((HttpServletRequest) request);
+			    
+		String token = extractToken((HttpServletRequest) request);
 		
 		TokenStatus tokenStatus = jwtTokenProvider.validateToken(token);
 		
@@ -49,17 +50,17 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 		
 	}
 
-	// 헤더에서 토큰 추출
-	private String resolveToken(HttpServletRequest request) {
-		
-		String bearerToken = request.getHeader("Authorization");
-		
-		if(StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
-			return bearerToken.substring(7);
-		}
-		
-		return null;
+	// 쿠키에서 토큰 추출
+	private String extractToken(HttpServletRequest request) {
+	    if (request.getCookies() == null) return null;
+	    for (Cookie cookie : request.getCookies()) {
+	        if ("Authorization".equals(cookie.getName())) {
+	            return cookie.getValue();
+	        }
+	    }
+	    return null;
 	}
+
 	
 	
 }

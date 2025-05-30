@@ -31,11 +31,6 @@ public class CustomLogoutHandler implements LogoutHandler  {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
     	try {
-    		
-    		// FIXME: accessToken 쿠키에서 꺼내도록 임시 처리 (추후 Authorization 헤더로 전환 예정)
-    		// Authorization 헤더에서 JWT 토큰 가져옴
-            //String accessToken = request.getHeader("Authorization");
-            
     		String accessToken = "";
     		
     		for (Cookie cookie : request.getCookies()) {
@@ -81,7 +76,6 @@ public class CustomLogoutHandler implements LogoutHandler  {
         }
     }
     
-    // FIXME: 추후 Authorization 헤더로 전환 할 때 이것도 수정
 	private void deleteCookies(HttpServletResponse response) {
 		// Authorization 쿠키 삭제
 	    Cookie cookie = new Cookie("Authorization", null);

@@ -25,6 +25,11 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		
 		Map<String, String> userMap = jwtService.getUserInfo(request.getCookies(), request, response);
+		
+		if (userMap == null || userMap.isEmpty()) {
+			return false; // 컨트롤러로 요청 전달 안 함
+		}
+		
 		setRequestAttributes(request, userMap);
 		
 		return true;
