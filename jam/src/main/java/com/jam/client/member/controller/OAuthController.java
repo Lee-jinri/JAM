@@ -144,7 +144,9 @@ public class OAuthController {
 		// 3. 사용자 정보 조회 및 회원 처리
 		Map<String, Object> userInfo = getKakaoUserInfo(accessToken);
 		
-		memberService.socialLoginOrRegister(userInfo);
+		if(userInfo.isEmpty()) return "/member/login?error=oauth";
+
+		memberService.socialLoginOrRegister(userInfo, "kakao");
 		
 		// 4. 서비스 로그인
 		Authentication authentication = memberService.authenticateSocialUser((String) userInfo.get("user_id"), (String) userInfo.get("user_name"));
@@ -157,8 +159,8 @@ public class OAuthController {
 		// 5. JWT 쿠키, 세션 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
 		
-		session.setAttribute("userId", userInfo.get("user_id"));
-		session.setAttribute("userName", userInfo.get("user_name"));
+		request.getSession().setAttribute("userId", userInfo.get("user_id"));
+		request.getSession().setAttribute("userName", userInfo.get("user_name"));
 	    
 		// 6. 로그인 이전 페이지로 리다이렉트
 		String prevPage = (String) request.getSession().getAttribute("prevPage");
@@ -232,7 +234,7 @@ public class OAuthController {
 		    JsonNode root = mapper.readTree(response.getBody());
 		    
 		    Map<String, Object> userInfo = new HashMap<>();
-
+		    
 		    userInfo.put("user_id", "kakao_" + root.get("id").asText());
 		    userInfo.put("user_name", root.get("kakao_account").get("profile").get("nickname").asText());
 		    
@@ -242,8 +244,11 @@ public class OAuthController {
 		    return userInfo;
 		    
 		}catch(Exception e) {
-			log.error(e.getMessage());
-			return new HashMap<>();
+			log.error("Kakao 사용자 정보 요청 실패!");
+		    log.error("accessToken: {}"+ accessToken == null ? "null" : accessToken);
+		    log.error("예외 메시지: {}"+ e.getMessage(), e);
+		    
+		    return new HashMap<>();
 		}
 	}
 	
@@ -362,7 +367,7 @@ public class OAuthController {
 	    // jwt 토큰, 카카오 accessToken 쿠키 삭제
 	    deleteCookies(response, "kakaoAccessToken");
 	    
-	    // 모든 세션 만료
+	    // 세션 삭제
 	    request.getSession().invalidate();
 
 	    // 4. 서비스 회원 탈퇴
@@ -452,8 +457,10 @@ public class OAuthController {
 		// 3. 사용자 정보 조회 및 회원 처리
 		Map<String, Object> userInfo = getNaverUserInfo(accessToken);
 		
+		if(userInfo.isEmpty()) return "/member/login?error=oauth";
+		
 		// 사용자 정보가 DB에 없으면 회원가입
-		memberService.socialLoginOrRegister(userInfo);
+		memberService.socialLoginOrRegister(userInfo, "naver");
 		
 		// 4.서비스 로그인
 		
@@ -464,8 +471,8 @@ public class OAuthController {
 		// 5. JWT 쿠키, 세션 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
 		
-		session.setAttribute("userId", userInfo.get("user_id"));
-		session.setAttribute("userName", userInfo.get("user_name"));
+		request.getSession().setAttribute("userId", userInfo.get("user_id"));
+		request.getSession().setAttribute("userName", userInfo.get("user_name"));
 	    
 		// 6. 로그인 이전 페이지로 리다이렉트
 		//FIXME: 로그인 페이지나 회원가입 페이지면 메인 페이지로 이동하기, 네이버도
@@ -517,8 +524,10 @@ public class OAuthController {
 		    return userInfo;
 		    
 		}catch(Exception e) {
-			log.error(e.getMessage());
-			return new HashMap<>();
+			log.error("Naver 사용자 정보 요청 실패!");
+		    log.error("accessToken: {}"+ accessToken == null ? "null" : accessToken);
+		    log.error("예외 메시지: {}"+ e.getMessage(), e);
+		    return new HashMap<>();
 		}
 	}
 
@@ -652,10 +661,10 @@ public class OAuthController {
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("userId 없음");
 	    }
 	    
-	    // jwt 토큰, 네이버 accessToken 쿠키 삭제
+	 // jwt 토큰, 네이버 accessToken 쿠키 삭제
 	    deleteCookies(response, "naverAccessToken");
 	    
-	    // 모든 세션 만료
+	    // 세션 삭제
 	    request.getSession().invalidate();
 
 	    // 4. 서비스 회원 탈퇴

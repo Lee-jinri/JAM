@@ -155,8 +155,8 @@
 	
 	<!-- 소셜 회원 정보 저장 -->
 	<insert id="SocialRegister" parameterType="map">
-		INSERT INTO member(user_id, user_name, user_pw, email, role, social_login)
-		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email},'MEMBER', 1)
+		INSERT INTO member(user_id, user_name,  email, role, social_login)
+		VALUES (#{user_id}, #{user_name}, #{email},'MEMBER', 1)
 	</insert>
 	
 	<!-- refresh token으로 회원 아이디, 닉네임, 권한 조회 -->

@@ -236,21 +236,32 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 소셜 회원가입 여부 확인
 	@Override
-	public void socialLoginOrRegister(Map<String, Object> userInfo) {
+	public void socialLoginOrRegister(Map<String, Object> userInfo, String provider) {
 	
-		//member.setUser_pw(encoder.encode("naverLoginPassword"));
-		
 		try {
-			
-			// 가입 여부 확인
-			int result = memberDao.findSocialUser((String)userInfo.get("user_id"));
-			
-			// 회원 정보 없으면 회원가입
-			if(result == 0) memberDao.SocialRegister(userInfo); 
-			
-		}catch(Exception e) {
-			log.error(e.getMessage());
-		}
+	        // 가입 여부 확인
+	        int result = memberDao.findSocialUser((String)userInfo.get("user_id"));
+
+	        // 회원 정보 없으면 회원가입
+	        if (result == 0) {
+	            String base = provider + "_" + userInfo.get("user_name");
+	            String user_name = base;
+	            int count = 1;
+	            
+	            while (memberDao.nameCheck(user_name) == 1) { // 중복이면 숫자 붙임
+	                user_name = base + "_" + count;
+	                count++;
+	            }
+
+	            userInfo.put("user_name", user_name);
+	            memberDao.SocialRegister(userInfo);
+	        }
+
+	        log.info("소셜 로그인 처리 완료");
+
+	    } catch (Exception e) {
+	        log.error("소셜 로그인 처리 중 오류 발생: " + e.getMessage());
+	    }
 	}
 	
 	// 닉네임 변경
