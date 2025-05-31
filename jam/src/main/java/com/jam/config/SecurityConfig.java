@@ -84,6 +84,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
 			.exceptionHandling()
 			// 인증 실패 또는 인증되지 않은 사용자의 요청이 들어올 때 401 인증 실패로 HTTP 응답의 상태 코드를 설정
 	        .authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
+	        
 	        .and()
 				.httpBasic().disable()
 		        .cors().configurationSource(corsConfigurationSource())
@@ -109,7 +110,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter  {
             	.logoutSuccessHandler(new CustomLogoutSuccessHandler()) 
             .and()
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)	
+                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                //.sessionCreationPolicy(SessionCreationPolicy.STATELESS)	
             .and()
             // 스프링 시큐리티 실행전에 JwtAuthenticationFilter의 doFilter가 실행됨 
             /*UsernamePasswordAuthenticationFilter 클래스를 기준으로 JwtAuthenticationFilter를 이 필터 앞에 추가하도록 지정하고 있습니다. 
