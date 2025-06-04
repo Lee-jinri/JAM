@@ -88,27 +88,24 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
             .allowedMethods("GET", "POST", "PUT", "DELETE")
             .allowCredentials(true);
     }
-    
-    
-   
-    
-  
 	
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(jwtInterceptor)
         		.addPathPatterns(
+        				"/api/member/auth/check",
         				"/api/member/getUserInfo", 
         				"/api/member/logout", 
         				"/oauth/kakao/logout",
         				"/oauth/naver/logout",
         				"/api/member/userName",
         				"/api/member/phone",
-        				"/api/member/password/confirm",
+        				"/api/member/verify-password",
         				"/api/member/password",
         				"/api/member/address",
-        				"/api/member/withDraw",
-        				"/api/job/**",
+        				"/api/member/deleteAccount",
+        				//"/api/job/**",
+        				//"/job/board/write",
         				"/api/community/**",
         				"/api/fleaMarket/**",
         				"/api/roomRental/**",

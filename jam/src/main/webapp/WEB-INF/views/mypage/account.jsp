@@ -101,29 +101,28 @@ $(function(){
 	let phone;
 	let user_name;
 	
+	verifyStatus();
 	
-	/*
-	1. 로그인 타입 가져옴 (local/naver/kakao)
-	2. local이면 비밀번호 검증 
-	*/
-	passwordConfirm();
-		
-	function passwordConfirm(){
-		fetch('/api/mypage/isPasswordVerified')
+	function verifyStatus(){
+		fetch('/api/mypage/account/verify-status',{
+			credentials: 'include',
+		})
 		.then(response =>{
-			if(!response.ok){
+			if(response.status === 401){
+				$(location).attr('href', '/');
+			}else if(!response.ok){
 				alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 				$(location).attr('href', '/');
 			}
-			return response.text();
+			return response.json();
 		})
-		.then((data) =>{
-			let isPasswordVerified = data === 'true'; // Boolean으로 변환
-			
-			if (isPasswordVerified) {
+		.then((verifyStatus) =>{
+
+			if (verifyStatus) {
 				getAccount();
             }
-            passwordConfirmUi(isPasswordVerified);
+			
+            passwordConfirmUi(verifyStatus);
 		})
 	}
 		
@@ -140,7 +139,7 @@ $(function(){
 			alert("비밀번호를 입력하세요.");
 			return false;
 		}
-		fetch('/api/member/password/confirm',{
+		fetch('/api/member/verify-password',{
 			method: 'POST',
 		    headers: {
 		        'Content-Type': 'application/json'
@@ -149,7 +148,14 @@ $(function(){
 		})
 		.then(response =>{
 			if(response.ok){
+				// 세션 설정 
+				fetch('/api/mypage/verify-status/set', {
+					method: 'GET',
+					credentials: 'include',
+				})
+				
 				alert("비밀번호가 확인되었습니다.");
+				
 				passwordConfirmUi('true');
 				getAccount();
 				
@@ -235,7 +241,6 @@ $(function(){
 			
 		// 변경할 닉네임과 원래 닉네임이 같으면 변경하지 않음
 		if(user_name == new_name){
-			setEditFlag();
 			location.reload();
 		}else{
 			// 닉네임 중복 확인
@@ -270,7 +275,6 @@ $(function(){
 		            throw new Error("닉네임 변경 중 오류가 발생했습니다.");
 		        }
 		        alert('닉네임이 변경되었습니다.');
-		        setEditFlag();
 		        location.reload();
 		    })
 		    .catch(error => {
@@ -312,7 +316,6 @@ $(function(){
 			
 		// 변경할 전화번호와 원래 전화번호가 같으면 변경하지 않음
 		if(phone == new_phone){
-			setEditFlag();
 			location.reload();
 		}else{
 		// 전화번호 중복 확인
@@ -348,7 +351,6 @@ $(function(){
 		            throw new Error("전화번호 변경 중 오류가 발생했습니다.");
 		        }
 		        alert("전화번호가 변경되었습니다.");
-		        setEditFlag();
 		        location.reload();
 		    })
 		    .catch(error => {
@@ -382,7 +384,7 @@ $(function(){
 			return false;
 		} 
 		
-		fetch('/api/member/password/confirm',{
+		fetch('/api/member/verify-password',{
 			method: 'POST',
 		    headers: {
 		        'Content-Type': 'application/json'
@@ -447,7 +449,6 @@ $(function(){
 			    }
 				if (!response.ok) throw new Error('Network response was not ok');
 	            alert('비밀번호가 변경되었습니다.');
-	            setEditFlag();
 	            location.reload();
 			})
 			.catch(error => {
@@ -517,7 +518,6 @@ $(function(){
 		.then(response => {
 			if(response.ok){
 				alert('주소가 변경되었습니다.');
-				setEditFlag();
 				location.reload();
 			}else throw new Error;
 		})
@@ -529,8 +529,6 @@ $(function(){
 	
 	// 전화번호, 닉네임, 비밀번호, 주소 수정 취소 버튼 클릭하면 새로고침
 	$(".account_cancel").click(function(){
-		console.log("?");
-		setEditFlag();
 		location.reload();
 	})
 	
@@ -559,22 +557,7 @@ $(function(){
 	})	
 })
 
-function setEditFlag(){
-	localStorage.setItem("isEditing", "true");
-}
 	
-// 페이지를 이동하면 세션에 저장된 passwordChecked 토큰을 삭제합니다.
-window.addEventListener("beforeunload", function () {
-	let isEditing = localStorage.getItem("isEditing");
-
-	alert(isEditing);
-    // 수정 중이 아닐 경우에만 sendBeacon 실행
-    if (!isEditing) {
-    	navigator.sendBeacon("/api/member/clearPasswordToken");
-    } else {
-    	localStorage.removeItem("isEditing"); // 플래그 삭제\
-    }
-});
 </script>
 </head>
 <body class="wrap">

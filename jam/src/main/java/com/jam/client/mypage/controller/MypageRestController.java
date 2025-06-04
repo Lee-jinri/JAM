@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
@@ -26,7 +25,7 @@ import com.jam.client.member.vo.MemberVO;
 import com.jam.client.mypage.service.MypageService;
 import com.jam.client.mypage.vo.MemberBoardVO;
 import com.jam.common.vo.PageDTO;
-import com.jam.global.jwt.JwtTokenProvider;
+import com.jam.global.jwt.JwtService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -39,7 +38,7 @@ public class MypageRestController {
 	
     private final MypageService mypageService;
 	private final MemberService memberService;
-	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtService jwtService;
 
 
 	@GetMapping("/favorite/boards")
@@ -213,49 +212,118 @@ public class MypageRestController {
 	
 	/**
 	 * 마이페이지 - 사용자 정보 조회
-	 * 
-	 * @return HTTP 응답 상태코드, 사용자 아이디, 닉네임, 주소, 전화번호, 소셜로그인 여부 
+	 *
+	 * 세션 또는 소셜 로그인 여부를 통해 사용자의 인증 상태를 확인한 후,
+	 * 인증이 완료된 사용자에 한해 사용자 정보를 조회하여 반환합니다.
+	 * 인증되지 않은 경우 401(UNAUTHORIZED) 상태 코드를 반환합니다.
+	 *
+	 * @param request 클라이언트 요청 객체 (세션 및 쿠키 접근용)
+	 * @return 사용자 정보(MemberVO) 또는 HTTP 상태 코드
 	 */
 	@GetMapping(value = "/account", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<MemberVO> getAccount(HttpServletRequest request, HttpServletResponse response){
+	public ResponseEntity<MemberVO> getAccount(HttpServletRequest request){
 		try {
-			boolean isPasswordVerified = isPasswordVerified(request);
+			boolean verifyStatus = isVerified(request);
 			
-			MemberVO account = new MemberVO();
-			
-			if(isPasswordVerified) {
-				if(response.getStatus() == 200) {
-					String userId = (String) request.getAttribute("userId");
+			if(verifyStatus) {
+				String userId = (String) request.getAttribute("userId");
 					
-					account = mypageService.account(userId);
-				}
+				MemberVO account = mypageService.account(userId);
+				
+				return ResponseEntity.ok().body(account);
 			}
-			return ResponseEntity.ok().body(account);
+			
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			
 		}catch(Exception e) {
-			log.error(e);
+			log.error("계정 정보 조회 중 예외 발생", e);
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
 	
-	
 	/**
-	 * 비밀번호 검증 여부를 확인합니다.
-	 * @return boolean 
+	 * 마이페이지 인증 상태(verifyStatus)를 확인합니다.
+	 * 
+	 * 세션에 인증 플래그가 존재하고, 유효 시간(10분) 내에 있는 경우 true를 반환합니다.
+	 * 인증되지 않았거나 세션이 만료되면 false를 반환하며, 세션이 없는 경우 401 응답을 반환합니다.
+	 *
+	 * @param request 클라이언트 요청 객체
+	 * @return 인증 상태(boolean) 또는 HTTP 상태 코드
 	 */
-	@GetMapping(value = "/isPasswordVerified")
-	public boolean isPasswordVerified(HttpServletRequest request) {
-		HttpSession session = request.getSession();
-		String tempToken = (String)session.getAttribute("passwordChecked");
+	@GetMapping(value = "/account/verify-status")
+	public ResponseEntity<Boolean> getVerifyStatus(HttpServletRequest request) {
 		
-		boolean passwordChecked = false;
-				
-		if(tempToken != null) {
-			String purpose = jwtTokenProvider.extractPurpose(tempToken);
-			passwordChecked = purpose.equals("passwordChecked") ? true : false;
+		HttpSession session = request.getSession(false);;
+		
+		if (session == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+	    }
+		
+		try {
+			boolean verifyStatus = isVerified(request);
+			
+			Long verifiedTime = (Long) session.getAttribute("verifyStatusTime");
+	
+		    if (Boolean.TRUE.equals(verifyStatus) && verifiedTime != null) {
+		        long now = System.currentTimeMillis();
+		        if (now - verifiedTime <= 10 * 60 * 1000) { // 10분
+		            return ResponseEntity.ok(true);
+		        } else {
+		            // 만료된 경우 인증 해제
+		            session.removeAttribute("verifyStatus");
+		            session.removeAttribute("verifyStatusTime");
+		        }
+		    }
+		    
+			return ResponseEntity.ok(verifyStatus); 
+		
+		}catch(IllegalStateException  e) {
+			// 세션 무효화 된 경우
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
 		}
-		
-		return passwordChecked;
 	}
 	
-	
+	/**
+	 * 비밀번호 인증 성공 시 호출되는 메서드
+	 * 사용자의 세션에 verifyStatus 값을 true로 설정합니다.
+	 * 프론트엔드에서 비밀번호 확인 이후 이 엔드포인트를 호출하여
+	 * 계정 정보 접근 권한을 부여합니다.
+	 */
+	@GetMapping("/verify-status/set")
+	public ResponseEntity<String> setVerifyStatusSession(HttpSession session) {
+		session.setAttribute("verifyStatus", true);
+		session.setAttribute("verifyStatusTime", System.currentTimeMillis());
+		
+		return ResponseEntity.ok("session set");
+	}
+
+	/**
+	 * 세션 또는 소셜 로그인 여부를 통해 사용자의 인증 상태를 확인합니다.
+	 * 
+	 * 세션에 verifyStatus 플래그가 true이면 인증된 것으로 간주하고
+	 * 소셜 로그인 사용자(naver 또는 kakao)는 별도 확인 없이 인증 처리합니다.
+	 *
+	 * @param request 클라이언트 요청 객체
+	 * @return 인증 여부 (true: 인증됨, false: 인증되지 않음)
+	 */
+	private boolean isVerified(HttpServletRequest request) {
+		
+		HttpSession session = request.getSession(false);
+		if (session == null) return false;
+		
+		Boolean verifyStatus = (Boolean) session.getAttribute("verifyStatus");
+
+		if (Boolean.TRUE.equals(verifyStatus)) return true;
+
+		String loginType = jwtService.extractLoginType(request, request.getCookies());
+		
+		if ("naver".equals(loginType) || "kakao".equals(loginType)) {
+			session.setAttribute("verifyStatus", true);
+			session.setAttribute("verifyStatusTime", System.currentTimeMillis());
+			
+			return true;
+		}
+
+		return false;
+	}
 }

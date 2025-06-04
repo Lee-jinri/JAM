@@ -476,27 +476,10 @@ public class MemberRestController {
 		
 	}
 	
+	 
 	/**
-	 * 비밀번호 검증 여부를 확인합니다.
-	 * @return boolean 
-	 */
-	@GetMapping(value = "/isPasswordVerified")
-	public boolean isPasswordVerified(HttpServletRequest request) {
-		HttpSession session = request.getSession();
-		String tempToken = (String)session.getAttribute("passwordChecked");
-		
-		boolean passwordChecked = false;
-				
-		if(tempToken != null) {
-			String purpose = jwtTokenProvider.extractPurpose(tempToken);
-			passwordChecked = purpose.equals("passwordChecked") ? true : false;
-		}
-		
-		return passwordChecked;
-	}
-
-	/**
-	 * 사용자의 비밀번호를 확인합니다.
+	 * 사용자의 비밀번호 확인 후, verify-password 플래그를 세션에 저장합니다.
+	 * (마이페이지 > 계정정보(Account)에서 인증 확인 용도)
 	 * 
 	 * @param user_pw 사용자가 입력한 비밀번호
 	 * @return HTTP 응답 상태코드
@@ -504,22 +487,33 @@ public class MemberRestController {
 	 *      - 400 BAD REQUEST: 입력된 비밀번호가 null
 	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
 	 */
-	@RequestMapping(value = "/password/confirm", method = RequestMethod.POST)
-	public ResponseEntity<String> pwConfirm(@RequestBody MemberVO member, HttpServletRequest request, HttpSession session) throws Exception {
+	@RequestMapping(value = "/verify-password", method = RequestMethod.POST)
+	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpSession session) throws Exception {
 
 		if(member.getUser_pw() == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");
 		
 		String user_id = (String)request.getAttribute("userId");
+		
+		log.info("user_id : " + user_id);
+		
+		
+		if(user_id == null || user_id.equals("")) {
+			log.info("userID있니?");
+			log.error("VerifyPassword : userId is null.");
+			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}else {
+			log.info("11111");
+		}
+		
 		member.setUser_id(user_id);
 		
 		String encodePw = memberService.pwConfirm(member);
 
 		String user_pw = member.getUser_pw();
 		
-		if (encoder.matches(user_pw, encodePw)) { // 비밀번호 일치여부 판단
-			String tempToken = jwtTokenProvider.generatePasswordToken(user_id, "passwordChecked");
-	        
-			session.setAttribute("passwordChecked", tempToken);
+		// 비밀번호 일치여부 판단
+		if (encoder.matches(user_pw, encodePw)) { 
+			session.setAttribute("verifyStatus", true);
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
@@ -527,14 +521,7 @@ public class MemberRestController {
 		}
 	}
 	
-	/**
-	 * 사용자가 계정 페이지에서 이동하면 세션에 저장된 비밀번호 인증 토큰 삭제
-	 */
-	@PostMapping("/clearPasswordToken")
-	public void clearPasswordToken(HttpServletRequest request) {
-		request.getSession().setAttribute("passwordChecked",null);
-	}
-
+	
 	/**
 	 * 사용자의 비밀번호를 변경합니다.
 	 * 
