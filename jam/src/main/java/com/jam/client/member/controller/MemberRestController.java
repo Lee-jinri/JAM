@@ -27,8 +27,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.JwtService;
-import com.jam.global.jwt.JwtTokenProvider;
-import com.jam.global.jwt.TokenInfo.TokenStatus;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -42,8 +40,6 @@ public class MemberRestController {
 	private final MemberService memberService;
 
 	private final PasswordEncoder encoder;
-
-	private final JwtTokenProvider jwtTokenProvider;
 	
 	private final JwtService jwtService;
 	
@@ -175,38 +171,18 @@ public class MemberRestController {
     }
 	
 	/**
-	 * JWT 토큰을 이용해 사용자의 로그인 여부를 확인합니다.
-	 * 
-	 * @return 인증 여부를 나타내는 맵과 HTTP 응답 상태 코드
+	 * 인증 여부 확인용 엔드포인트
+	 *
+	 * - 이 엔드포인트는 실제 로직은 없고, 인터셉터를 통해 인증 상태를 확인합니다.
+	 * - 인증된 사용자라면 200 OK를 반환하고, 인증되지 않은 사용자는 인터셉터에서 401 Unauthorized 응답 처리됩니다.
+	 *
+	 * @return 200 OK (정상적으로 인증된 경우)
 	 */
-	@GetMapping("/checkAuthentication")
-	public ResponseEntity<Map<String, Boolean>> checkAuthentication(HttpServletRequest request) {
+	//FIXME: 요청 바꿨음 /checkAuthentication에서 /auth/check로 
+	@GetMapping("/auth/check")
+	public ResponseEntity<Void> checkAuthentication() {
 	    
-		Map<String, Boolean> response = new HashMap<>();
-		
-		String accessToken ="";
-		
-        Cookie[] cookies = request.getCookies();
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("Authorization")) {  
-                	accessToken = cookie.getValue(); 
-                }
-            }
-        }
-        
-        TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
-        
-		if (tokenStatus == TokenStatus.VALID) {
-			// JWT가 유효한 경우 인증된 상태로 처리
-            response.put("authenticated", true);
-        } else {
-            // JWT가 유효하지 않거나 만료된 경우
-            response.put("authenticated", false);
-        }
-
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok().build();
 	}
 
 
@@ -421,32 +397,39 @@ public class MemberRestController {
 	 * @param user_name 변경할 닉네임
 	 * @return HTTP 응답 상태코드
 	 */
-	@PutMapping(value ="/userName", produces = "application/json")
-	public ResponseEntity<String> updateUserName(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
-		try {
-		    String userId = (String) request.getAttribute("userId");
-		    
-		    member.setUser_id(userId);
-			if (member.getUser_name() == null)
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("userName is required.");
+	@PutMapping(value ="/userName")
+	public ResponseEntity<Void> updateUserName(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
+		Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
 		
-			int isUpdated = memberService.updateUserName(member);
-			
-	        if (isUpdated == 1) {
-	            // 세션에 저장된 닉네임 갱신
-	            request.getSession().setAttribute("userName", member.getUser_name());
-	            
-	            return new ResponseEntity<>(HttpStatus.OK);
-	        } else {
-	            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("닉네임 변경에 실패했습니다.");
-	        }
-
-		} catch (Exception e) {
-			log.error(e.getMessage());
-
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
+		if (verifyStatus == null || !verifyStatus) {
+			log.error("not verified.");
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
-
+		
+		if (member.getUser_name() == null) {
+			log.error("userName is required.");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		
+	    String userId = (String) request.getSession().getAttribute("userId");
+	    
+	    if(userId == null) {
+	    	log.error("Unauthorized user.");
+	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    }
+	    
+	    member.setUser_id(userId);
+		
+		boolean isUpdated = memberService.updateUserName(member);
+		
+        if (isUpdated) {
+            // 세션에 저장된 닉네임 갱신
+            request.getSession().setAttribute("userName", member.getUser_name());
+            
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();	        
+        }
 	}
 	
 	/**
@@ -456,24 +439,33 @@ public class MemberRestController {
 	 * @return HTTP 응답 상태코드
 	 */
 	@PutMapping(value = "/phone")
-	public ResponseEntity<String> updatePhone(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
-
-		String userId = (String)request.getAttribute("userId");
+	public ResponseEntity<Void> updatePhone(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
+		Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
+		if(verifyStatus == null || !verifyStatus) {
+			log.error("");
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+		}
 		
-		if(member.getPhone() == null || member.getPhone().equals("")) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("phone is required.");
+		if(member.getPhone() == null || member.getPhone().equals("")) {
+			log.error("phone is required.");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+		
+		String userId = (String)request.getAttribute("userId");
+		if(userId == null) {
+			log.error("UnAuthorized user.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
 		
 		member.setUser_id(userId);
 		
-		try {
-			memberService.updatePhone(member);
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-			
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-		}
+		boolean isUpdate = memberService.updatePhone(member);
 		
+		if(isUpdate) {
+			return ResponseEntity.ok().build();
+		}else {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 	
 	 
@@ -494,15 +486,9 @@ public class MemberRestController {
 		
 		String user_id = (String)request.getAttribute("userId");
 		
-		log.info("user_id : " + user_id);
-		
-		
 		if(user_id == null || user_id.equals("")) {
-			log.info("userID있니?");
 			log.error("VerifyPassword : userId is null.");
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}else {
-			log.info("11111");
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 		
 		member.setUser_id(user_id);
@@ -513,11 +499,9 @@ public class MemberRestController {
 		
 		// 비밀번호 일치여부 판단
 		if (encoder.matches(user_pw, encodePw)) { 
-			session.setAttribute("verifyStatus", true);
-			
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
 		}
 	}
 	
@@ -535,50 +519,37 @@ public class MemberRestController {
 	public ResponseEntity<String> updatePw(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
 
 		if(member.getUser_pw() == null) {
-			log.error("user_pw is required.");
+			log.error("user password is required.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");
 		}
 		
 		try {
 			HttpSession session = request.getSession();
 			
-			String token = (String)session.getAttribute("passwordChecked");
-			if (token == null) {
-	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Password confirmation is required.");
-	        }
+			Boolean verifyStatus = (Boolean) session.getAttribute("verifyStatus");
 			
-			TokenStatus tokenStatus = jwtTokenProvider.validateToken(token);
-			
-
-	        // 토큰 유효성 검증
-	        if (tokenStatus != TokenStatus.VALID) {
-	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Invalid token.");
+			if (verifyStatus == null || !verifyStatus) {
+	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("not verified.");
 	        }
-
-	        // 토큰에서 정보 추출
-	        String purpose = jwtTokenProvider.extractPurpose(token);
-	        String tokenUserId = jwtTokenProvider.extractUserId(token);
 
 	        String userId = (String) request.getAttribute("userId");
-
-	        // 토큰 정보와 세션 사용자 정보 일치 여부 확인
-	        if (!tokenUserId.equals(userId) || !purpose.equals("passwordChecked")) {
-	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Password confirmation is required.");
+	        if (userId == null) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user Id is missing.");
 	        }
-			
+	        
 			member.setUser_id(userId);
 			
 			String encodePw = encoder.encode(member.getUser_pw()); // 비밀번호 인코딩
 
 			memberService.updatePw(member.getUser_id(), encodePw);
 			
-			// 비밀번호 변경 후 세션에서 인증 토큰 제거
-	        session.removeAttribute("passwordChecked");
-				
+			// 민감한 정보 변경 후에는 검증 플래그 삭제
+			session.removeAttribute("verifyStatus");
+			
 			return new ResponseEntity<>(HttpStatus.OK);
 				
 		}catch(Exception e) {
-			log.error(e.getMessage());
+			log.error("Error updating password", e);
 			
 			return new ResponseEntity<>("An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR);
 		}

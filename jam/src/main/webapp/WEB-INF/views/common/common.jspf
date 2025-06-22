@@ -17,7 +17,6 @@
 		<link rel="apple-touch-icon" href="/resources/include/images/JAM_icon2.svg" />
 		
 		<!-- 제이쿼리 -->
-		<!-- <script src="http://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.js"></script> -->
 		<script type="text/javascript" src="/resources/include/dist/js/jquery-3.7.1.min.js"></script>
 		
 		<!-- 부트스트랩 -->

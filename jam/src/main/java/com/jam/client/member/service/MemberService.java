@@ -56,10 +56,10 @@ public interface MemberService {
 	public void socialLoginOrRegister(Map<String, Object> userInfo, String provider);
 	
 	// 닉네임 변경
-	public int updateUserName(MemberVO member);
+	public boolean updateUserName(MemberVO member);
 	
 	// 전화번호 변경
-	public int updatePhone(MemberVO m_vo);
+	public boolean updatePhone(MemberVO m_vo);
 	
 	// 비밀번호 확인
 	public String pwConfirm(MemberVO m_vo);

@@ -266,15 +266,14 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 닉네임 변경
 	@Override
-	public int updateUserName(MemberVO member) {
+	public boolean updateUserName(MemberVO member) {
 		
 		try {
 	        // Redis에 닉네임 저장
 	        String key = "users:name:" + member.getUser_id();
 	        stringRedisTemplate.opsForValue().set(key, member.getUser_name());
 
-	        return memberDao.updateUserName(member);
-	        
+	         return memberDao.updateUserName(member) == 1;
 	    } catch (Exception e) {
 	        log.error("닉네임 변경 중 오류 발생: ", e);
 	        throw e;
@@ -284,8 +283,8 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 전화번호 변경
 	@Override
-	public int updatePhone(MemberVO m_vo) {
-		return memberDao.updatePhone(m_vo);
+	public boolean updatePhone(MemberVO m_vo) {
+		return memberDao.updatePhone(m_vo) == 1;
 	}
 	
 	// 비밀번호 확인
