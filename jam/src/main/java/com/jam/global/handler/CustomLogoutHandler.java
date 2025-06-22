@@ -38,6 +38,7 @@ public class CustomLogoutHandler implements LogoutHandler  {
 					accessToken = cookie.getValue();
 				}
 			}
+    		
     		if (accessToken == null || accessToken.isBlank()) {
     		    log.warn("로그아웃 요청: 토큰이 없음");
     		    return; 
@@ -68,7 +69,6 @@ public class CustomLogoutHandler implements LogoutHandler  {
     		log.error(e.getMessage());
     	} finally {
     		// JWT 토큰 쿠키 삭제
-    		
             deleteCookies(response);
             
             // 세션 무효화
@@ -77,10 +77,9 @@ public class CustomLogoutHandler implements LogoutHandler  {
     }
     
 	private void deleteCookies(HttpServletResponse response) {
-		// Authorization 쿠키 삭제
+	    // Authorization 쿠키 삭제
 	    Cookie cookie = new Cookie("Authorization", null);
 	    cookie.setHttpOnly(true);
-	    cookie.setSecure(true);
 	    cookie.setPath("/");
 	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
 	    
@@ -88,10 +87,10 @@ public class CustomLogoutHandler implements LogoutHandler  {
 	    
 	    // refreshToken 쿠키 삭제
 	    Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
+	    refreshTokenCookie.setHttpOnly(true); 
 	    refreshTokenCookie.setMaxAge(0);
 	    refreshTokenCookie.setPath("/");
 	    
 	    response.addCookie(refreshTokenCookie);
 	}
 }
-

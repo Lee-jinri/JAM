@@ -6,7 +6,6 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.velocity.runtime.log.Log;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -37,8 +36,6 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         String userId = userDetails.getUsername();
 
         boolean autoLogin = Boolean.parseBoolean(request.getParameter("autoLogin"));
-        
-        System.out.println("CustomLoginSuccessHandler autoLogin : " +autoLogin);
 
         TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
         memberService.addRefreshToken(userId, token.getRefreshToken());
@@ -46,6 +43,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         Cookie accessTokenCookie = new Cookie("Authorization", token.getAccessToken());
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(3 * 60 * 60);
         response.addCookie(accessTokenCookie);
         
         Cookie refreshTokenCookie = new Cookie("RefreshToken", token.getRefreshToken());
@@ -64,6 +62,5 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
         String redirectUrl = (prevPage != null && !prevPage.isBlank()) ? prevPage : "/";
 
         response.getWriter().write("{ \"redirect\": \"" + redirectUrl + "\" }"); 
-        
     }
 }
