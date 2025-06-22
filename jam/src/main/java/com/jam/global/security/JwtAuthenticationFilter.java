@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
-import org.springframework.util.StringUtils;
 import org.springframework.web.filter.GenericFilterBean;
 
 import com.jam.global.jwt.JwtTokenProvider;
@@ -27,7 +26,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 	public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
 		this.jwtTokenProvider = jwtTokenProvider;
 	}
-
+ 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
@@ -60,7 +59,5 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 	    }
 	    return null;
 	}
-
-	
 	
 }

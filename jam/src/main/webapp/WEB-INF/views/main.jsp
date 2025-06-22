@@ -148,7 +148,6 @@
 		        const titlePropertyName = listType + '_title';
 		        const numberPropertyName = listType + '_no';
 
-		        console.log(item);
 		        let $listItem = $("<li>").addClass("board-item");
 
 		        let $titleLink = $("<a>")

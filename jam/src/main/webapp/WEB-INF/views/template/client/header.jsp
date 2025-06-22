@@ -148,7 +148,6 @@ header {
 	        return response.json(); 
 		})
 		.then(data => {
-			
 			let userName = data.userName;
         	
         	if (data && userName) {
@@ -181,7 +180,6 @@ header {
 	        console.error("에러 발생:", error);
 	    });
 		
-
 		// 로그아웃
 		$("#logout").click(function() {
 			fetch('/api/member/loginType')
@@ -196,7 +194,6 @@ header {
 			    }
 			})
 			.then(loginType => {
-				console.log(loginType);
 				logout(loginType);
 			})
 			.catch(error => {
@@ -245,11 +242,12 @@ header {
 		$("#adminBtn").click(function(){
 			$(location).attr('href','/admin/admin');
 		})
+		
 	})
 
 function logout(loginType){
 	let uri;
-		
+	
 	if (loginType === 'kakao') {
 		uri = '/oauth/kakao/logout';
 	}else if(loginType === 'naver'){
@@ -295,8 +293,6 @@ function logout(loginType){
 			</nav>
 		</div>
 		
-		
-		
 		<!-- 오른쪽: 로그인/회원가입 -->
 		<div id="loggedOutDiv" class="auth-buttons">
 			<div class="inline-block mr-1 logoutDiv text-alignC">
@@ -306,6 +302,7 @@ function logout(loginType){
 			<div class="inline-block logoutDiv text-alignC">
 				<a href="/member/join" class="font-color-gray justify-right logoutA">회원가입</a>
 			</div>
+			
 		</div>
 
 		<!-- 로그인 했을 때 -->

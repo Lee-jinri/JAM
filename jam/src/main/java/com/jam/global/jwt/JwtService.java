@@ -61,7 +61,6 @@ public class JwtService {
 					
 					String refreshToken = extractToken(cookies, "RefreshToken");
 					
-					
 					if (refreshToken == null || 
 					    jwtTokenProvider.validateToken(refreshToken) != TokenStatus.VALID) {
 						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

@@ -54,49 +54,20 @@
 	background-size: 0.8em;
 }
 
-
-
 .search-select option {
 	direction: rtl;
 	text-align: center;
 }
 
-/*******************************? r검색바 디자인 아래가 원래 위가 새로/
+/*****************************? r검색바 디자인 아래가 원래 위가 새로**/
 .search-div {
-    max-width: 700px;   /* 포지션/지역과 동일하게 맞춤 */
-width
-:
- 
-100
-%;
-
-    
-margin
-:
- 
-0
- 
-auto
-; /* 가운데 정렬 */
-
-    
-padding
-:
- 
-1rem
- 
-2rem
-;
-
-    
-margin-top
-:
- 
-30px
-;
-
-
+	max-width: 700px; /* 포지션/지역과 동일하게 맞춤 */
+	width: 100%;
+	margin: 0 auto; /* 가운데 정렬 */
+	padding: 1rem 2rem;
+	margin-top: 30px;
 }
+
 .search-input {
 	border: none;
 	border-bottom: 1px solid #e5e7eb;

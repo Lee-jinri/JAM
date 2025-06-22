@@ -49,8 +49,6 @@ public class MainController {
         response.put("fleaList", fleaList);
         response.put("comList", comList);
         
-        System.out.print(response);
-        
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
 }
