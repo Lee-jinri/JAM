@@ -71,7 +71,7 @@ public interface MemberService {
 	public int updateAddress(MemberVO m_vo);
 
 	// 회원 탈퇴
-	public void withDraw(String user_id);
+	public void deleteAccount(String user_id);
 	
 	// 아이디로 닉네임 가져오기
 	public String getUserName(String user_id);
@@ -93,6 +93,10 @@ public interface MemberService {
 	MemberVO getUserProfile(String user_id);
 
 	Authentication authenticateSocialUser(String user_id, String user_name);
+
+	public void kakaoDeleteAccount(String kakaoAccessToken);
+	
+	public void naverDeleteAccount(String naverAccessToken);
 	
 	
 }

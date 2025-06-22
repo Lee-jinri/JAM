@@ -99,23 +99,6 @@ public class MemberRestController {
 	}
 	
 	
-	private void deleteCookies(HttpServletResponse response) {
-		// Authorization 쿠키 삭제
-	    Cookie cookie = new Cookie("Authorization", null);
-	    cookie.setHttpOnly(true);
-	    cookie.setSecure(true);
-	    cookie.setPath("/");
-	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
-	    
-	    response.addCookie(cookie);
-	    
-	    // refreshToken 쿠키 삭제
-	    Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
-	    refreshTokenCookie.setMaxAge(0);
-	    refreshTokenCookie.setPath("/");
-	    
-	    response.addCookie(refreshTokenCookie);
-	}
 	
 	/**
 	 * JWT 토큰 검증 후 JWT 토큰에 저장된 사용자의 아이디와 닉네임, 권한 정보를 반환합니다.
@@ -591,23 +574,102 @@ public class MemberRestController {
 	 * 		- 200 OK: 회원 탈퇴 완료
 	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
 	 */
-	@DeleteMapping("/withDraw")
-    public ResponseEntity<Void> withDraw(HttpServletRequest request, HttpServletResponse response) {
+	@DeleteMapping("/me")
+    public ResponseEntity<Void> deleteAccount(HttpServletRequest request, HttpServletResponse response) {
         try {
+        	// 1. 인증 플래그 확인
+        	Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
+        	if(verifyStatus == null || !verifyStatus) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         	
-        	request.getSession().invalidate();
+        	// 2. loginType 확인 (local, kakao, naver)
+        	Cookie[] cookies = request.getCookies();
         	
-        	deleteCookies(response);
-    	    
-    		String userId = (String) request.getAttribute("userId");
+        	String loginType = jwtService.extractLoginType(request, cookies);
         	
-        	// 회원 정보 삭제
-            memberService.withDraw(userId);
+        	if (loginType == null) log.error("loginType 확인 실패 : (무시하고 회원 탈퇴 진행):");
+        	
+        	// 3. 소셜 연결 끊기
+            try {
+                switch (loginType) {
+                    case "kakao":
+                    	String kakaoAccessToken = getCookieValue(cookies, "kakaoAccessToken");
+                    	
+                		if (kakaoAccessToken != null) {
+                	        memberService.kakaoDeleteAccount(kakaoAccessToken);
+                	    }
+                		
+                    	deleteCookie(cookies, response, "kakaoAccessToken");
+                		break;
+                    case "naver":
+                    	String naverAccessToken = getCookieValue(cookies, "naverAccessToken");
 
+                    	if(naverAccessToken != null)
+                			memberService.naverDeleteAccount(naverAccessToken);
+                			
+                		deleteCookie(cookies, response, "naverAccessToken");
+                		break;
+                }
+            } catch (Exception e) {
+                log.warn("소셜 연결 끊기 실패 (무시하고 회원 탈퇴 진행): " + e.getMessage());
+            }
+            
+            // 4. 로컬 회원 탈퇴 
+        	String userId = jwtService.extractUserId(request, cookies);
+        	
+        	if(userId == null) userId = (String) request.getSession().getAttribute("userId");
+            
+            // 세션, 쿠키 삭제
+        	request.getSession().invalidate();
+        	deleteJwtCookies(cookies, response);
+        	
+            if (userId == null) {
+            	log.error("회원 탈퇴 오류: 사용자 아이디 없음.");
+    	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    	    }
+            
+            memberService.deleteAccount(userId);
+        	
             return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
 	
+	private String getCookieValue(Cookie[] cookies, String name) {
+	    if (cookies == null) return null;
+	    for (Cookie cookie : cookies) {
+	        if (name.equals(cookie.getName())) {
+	            return cookie.getValue();
+	        }
+	    }
+	    return null;
+	}
+
+	private void deleteJwtCookies(Cookie[] cookies, HttpServletResponse response) {
+
+		// Authorization 쿠키 삭제
+	    Cookie cookie = new Cookie("Authorization", null);
+	    cookie.setHttpOnly(true);
+	    cookie.setPath("/");
+	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
+	    
+	    response.addCookie(cookie);
+	    
+	    // refreshToken 쿠키 삭제
+	    Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
+	    refreshTokenCookie.setHttpOnly(true); 
+	    refreshTokenCookie.setMaxAge(0);
+	    refreshTokenCookie.setPath("/");
+	    
+	    response.addCookie(refreshTokenCookie);
+	}
+	
+	private void deleteCookie(Cookie[] cookies, HttpServletResponse response, String cookieName) {
+		Cookie cookie = new Cookie(cookieName, null);
+		cookie.setHttpOnly(true);	    
+		cookie.setMaxAge(0);
+		cookie.setPath("/");
+	    
+	    response.addCookie(cookie);
+	}
 }

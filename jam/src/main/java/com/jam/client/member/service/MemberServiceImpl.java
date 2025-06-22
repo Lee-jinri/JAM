@@ -10,8 +10,12 @@ import javax.mail.internet.MimeMessage;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -22,6 +26,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
@@ -308,12 +315,7 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.updateAddress(m_vo);
 	}
 
-	// 회원 탈퇴
-	@Override
-	public void withDraw(String user_id) {
-		memberDao.withDraw(user_id);
-		
-	}
+	
 
 	// 회원 닉네임 가져오기
 	@Override
@@ -386,5 +388,66 @@ public class MemberServiceImpl implements MemberService {
 	    }
 	}
 
+	// 회원 탈퇴
+	@Override
+	public void deleteAccount(String user_id) {
+		memberDao.deleteAccount(user_id);
+	}
 	
+	// 카카오 탈퇴
+	@Override
+	public void kakaoDeleteAccount(String kakaoAccessToken) {
+		try {
+	        String unlinkUrl = "https://kapi.kakao.com/v1/user/unlink";
+
+	        HttpHeaders headers = new HttpHeaders();
+	        headers.set("Authorization", "Bearer " + kakaoAccessToken);
+
+	        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+
+	        RestTemplate restTemplate = new RestTemplate();
+	        ResponseEntity<String> res = restTemplate.postForEntity(unlinkUrl, httpEntity, String.class);
+
+	        if (!res.getStatusCode().is2xxSuccessful()) {
+	            log.warn("카카오 탈퇴 실패 - 응답 코드: " + res.getStatusCodeValue());
+	        }
+	    } catch (Exception e) {
+	        log.error("카카오 탈퇴 실패: " + e.getMessage());
+	    }
+	}
+	
+	@Value("${oauth.naver.clientId}")
+	private String naver_clientId;
+
+	@Value("${oauth.naver.clientSecret}")
+	private String naver_client_secret;
+	
+	// 네이버 탈퇴
+	@Override
+	public void naverDeleteAccount(String naverAccessToken) {
+		try {
+	    	String unlinkUrl = "https://nid.naver.com/oauth2.0/token";
+
+	    	MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+	    	params.add("grant_type", "delete");
+	    	params.add("client_id", naver_clientId); 
+	    	params.add("client_secret", naver_client_secret);
+	    	params.add("access_token", naverAccessToken); 
+
+	    	HttpHeaders headers = new HttpHeaders();
+	    	headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+	    	HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(params, headers);
+
+	    	// 요청 전송
+	    	RestTemplate restTemplate = new RestTemplate();
+	    	ResponseEntity<String> res = restTemplate.postForEntity(unlinkUrl, httpEntity, String.class);
+
+	        if (!res.getStatusCode().is2xxSuccessful()) {
+	            log.warn("네이버 연결 끊기 실패 - 응답 코드: " + res.getStatusCodeValue());
+	        }
+	    } catch (Exception e) {
+	        log.error("네이버 연결 끊기 실패: " + e.getMessage());
+	    }
+	}
 }

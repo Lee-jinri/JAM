@@ -23,7 +23,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -159,8 +158,10 @@ public class OAuthController {
 		// 5. JWT 쿠키, 세션 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
 		
-		request.getSession().setAttribute("userId", userInfo.get("user_id"));
-		request.getSession().setAttribute("userName", userInfo.get("user_name"));
+		String userId = (String)userInfo.get("user_id");
+		
+		request.getSession().setAttribute("userId", userId);
+		request.getSession().setAttribute("userName", memberService.getUserName(userId));
 	    
 		// 6. 로그인 이전 페이지로 리다이렉트
 		String prevPage = (String) request.getSession().getAttribute("prevPage");
@@ -252,78 +253,40 @@ public class OAuthController {
 		}
 	}
 	
-	
+	/**
+	 * 카카오 소셜 로그인 사용자의 로그아웃을 처리합니다.
+	 * 
+	 * 1. 사용자 인증 정보 확인 (userId)
+	 * 2. 서비스 refreshToken 삭제 및 세션 무효화
+	 * 3. kakaoAccessToken 쿠키에서 추출
+	 * 4. 카카오 로그아웃 요청 (kakaoAccessToken이 있을 경우에만)
+	 * 5. kakaoAccessToken 쿠키 삭제
+	 * 
+	 * @param request  HTTP 요청 객체
+	 * @param response HTTP 응답 객체
+	 * @return 200 OK - 로그아웃 성공<br>
+	 *         401 Unauthorized - userId가 없을 경우
+	 *         500 Internal Server Error - 카카오 로그아웃 실패 시
+	 */
 	@PostMapping("/kakao/logout")
 	public ResponseEntity<Void> kakaoLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
 		
-	    // 1. 카카오 로그아웃 
-		Cookie[] cookies = request.getCookies();
-		String kakaoAccessToken = null;
-
-		if (cookies != null) {
-		    for (Cookie cookie : cookies) {
-		        if ("kakaoAccessToken".equals(cookie.getName())) {
-		            kakaoAccessToken = cookie.getValue();
-		            break;
-		        }
-		    }
-		}
-
-		if (kakaoAccessToken == null) {
+		// 1. 서비스 로그아웃 
+        String userId = (String) request.getAttribute("userId");
+    	
+		if (userId == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    }
-
-	    try {
-	        String logoutUrl = "https://kapi.kakao.com/v1/user/logout";
-
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.set("Authorization", "Bearer " + kakaoAccessToken);
-
-	        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
-
-	        RestTemplate restTemplate = new RestTemplate();
-	        ResponseEntity<String> res = restTemplate.postForEntity(logoutUrl, httpEntity, String.class);
-
-	        if (!res.getStatusCode().is2xxSuccessful()) {
-	            log.warn("카카오 로그아웃 실패 - 응답 코드: " + res.getStatusCodeValue());
-	        }
-	        
-	        // 2. 서비스 로그아웃 
-	        String userId = (String) request.getAttribute("userId");
-	    	
-			if (userId == null) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			}
-			
-			memberService.deleteRefreshToken(userId);
-			deleteCookies(response, "kakaoAccessToken");
-			
-			// 모든 세션 만료
-			request.getSession().invalidate();
-
-	        return ResponseEntity.ok().build();
-	        
-	    } catch (Exception e) {
-	        log.error("카카오 로그아웃 실패: " + e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	    }
-	}
-	
-	// FIXME: 클라이언트 측 만들기
-	/***
-	 * 카카오 연결 끊기 후 서비스 회원 탈퇴
-	 * @param request
-	 * @param response
-	 * @return
-	 * @throws java.io.IOException
-	 */
-	@DeleteMapping("/kakao/account")
-	public ResponseEntity<String> deleteKakaoAccount(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
-	    
-		// 1. 쿠키에서 카카오 accessToken 확인
+		}
+		
+		memberService.deleteRefreshToken(userId);
+		
+		// 모든 세션 만료
+		request.getSession().invalidate();
+		
+		// 2. kakaoAccessToken 추출
 		Cookie[] cookies = request.getCookies();
 		String kakaoAccessToken = null;
-
+		
 		if (cookies != null) {
 		    for (Cookie cookie : cookies) {
 		        if ("kakaoAccessToken".equals(cookie.getName())) {
@@ -333,50 +296,34 @@ public class OAuthController {
 		    }
 		}
 		
-	    if (kakaoAccessToken == null) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("kakaoAccessToken 없음");
-	    }
+		// 3. 카카오 로그아웃
+		if(kakaoAccessToken != null) {
+			try {
+		        String logoutUrl = "https://kapi.kakao.com/v1/user/logout";
 
-	    // 2. 카카오 연결 끊기
-	    try {
-	        String unlinkUrl = "https://kapi.kakao.com/v1/user/unlink";
+		        HttpHeaders headers = new HttpHeaders();
+		        headers.set("Authorization", "Bearer " + kakaoAccessToken);
 
-	        HttpHeaders headers = new HttpHeaders();
-	        headers.set("Authorization", "Bearer " + kakaoAccessToken);
+		        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
 
-	        HttpEntity<Void> httpEntity = new HttpEntity<>(headers);
+		        RestTemplate restTemplate = new RestTemplate();
+		        ResponseEntity<String> res = restTemplate.postForEntity(logoutUrl, httpEntity, String.class);
 
-	        RestTemplate restTemplate = new RestTemplate();
-	        ResponseEntity<String> res = restTemplate.postForEntity(unlinkUrl, httpEntity, String.class);
-
-	        if (!res.getStatusCode().is2xxSuccessful()) {
-	            log.warn("카카오 탈퇴 실패 - 응답 코드: " + res.getStatusCodeValue());
-	            return ResponseEntity.status(res.getStatusCode()).body("카카오 탈퇴 실패");
-	        }
-	    } catch (Exception e) {
-	        log.error("카카오 탈퇴 실패: " + e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("카카오 탈퇴 실패");
-	    }
-	    
-	    // 3. 서비스 로그아웃 
-	    String userId = (String) request.getAttribute("userId");
-	    if (userId == null) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("userId 없음");
-	    }
-	    
-	    // jwt 토큰, 카카오 accessToken 쿠키 삭제
-	    deleteCookies(response, "kakaoAccessToken");
-	    
-	    // 세션 삭제
-	    request.getSession().invalidate();
-
-	    // 4. 서비스 회원 탈퇴
-	    memberService.withDraw(userId);
-	    
-	    return ResponseEntity.ok().body("탈퇴 성공");
+		        if (!res.getStatusCode().is2xxSuccessful()) {
+		            log.warn("카카오 로그아웃 실패 - 응답 코드: " + res.getStatusCodeValue());
+		        }
+		        
+		        
+		    } catch (Exception e) {
+		        log.error("카카오 로그아웃 실패: " + e.getMessage());
+		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		    }
+		}
+        deleteCookies(response, "kakaoAccessToken");
+        
+		return ResponseEntity.ok().build();
 	}
-
-
+	
 	/********
 	 * 네이버 OAuth 로그인 요청을 시작하는 메서드.
 	 * - 네이버 인증 페이지로 리다이렉트시켜 사용자가 로그인하게 함
@@ -471,8 +418,10 @@ public class OAuthController {
 		// 5. JWT 쿠키, 세션 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
 		
-		request.getSession().setAttribute("userId", userInfo.get("user_id"));
-		request.getSession().setAttribute("userName", userInfo.get("user_name"));
+		String userId = (String)userInfo.get("user_id");
+		
+		request.getSession().setAttribute("userId", userId);
+		request.getSession().setAttribute("userName", memberService.getUserName(userId));
 	    
 		// 6. 로그인 이전 페이지로 리다이렉트
 		//FIXME: 로그인 페이지나 회원가입 페이지면 메인 페이지로 이동하기, 네이버도
@@ -567,12 +516,21 @@ public class OAuthController {
 	}
 	
 
-	/***
+	/**
+	 * 네이버 소셜 로그인 사용자의 로그아웃을 처리합니다.
 	 * 
-	 * @param request
-	 * @param response
-	 * @return
-	 * @throws java.io.IOException
+	 * 1. 사용자 인증 정보 확인 (userId)
+	 * 2. 서비스 refreshToken 삭제
+	 * 3. naverAccessToken 쿠키 삭제
+	 * 4. 세션 무효화
+	 * 
+	 * 네이버는 별도의 서버 로그아웃 API를 제공하지 않으므로,
+	 * 클라이언트 측 토큰 삭제와 세션 종료만 수행합니다.
+	 *
+	 * @param request  HTTP 요청 객체
+	 * @param response HTTP 응답 객체
+	 * @return 200 OK - 로그아웃 성공
+	 *         500 INTERNAL_SERVER_ERROR - userId 없거나 처리 중 오류 발생
 	 */
 	@PostMapping("/naver/logout")
 	public ResponseEntity<Void> naverLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
@@ -594,116 +552,36 @@ public class OAuthController {
 	        
 	    } catch (Exception e) {
 	        log.error("네이버 로그아웃 실패: " + e.getMessage());
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	    }
 	}
 	
-	// TODO: 클라이언트 측 만들기
-	/***
-	 * 네이버 연결 끊기 후 서비스 회원 탈퇴
-	 * @param request
-	 * @param response
-	 * @return
-	 * @throws java.io.IOException
-	 */
-	@DeleteMapping("/naver/account")
-	public ResponseEntity<String> deleteNaverAccount(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException {
-	    
-		// 1. 쿠키에서 네이버 accessToken 확인
-		Cookie[] cookies = request.getCookies();
-		String naverAccessToken = null;
-
-		if (cookies != null) {
-		    for (Cookie cookie : cookies) {
-		        if ("naverAccessToken".equals(cookie.getName())) {
-		        	naverAccessToken = cookie.getValue();
-		            break;
-		        }
-		    }
-		}
-		
-	    if (naverAccessToken == null) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("naverAccessToken 없음");
-	    }
-
-	    // 2. 네이버 연결 끊기
-	    try {
-	    	String unlinkUrl = "https://nid.naver.com/oauth2.0/token";
-
-	    	MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-	    	params.add("grant_type", "delete");
-	    	params.add("client_id", naver_clientId); 
-	    	params.add("client_secret", naver_client_secret);
-	    	params.add("access_token", naverAccessToken); 
-
-	    	HttpHeaders headers = new HttpHeaders();
-	    	headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-	    	HttpEntity<MultiValueMap<String, String>> httpEntity = new HttpEntity<>(params, headers);
-
-	    	// 요청 전송
-	    	RestTemplate restTemplate = new RestTemplate();
-	    	ResponseEntity<String> res = restTemplate.postForEntity(unlinkUrl, httpEntity, String.class);
-
-	        if (!res.getStatusCode().is2xxSuccessful()) {
-	            log.warn("네이버 연결 끊기 실패 - 응답 코드: " + res.getStatusCodeValue());
-	            return ResponseEntity.status(res.getStatusCode()).body("네이버 연결 끊기 실패");
-	        }
-	    } catch (Exception e) {
-	        log.error("네이버 연결 끊기 실패: " + e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("카카오 탈퇴 실패");
-	    }
-
-	    // 3. 서비스 로그아웃 
-	    String userId = (String) request.getAttribute("userId");
-	    
-	    if (userId == null) {
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("userId 없음");
-	    }
-	    
-	 // jwt 토큰, 네이버 accessToken 쿠키 삭제
-	    deleteCookies(response, "naverAccessToken");
-	    
-	    // 세션 삭제
-	    request.getSession().invalidate();
-
-	    // 4. 서비스 회원 탈퇴
-	    memberService.withDraw(userId);
-	    
-	    return ResponseEntity.ok().body("탈퇴 성공");
-	}
-
 	private void setCookies(HttpServletResponse response, String accessToken, String refreshToken) {
 		
 		// 쿠키에 jwt 토큰 저장
-	    Cookie jwtCookie = new Cookie("Authorization", accessToken);
-	    jwtCookie.setHttpOnly(true);  // 자바스크립트에서 접근 불가능
-	    jwtCookie.setPath("/");       // 해당 쿠키의 유효 경로 설정
-	    jwtCookie.setMaxAge(24 * 60 * 60);	  // 쿠키 설정 
+		Cookie accessTokenCookie = new Cookie("Authorization", accessToken);
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(3 * 60 * 60);
+        response.addCookie(accessTokenCookie);
 
-	    Cookie refreshTokenCookie  = new Cookie("RefreshToken", refreshToken);
-	    refreshTokenCookie .setHttpOnly(true);
-	    refreshTokenCookie.setPath("/");
-	    
-	    int maxAge = 24 * 60 * 60;
-	    refreshTokenCookie.setMaxAge(maxAge);
-	    
-	    // 쿠키를 응답에 추가
-	    response.addCookie(jwtCookie);
-	    response.addCookie(refreshTokenCookie);
+        Cookie refreshTokenCookie = new Cookie("RefreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(24 * 60 * 60);
+        response.addCookie(refreshTokenCookie);
 	}
 	
 	private void deleteCookies(HttpServletResponse response, String tokenKeyName) {
 	    String[] cookieNames = { tokenKeyName, "Authorization", "RefreshToken" };
 
-	    log.info("cookieNames :"+cookieNames);
 	    for (String name : cookieNames) {
+	    	log.info(name);
 	        Cookie cookie = new Cookie(name, null);
 	        cookie.setHttpOnly(true);
-	        cookie.setSecure(false);
-	        //cookie.setSecure(true); // 필요 시
-	        cookie.setPath("/");
 	        cookie.setMaxAge(0);
+	        cookie.setPath("/");
+	        
 	        response.addCookie(cookie);
 	    }
 	}

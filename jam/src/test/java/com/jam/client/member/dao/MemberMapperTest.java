@@ -177,10 +177,10 @@ public class MemberMapperTest {
 	
 	/* 회원 탈퇴 
 	@Test
-	public void testWithDraw() throws Exception{
+	public void testDeleteAccount() throws Exception{
 		String user_id = "abcd12345";
 		
-		log.info(memberDao.withDraw(user_id));
+		log.info(memberDao.deleteAccount(user_id));
 	}*/
 
 	/* 회원 닉네임 가져오기 

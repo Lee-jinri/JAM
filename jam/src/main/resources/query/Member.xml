@@ -139,7 +139,7 @@
 	</update>
 	
 	<!-- 회원 탈퇴 -->
-	<delete id="withDraw" parameterType="String">
+	<delete id="deleteAccount" parameterType="String">
 		DELETE FROM member WHERE user_id = #{user_id}		
 	</delete>
 	

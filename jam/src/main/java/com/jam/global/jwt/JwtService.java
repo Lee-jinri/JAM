@@ -179,6 +179,26 @@ public class JwtService {
 		response.addCookie(cookie);
 	}
 	
+	/**
+	 * AccessToken에서 사용자 아이디(userId)를 추출
+	 * 
+	 * - 토큰이 없거나 유효하지 않으면 세션을 만료시키고 null을 반환합니다.
+	 * 
+	 * @param request HttpServletRequest (쿠키에서 AccessToken을 추출)
+	 * @return 로그인 타입 문자열 또는 유효하지 않을 경우 null
+	 */
+	public String extractUserId(HttpServletRequest request, Cookie[] cookies) {
+		String token = extractToken(cookies, "Authorization");
+		
+		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
+            request.getSession().invalidate();
+            log.warn("유효하지 않은 토큰입니다: " + token);
+
+            return null;
+        }
+		
+		return jwtTokenProvider.extractUserId(token);
+	}
 	
 	/**
 	 * AccessToken에서 로그인 타입(loginType)을 추출

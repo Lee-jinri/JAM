@@ -190,10 +190,11 @@ public class JwtTokenProvider {
 	}
 	
 	/**
-     * JWT 토큰에서 사용자 ID 추출
-     * @param token JWT 토큰
-     * @return Subject (사용자 아이디) 반환
-     */
+	 * JWT 토큰에서 사용자 ID(Subject)를 추출합니다.
+	 *
+	 * @param token JWT 액세스 토큰 (Bearer prefix 제외)
+	 * @return 사용자 ID (토큰의 Subject 클레임 값)
+	 */
     public String extractUserId(String token) {
         return Jwts.parserBuilder()
                 .setSigningKey(key) 

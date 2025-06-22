@@ -67,7 +67,7 @@ public interface MemberDAO {
 	int updateAddress(MemberVO m_vo);
 
 	// 회원 탈퇴
-	int withDraw(String user_id);
+	int deleteAccount(String user_id);
 
 	// 소셜 사용자 회원가입 여부 
 	int findSocialUser(String user_id);
