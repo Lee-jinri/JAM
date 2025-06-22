@@ -220,5 +220,25 @@ public class JwtService {
 		return token;
     }
 
+	/**
+	 * JWT 토큰에서 사용자 역할(Role)을 추출합니다.
+	 *
+	 * @param token JWT 문자열
+	 * @return 사용자의 역할 (예: "ROLE_USER", "ROLE_ADMIN")
+	 */
+	public String extractUserRole(HttpServletRequest request, Cookie[] cookies) {
+		
+		String token = extractToken(cookies, "Authorization");
+		
+		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
+            request.getSession().invalidate();
+            log.warn("유효하지 않은 토큰입니다: " + token);
+
+            return null;
+        }
+		
+		return jwtTokenProvider.extractUserRole(token);
+	}
+	
 	
 }

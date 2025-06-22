@@ -241,7 +241,7 @@
 		
 	<!-- 사용자 정보 -->
 	<select id="account" resultType="member" parameterType="String">
-		SELECT user_id, user_name, address, phone, social_login
+		SELECT user_id, user_name, address, phone, social_login, role
 		FROM member
 		WHERE user_id = #{user_id}
 	</select>

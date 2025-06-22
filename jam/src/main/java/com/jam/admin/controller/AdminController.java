@@ -7,6 +7,8 @@ import org.springframework.web.client.RestTemplate;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jam.global.jwt.JwtService;
+
 import org.springframework.web.bind.annotation.*;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -14,15 +16,27 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @Log4j
 @RequestMapping("/admin")
+@RequiredArgsConstructor
 @Controller
 public class AdminController {
-	
+	private final JwtService jwtService;
+
 	@GetMapping("/admin")
-	public String doAdmin() {
+	public String doAdmin(HttpServletRequest request) {
+		Cookie[] cookies = request.getCookies();
+		String role = jwtService.extractUserRole(request, cookies);
+		
+		if (!"ROLE_ADMIN".equals(role)) {
+		    return "redirect:/";
+		}
 		
 		return "/admin/admin";
 	}

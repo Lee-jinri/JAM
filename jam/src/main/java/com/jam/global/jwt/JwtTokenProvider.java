@@ -202,38 +202,34 @@ public class JwtTokenProvider {
                 .getBody()
                 .getSubject(); 
     }
- 
-	/**
-    * JWT 토큰에서 purpose 추출
-    * @param token JWT 토큰
-    * @return purpose (예: "isAuthVerified")
-    */
-   public String extractPurpose(String token) {
-       return (String) Jwts.parserBuilder()
-               .setSigningKey(key)
-               .build()
-               .parseClaimsJws(token) 
-               .getBody()
-               .get("purpose");
-   }
    
-   /**
-    * 토큰에서 loginType 추출
-    * @param token
-    * @return
-    */
+    /**
+     * JWT 토큰에서 로그인 방식(loginType)을 추출합니다.
+     *
+     * @param token JWT 토큰
+     * @return 로그인 타입 (예: "local", "naver", "kakao" )
+     */
    public String extractLoginType(String token) {
 	    return (String) getClaims(token).get("loginType");
 	}
    
-    
-	/**
-	 * Refresh token에서 자동 로그인 여부 추출
-	 * @param refreshToken
-	 * @param key
-	 * @return autoLogin
-	 */
+   /**
+    * Refresh Token에서 자동 로그인 여부(autoLogin)를 추출합니다.
+    *
+    * @param refreshToken Refresh 토큰
+    * @return 자동 로그인 여부 (true/false)
+    */
 	public boolean getAutoLoginFromRefreshToken(String refreshToken) {
 		return (boolean) getClaims(refreshToken).get("autoLogin");
+	}
+
+	/**
+	 * JWT 토큰에서 사용자 역할(Role)을 추출합니다.
+	 *
+	 * @param token JWT 문자열 
+	 * @return 사용자의 역할 (예: "ROLE_USER", "ROLE_ADMIN")
+	 * */
+	public String extractUserRole(String token) {
+		return (String) getClaims(token).get("auth");
 	}
 }
