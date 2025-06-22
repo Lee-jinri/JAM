@@ -140,15 +140,15 @@ $(function(){
 		    }
 		})
 		.then(data => {
-			if (!data) return;
-			if (data.redirect) {
-				window.location.href = data.redirect;
-			}
+		    if (!data) return;
+		    
+		    if (data.redirect) window.location.href = data.redirect;
+		    else window.location.href = "/";
 		})
 		.catch((error) => {
 			let errorDiv = document.getElementById("error_div");
 			errorDiv.innerHTML = '<div class="alert alert-danger">통신 오류가 발생했습니다. 인터넷 연결을 확인해주세요.</div>';
-			console.error("로그인 에러:", err);
+			console.error("로그인 에러:", error);
 		});
 
 

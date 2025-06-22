@@ -135,12 +135,13 @@ header {
 
 </style>
 <script>
+// FIXME : XSS 3원칙 적용할 것
 	$(function() {
-		/* 소셜 로그인 성공 후 파라미터로 jwt토큰을 받습니다. */
-		var search = location.search;
-		var params = new URLSearchParams(search);
 		
-		fetch('/api/member/me')
+		fetch('/api/member/me', {
+		    method: 'GET',
+		    credentials: 'include',
+		})
 		.then(response =>{
 			if (!response.ok) {
 	            throw new Error('사용자 정보 가져오기 실패');

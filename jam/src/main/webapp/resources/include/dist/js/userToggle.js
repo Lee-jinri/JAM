@@ -1,7 +1,10 @@
 function toggleUserMenu() {
 	$(".user_toggle").hide();
 
-	fetch('/api/member/me')
+	fetch('/api/member/me',{
+		method: 'GET',
+		credentials: 'include',
+	})
 	.then(response =>{
 		if (!response.ok) {
             throw new Error('사용자 정보 가져오기 실패');
