@@ -417,6 +417,8 @@
 </style>
 <script>
 	$(function(){
+		checkLoginStatus();
+		
 		$('input[name="job_category"]').on('change', function() {
 	        const selectedValue = $(this).val();
 	      	$('.jam-type-select-wrapper').removeClass('focused'); 
@@ -556,6 +558,19 @@
 			    alert(error.message);
 			});
 		});
+		
+
+		function checkLoginStatus(){
+			fetch("/api/member/auth/check").then((res) => {
+				if (res.status === 401) {
+					if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+						location.href = "/member/login";
+					} else {
+						location.href = "/job/boards";
+					}
+				}
+			})
+		}
 	})
 </script>
 </head>

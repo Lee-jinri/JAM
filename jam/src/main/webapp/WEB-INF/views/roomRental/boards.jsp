@@ -325,18 +325,16 @@ $(function(){
 
 
 	$("#roomWriteBtn").click(function(){
-		fetch('/api/member/checkAuthentication')
-		.then(response =>{
-			if(!response.ok){
-				alert('시스템 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-				locaion.attr('/roomRental/boards');
+		fetch("/api/member/auth/check").then((res) => {
+			if (res.status === 401) {
+				if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+					location.href = "/member/login";
+				} else {
+					location.href = "/roomRental/boards";
+				}
+			} else {
+				location.href = "/roomRental/board/write";
 			}
-			return response.json();
-		})
-		.then((data) => {
-			if(data.authenticated) $(location).attr('href', '/roomRental/board/write');
-			else if(confirm("로그인 후 이용할 수 있는 서비스 입니다. 로그인 하시겠습니까?"))$(location).attr('href', '/member/login');
-			
 		})
 	})
 		

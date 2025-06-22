@@ -157,18 +157,18 @@ public class MemberRestController {
 	 * 인증 여부 확인용 엔드포인트
 	 *
 	 * - 이 엔드포인트는 실제 로직은 없고, 인터셉터를 통해 인증 상태를 확인합니다.
-	 * - 인증된 사용자라면 200 OK를 반환하고, 인증되지 않은 사용자는 인터셉터에서 401 Unauthorized 응답 처리됩니다.
+	 * - 인증된 사용자라면 200 OK를 반환하고, 인증되지 않은 사용자는 401 Unauthorized를 반환합니다.
 	 *
 	 * @return 200 OK (정상적으로 인증된 경우)
 	 */
-	//FIXME: 요청 바꿨음 /checkAuthentication에서 /auth/check로 
 	@GetMapping("/auth/check")
-	public ResponseEntity<Void> checkAuthentication() {
+	public ResponseEntity<Void> checkAuthentication(HttpServletRequest request) {
+	    String userId = (String)request.getAttribute("userId");
 	    
+	    if(userId == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok().build();
 	}
-
-
+	
 	/**
 	 * 사용자가 입력한 아이디의 중복을 확인합니다.
 	 * 

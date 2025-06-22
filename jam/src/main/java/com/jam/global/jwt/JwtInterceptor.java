@@ -27,7 +27,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 		Map<String, String> userMap = jwtService.getUserInfo(request.getCookies(), request, response);
 		
 		if (userMap == null || userMap.isEmpty()) {
-			return false; // 컨트롤러로 요청 전달 안 함
+			return true; 
 		}
 		
 		setRequestAttributes(request, userMap);

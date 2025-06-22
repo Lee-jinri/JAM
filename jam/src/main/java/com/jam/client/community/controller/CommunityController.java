@@ -60,8 +60,6 @@ public class CommunityController {
 		return "community/write";
 	}
 	
-	
-	
 	/********************************
 	 *  커뮤니티 글의 수정 페이지를 반환하는 메서드 입니다.
 	 * @param com_no 수정할 커뮤니티의 글 번호

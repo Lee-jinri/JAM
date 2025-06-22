@@ -83,7 +83,6 @@ public class JobController {
 		JobVO board = jobService.getBoardById(job_no);
 		model.addAttribute("board", board);
 		
-		log.info(board);
 		return "job/update";
 	}
 	
