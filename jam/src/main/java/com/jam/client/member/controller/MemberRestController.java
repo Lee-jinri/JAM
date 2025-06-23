@@ -460,18 +460,28 @@ public class MemberRestController {
 	 * @return HTTP 응답 상태코드
 	 * 		- 200 OK: 비밀번호 확인 완료
 	 *      - 400 BAD REQUEST: 입력된 비밀번호가 null
+	 *      - 401 UNAUTHORIZED: 잘못된 비밀번호
+	 *      - 440 (Custom): JWT 토큰 인증되지 않음
 	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
 	 */
 	@RequestMapping(value = "/verify-password", method = RequestMethod.POST)
-	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpSession session) throws Exception {
+	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpSession session, HttpServletResponse response) throws Exception {
 
 		if(member.getUser_pw() == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");
 		
 		String user_id = (String)request.getAttribute("userId");
 		
 		if(user_id == null || user_id.equals("")) {
-			log.error("VerifyPassword : userId is null.");
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			// 세션, 쿠키 만료
+			Cookie[] cookies = request.getCookies();
+			
+			if (cookies != null) {
+			    deleteJwtCookies(cookies, response);
+			}
+        	request.getSession().invalidate();
+        	
+			log.error("VerifyPassword: userId is null.");
+			return ResponseEntity.status(440).body("Login required or token expired.");
 		}
 		
 		member.setUser_id(user_id);
@@ -484,7 +494,7 @@ public class MemberRestController {
 		if (encoder.matches(user_pw, encodePw)) { 
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.FORBIDDEN);
+			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
 		}
 	}
 	

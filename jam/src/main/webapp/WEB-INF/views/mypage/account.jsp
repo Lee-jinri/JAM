@@ -309,6 +309,7 @@ function handlePasswordVerification(){
 	
 	fetch('/api/member/verify-password',{
 		method: 'POST',
+		credentials: 'include',
 	    headers: {
 	        'Content-Type': 'application/json'
 	    },
@@ -328,11 +329,13 @@ function handlePasswordVerification(){
 			getAccount();
 			
 		}else if(response.status === 401){
-			alert("비밀번호가 틀렸습니다. 다시 입력해 주세요.");
+			alert("잘못된 비밀번호 입니다. 다시 입력해 주세요.");
 	        $("#passwordInput").val("");
 	        $("#passwordInput").focus();
-		}else throw new Error("비밀번호 확인 중 오류가 발생");
-	       
+		} else if (response.status === 440) {
+		    alert("잘못된 접근입니다. 다시 로그인해 주세요.");
+		    $(location).attr('href', '/member/login');
+		}else throw new Error(`비밀번호 확인 실패: HTTP ${response.status}`);
 	})
 	.catch(error =>{
 		alert('일시적인 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.');
