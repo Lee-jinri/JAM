@@ -1,7 +1,22 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ page trimDirectiveWhitespaces="true" %>
-
+<head>
+<style>
+	p{
+		margin: 0;
+	}
+		
+	@media screen and (max-width: 768px) {
+		footer{
+			margin-top: 0;
+		}
+		.footer {
+			padding: 10px 20px;
+		}
+	}
+</style>
+</head>
 <body>
 	<footer>
 		<div class="footer text-center">

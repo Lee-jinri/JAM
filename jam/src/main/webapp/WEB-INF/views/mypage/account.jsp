@@ -4,10 +4,36 @@
 <!-- 카카오 주소 검색 API -->
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
+
 <title>JAM-계정정보</title>
 <style>
+@media (max-width: 300px) {
+	.info-box{
+		max-width: 500px;
+		margin: 10px 0;
+	}
+	
+	.row_item {
+		padding: 12px 20px;
+		flex-direction: column;
+	}
+
+	.info-row {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.modal-content {
+		width: 90%;  
+	}
+	
+}
+
 .common-box{
-	width: 694px;
+	width: 100%;
+    min-width: 360px;
+    max-width: 694px;
 	height: 440px;
 	padding: 0 17px;
     border-radius: 12px;
@@ -46,7 +72,7 @@ p{
 }
 
 .row_item{
-	padding: 14px 65px 12px 30px;
+	padding: 14px 25px 12px 30px;
     border-bottom: 1px solid #eee;
 }
 
@@ -151,8 +177,10 @@ input:focus {
 
 .modalTitle{
 	margin-bottom: 30px;
+	font-size: 21px;
 }
 .modalHint{
+    font-size: 17px;
 	margin-bottom: 10px;
 }
 .modalConfirm{
@@ -165,17 +193,20 @@ input:focus {
 } 
 
 #password-box {
-    display: none; /* 기본적으로 숨김 */
+    display: none;
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%); 
     background: white;
-    width: 350px;
+    max-width: 330px;
+    width: 90%;
     padding: 25px;
     border-radius: 12px;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
     text-align: center;
+    box-sizing: border-box;
+    z-index: 999;
 }
 
 #password-box .section {

@@ -1,34 +1,65 @@
 @charset "UTF-8";
 
-@font-face {
-    font-family: 'StarDust';
-    src: url('/resources/include/dist/font/PF스타더스트 Bold.ttf') format('truetype');
-    font-weight: normal;
-    font-style: normal;
+@import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+body.modal-open {
+  overflow: hidden;
 }
 
-body {
-    font-family: 'CustomFont', sans-serif;
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  .btn-edit {
+    font-size: 12px;
+  }
+  
+  footer {
+    font-size: 12px;
+  }
+  
+  .nav-container{
+  	max-width: 183px;
+  }
+  
+  .header-container {
+  	padding: 0 !important;
+  }
+  
+  #header_name{
+  	font-size: 12px;
+  }
+  
+  #logout {
+  	margin-right: 0;
+  	font-size: 10px;
+  }
+  .nav-icon{
+  	margin: 0;
+  }
 }
 
-@font-face {
-	font-family: 'KIMM_Bold';
-	src:
-		url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2212@1.0/KIMM_Bold.woff2')
-		format('woff2');
-	font-style: normal;
+#container {
+  width: 100%;
+  min-width: 360px;
 }
 
-@font-face {
-    font-family: 'galmuri';
-    src: url("/resources/include/dist/font/Galmuri14.woff2") format('woff2');
-    font-weight: normal;
-    font-style: normal;
+html, body {
+	width: 100%;
+	min-width: 360px;
+	margin: 0;
+	padding: 0;
 }
 
 header {
-	font-family: 'galmuri', sans-serif;
+	font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
 	font-weight: 300;
+	font-size: 18px;
 	/*text-shadow: 
 		  -2px -2px 0 #A9BCF5,  
 		   2px -2px 0 #A9BCF5,  
@@ -38,8 +69,8 @@ header {
 
 body {
 	color: #000000;
-	font-family: 'StarDust',sans-serif;
-	font-size: 16px;
+	font-family: 'Pretendard Variable', Pretendard, -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+	font-size: 18px;
 }
 
 /* 고정 버튼 스타일 */
@@ -194,8 +225,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 .common-box {
 	padding: 40px;
 	width: 560px;
-	height: 700px;
-	margin: auto;
+	margin: 0 auto;
 }
 
 #join-box, #info-box {
@@ -252,10 +282,9 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 }
 
 .nav-icon {
-	width: 100px;
-	height: 100px;
+	width: 120px;
+	max-height: 42px;
 	object-fit: contain;
-	margin-right: 6rem;
 }
 
 .nav-items {
@@ -611,11 +640,11 @@ textarea.reply_content {
 .logoutA {
 	/*color: #fff;*/
 	font-weight: bold;
-	font-size: 1rem;
 	width: 6rem;
 	border: solid 2px;
 	border-radius: 13px;
 	padding: 6px;
+	font-size: 12px;
 }
 
 .logoutA:hover {
@@ -689,6 +718,7 @@ textarea.reply_content {
 	color: #6E6E6E;
 	font-weight: 700;
 	font-size: 15px;
+	width: 100%;
 }
 
 #comTemplate, #fleaTemplate, #jobTemplate, #roomTemplate {
@@ -766,7 +796,7 @@ textarea.reply_content {
 
 .date, .mypage_font {
 	color: #A4A4A4;
-	font-size: 13px;
+	font-size: 14px;
 }
 
 .name {

@@ -16,16 +16,17 @@
 header {
     width: 100%;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
-    padding: 10px 20px;
 }
 
-
+.header{
+	padding: 10px 20px;
+}
 .header-container {
     display: flex;
     align-items: center;
-    justify-content: justify-between; 
+    justify-content: space-between; 
     max-width: 114rem;
-    margin: 0 auto;
+    margin: 0 135px 0 237px;
     padding: 0 20px;
     height: 42px;
 }
@@ -45,12 +46,19 @@ header {
 }
 
 .account-container {
-    margin-left: auto; /* 오른쪽 끝으로 정렬 */
+    margin-left: auto; 
     display: flex;
     align-items: center;
     gap: 10px;
 }
 
+#header_name{
+	font-size: 15px;
+}
+
+#mobile-menu-btn{
+	display: none;
+}
 /* 로고 + 햄버거 아이콘 */
 .header-left {
     display: flex;
@@ -83,8 +91,6 @@ header {
 
 .header-board-a {
     position: relative;
-    font-size: 15px;
-    font-weight: 600;
     transition: color 0.3s ease-in-out;
 }
 
@@ -108,29 +114,73 @@ header {
     left: 0;
 }
 
-
-
-.menu-toggle {
-    display: none; 
-    font-size: 24px;
-    background: none;
-    border: none;
-    cursor: pointer;
+#mobileMenu{
+	display: none;
 }
-
+#mobile-menu-btn{
+	border: none;
+    background-color: #fff;
+}
 /* 모바일 반응형 */
 @media screen and (max-width: 900px) {
-    .header-container {
-        justify-content: space-between; /* 로고, 내비, 계정 정렬 */
-    }
+	#headerNav{
+		display:none;
+	}
+	
+	.auth-buttons{
+		min-width: 0;
+	}
+	
+	.logoutA{
+		font-size: 10px ;
+	}
+	
+	.logoutDiv {
+		margin: 0;
+	}
+	
+	#mobile-menu-btn{
+		display: block;
+	}
+	#mobileMenu{
+		display: none;
+	    flex-direction: column;
+	    background-color: white;
+	    position: absolute;
+	    top: 62px; 
+	    width: 100%;
+	    z-index: 1000;
+	    border-top: 1px solid #ccc;
 
-    .nav-menu {
-        display: none; /* 햄버거 메뉴를 위해 숨김 */
-    }
-
-    .menu-toggle {
-        display: block;
-    }
+	    animation: fadeDown 0.2s ease-in-out;
+	}
+  
+	#mobileMenu a {
+		text-align: center;
+		padding: 14px 20px;
+		margin: 4px 12px;
+		font-size: 14px;
+		font-weight: 500;
+		color: #333;
+		border-radius: 8px;
+		border-bottom: 1px solid #eee;
+		transition: background-color 0.2s ease, color 0.2s ease;
+	}
+	  
+	#mobileMenu a:hover {
+		background-color: #f9f9f9;
+	}
+	
+	@keyframes fadeSlide {
+		from {
+			opacity: 0;
+			transform: translate(-50%, -10px);
+		}
+		to {
+			opacity: 1;
+			transform: translate(-50%, 0);
+		}
+	}
 }
 
 </style>
@@ -203,6 +253,15 @@ header {
 			});
 		})
 		
+		$(document).mouseup(function(e) {
+			const $mypage = $(".mypage_toggle");
+
+			// 클릭한 대상이 .mypage_toggle 바깥일 때
+			if (!$mypage.is(e.target) && $mypage.has(e.target).length === 0) {
+				$mypage.hide();
+			}
+		});
+  
 		$("#account").click(function() {
 			$(location).attr('href', '/mypage/account');
 		});
@@ -244,6 +303,16 @@ header {
 			$(location).attr('href','/admin/admin');
 		})
 		
+		$("#mobile-menu-btn").click(function(){
+			const $menu = $("#mobileMenu");
+			
+			if ($menu.is(":visible")) {
+				$menu.hide(); 
+			} else {
+				$menu.css("display", "flex"); 
+			}
+		})	
+		
 	})
 
 function logout(loginType){
@@ -270,72 +339,78 @@ function logout(loginType){
 </script>
 </head>
 <header>
-	<div class="header-container ">
-		<div class="nav-container">
-			<div class="header-left">
-				<button class="menu-toggle" id="menuToggle">
-					<i class="fa-solid fa-bars"></i>
-				</button>
-				<a href="/" class="flex"> <img class="nav-icon"
-					src="/resources/include/images/JAM_icon3.png" alt="JAM">
-				</a>
-			</div>
-	
-			<!-- 가운데: 네비게이션 메뉴 -->
-			<nav id="headerNav" class="nav-menu items-center">
-				<a href="/community/boards"
-					class="header-board-a font-color-blue font-size-5 font-weight-bold padding-10">커뮤니티</a>
-				<a href="/roomRental/boards"
-					class="header-board-a font-color-blue font-size-5 font-weight-bold padding-10">연습실</a>
-				<a href="/fleaMarket/boards"
-					class="header-board-a font-color-blue font-size-5 font-weight-bold padding-10">중고악기</a>
-				<a href="/job/boards"
-					class="header-board-a font-color-blue font-size-5 font-weight-bold padding-10">Jobs</a>
-			</nav>
-		</div>
+	<div class="header">
+		<div class="header-container">
+			<div class="nav-container">    
+				<div class="header-left">
+					<button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+					<a href="/" class="flex"> <img class="nav-icon"
+						src="/resources/include/images/JAM_icon3.png" alt="JAM">
+					</a>
+				</div>
 		
-		<!-- 오른쪽: 로그인/회원가입 -->
-		<div id="loggedOutDiv" class="auth-buttons">
-			<div class="inline-block mr-1 logoutDiv text-alignC">
-				<a href="/member/login"
-					class="font-color-gray justify-right logoutA">로그인</a>
-			</div>
-			<div class="inline-block logoutDiv text-alignC">
-				<a href="/member/join" class="font-color-gray justify-right logoutA">회원가입</a>
+				<!-- 가운데: 네비게이션 메뉴 -->
+				<nav id="headerNav" class="nav-menu items-center">
+					<a href="/community/boards"
+						class="header-board-a font-color-blue font-weight-bold padding-10">커뮤니티</a>
+					<a href="/roomRental/boards"
+						class="header-board-a font-color-blue font-weight-bold padding-10">연습실</a>
+					<a href="/fleaMarket/boards"
+						class="header-board-a font-color-blue font-weight-bold padding-10">중고악기</a>
+					<a href="/job/boards"
+						class="header-board-a font-color-blue font-weight-bold padding-10">Jobs</a>
+				</nav>
 			</div>
 			
-		</div>
-
-		<!-- 로그인 했을 때 -->
-		<div id="loggedInDiv" class="flex items-center" style="display: none;">
-			<div id="adminPage"></div>
-			<span
-				class="font-size-4 font-weight-bold cursor-pointer mr-1 font-color-gray"
-				id="header_name"></span>
-
-			<div class="mypage_toggle absolute border border-radius-7px">
-				<ul>
-					<li id="account" class="mypage_toggle_btn cursor-pointer"><span
-						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">계정
-							정보</span></li>
-					<li id="written" class="mypage_toggle_btn cursor-pointer"><span
-						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한 글</span>
-							</li>
-					<li id="myFavorite" class="mypage_toggle_btn cursor-pointer">
-						<span
-						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">북마크</span>
-					</li>
-					<li id="msg" class="mypage_toggle_btn cursor-pointer"><span
-						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">쪽지</span>
-					</li>
-					<li id="chat" class="mypage_toggle_btn cursor-pointer"><span
-						class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">채팅</span>
-					</li>
-				</ul>
+			<!-- 오른쪽: 로그인/회원가입 -->
+			<div id="loggedOutDiv" class="auth-buttons">
+				<div class="inline-block mr-1 logoutDiv text-alignC">
+					<a href="/member/login"
+						class="font-color-gray justify-right logoutA">로그인</a>
+				</div>
+				<div class="inline-block logoutDiv text-alignC">
+					<a href="/member/join" class="font-color-gray justify-right logoutA">회원가입</a>
+				</div>
+				
 			</div>
-
-			<button type="button" id="logout"
-				class="logoutA mr-2 bColor_fff font-color-blue">로그아웃</button>
+	
+			<!-- 로그인 했을 때 -->
+			<div id="loggedInDiv" class="flex items-center" style="display: none;">
+				<div id="adminPage"></div>
+				<span
+					class=" font-weight-bold cursor-pointer mr-1 font-color-gray"
+					id="header_name"></span>
+	
+				<div class="mypage_toggle absolute border border-radius-7px">
+					<ul>
+						<li id="account" class="mypage_toggle_btn cursor-pointer"><span
+							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">계정
+								정보</span></li>
+						<li id="written" class="mypage_toggle_btn cursor-pointer"><span
+							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한 글</span>
+								</li>
+						<li id="myFavorite" class="mypage_toggle_btn cursor-pointer">
+							<span
+							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">북마크</span>
+						</li>
+						<li id="msg" class="mypage_toggle_btn cursor-pointer"><span
+							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">쪽지</span>
+						</li>
+						<li id="chat" class="mypage_toggle_btn cursor-pointer"><span
+							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">채팅</span>
+						</li>
+					</ul>
+				</div>
+	
+				<button type="button" id="logout"
+					class="logoutA mr-2 bColor_fff font-color-blue">로그아웃</button>
+			</div>
 		</div>
 	</div>
+	<div id="mobileMenu" class="mobile-nav" >
+			<a href="/community/boards">커뮤니티</a>
+			<a href="/roomRental/boards">연습실</a>
+			<a href="/fleaMarket/boards">중고악기</a>
+			<a href="/job/boards">Jobs</a>
+		</div>
 </header>

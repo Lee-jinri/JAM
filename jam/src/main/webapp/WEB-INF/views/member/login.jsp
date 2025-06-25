@@ -26,6 +26,7 @@
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  height: 700px;
 }
 
 
