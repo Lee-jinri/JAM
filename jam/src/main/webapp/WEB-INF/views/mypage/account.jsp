@@ -4,37 +4,166 @@
 <!-- 카카오 주소 검색 API -->
 <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 
-<title>JAM-회원정보수정</title>
+<title>JAM-계정정보</title>
 <style>
+.common-box{
+	width: 694px;
+	height: 440px;
+	padding: 0 17px;
+    border-radius: 12px;
+    box-shadow: 1px 1px 10px 0 rgba(72, 75, 108, .08);
+    border: solid 1px #e3e9ed;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
 p{
 	margin: 0;
 }
 
-.info_check {
-	width: 23px;
-	height: 20px;
-	margin-left: 5px;
-	display: none;
+.account_title_div{
+	margin: 0 auto;
+    width: 694px;
+    margin-bottom: 22px;
 }
 
-.info_box {
-	padding: 10px 25px 10px 0;
-	border-bottom: 1px solid #ebebeb;
-	font-size: 16px;
-	display: block;
-	width: 480px;
+.account-title{
+	display: inline;
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 24px;
+    letter-spacing: -.2px;
+    color: #2e2e2e;
 }
 
-.link_set {
-	color: #252525;
+.item_text{
+	padding-right: 4px;
+    letter-spacing: -.3px;
+    color: #303038;
+    word-break: break-all;
+    line-height: 33px;
+        font-weight: bold;
 }
 
-.input-border-none {
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	appearance: none;
+.row_item{
+	padding: 14px 65px 12px 30px;
+    border-bottom: 1px solid #eee;
+}
+
+.drop_link{
+	padding: 16px 0;
+	margin: 0 auto;
+    width: 694px;
+}
+.text-btn {
+	background: none;
 	border: none;
+	padding: 4px 8px;
+	font-size: 16px;
+	font-weight: 500;
+	color: #333;
+	cursor: pointer;
+	text-decoration: none;
 }
+
+.text-btn:hover {
+	text-decoration: underline;
+}
+
+.info-row {
+	display: flex;
+	align-items: center;
+}
+
+.info-row span{
+	flex: 1;
+}
+
+.btn-edit {
+	background-color: #f5f5f7; 
+	border: none;
+	border-radius: 8px; 
+	padding: 6px 12px;
+	font-size: 14px;
+	color: #333;
+	cursor: pointer;
+	font-weight: 500;
+}
+
+.modal-overlay {
+	position: fixed;
+	top: 0; left: 0; right: 0; bottom: 0;
+	background-color: rgb(0 0 0 / 71%);
+	display: none;
+	justify-content: center;
+	align-items: center;
+	z-index: 999;
+}
+
+.modal-overlay.active {
+	display: flex;
+}
+
+
+.modal-content {
+	background: #fff;
+	padding: 20px 30px;
+	border-radius: 10px;
+	box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+	width: 430px;
+	text-align: center;
+}
+
+.modal-content input, #passwordVerifyInput {
+	padding: 5px 8px;
+	margin: 6px 0;
+	border: #a7a7a7  2px solid;
+	border-radius: 16px;
+}
+
+input:focus {
+	border: 2px solid #007bff;
+	box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+	outline: none;
+}
+.modal-buttons {
+	display: flex;
+	justify-content: center;
+	margin: 20px 0 10px 0;
+}
+
+.modal-buttons button {
+	padding: 6px 12px;
+	margin: 0 3px;
+	border-radius: 6px;
+	border: none;
+	cursor: pointer;
+}
+#address_search{
+	margin-left: 15px;
+	width: 75px;
+	height: 45px;
+	border-radius: 15px;
+	font-size: 15px;
+	border: none;
+	letter-spacing: -0.9px;
+}
+
+.modalTitle{
+	margin-bottom: 30px;
+}
+.modalHint{
+	margin-bottom: 10px;
+}
+.modalConfirm{
+  background-color: #4F70EC; /* 메인 컬러 */
+  color: white;
+}
+
+.modalCancel{
+	background-color: #f2f2f2;
+} 
+
 #password-box {
     display: none; /* 기본적으로 숨김 */
     position: fixed;
@@ -58,22 +187,6 @@ p{
     font-weight: bold;
 }
 
-#passwordInput {
-    width: 85%;
-    padding: 10px;
-    border: 2px solid #ddd;
-    border-radius: 8px; 
-    font-size: 16px;
-    text-align: center;
-    transition: all 0.3s ease-in-out;
-}
-
-#passwordInput:focus {
-    border-color: #6A5ACD; 
-    outline: none;
-    box-shadow: 0 0 8px rgba(106, 90, 205, 0.3);
-}
-
 #submitBtn {
     width: 25%;
     padding: 7px 10px;
@@ -91,8 +204,6 @@ p{
     background: #E78B44; 
     transition: background 0.3s ease-in-out;
 }
-
-
 </style>
 
 <script type="text/javascript">	
@@ -103,11 +214,14 @@ $(function(){
 	
 	fetchVerifyStatus();
 	
-	document.getElementById("passwordInput").addEventListener("keydown", function (event) {
-	    if (event.key === "Enter") { 
-	        event.preventDefault(); 
-	        document.getElementById("submitBtn").click(); // 확인 버튼 클릭
-	    }
+	document.querySelectorAll(".enter-submit").forEach(function (input) {
+	    input.addEventListener("keydown", function (event) {
+	        if (event.key === "Enter") {
+	            event.preventDefault();
+	            const btnId = input.dataset.button;
+	            document.getElementById(btnId)?.click();
+	        }
+	    });
 	});
 	
 	$("#submitBtn").click(function(){
@@ -117,31 +231,28 @@ $(function(){
 	
 	/* 닉네임 수정 버튼 클릭 */
 	$("#name_modi_btn").click(function(){
-		$("#user_name").removeAttr("readonly"); 
-		$("#user_name").focus();
-		$("#name_modi_btn").css("display", "none");
-		$("#name_btn").css("display","inline");
-		$("#user_name").val("");
+		$("#usernameModal").css("display","flex");
+		$("#usernameModal").addClass("active");
+		$("#usernameInput").focus();
+		$("#usernameInput").val("");
 	})
 	
 	
 	/* 닉네임 수정 확인 버튼 클릭 */
-	$("#nameChange").click(function(){
+	$("#nameChangeBtn").click(function(){
 		handleNicknameUpdate();
 	})
 
 		
-	// 전화번호 수정 버튼 클릭하면 바꿀 전화번호 입력하도록 스타일 변경
+	// 전화번호 수정 버튼 클릭
 	$("#phone_modi_btn").click(function(){
-		$("#phone").removeAttr("readonly"); 
-		$("#phone").focus();
-		$("#phone_modi_btn").attr("type", "hidden");
-		$("#phone_btn").css("display","inline");
-		$("#phone").val("");
+		$("#phoneModal").css("display","flex");
+		$("#phoneInput").focus();
+		$("#phoneInput").val("");
 	})
 		
 	// 전화번호 수정
-	$("#phoneChange").click(function(){
+	$("#phoneChangeBtn").click(function(){
 		handlePhoneUpdate();
 	})
 			
@@ -152,65 +263,20 @@ $(function(){
 			alert("소셜 회원은 비밀번호를 변경할 수 없습니다.");
 			return false;
 		}
-		
-		$("#pw_modi_btn").attr("type","hidden");
-		$("#pwConfirm").css("display","inline");
-		$("#user_pw").focus();
-		
-	})
-	
-	// 사용자의 비밀번호 확인 
-	$("#pwConfirm_btn").click(function(){
-		let user_pw = $("#user_pw").val();
-		
-		if(isEmpty(user_pw)){
-			alert("비밀번호를 입력하세요.");
-			$("#user_pw").focus();
-			return false;
-		}
-		
-		fetch('/api/member/verify-password',{
-			method: 'POST',
-		    headers: {
-		        'Content-Type': 'application/json'
-		    },
-		    body: JSON.stringify({ user_pw: user_pw }) 
-		})
-		.then(response =>{
-			switch (response.status) {
-		        case 200:
-		            alert("비밀번호 확인 완료");
-		            $("#pwConfirm").css("display","none");
-		            $("#pwModi_div").css("display","inline-block");
-		            $("#new_pw").focus();
-		            break;
-		        case 403:
-		            alert("비밀번호가 일치하지 않습니다.");
-		            $("#user_pw").val("").focus();
-		            break;
-		        case 401:
-		            alert("권한이 없습니다.");
-		            location.href = "/";
-		            break;
-		        default:
-		            throw new Error("비밀번호 확인 중 알 수 없는 오류 발생");
-			}
-		})
-		.catch(error =>{
-			alert('오류가 발생했습니다. 잠시 후 다시 시도하세요.');
-			console.error('Password confirm Error: ' , error);
-		})
+		$("#passwordModal").css("display","flex");
+		$("#passwordInput").focus();
+		$("#passwordInput").val("");
+		$("#passwordCheck").val("");
 	})
 	
 	// 비밀번호 변경
-	$("#pwModi_btn").click(function(){
+	$("#pwChangeBtn").click(function(){
 		handlePasswordUpdate();
 	})
 		
 	// 주소 수정 버튼 클릭
 	$("#address_modi_btn").click(function(){
-		$("#address_div").css("display","inline-block");
-		$("#address_modi_btn").attr("type","hidden");
+		$("#addressModal").css("display","flex");
 	})
 	
 	// 주소 검색 (카카오 주소 API)
@@ -229,21 +295,24 @@ $(function(){
 		
 	            $("#streetAddress").val(addr);
 	            
-	            // 커서를 상세주소 필드로 이동한다.
 				$("#detailAddress").focus();
 			}
 		}).open();
 	})
 	
 	// 주소 변경
-	$("#address_modi").click(function(){
+	$("#addressChangeBtn").click(function(){
 		handleAddress();
-		
 	})
 	
 	// 전화번호, 닉네임, 비밀번호, 주소 수정 취소 버튼 클릭하면 새로고침
 	$(".account_cancel").click(function(){
 		location.reload();
+	})
+	
+	$(".modalCancel").click(function(){
+		$(".modal").removeClass("active");
+		$(".modal").css("display","none");
 	})
 	
 	// 회원 탈퇴 버튼 클릭 
@@ -300,7 +369,7 @@ function fetchVerifyStatus(){
 }
 
 function handlePasswordVerification(){
-	let password = $("#passwordInput").val();
+	let password = $("#passwordVerifyInput").val();
 	
 	if(isEmpty(password)){
 		alert("비밀번호를 입력하세요.");
@@ -330,8 +399,8 @@ function handlePasswordVerification(){
 			
 		}else if(response.status === 401){
 			alert("잘못된 비밀번호 입니다. 다시 입력해 주세요.");
-	        $("#passwordInput").val("");
-	        $("#passwordInput").focus();
+	        $("#passwordVerifyInput").val("");
+	        $("#passwordVerifyInput").focus();
 		} else if (response.status === 440) {
 		    alert("잘못된 접근입니다. 다시 로그인해 주세요.");
 		    $(location).attr('href', '/member/login');
@@ -347,7 +416,9 @@ function handlePasswordVerification(){
 function getAccount(){
 	fetch('/api/mypage/account')
 	.then(response =>{
-		if(!response.ok){
+		if(response.status === 401){
+			fetchVerifyStatus();
+		}else if(response.status === 500){
 			alert("회원 정보를 가져올 수 없습니다. 잠시 후 다시 시도해주세요.");
 			$(location).attr('href', '/');
 			throw new Error('Network response was not ok.');
@@ -359,15 +430,14 @@ function getAccount(){
 		phone = data.phone;
 		user_name = data.user_name;
 			
-		if(!isSocialLogin) $("#user_id").val(data.user_id);
-		$("#user_name").val(data.user_name);
-		$("#phone").val(data.phone);
+		if(!isSocialLogin) $("#user_id").html(data.user_id);
+		$("#user_name").html(data.user_name);
+		$("#phone").html(data.phone);
 		$("#address").html(data.address);
 		
 		if(data.role == 'ADMIN'){
-			// FIXME: info_title 바꾸세용
-			$(".info_title").append( 
-				`<button id="adminPageBtn">관리자 페이지</button>`
+			$(".drop_link").append( 
+				`<button class="text-btn" id="adminPageBtn">관리자 페이지 &gt;</button>`
 			);
 		}
 	})
@@ -377,19 +447,19 @@ function passwordConfirmUi(isPasswordVerified){
 	// 비밀번호 인증 됨
 	if(isPasswordVerified){
 		$("#password-box").css('display','none');
-		$("#info-box").css('display','block');
+		$(".info_box").css('display','block');
 	}else{ // 인증 안됨
 		$("#password-box").css('display','block');
-		$("#info-box").css("display", "none");
+		$(".info_box").css("display", "none");
 	}
 }
 
 function handleNicknameUpdate(){
-	let new_name = $("#user_name").val();
+	let new_name = $("#usernameInput").val();
 	
 	if(new_name.replace(/\s/g,"")==""){
 		alert("닉네임을 입력하세요.");
-		$("#user_name").focus();
+		$("#usernameInput").focus();
 		return false;
 	} 
 		
@@ -397,8 +467,8 @@ function handleNicknameUpdate(){
 	let name_legExp = /^.{3,10}$/;
 	if (name_legExp.test(new_name) == false) {
 		alert("닉네임은 3자 이상 10자 이하로 입력해주세요.");
-		$("#user_name").val("");
-		$("#user_name").focus();
+		$("#usernameInput").val("");
+		$("#usernameInput").focus();
 		
 		return false;
 	}
@@ -450,11 +520,11 @@ function handleNicknameUpdate(){
 }
 
 function handlePhoneUpdate(){
-	let new_phone = $("#phone").val(); 
+	let new_phone = $("#phoneInput").val(); 
 	
 	if(new_phone.replace(/\s/g,"")==""){
 		alert("전화번호를 입력하세요.");
-		$("#phone").focus();
+		$("#phoneInput").focus();
 		return false;
 	} 
 	
@@ -463,8 +533,8 @@ function handlePhoneUpdate(){
 		
 	if (regPhone.test(new_phone) == false) {
 		alert("사용할 수 없는 전화번호 입니다. 전화번호를 확인해주세요.");
-		$("#phone").val("");
-		$("#phone").focus();
+		$("#phoneInput").val("");
+		$("#phoneInput").focus();
 		
 		return false;
 	}
@@ -517,16 +587,16 @@ function handlePhoneUpdate(){
 }
 
 function handlePasswordUpdate(){
-	let new_pw = $("#new_pw").val();
-	let pw_check = $("#pw_check").val();
+	let new_pw = $("#passwordInput").val();
+	let pw_check = $("#passwordCheck").val();
 	
 	if(isEmpty(new_pw) || isEmpty(pw_check)){
 		alert("변경할 비밀번호를 입력하세요.");
 		return false;
 	}else if(new_pw != pw_check) {
 		alert("비밀번호가 일치하지 않습니다. 비밀번호를 확인하세요.");
-		$("#new_pw").val("");
-		$("#pw_check").val("");
+		$("#passwordInput").val("");
+		$("#passwordCheck").val("");
 		return false;
 	}
 	
@@ -579,7 +649,6 @@ function handleAddress(){
 	}
 	
 	var address = streetAddress + " " + detailAddress;
-	var user_id = $("#user_id").val();
 	
 	fetch('/api/member/address',{
 		method: 'PUT',
@@ -609,101 +678,131 @@ function isEmpty(str){
 </script>
 </head>
 <body class="wrap">
-	<div class="common-box my-top-15 my-bottom-15">
+	<div style="height: 400px;">
 		<!-- 비밀번호 확인 모달 -->
 		<div class="" id="password-box" style="display: none;">
 			<div class="section">
 				<p class="text-alignC">비밀번호 확인</p>
 			</div>
 			<div class="section">
-				<input type="password" id="passwordInput" placeholder="비밀번호 입력">
+				<input type="password" id="passwordVerifyInput" placeholder="비밀번호 입력" class="enter-submit" data-button="submitBtn">
 			</div>
 			<div class="section">
 				<button id="submitBtn">확인</button>
 			</div>
 		</div>
 		
-		<div id="info-box" style="display: none">
-			<div class="info_title border-bottom">
-				<span>계정 정보</span>
+		<div class="info_box my-top-15 my-bottom-15">
+			<div class="account_title_div">
+				<h2 class="account-title">계정 정보 관리</h2>
 			</div>
-			<div class="my-top-8">
-				
-				<!-- 소셜로그인이 아닐 때만 아이디 표시 -->
-				<div class="info_box">
-					<span class="link_set">아이디</span>
-					<div>
-						<input type="text" id="user_id" name="user_id" class="border-none" readonly=readonly>
-					</div>
-				</div>
-				
-				<div class="info_box">
-					<span class="link_set">이름</span>
-					<div>
-						<input type="text" id="user_name" class="input-border-none user_name" readonly=readonly></input> 
-						<input type="button" id="name_modi_btn" class="float-right" value="수정">
-						<div id="name_btn" style="display: none;">
-							<button type="button" class="account_cancel float-right">취소</button>
-							<button type="button" id="nameChange" class="float-right mr-1">확인</button>
-						</div>
-					</div>
-				</div>
-				
-				<div class="info_box">
-					<span class="link_set">전화번호</span>
-					<div>
-						<input type="number" class="input-border-none" id="phone" name="phone" readonly=readonly placeholder="전화번호 입력"> 
-						<input type="button" id="phone_modi_btn" class="float-right" value="수정">
-						<div id="phone_btn" style="display: none;">
-							<button type="button" class="account_cancel float-right">취소</button>
-							<button type="button" id="phoneChange" class="float-right mr-1">확인</button>
-						</div>
-					</div>
-				</div>
-
-				<div id="password" class="info_box">
-					<div>
-						<span class="link_set">비밀번호</span> <input type="button" id="pw_modi_btn" class="float-right" value="변경">
-					</div>
-					<div id="pwConfirm" style="display: none;">
-						<input type="password" id="user_pw" class="" placeholder="기존 비밀번호 입력">
-						<div style="display: inline;">
-							<button class="account_cancel float-right">취소</button>
-							<button id="pwConfirm_btn" class="float-right mr-1">확인</button>
-						</div>
-					</div>
-					<div id="pwModi_div" style="display: none;" class="my-top-4">
-						<span style="font-size: 1.5rem; color: #A4A4A4;">변경할 비밀번호를 입력하세요. </span><br> 
-						<span style="color: #A4A4A4;">(8~20자 이내로 영문 대소문자, 숫자를 혼용하여 입력하세요.)</span>
-						<div class="my-top-4">
-							<p>변경할 비밀번호</p>
-							<input type="password" id="new_pw" name="user_pw" class=""><br>
-							<p class="my-top-4">비밀번호 확인</p>
-							<input type="password" id="pw_check" class="">
-						</div>
-						<button type="button" id="pwModi_btn" class="my-top-4">변경</button>
-					</div>
+			<div class="common-box">
+				<div>
+					<ul>
+						<li>
+							<div class="row_item">
+								<span class="item_text">아이디</span>
+								<div class="info-row">
+									<span id="user_id" class="border-none"></span>
+								</div>
+							</div>
+							
+						</li>
+						<li>
+							<div class="row_item">
+								<span class="item_text">닉네임</span>
+								<div class="info-row">
+									<span id="user_name" class="border-none"></span>
+									<button type="button" id="name_modi_btn" class="btn-edit">변경</button> 
+								</div>
+							</div>
+						</li>
+						<li>
+							<div class="row_item">
+								<span class="item_text">휴대전화</span>
+								<div class="info-row">
+									<span class="input-border-none" id="phone"></span>
+									<button type="button" id="phone_modi_btn" class="btn-edit">변경</button>
+								</div>
+							</div>
+						</li>
+						<li>
+							<div class="row_item">
+								<div class="info-row">
+							    	<span class="item_text">비밀번호</span>
+									<button type="button" id="pw_modi_btn" class="btn-edit">변경</button>
+								</div>
+							</div>
+						</li>
+						<li>
+							<div class="row_item">
+								<span class="item_text">주소</span>
+								<div class="info-row">
+									<span id="address"></span> 
+									<button type="button" id="address_modi_btn" class="btn-edit">변경</button>
+								</div>
+							</div>
+						</li>
+					</ul>
 				</div>
 			</div>
-
-			<div class="my-top-8">
-				<div class="info_box">
-					<p class="link_set">주소 관리</p>
-					<span id="address"></span> <input type="button" id="address_modi_btn" class="float-right" value="수정">
-					<div id="address_div" style="display: none;">
-						<input type="text" id="streetAddress" class="" placeholder="주소" readonly="readonly" style="width: 350px;"> 
-						<input type="text" id="detailAddress" class="" placeholder="상세주소 입력" style="width: 350px;">
-						<button type="button" id="address_search">검색</button>
-						<div>
-							<button type="button" id="address_modi" class="mr-1">변경</button>
-							<button type="button" class="account_cancel">취소</button>
-						</div>
-					</div>
-				</div>
+			<div class="drop_link">
+				<button type="button" class="text-btn" id="delete_account_btn">회원탈퇴 &gt;</button>
 			</div>
 			
-			<div>
-				<button type="button" id="delete_account_btn" class="my-top-7">회원 탈퇴</button>
+			
+			<div class="flex">
+				<div id="usernameModal" class="modal modal-overlay" >
+					<div class="modal-content">
+						<h3 class="modalTitle">닉네임 변경</h3>
+						<p class="modalHint">3자 이상 10자 이하로 입력하세요.</p>
+						<input type="text" id="usernameInput" class="modalInput enter-submit" data-button="nameChangeBtn"/>
+						<div class="modal-buttons">
+							<button id="nameChangeBtn" class="modalConfirm">확인</button>
+							<button class="modalCancel">취소</button>
+						</div>
+					</div>
+				</div>
+				
+				<div id="phoneModal" class="modal modal-overlay" >
+					<div class="modal-content">
+						<h3 class="modalTitle">전화번호 변경</h3>
+						<p class="modalHint"></p>
+						<input type="text" id="phoneInput" class="modalInput enter-submit" data-button="phoneChangeBtn"/>
+						
+						<div class="modal-buttons">
+							<button id="phoneChangeBtn" class="modalConfirm">확인</button>
+							<button class="modalCancel">취소</button>
+						</div>
+					</div>
+				</div>
+				
+				<div id="passwordModal" class="modal modal-overlay" >
+					<div class="modal-content" style="width: 510px;">
+						<h3 class="modalTitle">비밀번호 변경</h3>
+						<p class="modalHint">영문 대소문자와 숫자를 포함해 8~20자 이내로 입력해 주세요.</p>
+						<input type="password" id="passwordInput" class="modalInput" style="width: 270px;" placeholder="비밀번호 입력"/>
+						<input type="password" id="passwordCheck" class="modalInput enter-submit" style="width: 270px;" placeholder="비밀번호 확인" data-button="pwChangeBtn"/>
+						<div class="modal-buttons">
+							<button id="pwChangeBtn" class="modalConfirm passwordConfirm">확인</button>
+							<button class="modalCancel">취소</button>
+						</div>
+					</div>
+				</div>
+				
+				<div id="addressModal" class="modal modal-overlay" >
+					<div class="modal-content" style="width: 470px;">
+						<h3 class="modalTitle">주소 변경</h3>
+						<input type="text" id="streetAddress" class="" placeholder="주소" readonly="readonly" style="width: 385px;"> 
+						<input type="text" id="detailAddress" class="enter-submit" placeholder="상세주소 입력" data-button="addressChangeBtn" style="width: 293px;">
+						<button type="button" id="address_search">검색</button>
+						
+						<div class="modal-buttons">
+							<button id="addressChangeBtn" class="modalConfirm">확인</button>
+							<button class="modalCancel">취소</button>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
