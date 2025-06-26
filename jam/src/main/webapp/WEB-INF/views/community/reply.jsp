@@ -131,7 +131,7 @@
 	}) // end
 		
 	function listAll() {
-	    fetch('/api/member/me')
+	    fetch('/api/member/me/session')
 	        .then(response => {
 	        	if(response.status === 401) {
 	        		setList(null);

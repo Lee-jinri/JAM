@@ -94,7 +94,7 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         registry.addInterceptor(jwtInterceptor)
         		.addPathPatterns(
         				"/api/member/auth/check",
-        				"/api/member/getUserInfo", 
+        				"/api/member/me/token", 
         				"/api/member/logout", 
         				"/oauth/kakao/logout",
         				"/oauth/naver/logout",

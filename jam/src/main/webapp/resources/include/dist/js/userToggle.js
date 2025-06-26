@@ -1,7 +1,7 @@
 function toggleUserMenu() {
 	$(".user_toggle").hide();
-
-	fetch('/api/member/me',{
+/*
+	fetch('/api/member/me/session',{
 		method: 'GET',
 		credentials: 'include',
 	})

@@ -9,16 +9,14 @@
 
 <script>
 	$(function() { 
-			fetch('http://localhost:8080/api/member/getUserInfo', {
+			fetch('/api/member/me/token', {
 				method: 'GET'
 			})
 			.then(response => {
 				if(!response.ok) throw new Error('Network response was not ok.');
 				return response.json();
 			})
-			.then(data => {				
-				console.log(data);
-				
+			.then(data => {							
 				if (!data.role.includes("ROLE_ADMIN")) {
 					alert("접근 권한이 없는 페이지 입니다.");
 					window.location.href = "/";

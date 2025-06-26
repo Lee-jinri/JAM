@@ -188,7 +188,7 @@ function updateForm(jobReply_no, panel){
 	
 async function getUserInfo() {
 	try {
-		const response = await fetch('/api/member/me');
+		const response = await fetch('/api/member/me/session');
         if (!response.ok) throw new Error('사용자 정보 가져오기 실패');
 	
         const data = await response.json();

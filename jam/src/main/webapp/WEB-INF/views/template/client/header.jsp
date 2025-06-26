@@ -188,7 +188,7 @@ header {
 // FIXME : XSS 3원칙 적용할 것
 	$(function() {
 		
-		fetch('/api/member/me', {
+		fetch('/api/member/me/session', {
 		    method: 'GET',
 		    credentials: 'include',
 		})

@@ -35,12 +35,9 @@
 					$("#message_area").focus();
 					return false;
 				}
-				/**/
-				fetch('/api/member/getUserInfo', {
-			        method: 'GET',
-			        headers: {
-			            'Authorization': localStorage.getItem("Authorization")
-			        },
+				
+				fetch('/api/member/me/token', {
+			        method: 'GET'
 			    })
 			    .then(response => {
 			        if (response.ok) {

@@ -48,11 +48,8 @@
 			
 			// 현재 로그인한 사용자와 글쓴이가 같은지 비교하는 함수
 			function currentUserIsAuthor(){
-				fetch('/api/member/getUserInfo',{
-					method: 'GET',
-					headers: {
-						'Authorization': localStorage.getItem("Authorization")
-					},
+				fetch('/api/member/me/token',{
+					method: 'GET'
 				})
 				.then(response =>{
 					if(!response.ok){

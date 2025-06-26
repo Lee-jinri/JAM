@@ -21,11 +21,8 @@
 			// 사용자 정보를 가져오는 비동기 함수
 			async function getUserInfo() {
 			    try {
-			        const response = await fetch('http://localhost:8080/api/member/getUserInfo', {
-			            method: 'GET',
-			            headers: {
-			                'Authorization': localStorage.getItem("Authorization")
-			            },
+			        const response = await fetch('/api/member/me/token', {
+			            method: 'GET'
 			        });
 			        
 					if (!response.ok) throw new Error('Network response was not ok');

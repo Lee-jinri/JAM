@@ -107,11 +107,8 @@
 		}*/
 		/*
 		function getUserIDAndRedirect(redirectURL, search, keyword) {
-		    fetch('http://localhost:8080/api/member/getUserInfo', {
-		        method: 'GET',
-		        headers: {
-		            'Authorization': localStorage.getItem("Authorization")
-		        },
+		    fetch('http://localhost:8080/api/member/me/token', {
+		        method: 'GET'
 		    })
 		    .then(response => {
 		        if (!response.ok) {

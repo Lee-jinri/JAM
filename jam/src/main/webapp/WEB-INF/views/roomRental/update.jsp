@@ -14,6 +14,7 @@
 
 	<script>
 		$(function(){
+			isUserAuthor();
 			
 			$("#update").click(function(){
 				let room_title = $("#roomRental_title").val();
@@ -30,12 +31,10 @@
 					$("#roomRental_content").focus();
 					return false;
 				}
+				
 				// 사용자 id, name 가져옴
-				fetch('http://localhost:8080/api/member/getUserInfo', {
-			        method: 'GET',
-			        headers: {
-			            'Authorization': localStorage.getItem("Authorization")
-			        },
+				fetch('/api/member/me/token', {
+			        method: 'GET'
 			    })
 			    .then(response => {
 			        if (!response.ok) throw new Error('Network response was not ok');
@@ -69,6 +68,13 @@
 			
 			
 		})
+		
+		function isUserAuthor(){
+			fetch("/api/member/me/token")
+			.then(response =>{
+				console.log(response.json());	
+			})		
+		}
 	</script>
 </head>
 <body class="wrap">

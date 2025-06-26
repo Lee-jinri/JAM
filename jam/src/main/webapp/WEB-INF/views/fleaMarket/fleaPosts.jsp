@@ -36,25 +36,14 @@
 			
 			if($("#user_name").val() == null || $("#user_name").val() == ""){
 				
-				fetch("/api/member/getUserInfo",{
-					method: 'GET',
-					headers: {
-						'Authorization': localStorage.getItem("Authorization")
-					},
+				fetch("/api/member/me/token",{
+					method: 'GET'
 				})
 				.then(response => {
 					if(response.status == 401){
-						localStorage.removeItem('Authorization');
 						alert("로그인 유효시간이 초과 되었습니다. 다시 로그인 해주세요.");
 						window.location.reload();
 					}else if(!response.ok) throw new Error("Network response was not ok.");
-					
-					let Authorization = response.headers.get('Authorization');
-					
-					if(Authorization != null && Authorization != ""){
-						localStorage.removeItem("Authorization");
-						localStorage.setItem('Authorization', Authorization);
-					}
 					
 					return response.json();
 				})

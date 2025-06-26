@@ -86,11 +86,8 @@
 			
 			async function getUserInfo() {
 		        try {
-		            const response = await fetch('http://localhost:8080/api/member/getUserInfo', {
-		                method: 'GET',
-		                headers: {
-		                    'Authorization': localStorage.getItem("Authorization")
-		                },
+		            const response = await fetch('/api/member/me/token', {
+		                method: 'GET'
 		            }).then(response => {
 		            	if (!response.ok) {
 		            		throw new Error('Network response was not ok');

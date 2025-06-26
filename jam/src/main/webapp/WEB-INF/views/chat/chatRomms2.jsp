@@ -55,16 +55,11 @@ $(function(){
 	})
 	
 	function chatRooms(){
-		fetch('/api/member/getUserInfo', {
-            method: 'GET', 
-            headers: {
-            	'Authorization': localStorage.getItem("Authorization")
-            },
+		fetch('/api/member/me/token', {
+            method: 'GET'
         })
         .then(response => {
-        	if(response.status == 401){
-        		localStorage.removeItem('Authorization');
-        		
+        	if(response.status == 401){        		
         		alert("로그인 유효시간이 초과 되었습니다. 다시 로그인 해주세요.");
         		window.location.reload();
         	}else if (!response.ok) throw new Error('Network response was not ok');

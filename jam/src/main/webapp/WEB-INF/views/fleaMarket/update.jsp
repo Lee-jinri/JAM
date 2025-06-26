@@ -169,19 +169,14 @@
 			// 사용자의 아이디, 닉네임 가져오는 함수
 			async function getUserInfo(){
 				try{
-					const response = await fetch('http://localhost:8080/api/member/getUserInfo',{
-						method: 'GET',
-						headers:{
-							'Authorization': localStorage.getItem("Authorization")
-						},
+					const response = await fetch('/api/member/me/token',{
+						method: 'GET'
 					}).then(response =>{
 						if(!response.ok){
 							throw new Error('Network response was not ok.');
 						}
 						return response.json();
 					}).then(data =>{
-						console.log(loggedInUserId +" " + loggedInUsername);
-					
 						loggedInUserId = data.user_id;
 						loggedInUsername = data.user_name;
 						

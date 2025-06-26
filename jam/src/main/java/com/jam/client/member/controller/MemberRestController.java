@@ -105,7 +105,7 @@ public class MemberRestController {
 	 * 
 	 * @return HTTP 응답 상태 코드와 사용자 정보를 포함한 객체
 	 */
-	@GetMapping(value = "/getUserInfo", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/me/token", produces = MediaType.APPLICATION_JSON_VALUE)
 	@CrossOrigin
 	public ResponseEntity<MemberVO> getUserInfo(HttpServletResponse response, HttpServletRequest request) {
 		try {
@@ -125,7 +125,8 @@ public class MemberRestController {
 					return ResponseEntity.ok().body(member);
 				}
 			}else {
-				deleteCookies(response);
+				Cookie[] cookies = request.getCookies();
+				deleteJwtCookies(cookies, response);
 			}
 			
 			return ResponseEntity.ok().body(member);
@@ -142,14 +143,21 @@ public class MemberRestController {
 	 * @param request
 	 * @return HTTP 응답 상태 코드와 사용자 정보
 	 */
-	@GetMapping("/me")
-    public ResponseEntity<Map<String, String>> getCurrentUser(HttpSession session , HttpServletResponse res) {
+	@GetMapping("/me/session")
+    public ResponseEntity<Map<String, String>> getCurrentUser(HttpServletRequest request , HttpServletResponse res) {
 		
-        Map<String, String> response = new HashMap<>();
-        
-        response.put("userId", (String)session.getAttribute("userId"));
-        response.put("userName", (String)session.getAttribute("userName"));
+		HttpSession session = request.getSession(false);
 
+	    Map<String, String> response = new HashMap<>();
+
+	    if (session != null) {
+	        response.put("userId", (String) session.getAttribute("userId"));
+	        response.put("userName", (String) session.getAttribute("userName"));
+	    } else {
+	        response.put("userId", null);
+	        response.put("userName", null);
+	    }
+        
         return ResponseEntity.ok(response);
     }
 	
