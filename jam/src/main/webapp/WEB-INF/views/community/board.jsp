@@ -68,6 +68,7 @@ function getBoard(com_no){
 			        
 			    $("#com_title").html(detail.com_title);
 				$("#user_name").html(detail.user_name);
+				$("#user_name").attr("data-userid", detail.user_id);
 				$("#com_date").html(detail.com_date);
 				$("#com_hits").html(detail.com_hits);
 				$("#com_content").html(detail.com_content);
@@ -120,7 +121,7 @@ function currentUserIsAuthor(isAuthor){
 			<div class="board-header">
 			    <p id="com_title" class="com_title board-title"></p>
 			    <div class="board-info">
-					<span id="userName" class="userName boardUserName"></span>  
+					<span id="user_name" class="userName boardUserName"></span>  
 					<div class="userNameToggle"></div> 
 			      	<span class="divider">|</span>
 			       	<span id="com_date"></span>
