@@ -6,43 +6,9 @@ body.modal-open {
   overflow: hidden;
 }
 
-@media screen and (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
+* { box-sizing: border-box; } 
 
-  h2 {
-    font-size: 18px;
-  }
 
-  .btn-edit {
-    font-size: 12px;
-  }
-  
-  footer {
-    font-size: 12px;
-  }
-  
-  .nav-container{
-  	max-width: 183px;
-  }
-  
-  .header-container {
-  	padding: 0 !important;
-  }
-  
-  #header_name{
-  	font-size: 12px;
-  }
-  
-  #logout {
-  	margin-right: 0;
-  	font-size: 10px;
-  }
-  .nav-icon{
-  	margin: 0;
-  }
-}
 
 #container {
   width: 100%;
@@ -112,6 +78,11 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 	-webkit-appearance: none;
 	margin: 0;
 }
+
+#header_name{
+	font-size: 15px;
+}
+
 
 .color_y {
 	color: #ffdd77;
@@ -1967,4 +1938,48 @@ textarea {
 .favorite-btn.favorited i {
     color: gold;
     font-weight: bold;
+}
+
+
+@media screen and (max-width: 768px) {
+  body {
+    font-size: 14px;
+  }
+
+  h2 {
+    font-size: 18px;
+  }
+
+  .btn-edit {
+    font-size: 12px;
+  }
+  
+  footer {
+    font-size: 12px;
+  }
+  
+  .nav-container{
+  	max-width: 183px;
+  }
+  
+  .header-container {
+  	padding: 0 !important;
+  }
+  
+  #header_name{
+  	font-size: 12px;
+  }
+  
+  #logout {
+  	margin-right: 0;
+  	font-size: 10px;
+  }
+  .nav-icon{
+  	margin: 0;
+  }
+  .paginate-a{
+  	padding: 3px 7px !important;
+  	font-size: 14px;
+  }
+  
 }

@@ -6,7 +6,9 @@
 <meta charset="UTF-8">
 <title>JAM- 글 모아보기</title>
 <style>
-
+.written-div{
+	margin-top: 60px;
+}
 .search-container {
 	display: flex;
 	align-items: center;
@@ -26,6 +28,7 @@
 }
 
 .search-input {
+width: inherit;
 	border: none;
 	flex: 1;
 	outline: none;
@@ -50,23 +53,29 @@
 	background-position: right 0.75em center;
 	background-size: 0.8em;
 }
+.search-select:focus {
+  outline: none;
+  box-shadow: none;
+}
 
 
 
 .search-select option {
 	direction: rtl;
 	text-align: center;
+	background-color: #fff;
 }
 
 .user-profile {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   gap: 12px;
   background-color: #f9f9f9;
   border-radius: 12px;
   padding: 14px 18px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-  max-width: 200px;
+  width: fit-content;
 }
 .profile-info .nickname {
   font-size: 16px;
@@ -78,11 +87,17 @@
   font-size: 16px;
 }
 
+#userNickname{
+	font-size: 16px;
+    font-weight: 600;
+    color: #7c7c7c;
+}
+
 
 .profile-icon {
-  width: 48px;
-  height: 48px;
-  background-color: #90c4f3;
+  width: 40px;
+  height: 40px;
+  background-color: #c7e7f3;
   border-radius: 50%;
   color: white;
   font-weight: bold;
@@ -93,7 +108,7 @@
 }
 
 .profile-btn-div{
-	margin-left: 7px;
+	margin-left: 4px;
 }
 /*
 .profile-btn {
@@ -113,6 +128,7 @@
 	border: none;
     background-color: unset;
     padding: 0;
+    font-size: 20px;
 }
 .profile-btn:hover {
   background-color: #f0f0f0;
@@ -125,16 +141,18 @@
 
 .written-container {
     max-width: 800px;
-    margin: 40px auto;
+    margin: 0 auto;
     padding: 20px;
     background-color: #ffffff;
     border-radius: 10px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px #EAE4DC;
+    border: 3px solid #EAE4DC;
 }
 
 .written-title {
     text-align: center;
     color: #333;
+    margin-top: 60px;
 }
 
 .written-list {
@@ -188,44 +206,103 @@
 
 .button-group {
     display: flex;
-    justify-content: center;
+    justify-content: start;
     gap: 10px;
     margin-top: 50px;
+    margin-left: 10px;
 }
 
 .button-group button {
     padding: 10px 15px;
-    border: 2px solid #BFC8EA; 
-    border-radius: 8px; 
+    border: 2px solid #EAE4DC;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
     cursor: pointer;
-    background-color: #BFC8EA;
-    color: white;
+    background-color: #EAE4DC;
+    color: #6e6e6e;
     font-size: 16px;
     font-weight: bold;
     transition: all 0.3s ease-in-out;
+    box-shadow: 0 4px 10px #EAE4DC;
 }
 
-.button-group button:hover {
-    background-color: #A3B1D1;
-    border-color: #A3B1D1;
+.button-group button:hover{
+	background-color: #e8e0d4; 
+	color: #2e2e2e;          
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+	transition: all 0.2s ease-in-out;
+	text-decoration: underline;
+}
+
+.button-group button.active:hover{
+	color: #2e2e2e;
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+	transition: all 0.2s ease-in-out;
+	text-decoration: underline;
 }
 
 .button-group button.active {
-    background-color: white;   
-    color: #4A4F6A;  
-    border: 2px solid #4A4F6A;
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15); 
+    background-color: white;    
+    color: #6e6e6e;
+    box-shadow: 0 4px 10px #EAE4DC;
+    border: 3px solid #EAE4DC;
+    border-bottom: none;
+    z-index: 2;
 }
 
 .paginate-a {
 	background-color: #BFC8EA;
 }
 
-/* 이거 지우면 안됨*/
 ul.pagination > li > a.selected_btn {
-  background-color: #BFC8EA;
-  color: white;
-  border: 1px solid transparent;
+	background-color: #f2eadd;
+	color: #6e6e6e;
+	border: 1px solid transparent;
+}
+
+@media screen and (max-width: 768px) {
+	.written-div{
+		margin: 60px 30px;
+	}
+	.user-profile{
+		padding: 2px 10px;
+	}
+	#userNickname{
+		font-size: 13px;
+	}
+	.search-container{
+		height: 40px;
+	}
+	.search-select{
+		padding:2px 18px 2px 12px;
+        font-size: 12px;
+	}
+	.button-group button{
+		font-size: 13px;
+	    padding: 0 13px;
+	    height: 40px;
+	}
+	.written-meta{
+		font-size: 12px;
+	}
+	.written-item{
+		padding: 7px;
+   		font-size: 13px;
+	}
+	.button-group{
+		margin-top: 26px;
+	}
+	.search-div{
+		margin-top: 12px;
+	}
+	.search-icon {
+    	font-size: 17px;
+    }
+    .profile-icon{
+    	width: 30px;
+	    height: 30px;
+	    font-size: 15px;
+    }
 }
 
 </style>
@@ -251,8 +328,10 @@ $(function(){
         // 클릭한 버튼에 'active' 클래스 추가
         $(this).addClass("active");
         
+        $("#keyword").val('');
+        $("#search").val('all');
+        
         newBoardType = $(this).attr('data-boardType');
-        //let user_id = params.get("user_id");
         
         let newUrl = window.location.pathname + "?boardType=" + newBoardType + "&user_id=" + user_id;
         window.history.pushState(null, "", newUrl);
@@ -271,7 +350,7 @@ $(function(){
 	
 	// 검색 
 	$("#searchBtn").click(function(){
-		handleSearch(params.get("user_id"), boardType);
+		handleSearch(params.get("user_id"));
 	})
 	
 	document.getElementById("keyword").addEventListener("keydown", function(event) {
@@ -280,17 +359,11 @@ $(function(){
 	        handleSearch(params.get("user_id"), boardType);
 	    }
 	});
-
-	$("#message").click(function(){
-		
-	})
 	
 	$("#chat").click(function(){
 		
 	})
 })
-
-
 
 function getWrittenList() {
 	let params = new URLSearchParams(window.location.search);
@@ -307,10 +380,13 @@ function getWrittenList() {
 	
     let url = '/api/mypage/written/boards?boardType=' + boardType + '&user_id=' + user_id + '&pageNum=' + pageNum;
     
+    if(search && keyword) {
+		url += "&search=" + search + "&keyword=" + keyword;
+    }
+    
     fetch(url)
     .then(response => {
     	if(response.status == 401){
-    		
     		return response.text().then(text => { 
     			if (confirm("로그인이 필요한 서비스 입니다. 로그인 하시겠습니까?")) {
     				location.href = "/member/login"; 
@@ -326,7 +402,8 @@ function getWrittenList() {
     })
     .then(data => {
     	
-		renderUserHeader(data.userProfile, data.isMine); 
+		$("#userNickname").text(data.userProfile.user_name + "님");
+		
         renderList(data.writtenList, boardType);
         loadPagination(data.pageMaker, boardType);
     })
@@ -335,15 +412,6 @@ function getWrittenList() {
         console.error("데이터 불러오기 실패:", error);
     });
 }
-
-function renderUserHeader(userProfile, isMine){
-	if(isMine){
-		$(".written-title").text("📖 내 글 모아보기");
-	}else{
-		$("#userNickname").text(userProfile.user_name);
-	}
-}
-
 
 function renderList(writtenList, boardType){
 	
@@ -369,9 +437,10 @@ function renderList(writtenList, boardType){
             .attr("data-location", "/" + boardType + "/board/" + written.board_no);
 
         const $infoDiv = $("<div>").addClass("written-info");
-        const $titleSpan = $("<span>").addClass("written-title").text(written.board_title);
         const $metaDiv = $("<div>").addClass("written-meta").text(written.created_at);
-        $infoDiv.append($titleSpan, $metaDiv);
+        const $titleSpan = $("<span>").addClass("written-title").text(written.board_title);
+        
+        $infoDiv.append($metaDiv,$titleSpan);
 
         $li.append($infoDiv);
         $writtenUl.append($li);
@@ -379,25 +448,30 @@ function renderList(writtenList, boardType){
 	
 }
 
-function handleSearch(user_id, boardType){
+function handleSearch(user_id){
+
 	let search = $("#search").val();
-	let keyword = $("#keyword").val();
+	let keyword = $("#keyword").val().trim();
+
+	let boardType = new URLSearchParams(window.location.search).get("boardType") || "community";
 	
+	let url = "/mypage/written?&boardType=" + boardType + "&user_id="+user_id;
+			
 	if(search == "all"){
-		search = undefined; 
-        keyword = undefined;
-	}
-	else{
+		$("#keyword").val('');
+	} else{
 		if(keyword.replace(/\s/g, "") == ""){
 			alert("검색어를 입력하세요.");
 			$("#keyword").focus();
 			return;
+		}else{
+			url += "&search=" + encodeURIComponent(search) + "&keyword=" + encodeURIComponent(keyword);
 		}
 	}
 	
-    let url = "/mypage/written?&boardType=" + boardType + "&user_id="+user_id + "&search=" + search + "&keyword=" + keyword;
+	window.history.pushState(null, "", url);
     
-	window.location.href = url;
+	getWrittenList();
 }
 
 function loadPagination(pageMaker, boardType) {
@@ -431,80 +505,49 @@ function loadPagination(pageMaker, boardType) {
 </head>
 <body class="wrap">
 	<div class="content">
-		<h2 class="written-title"></h2>
-		<div class="user-profile">
-			<div class="profile-icon">👤</div>
-			<div class="profile-info">
-		    <div class="nickname">
-		    	<span id="userNickname" style="margin-left: 7px">홍길동</span>
-		    	<div class="profile-btn-div">
-			    	<button id="message" class="profile-btn">✉️</button>
-			    	<button id="chat" class="profile-btn">💬</button>
-		    	</div>
-		    </div>
-		    <div>
-		    	
-		    </div>
-		    <!-- <div class="bio">한 줄 소개</div> -->
-			</div>
-		</div>
-
-        <div>
-        
-	        <div class="button-group">
-			    <button data-boardType="community">커뮤니티</button>
-			    <button data-boardType="fleaMarket">중고악기</button>
-			    <button data-boardType="roomRental">연습실</button>
-			    <button data-boardType="job">Jobs</button>
-			</div>
-			<div class="search-div flex justify-center items-center ">
-				<div class="search-container">
-					<i id="searchBtn" class="fa-solid fa-magnifying-glass search-icon"></i>
-					<input type="text"  id="keyword" class="search-input" name="keyword" placeholder="검색어를 입력하세요" />
-					<select id="search" name="search" class="search-select">
-						<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
-					    <option value="title" ${param.search == 'title' ? 'selected' : ''}>제목</option>
-					    <option value="content" ${param.search == 'content' ? 'selected' : ''}>내용</option>
-					    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>닉네임</option>
-					</select>
+		<div class="written-div">
+			<div class="user-profile">
+				<div class="profile-icon">👤</div>
+				<div class="profile-info">
+				    <div class="nickname">
+				    	<span id="userNickname" style="margin-left: 7px"></span>
+				    </div>
+				</div>
+				<div class="profile-btn-div">
+					<button id="chat" class="profile-btn">💬</button>
 				</div>
 			</div>
-			<!-- 
-			<div class="search-div flex justify-center items-center border border-radius-43px">
-				<div class="search-bar-wrapper item-center flex justify-space-around">
-					
-					<% String searchParam = request.getParameter("search");
-					    if (searchParam == null || searchParam.isEmpty()) {
-					        searchParam = "all";
-					    }%> 
-					   
-					<select id="search" name="search" class="search border-none">
-						<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
-					    <option value="job_title" ${param.search == 'job_title' ? 'selected' : ''}>제목</option>
-					    <option value="job_content" ${param.search == 'job_content' ? 'selected' : ''}>내용</option>
-					    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>작성자</option>
-					</select>
-					
-					<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
-					value="${not empty param.keyword ? param.keyword : ''}" />
-					<input type="hidden" id="city">
-					<input type="hidden" id="gu">
-					<input type="hidden" id="dong">
-					
-					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
+	
+	        <div>
+	        
+		        
+				<div class="search-div flex justify-center items-center ">
+					<div class="search-container">
+						<i id="searchBtn" class="fa-solid fa-magnifying-glass search-icon cursor-pointer"></i>
+						<input type="text"  id="keyword" class="search-input" name="keyword" placeholder="검색어를 입력하세요" value="${param.keyword}" />
+						<select id="search" name="search" class="search-select">
+							<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
+						    <option value="title" ${param.search == 'title' ? 'selected' : ''}>제목</option>
+						    <option value="content" ${param.search == 'content' ? 'selected' : ''}>내용</option>
+						</select>
+					</div>
 				</div>
-			</div>	 -->
-			
-		</div>	
-        <div class="written-container">
-            <ul id="written-list" class="written-list">
-               
-            </ul>
-        </div>
-        
-        <div>
-			<div class="text-center">
-			    <ul id="pagination" class="pagination pagination_border"></ul>
+				
+			</div>	
+			<div class="button-group">
+				<button data-boardType="community">커뮤니티</button>
+				<button data-boardType="fleaMarket">중고악기</button>
+			</div>
+	        <div class="written-container">
+	            <ul id="written-list" class="written-list">
+	               
+	            </ul>
+	        </div>
+	        
+	        <div>
+				<div class="text-center">
+				    <ul id="pagination" class="pagination pagination_border"></ul>
+				</div>
 			</div>
 		</div>
     </div>

@@ -145,7 +145,17 @@ public class MypageRestController {
 		}
 	}
 	
-
+	/**
+	 * 마이페이지 - 사용자가 작성한 게시글 목록 조회
+	 * 
+	 * @param user_id    조회 대상 사용자 ID
+	 * @param boardType  게시판 타입 (community, fleaMarket)
+	 * @param request    로그인 사용자 확인용 (토큰 기반)
+	 * @param pageNum    페이지 번호 (기본값 1)
+	 * @param search     검색 조건 (title, content 등)
+	 * @param keyword    검색어
+	 * @return 작성한 게시글 목록 + 페이지 정보 + 유저 프로필 + isMine 여부
+	 */
 	@GetMapping("/written/boards")
 	public ResponseEntity<Map<String, Object>> getWrittenBoardType(
 			@RequestParam(value = "user_id") String user_id,
@@ -167,29 +177,19 @@ public class MypageRestController {
 	    written.setUser_id(user_id);
 	    written.setPageNum(pageNum);
 	    written.setBoard_type(boardType);
-	    // FIXME: 이거 뭐임?
-	    //written.setSearch(search);
-	    //written.setKeyword(keyword);
-	    
-	    log.info(search + keyword);
+	    written.setSearch(search);
+	    written.setKeyword(keyword);
 	    
 	    switch (boardType) {
 	        case "community":
 	        	writtenList = mypageService.getWrittenCommunity(written);
 	            break;
-	        case "job":
-	        	writtenList = mypageService.getWrittenJob(written);
-	            break;
 	        case "fleaMarket":
 	        	writtenList = mypageService.getWrittenFlea(written);
-	            break;
-	        case "roomRental":
-	        	writtenList = mypageService.getWrittenRoom(written);
 	            break;
 	        default:
 	            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid board type"));
 	    }
-	    
 	    
 	    Map<String, Object> result = new HashMap<>();
 	    
@@ -204,8 +204,6 @@ public class MypageRestController {
 		
 		boolean isMine = loginUserId.equals(user_id);
 		result.put("isMine", isMine);
-			
-		log.info(writtenList);
 		
 		return ResponseEntity.ok(result);
 	}
