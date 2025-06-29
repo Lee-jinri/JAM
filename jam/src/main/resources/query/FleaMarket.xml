@@ -3,17 +3,17 @@
 <mapper namespace="com.jam.client.fleaMarket.dao.FleaMarketDAO">
 
 	<!-- 중고거래 list -->
-	<select id="getBoards" parameterType="flea" resultType="flea">
+	<select id="getBoard" parameterType="flea" resultType="flea">
 		<![CDATA[
 		SELECT 
-			flea_no, flea_title, 
-			to_char(flea_date, 'YYYY/MM/DD HH24:MI') as flea_date, 
-			flea_reply_cnt, flea_hits, flea_category, price, 
+			post_id, title, 
+			to_char(created_at, 'YYYY/MM/DD HH24:MI') as created_at, 
+			comment_count, view_count, category_id, price, 
 			sales_status, user_id, user_name
 		FROM (
 			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-				f.flea_no, f.flea_title, f.flea_date, f.flea_reply_cnt, f.flea_hits, f.flea_category, f.price, f.sales_status, f.user_id , m.user_name,
-				ROW_NUMBER() OVER (ORDER BY f.flea_no DESC) AS rnum
+				f.post_id, f.title, f.created_at, f.comment_count, f.view_count, f.category_id, f.price, f.sales_status, f.user_id , m.user_name,
+				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
 			JOIN Member m ON f.user_id = m.user_id
 			]]>
@@ -26,18 +26,18 @@
 		]]>
 	</select>
 	
-	<select id="getBoardsWithFavorite" parameterType="flea" resultType="flea">
+	<select id="getBoardWithFavorite" parameterType="flea" resultType="flea">
 		<![CDATA[
 		SELECT 
-			f.flea_no, f.flea_title, 
-			to_char(f.flea_date, 'YYYY/MM/DD HH24:MI') as flea_date, 
-			f.flea_reply_cnt, f.flea_hits, f.flea_category, f.price, 
+			f.post_id, f.title, 
+			to_char(f.created_at, 'YYYY/MM/DD HH24:MI') as created_at, 
+			f.comment_count, f.view_count, f.category_id, f.price, 
 			f.sales_status, f.user_id, f.user_name,
 			CASE WHEN fav.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-				f.flea_no, f.flea_title, f.flea_date, f.flea_reply_cnt, f.flea_hits, f.flea_category, f.price, f.sales_status, f.user_id, m.user_name,
-				ROW_NUMBER() OVER (ORDER BY f.flea_no DESC) AS rnum
+				f.post_id, f.title, f.created_at, f.comment_count, f.view_count, f.category_id, f.price, f.sales_status, f.user_id, m.user_name,
+				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
 			JOIN member m ON f.user_id = m.user_id
 		]]>
@@ -48,7 +48,7 @@
 		<![CDATA[
 		) f
 		LEFT JOIN favorite fav  
-			ON f.flea_no = fav.board_no  
+			ON f.post_id = fav.board_no  
 			AND fav.board_type = 'fleaMarket'  
 			AND fav.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -70,11 +70,11 @@
 	<!-- 중고거래 검색 -->
 	<sql id="fleaSearch">
 		<if test="search_category=='all'">
-			<if test="search=='flea_title'">
-				<![CDATA[f.flea_title LIKE '%' || #{keyword} || '%']]>
+			<if test="search=='title'">
+				<![CDATA[f.title LIKE '%' || #{keyword} || '%']]>
 			</if>
-			<if test="search=='flea_content'">
-				<![CDATA[f.flea_content LIKE '%' || #{keyword} || '%']]>
+			<if test="search=='content'">
+				<![CDATA[f.content LIKE '%' || #{keyword} || '%']]>
 			</if>
 			<if test="search=='user_name'">
 				<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
@@ -82,22 +82,22 @@
 		</if>
 		
 		<if test="search_category=='buy'">
-			<if test="search=='flea_title'">
-				<![CDATA[f.flea_title LIKE '%' || #{keyword} || '%']]>
+			<if test="search=='title'">
+				<![CDATA[f.title LIKE '%' || #{keyword} || '%']]>
 			</if>
-			<if test="search=='flea_content'">
-				<![CDATA[f.flea_content LIKE '%' || #{keyword} || '%']]>
+			<if test="search=='content'">
+				<![CDATA[f.content LIKE '%' || #{keyword} || '%']]>
 			</if>
 			<if test="search=='user_name'">
 				<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
 			</if>
 		</if>
 		<if test="search_category=='sale'">
-			<if test="search=='flea_title'">
-				<![CDATA[f.flea_title LIKE '%' || #{keyword} || '%']]>
+			<if test="search=='title'">
+				<![CDATA[f.title LIKE '%' || #{keyword} || '%']]>
 			</if>
-			<if test="search=='flea_content'">
-				<![CDATA[f.flea_content LIKE '%' || #{keyword} || '%']]>
+			<if test="search=='content'">
+				<![CDATA[f.content LIKE '%' || #{keyword} || '%']]>
 			</if>
 			<if test="search=='user_name'">
 				<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
@@ -108,69 +108,69 @@
 	<!-- 중고거래 조회수 증가 -->
 	<update id="incrementReadCnt" parameterType="flea">
 		UPDATE fleaMarket 
-		SET	flea_hits = flea_hits + 1
-		WHERE flea_no = #{flea_no}
+		SET	view_count = view_count + 1
+		WHERE post_id = #{post_id}
 	</update>
 	
 	<!-- 중고거래 상세 글 조회 -->
-	<select id="getBoardDetail" resultType="flea">
-		SELECT f.flea_no, f.flea_title, f.flea_content, f.flea_category, f.flea_hits, f.sales_status, to_char(f.flea_date,'YYYY/MM/DD HH24:MI:SS') as flea_date, f.price, m.user_name, f.user_id
+	<select id="getPostDetail" resultType="flea">
+		SELECT f.post_id, f.title, f.content, f.category_id, f.view_count, f.sales_status, to_char(f.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, f.price, m.user_name, f.user_id
 		FROM fleaMarket f
 		LEFT JOIN Member m 
 		ON f.user_id = m.user_id
-		WHERE flea_no = #{flea_no}
+		WHERE post_id = #{post_id}
 	</select>
 	
 	<!-- 중고거래 글 입력 -->
-	<insert id="writeBoard" parameterType="flea">
-		<selectKey keyProperty="flea_no" resultType="Long" order="BEFORE">
+	<insert id="writePost" parameterType="flea">
+		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
 			SELECT flea_seq.nextval from dual
 		</selectKey>
-		INSERT INTO fleaMarket(flea_no, user_id, flea_title, flea_content, flea_hits, flea_reply_cnt,flea_category, sales_status, price ,imageFileName)
-		VALUES (#{flea_no}, #{user_id}, #{flea_title}, #{flea_content},0, 0, #{flea_category}, 0, #{price}, #{imageFileName, jdbcType = VARCHAR})
+		INSERT INTO fleaMarket(post_id, user_id, title, content, view_count, comment_count, category_id, sales_status, price)
+		VALUES (#{post_id}, #{user_id}, #{title}, #{content},0, 0, #{category_id}, 0, #{price})
 	</insert>
 	
 	<!-- 중고거래 수정할 글 정보 조회 -->
-	<select id="getBoardById" parameterType="flea"  resultType="flea">
-		SELECT flea_no, flea_title, flea_content, imageFileName, price, flea_category, sales_status
+	<select id="getPostForEdit" parameterType="flea"  resultType="flea">
+		SELECT post_id, title, content, price, category_id, sales_status
 		FROM fleaMarket
-		WHERE flea_no = #{flea_no} 
+		WHERE post_id = #{post_id} 
 	</select>
 	
 	<!-- 중고거래 글 수정 -->
-	<update id="editBoard" parameterType="flea">
+	<update id="editPost" parameterType="flea">
 		UPDATE fleaMarket SET
-		flea_title = #{flea_title},
-		flea_content = #{flea_content},
-		flea_date = sysdate,
-		sales_status = #{sales_status},
-		flea_category = #{flea_category},
-		price = #{price}
+			title = #{title},
+			content = #{content},
+			created_at = sysdate,
+			sales_status = #{sales_status},
+			category_id = #{category_id},
+			price = #{price}
 		<if test="imageFileName != ''">
 			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
 		</if>
-		where flea_no = #{flea_no}
+		where post_id = #{post_id}
 	</update>
 	
 	<!-- 중고거래 글 삭제 -->
-	<delete id="boardDelete" parameterType="flea">
-		DELETE FROM fleaMarket WHERE flea_no = #{flea_no}
+	<delete id="deletePost" parameterType="flea">
+		DELETE FROM fleaMarket WHERE post_id = #{post_id}
 	</delete>
 	
 	<!-- 댓글 개수 증감 -->
-	<update id="updateReplyCnt">
+	<update id="updateCommentCount">
 		UPDATE fleaMarket
-		SET flea_reply_cnt = flea_reply_cnt + #{amount}
-		WHERE flea_no = #{flea_no}
+		SET comment_count = comment_count + #{amount}
+		WHERE post_id = #{post_id}
 	</update>
 	
 	<!-- 특정 회원의 중고악기 글 조회 --> 
 	<select id="getPosts" resultType="flea" parameterType="flea">
 		<![CDATA[
-		SELECT flea_no, flea_title, to_char(flea_date,'YYYY/MM/DD') as flea_date, flea_hits
+		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, view_count
 		FROM (
 				SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-					rownum as rnum, flea_no, flea_title, flea_date, flea_hits
+					rownum as rnum, post_id, title, created_at, view_count
 				FROM fleaMarket f
 				where ]]> 
 				<trim prefix="(" suffix=") AND" prefixOverrides="AND">

@@ -7,187 +7,248 @@
 <meta charset="UTF-8">
 <title>JAM - 중고악기</title>
 
-	<script type="text/javascript">
-		$(function(){
-			
-			let flea_no = $("#flea_no").val();
-			let authorUserId;
-			let authorUserName;
-			
-			getBoard();
-			
-			// 게시글 불러오는 함수
-			function getBoard(){
-				if(flea_no == "" || flea_no == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
-				else{
-					fetch("/api/fleaMarket/board/" + flea_no)
-					.then(response =>{
-						if(!response.ok){
-							throw new Error('Network response was not ok.');
-						}
-						return response.json();
-					})
-					.then(data =>{
-						authorUserId = data.user_id;
-						authorUserName = data.user_name;
-						
-						$("#title").html(data.flea_title);
-						$("#user_name").html(data.user_name);
-						$("#date").html(data.flea_date);
-						$("#hits").html(data.flea_hits);
-						$("#board_content").html(data.flea_content);
-						$("#price").html("가격 : " + data.price + " 원");
-						
-						if(data.sales_status == 1) $("#saleDone").html("거래 완료 된 글 입니다.");
-						
-						currentUserIsAuthor();
-					})
-					.catch(error => console.error('Error : ', error));
-				}
-			}
-			
-			// 현재 로그인한 사용자와 글쓴이가 같은지 비교하는 함수
-			function currentUserIsAuthor(){
-					// 로그인 한 사용자 정보 가져오기
-					fetch('/api/member/me/token',{
-						method: 'GET'
-					})
-					.then(response =>{
-						if(!response.ok)
-							throw new Error('Network response was not ok.');
-						return response.json();
-					})
-					.then(data =>{
-						let loggedInUserId = data.user_id;
-						
-						// 글쓴이와 로그인한 사용자가 다르면 메세지 버튼 생성
-						if(loggedInUserId != null){
-							if(authorUserId != loggedInUserId){
-								var msgDiv = document.getElementById("msgDiv");
-								
-						        var imgElement = document.createElement("img");
-						        imgElement.id = "send_msg";
-						        imgElement.className = "message_icon ml-05 cursor-pointer";
-						        imgElement.style.width = "2rem";
-						        imgElement.alt = "쪽지";
-						        imgElement.src = "/resources/include/images/message_icon.svg";
-						
-						        msgDiv.appendChild(imgElement);
-							} else {
-						        
-								var btnDiv = document.getElementById("btnDiv");
-								
-			                	// 수정 버튼 생성
-			                	var updateButton = document.createElement("button");
-			                	updateButton.type = "button";
-			                	updateButton.id = "fleaUpdateBtn";
-			                	updateButton.textContent = "수정"; 
+<script src="/resources/include/dist/js/userToggle.js"></script>
+<script src="/resources/include/dist/js/favorite.js"></script>	
+<style>
+
+
+.title-container {
+	flex-grow: 1;
+    min-width: 250px;
+    max-width: 680px;
+    margin-left: 7rem;
+}
+
+.userName-div{
+	max-width: 150px;
+    flex: 1;
+    justify-content: center;
+}
+
+.date-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;  /* 오른쪽 정렬 */
+    flex-shrink: 0; /* 자동 크기 축소 방지 */
+    min-width: 120px; /* 너무 넓지 않게 조절 */
+    max-width: 170px; /* 필요 이상으로 커지지 않게 제한 */
+}
+
+.user_toggle {
+    left: -6rem;
+    top: 3rem;
+}
+</style>
+<script type="text/javascript">
+$(function(){
+	getBoard().then(() => {
+		toggleUserMenu(); 
+    })
+    .catch(error => {
+        console.error('Error while executing fleaMarket boards:', error);
+    });
+	
+	$(document).on("click", ".postLink", function (e) {
+	    e.preventDefault();
+	    var location = $(this).attr("data-location");
+	    if (location) {
+	    	window.location.href = location;
+	    }
+	});
+
+	
+	$("#searchBtn").click(function(){
+		let search = $("#search").val();
+		let keyword = $("#keyword").val();
 		
-			                	// 삭제 버튼 생성
-			                	var deleteButton = document.createElement("button");
-			                	deleteButton.type = "button";
-			                	deleteButton.id = "fleaDeleteBtn";
-			                	deleteButton.textContent = "삭제"; 
+		if(search == "all") keyword = "";
+		else{
+			if(keyword.replace(/\s/g, "") == ""){
+				alert("검색어를 입력하세요.");
+				$("#keyword").focus();
+				return;
+			} 
+		}
+		location.href = '/fleaMarket/boards?search='+search+'&keyword='+keyword+'&pageNum='+'1';
+	})
 		
-			                	// 버튼을 btn_div에 추가
-			                	btnDiv.appendChild(updateButton);
-			                	btnDiv.appendChild(deleteButton);
-							}
-						}
-					})
-					.catch(error => {
-						console.error('사용자 정보를 가져오는 중 오류 발생 : ' + error);
-					})
-
-			}
-			
-			
-			
-			
-			// 수정 버튼 클릭
-			$(document).on("click", "#fleaUpdateBtn", function() {
-			    if(flea_no == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-			    else $(location).attr('href','/fleaMarket/board/edit/'+flea_no);
-			});
-			
-			// 삭제 버튼 클릭
-			$(document).on("click", "#fleaDeleteBtn", function() {
-				if(confirm("정말 삭제하시겠습니까?")){
-					fetch('/api/fleaMarket/board/'+com_no,{
-						method: 'DELETE'
-					})
-					.then(response =>{
-						if (!response.ok) {
-							throw new Error('Network response was not ok');
-						}
-						alert("삭제가 완료 되었습니다.");
-						$(location).attr('href', '/fleaMarket/boards');
-					})
-					.catch(error =>{
-						alert('게시글 삭제를 완료할 수 없습니다. 잠시 후 다시 시도해주세요.');
-						console.error('Error : ' , error);
-					});
+	$("#fleaWriteBtn").click(function(){
+		fetch("/api/member/auth/check").then((res) => {
+			if (res.status === 401) {
+				if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+					location.href = "/member/login";
+				} else {
+					location.href = "/fleaMarket/boards";
 				}
-			});
-			
-			/* 쪽지 아이콘 클릭 */
-			$(document).on("click", "#send_msg", function() {
-			    $("#receiver_id").val(authorUserId);
-			    $("#receiver").val(authorUserName);
-
-			    var url = "/message/send";
-			    var option = "width=500, height=430, top=10, left=10";
-			    var name = "팝업";
-
-			    window.open("", name, option);
-			    
-			    $("#formPopup").attr("action", url);
-			    $("#formPopup").attr("target","팝업");
-			    $("#formPopup").attr("method","post");
-			    $("#formPopup").submit();
-			});
-			
-			
+			} else {
+				location.href = "/fleaMarket/board/write";
+			}
 		})
+	})	
+})
+
+function getBoard(){
+	return new Promise((resolve, reject) => {
+		let params = new URLSearchParams(window.location.search);
+	    let pageNum = params.get("pageNum") || "1";
+	    let search = params.get("search") || "all";
+	    let keyword = params.get("keyword") || "";
+	    
+	    fetch('/api/fleaMarket/board?pageNum='+pageNum+'&search='+search+'&keyword='+keyword)
+		.then(response=>{
+			if(response.ok) return response.json();
+		}).then(data=>{
+			renderList(data);
+			resolve();
+		})
+		.catch(error => {
+            console.error('Error:', error);
+            reject(error);
+        });
+	})
+}
+
+function renderList(data){
+	let $template = $("#boardTemplate");
+    let $boardList = $("#boardList");
+    
+    $boardList.empty(); 
+
+    console.log(data);
+    data.fleaMarketList.forEach(board => {
+        let $clone = $template.clone().removeAttr("id").show();
+        $clone.find(".userName").text(board.user_name);
+        $clone.find(".userName").attr("data-userId", board.user_id);
+        $clone.find(".postDate").text(board.created_at);
+        $clone.find(".title").text(board.title);
+        $clone.find(".viewCount").text("👀" +board.view_count);
+        $clone.find(".commentCount").text(board.comment_count);
+        $clone.find(".postLink").attr("data-location", "/fleaMarket/post/" + board.post_id);
+
+        let $favoriteSpan = $clone.find(".favoriteSpan");
+        $favoriteSpan.attr("data-post-id", board.post_id);
+		$favoriteSpan.attr("data-board-type", "fleaMarket");
 		
-	</script>
+		let $icon = $favoriteSpan.find("i"); 
+		board.favorite ? $icon.addClass("fa-solid")
+					   : $icon.addClass("fa-regular");
+		
+        $boardList.append($clone);
+    });
+    
+    loadPagination(data.pageMaker);
+    
+}
+
+
+function loadPagination(pageMaker) {
+    const $pagination = $("#pagination");
+    $pagination.empty(); // 기존 페이지 버튼 초기화
+
+    // 페이지 번호 버튼
+    for (let num = pageMaker.startPage; num <= pageMaker.endPage; num++) {
+        $pagination.append(
+            '<li class="paginate_button">' +
+                '<a href="#" data-page="' + num + '" class="font-weight-bold ' + (pageMaker.cvo.pageNum === num ? 'selected_btn' : 'default_btn') + '">' + num + '</a>' +
+            '</li>'
+        );
+    }
+
+    // 클릭 이벤트 추가 (페이지 이동)
+    $("#pagination a").click(function (e) {
+        e.preventDefault();
+        let pageNum = $(this).data("page");
+        let params = new URLSearchParams(window.location.search);
+	    let search = params.get("search") || "all";
+	    let keyword = params.get("keyword") || "";
+	    
+	    let url = "/fleaMarket/boards?pageNum="+pageNum+"&search="+search+"&keyword="+keyword;
+        
+		window.location.href = url;
+    });
+}
+</script>
 </head>
 <body class="wrap">
-	<div class="rem-30 my-top-15 my-bottom-15">
-		<form name="f_data" id="f_data">
-			<input id="flea_no" type="hidden" name="flea_no" value="${flea_no }"/>
-		</form>
-		<form name="formPopup" id="formPopup">
-			<input type="hidden" id="receiver_id" name="receiver_id">
-			<input type="hidden" id="receiver" name="receiver">
-		</form>
-		<div class="py-8 text-center">
-			<h1 id="title" class="font-weight-bold"></h1>
-		</div>
-		<div class="content flex items-center float-right">
-			<span id="user_name"></span>
-			<div id="msgDiv"></div>
-			<span id="date" class="ml-1"></span>
-			<img class="icon ml-2" style="width:3rem;" src="/resources/include/images/hits.svg">
-			<span id="hits" class="ml-05"></span>
-		</div>
-		<div class="my-top-8 py-8 border-top border-bottom m-height350">
-			<div>
-				<span id="saleDone"></span>
+	<div class="content fleaMarket">
+		<div class="my-top-15 my-bottom-15">
+			<div class="title flea-title ">
+				<p class="text-center font-color-blue">중고 악기</p>
 			</div>
-			<p id="price"></p>
-			<p id="board_content"></p>
-		</div>
-		<div class="text-right my-top-7">
-			<div id="btnDiv"></div>
-		</div>
-		<div class="py-8">
-			<jsp:include page="reply.jsp"/>
-		</div>
-		<div class="text-center">
-			<a id="fleaList" href="/fleaMarket/boards">목록</a>
-		</div>
 		
+			<div class="search-div flex justify-center items-center border border-radius-43px">
+				<div class="search-bar-wrapper item-center flex justify-space-around">
+					
+					<% String searchParam = request.getParameter("search");
+					    if (searchParam == null || searchParam.isEmpty()) {
+					        searchParam = "all";
+					    }%> 
+					   
+					<select id="search" name="search" class="search border-none">
+						<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
+					    <option value="title" ${param.search == 'title' ? 'selected' : ''}>제목</option>
+					    <option value="content" ${param.search == 'content' ? 'selected' : ''}>내용</option>
+					    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>작성자</option>
+					</select>
+					
+					<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
+					value="${not empty param.keyword ? param.keyword : ''}" />
+					
+					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
+				</div>
+			</div>
+			
+			<div class="justify-end py-4 flex">
+				<div class="write_btn write_btn_border write_border flex items-center border-radius-7px">
+					<button type="button" id="fleaWriteBtn" class="write_btn_font border-none bColor_fff ">작성하기</button>
+				</div>
+			</div>
+			
+			<div>
+				<ul id="boardList">
+			        <li id="boardTemplate" class="border-bottom">
+			            <div class="pd-2rem flex items-center" >
+			                
+			                <div class="flex items-center justify-center ml-2 mr-2" style="width: 3rem;">
+			                    <span class="favoriteSpan">
+			                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
+			                    </span>
+			                </div>
+			
+			                <div class="title-container postLink flex-1 flex items-center cursor-pointer">
+			                
+			                    <div>
+			                        <span class="font-weight-bold font-size-5 title"></span>
+			                    </div>
+			                </div>
+							<div class="userName-div my-bottom-2 flex">
+			                    <span class="userName"></span>
+			                    <div class="userNameToggle"></div>
+			                </div>
+			                
+			                <div class="date-container flex-1 text-right">
+			                    <div class="my-bottom-2">
+			                        <span class="postDate"></span>
+			                    </div>
+			                    <div class="flex items-center justify-end my-top-2">
+			                        <span class="ml-05 viewCount"></span>
+			                        <span class="ml-05"><i class="fa-regular fa-comment-dots"></i></span>
+			                        <span class="ml-05 commentCount"></span>
+			                    </div>
+			                    
+			                </div>
+			
+			            </div>
+			        </li>
+			    </ul>
+			</div>
+			
+			<div>
+				<div class="text-center">
+				    <ul id="pagination" class="pagination pagination_border"></ul>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>

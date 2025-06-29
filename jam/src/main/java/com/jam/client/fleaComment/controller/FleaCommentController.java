@@ -1,8 +1,9 @@
-package com.jam.client.fleaReply.controller;
+package com.jam.client.fleaComment.controller;
 
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,79 +21,78 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.jam.client.fleaReply.service.FleaReplyService;
-import com.jam.client.fleaReply.vo.FleaReplyVO;
+import com.jam.client.fleaComment.service.FleaCommentService;
+import com.jam.client.fleaComment.vo.FleaCommentVO;
 import com.jam.client.member.vo.MemberVO;
 
 import lombok.AllArgsConstructor;
 
 @RestController
-@RequestMapping(value="/fleareplies")
+@RequestMapping(value="/fleaMarket/comment")
 @AllArgsConstructor
-public class FleaReplyController {
+public class FleaCommentController {
 
-	private FleaReplyService fleareplyService;
+	private FleaCommentService commentService;
 	
 	/***************************
 	 * 중고악기 댓글을 조회하는 메서드입니다.
-	 * @param Long flea_no 조회할 중고악기 글 번호
-	 * @param FleaReplyVO frvo
+	 * @param Long post_id 글 번호
+	 * @param FleaCommentVO comment
 	 * @return 댓글 리스트
 	 ****************************/
 	@DateTimeFormat 
-	@GetMapping(value = "/all/{flea_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<FleaReplyVO> replyList(@PathVariable("flea_no") Long flea_no,@RequestParam(value = "user_id", required = false) String user_id,  @ModelAttribute("data") FleaReplyVO frvo, MemberVO member, HttpServletRequest request, Model model){
-		System.out.println("replyList 호출 성공");
+	@GetMapping(value = "/all/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public List<FleaCommentVO> commentList(@PathVariable("post_id") Long post_id,@RequestParam(value = "user_id", required = false) String user_id,  @ModelAttribute("data") FleaCommentVO comment, MemberVO member, HttpServletRequest request, Model model){
 		
-		List<FleaReplyVO> reply = null;
-		reply = fleareplyService.fleaReplyList(flea_no);
+		List<FleaCommentVO> reply = null;
+		reply = commentService.commentList(post_id);
 		
-		frvo.setUser_id(user_id);
+		comment.setUser_id(user_id);
    		
 		return reply;
 	}
 	
 	/******************************
 	 * 중고악기 댓글을 작성하는 메서드입니다.
-	 * @param FleaReplyVO frvo
+	 * @param FleaCommentVO 
 	 * @return 댓글 작성 실행 결과
 	 **********************************/
 	@JsonFormat
-	@PostMapping(value="/reply",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
-	public String replyInsert(@RequestBody FleaReplyVO frvo,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
+	@PostMapping(value="/comment",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
+	public String commentInsert(@RequestBody FleaCommentVO comment,@ModelAttribute("data") MemberVO member, HttpServletRequest request, Model model) {
 		
 		int result = 0;
 		
-		result = fleareplyService.replyInsert(frvo);
+		result = commentService.commentInsert(comment);
 		
 		return(result ==1)? "SUCCESS" : "FAILURE";
 	}
 	
 	/****************************
 	 * 중고악기 댓글을 수정하는 메서드입니다.
-	 * @param Long fleaReply_no 수정할 댓글 번호
-	 * @param FleaReplyVO frvo 수정할 댓글 내용
+	 * @param Long commnet_id 수정할 댓글 번호
+	 * @param FleaCommentVO comment 수정할 댓글 내용
 	 * @return 댓글 수정 결과
 	 ****************************/
-	@PutMapping(value = "/{fleaReply_no}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
-	public String replyUpdate(@PathVariable("fleaReply_no") Long fleaReply_no, @RequestBody FleaReplyVO frvo) {
+	@PutMapping(value = "/{comment_id}", consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
+	public String replyUpdate(@PathVariable("comment_id") Long comment_id, @RequestBody FleaCommentVO comment) {
 	
-		frvo.setFleaReply_no(fleaReply_no);
-		int result = fleareplyService.replyUpdate(frvo);
+		comment.setComment_id(comment_id);
+		int result = commentService.commentUpdate(comment);
 		
 		return(result ==1) ? "SUCCESS" : "FAILURE";
 	}
 	
 	/*******************************
 	 * 중고악기 댓글을 삭제하는 메서드입니다.
-	 * @param Long fleaReply_no 삭제할 댓글 번호
+	 * @param Long commnet_id 삭제할 댓글 번호
 	 * @return 댓글 삭제 결과
 	 **********************************/
 	
-	@DeleteMapping(value = "/{fleaReply_no}", produces = MediaType.TEXT_PLAIN_VALUE)
-	public ResponseEntity<String> replyDelete(@PathVariable("fleaReply_no")Long fleaReply_no){
+	@DeleteMapping(value = "/{comment_id}", produces = MediaType.TEXT_PLAIN_VALUE)
+	public ResponseEntity<String> commnetDelete(@PathVariable("comment_id")Long comment_id){
 
-		int result = fleareplyService.replyDelete(fleaReply_no);
+		int result = commentService.commentDelete(comment_id);
 		
 		return result == 1?
 		new ResponseEntity<String>("SUCCESS", HttpStatus.OK) :new ResponseEntity<String>(HttpStatus.INTERNAL_SERVER_ERROR);	

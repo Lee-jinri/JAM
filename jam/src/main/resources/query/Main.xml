@@ -19,10 +19,10 @@
 	<select id="fleaList" resultType="flea">
 		SELECT *
 		FROM (
-			SELECT f.flea_no, f.flea_title, to_char(f.flea_date, 'YYYY/MM/DD HH24:MI') as flea_date, f.flea_reply_cnt, f.flea_hits, m.user_id,  m.user_name
+			SELECT f.post_id, f.title, to_char(f.created_at, 'YYYY/MM/DD HH24:MI') as created_at, f.comment_count, f.view_count, m.user_id,  m.user_name
 			FROM fleaMarket f
 			LEFT JOIN Member m ON f.user_id = m.user_id
-			ORDER BY f.flea_date DESC
+			ORDER BY f.created_at DESC
 		) WHERE  <![CDATA[ROWNUM <= 5 ]]>
 	</select>
 

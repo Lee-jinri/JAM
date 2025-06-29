@@ -10,9 +10,9 @@ import com.jam.client.fleaMarket.vo.FleaMarketVO;
 public interface FleaMarketDAO {
 
 	// 중고거래 list
-	public List<FleaMarketVO> getBoards(FleaMarketVO flea_vo);
+	public List<FleaMarketVO> getBoard(FleaMarketVO flea_vo);
 	
-	public List<FleaMarketVO> getBoardsWithFavorite(FleaMarketVO flea_vo);
+	public List<FleaMarketVO> getBoardWithFavorite(FleaMarketVO flea_vo);
 
 	// 중고거래 페이징
 	public int listCnt(FleaMarketVO flea_vo);
@@ -21,22 +21,22 @@ public interface FleaMarketDAO {
 	public void incrementReadCnt(Long flea_no);
 
 	// 중고거래 상세 페이지 조회
-	public FleaMarketVO getBoardDetail(Long flea_no);
+	public FleaMarketVO getPostDetail(Long flea_no);
 
 	// 중고거래 글 작성
-	public int writeBoard(FleaMarketVO flea_vo);
+	public int writePost(FleaMarketVO flea_vo);
 
 	// 중고거래 수정 글 정보
-	public FleaMarketVO getBoardById (Long flea_no);
+	public FleaMarketVO getPostForEdit(Long flea_no);
 	
 	// 중고거래 글 수정
-	public int editBoard(FleaMarketVO flea_vo);
+	public int editPost(FleaMarketVO flea_vo);
 
 	// 중고거래 글 삭제
-	public int boardDelete(Long flea_no);
+	public int deletePost(Long flea_no);
 
 	// 중고거래 댓글 개수 증감
-	public void updateReplyCnt(@Param("flea_no") Long flea_no, @Param("amount") int amount);
+	public void updateCommentCount(@Param("flea_no") Long flea_no, @Param("amount") int amount);
 
 	public List<CommunityVO> getPosts(FleaMarketVO flea_vo);
 

@@ -14,7 +14,7 @@
 		
 		<typeAlias type="com.jam.client.fleaMarket.vo.FleaMarketVO" alias="flea"/>
 		
-		<typeAlias type="com.jam.client.fleaReply.vo.FleaReplyVO" alias="fleaReply"/>
+		<typeAlias type="com.jam.client.fleaComment.vo.FleaCommentVO" alias="fleaComment"/>
 		
 		<typeAlias type="com.jam.client.job.vo.JobVO" alias="job"/>
 		

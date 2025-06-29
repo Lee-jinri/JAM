@@ -1,26 +1,37 @@
 package com.jam.client.fleaMarket.controller;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 
+import org.apache.commons.io.FileUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
+import com.google.gson.JsonObject;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
+import com.jam.client.member.vo.MemberVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -34,7 +45,7 @@ public class FleaMarketRestController {
 
 	private final FleaMarketService fleaService;
 	
-	@GetMapping(value = "boards")
+	@GetMapping(value = "board")
 	public ResponseEntity<Map<String, Object>> getBoards(FleaMarketVO flea_vo, HttpServletRequest request){
 		try {
 			String user_id = (String)request.getAttribute("userId");
@@ -42,7 +53,7 @@ public class FleaMarketRestController {
 			
 			Map<String, Object> result = new HashMap<>();
 
-			List<FleaMarketVO> fleaMarketList = fleaService.getBoards(flea_vo);
+			List<FleaMarketVO> fleaMarketList = fleaService.getBoard(flea_vo);
 			
 			result.put("fleaMarketList", fleaMarketList);
 			
@@ -66,20 +77,20 @@ public class FleaMarketRestController {
 	 * @return ResponseEntity<FleaMarketVO> - 조회된 중고악기 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 **************************************/
-	@GetMapping(value = "/board/{flea_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<FleaMarketVO> getBoardDetail(@PathVariable("flea_no") Long flea_no) throws Exception{
-		if (flea_no == null) { 
-			log.error("flea_no is required");
+	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<FleaMarketVO> getBoardDetail(@PathVariable("post_id") Long post_id) throws Exception{
+		if (post_id == null) { 
+			log.error("post_id is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
 		try {
 	        // 조회수 증가
-			fleaService.incrementReadCnt(flea_no);
+			fleaService.incrementReadCnt(post_id);
 			
 			// 상세 페이지 조회
-			FleaMarketVO detail = fleaService.getBoardDetail(flea_no);
-	       
+			FleaMarketVO detail = fleaService.getPostDetail(post_id);
+			
 	        return new ResponseEntity<>(detail, HttpStatus.OK);
 	    } catch (Exception e) {
 	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
@@ -94,41 +105,46 @@ public class FleaMarketRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
-	@RequestMapping(value="/board", method=RequestMethod.POST)
-	public ResponseEntity<String> writeBoard(@RequestBody FleaMarketVO flea_vo) throws Exception{
+	@PostMapping(value="/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<String> writeBoard(
+				@RequestParam("title") String title,
+		        @RequestParam("content") String content,
+		        @RequestParam("price") int price,
+		        @RequestParam("category_id") int categoryId,
+		        @RequestParam("images") List<MultipartFile> images
+		        
+			
+			// FIXME: 이거 모델로 받을 지 고민 좀 ;;; 프론트에 form 설정 안했음
+		        /*
+		        @ModelAttribute FleaMarketVO flea_vo,
+		        @RequestParam("images") List<MultipartFile> images*/
+		        
+			) throws Exception{
 		
-		String errorMsg;
-		if (flea_vo == null) { 
-			log.error("flea_vo is null");
-			errorMsg = "flea_vo is null.";
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
+		if (title == null || title.trim().isEmpty()) {
+		    return ResponseEntity.badRequest().body("제목을 입력하세요.");
 		}
 		
-		// 유효성 검사
-		String flea_title = flea_vo.getFlea_title();
-		String flea_content = flea_vo.getFlea_content();
+		if (content == null || content.trim().isEmpty()) {
+		    return ResponseEntity.badRequest().body("설명을 입력하세요.");
+		}
 
-		if (flea_title == null) {
-			log.error("flea_title is null.");
-			errorMsg = "flea_title is null.";
-		    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
-		}
-		if (flea_content == null) {
-			log.error("flea_content is null.");
-			errorMsg = "flea_content is null.";
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
-		}
+		
+		FleaMarketVO flea_vo = new FleaMarketVO();
+		
+		flea_vo.setTitle(title);
+		flea_vo.setContent(content);
+		flea_vo.setPrice(price);
+		flea_vo.setCategory_id(categoryId);
 		
 		try {
-			fleaService.writeBoard(flea_vo);
+			int postId = fleaService.writePost(flea_vo);
 			
-			String flea_no = flea_vo.getFlea_no().toString();
-			
-			return new ResponseEntity<>(flea_no,HttpStatus.OK);
+			return new ResponseEntity<>(Integer.toString(postId), HttpStatus.OK);
 		} catch (Exception e) {
-			log.error("중고악기 글 작성 데이터 저장 중 오류 : " + e.getMessage());
+			log.error("중고악기 작성 데이터 저장 중 오류: " + e.getMessage());
 			
-			String responseBody = e.getMessage();
+			String responseBody = "시스템 오류입니다. 잠시 후 다시 시도해주세요.";
 			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -136,19 +152,19 @@ public class FleaMarketRestController {
 
 	/*******************************************
 	 * 중고악기의 수정할 글 정보(제목, 내용, 가격, 카테고리, 거래 완료 여부, 글쓴이 id)를 불러오는 메서드 입니다.
-	 * @param flea_no 수정을 위해 불러올 글 번호
+	 * @param post_id 수정을 위해 불러올 글 번호
 	 * @return ResponseEntity<FleaMarketVO> - 조회된 중고악기 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
 	 *******************************************/
-	@GetMapping(value = "/board/edit/{flea_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<FleaMarketVO> getBoardById(@PathVariable Long flea_no) {
-		if (flea_no == null) { 
-			log.error("flea_no is required");
+	@GetMapping(value = "/post/edit/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<FleaMarketVO> getBoardById(@PathVariable Long post_id) {
+		if (post_id == null) { 
+			log.error("post_id is required");
 			
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}else {
 			try {
-				FleaMarketVO board = fleaService.getBoardById(flea_no);
-			    board.setFlea_no(flea_no);
+				FleaMarketVO board = fleaService.getPostForEdit(post_id);
+			    board.setPost_id(post_id);
 			    
 				return ResponseEntity.ok(board);
 			}catch (Exception e) {
@@ -169,7 +185,7 @@ public class FleaMarketRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 * @return 성공 시 수정한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 수정 페이지
 	 ***********************************/
-	@RequestMapping(value="/board", method=RequestMethod.PUT)
+	@RequestMapping(value="/post", method=RequestMethod.PUT)
 	public ResponseEntity<String> editBoard(@RequestBody FleaMarketVO flea_vo) throws Exception{
 		String errorMsg;
 		if (flea_vo == null) { 
@@ -180,16 +196,16 @@ public class FleaMarketRestController {
 		}
 		
 		// 유효성 검사
-		String flea_title = flea_vo.getFlea_title();
-		String flea_content = flea_vo.getFlea_content();
+		String title = flea_vo.getTitle();
+		String content = flea_vo.getContent();
 
-		if (flea_title == null) {
+		if (title == null) {
 			log.error("flea_title is null.");
 			errorMsg = "flea_title is null.";
 		    
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
 		}
-		if (flea_content == null) {
+		if (content == null) {
 			log.error("flea_content is null.");
 			errorMsg = "flea_content is null.";
 			
@@ -197,10 +213,10 @@ public class FleaMarketRestController {
 		}
 		
 		try {
-			fleaService.editBoard(flea_vo);
-			String flea_no = flea_vo.getFlea_no().toString();
+			fleaService.editPost(flea_vo);
+			String post_id = flea_vo.getPost_id().toString();
 			
-			return new ResponseEntity<>(flea_no, HttpStatus.OK);
+			return new ResponseEntity<>(post_id, HttpStatus.OK);
 		} catch(Exception e) {
 			log.error("중고악기 editBoard 데이터 수정 중 오류 : " + e.getMessage());
 			String responseBody = e.getMessage();
@@ -218,17 +234,17 @@ public class FleaMarketRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@RequestMapping(value="/board", method=RequestMethod.DELETE)
-	public ResponseEntity<String> boardDelete(@RequestParam("flea_no") Long flea_no) throws Exception{
+	@RequestMapping(value="/post", method=RequestMethod.DELETE)
+	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id) throws Exception{
 		log.info("boardDelete : ");
 		
-		if (flea_no == null) { 
+		if (post_id == null) { 
 			log.error("flea_no is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("flea_no is required");
 		}
 		
 		try {
-			fleaService.boardDelete(flea_no);
+			fleaService.deletePost(post_id);
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
@@ -267,5 +283,46 @@ public class FleaMarketRestController {
 	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
+	/********************************
+	 * 중고악기 사진 업로드
+	 * @return String 사진 저장 경로 
+	 ********************************/
+	@PostMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
+	public ResponseEntity<Map<String, Object>> uploadImageFile(
+			@RequestParam("file") MultipartFile multipartFile, 
+			HttpServletRequest request)  {
+		
+		Map<String, Object> response = new HashMap<>();
+				
+		// 내부경로로 저장
+		String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
+		String fileRoot = contextRoot+"resources/fileupload/";
+		
+		String originalFileName = multipartFile.getOriginalFilename();	//오리지날 파일명
+		String extension = originalFileName.substring(originalFileName.lastIndexOf("."));	//파일 확장자
+		String savedFileName = UUID.randomUUID() + extension;	//저장될 파일 명
+		
+		File targetFile = new File(fileRoot + savedFileName);	
+		
+		try {
+			InputStream fileStream = multipartFile.getInputStream();
+			FileUtils.copyInputStreamToFile(fileStream, targetFile);	//파일 저장
+			response.put("url", "/resources/fileupload/" + savedFileName);
+	        response.put("responseCode", "success");
+	        
+	        return ResponseEntity.ok(response);
+	        /*
+			jsonObject.addProperty("url", "/resources/fileupload/"+savedFileName); // contextroot + resources + 저장할 내부 폴더명
+			jsonObject.addProperty("responseCode", "success");*/
+				
+		} catch (IOException e) {
+			FileUtils.deleteQuietly(targetFile);	//저장된 파일 삭제
+			log.error(e.getMessage());
+			
+			response.put("responseCode", "error")
+			;
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+		}
+	}
 	
 }

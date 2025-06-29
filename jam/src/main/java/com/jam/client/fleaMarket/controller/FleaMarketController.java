@@ -42,16 +42,16 @@ public class FleaMarketController {
 	 * @param FleaMarketVO flea_vo
 	 * @return 중고악기 글 리스트 
 	 ***************************************/
-	@RequestMapping(value="/boards", method=RequestMethod.GET)
+	@RequestMapping(value="/board", method=RequestMethod.GET)
 	public String fleaMarketList(Model model, @ModelAttribute FleaMarketVO flea_vo) {
 		
-		List<FleaMarketVO> fleaMarketList = fleaService.getBoards(flea_vo);
+		List<FleaMarketVO> fleaMarketList = fleaService.getBoard(flea_vo);
 		
 		model.addAttribute("fleaMarketList",fleaMarketList);
 		
 		int total = fleaService.listCnt(flea_vo);
 		model.addAttribute("pageMaker", new PageDTO(flea_vo, total));
-		return "fleaMarket/boards";
+		return "fleaMarket/board";
 	}
 	
 	/**************************************************
@@ -59,11 +59,11 @@ public class FleaMarketController {
 	 * @param com_no 조회할 중고악기 글 번호
 	 * @return 중고악기 상세 페이지
 	 **************************************************/
-	@RequestMapping(value = "/board/{flea_no}", method = RequestMethod.GET)
-	public String fleaDetail(@PathVariable("flea_no") Long flea_no, Model model) {
-		model.addAttribute("flea_no", flea_no);
+	@RequestMapping(value = "/post/{post_id}", method = RequestMethod.GET)
+	public String fleaDetail(@PathVariable("post_id") Long post_id, Model model) {
+		model.addAttribute("post_id", post_id);
 		
-	    return "fleaMarket/board";
+	    return "fleaMarket/post";
 	}
 	
 	/***************************************
@@ -92,7 +92,7 @@ public class FleaMarketController {
 	 * 중고악기 사진 업로드
 	 * @return String 사진 저장 경로 
 	 ********************************/
-	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
+	@RequestMapping(value="/uploadImageFile", method=RequestMethod.POST, produces = "application/json; charset=utf8")
 	@ResponseBody
 	public String uploadImageFile(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request )  {
 		JsonObject jsonObject = new JsonObject();

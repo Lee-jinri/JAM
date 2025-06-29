@@ -20,12 +20,12 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	private final MemberService memberService;
 	
 	@Override
-	public List<FleaMarketVO> getBoards(FleaMarketVO flea_vo) {
+	public List<FleaMarketVO> getBoard(FleaMarketVO flea_vo) {
 		
 		List<FleaMarketVO> list = new ArrayList<>(); 
 		
-		if(flea_vo.getUser_id() == null) list = fleaDao.getBoards(flea_vo);
-		else list = fleaDao.getBoardsWithFavorite(flea_vo);
+		if(flea_vo.getUser_id() == null) list = fleaDao.getBoard(flea_vo);
+		else list = fleaDao.getBoardWithFavorite(flea_vo);
 		
 		return list;
 	}
@@ -42,36 +42,36 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	}
 
 	@Override
-	public FleaMarketVO getBoardDetail(Long flea_no) {
+	public FleaMarketVO getPostDetail(Long flea_no) {
 		
-		FleaMarketVO detail = fleaDao.getBoardDetail(flea_no);
+		FleaMarketVO detail = fleaDao.getPostDetail(flea_no);
 		
 		return detail;
 	}
 
 	@Override
-	public int writeBoard(FleaMarketVO flea_vo) {
-		return fleaDao.writeBoard(flea_vo);
+	public int writePost(FleaMarketVO flea_vo) {
+		return fleaDao.writePost(flea_vo);
 	}
 
 	@Override
-	public FleaMarketVO getBoardById(Long flea_no) {
+	public FleaMarketVO getPostForEdit(Long flea_no) {
 		
-		FleaMarketVO updateData =  fleaDao.getBoardById(flea_no);
+		FleaMarketVO updateData =  fleaDao.getPostForEdit(flea_no);
 		
 		return updateData;
 	}
 
 	@Override
-	public int editBoard(FleaMarketVO flea_vo) {
+	public int editPost(FleaMarketVO flea_vo) {
 		
-		return fleaDao.editBoard(flea_vo);
+		return fleaDao.editPost(flea_vo);
 	}
 
 	@Override
-	public int boardDelete(Long flea_no) {
+	public int deletePost(Long flea_no) {
 	
-		return fleaDao.boardDelete(flea_no);
+		return fleaDao.deletePost(flea_no);
 	}
 
 	@Override
