@@ -101,9 +101,9 @@
 			$("#roomHeader").click(function(){
 				location.href = "/roomRental/boards";
 			})
-			
+			*/
 			$("#fleaHeader").click(function(){
-				location.href = "/fleaMarket/boards";
+				location.href = "/fleaMarket/board";
 			})
 			
 			$("#comHeader").click(function(){

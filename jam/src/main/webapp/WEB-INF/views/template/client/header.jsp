@@ -238,6 +238,10 @@ header {
 			$(location).attr('href','/mypage/written?user_id='+user_id);
 		})
 		
+		$("#myStore").click(function(){
+			$(location).attr('href','/fleaMarket/my?view=store');
+		})	
+		
 		$("#myFavorite").click(function(){
 			$(location).attr('href','/mypage/favorite')
 		})
@@ -322,7 +326,7 @@ function logout(loginType){
 						class="header-board-a font-color-blue font-weight-bold padding-10">커뮤니티</a>
 					<a href="/roomRental/boards"
 						class="header-board-a font-color-blue font-weight-bold padding-10">연습실</a>
-					<a href="/fleaMarket/boards"
+					<a href="/fleaMarket/board"
 						class="header-board-a font-color-blue font-weight-bold padding-10">중고악기</a>
 					<a href="/job/boards"
 						class="header-board-a font-color-blue font-weight-bold padding-10">Jobs</a>
@@ -355,6 +359,9 @@ function logout(loginType){
 								정보</span></li>
 						<li id="written" class="mypage_toggle_btn cursor-pointer"><span
 							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한 글</span>
+								</li>
+						<li id="myStore" class="mypage_toggle_btn cursor-pointer"><span
+							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">내 상점</span>
 								</li>
 						<li id="myFavorite" class="mypage_toggle_btn cursor-pointer">
 							<span
