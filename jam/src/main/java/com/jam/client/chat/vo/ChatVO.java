@@ -22,9 +22,8 @@ public class ChatVO {
     private String receiverName;
     private String chatDate;
     private String chatRoomId;			
-    private String status;				// 메시지의 상태를 나타내는 필드 (unread, read).
     
-    private String participant;
+    private String partner;
     private boolean mine;
     
     public ChatVO(String chatRoomId) {

@@ -252,14 +252,8 @@ header {
 		})
 		
 		$("#chat").click(function(){
-			$("#chatContainer").toggle();
-			$('.mypage_toggle').toggle();
-			
-			const openChatListEvent = new CustomEvent("openChatList");
-			document.dispatchEvent(openChatListEvent);
-			/*
-			window.open('/chat/chatrooms', "popupWindow", "width=600,height=400,toolbar=no,menubar=no,scrollbars=yes,resizable=yes,location=no,directories=no,status=no");
-			$(location).attr('href', '/chat/chatrooms');*/
+			sessionStorage.removeItem("chatRoomId");
+			location.href = '/chat';
 		})
 		
 		

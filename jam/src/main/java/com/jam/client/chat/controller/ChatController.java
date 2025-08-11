@@ -17,9 +17,9 @@ public class ChatController {
 		return "chat/chatRooms";
 	}
 	
-	@RequestMapping(value="/chat", method=RequestMethod.GET)
+	@RequestMapping(value="", method=RequestMethod.GET)
 	public String chatPage() {
 		
-		return "chat/chat";
+		return "fleaMarket/chat";
 	}
 }

@@ -18,7 +18,8 @@
 			</div>
 			
 			<div>
-				<jsp:include page="/WEB-INF/views/chat/chatRooms.jsp"/>
+				<%-- <jsp:include page="/WEB-INF/views/chat/chatRooms.jsp"/> --%>
+
 			</div>
 			
 			

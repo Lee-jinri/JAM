@@ -1,7 +1,7 @@
 package com.jam.client.chat.controller;
 
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -10,8 +10,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,10 +25,43 @@ import lombok.extern.log4j.Log4j;
 @Log4j
 @RequiredArgsConstructor
 public class ChatRestController {
-	
+	// FIXME: 무한 스크롤 만들어야 함
 	private final ChatService chatService;
 	
-	/* 채팅방에 입장하면 채팅 내용 불러옴 */
+	/**
+	 * 채팅방 ID 조회 또는 생성
+	 * - targetUserId와 현재 로그인 유저(userId) 기준으로 채팅방 ID를 가져옴
+	 * - 존재하지 않으면 새로 생성
+	 * - Redis에 참여자 정보 저장
+	 *
+	 * @param targetUserId  채팅 상대방의 사용자 ID
+	 * @param request       HttpServletRequest (JWT 인증 필터에서 userId를 setAttribute로 저장해 둠)
+	 * @return 채팅방 ID
+	 */
+	@GetMapping(value="/chatRoomId")
+    public ResponseEntity<String> getChatRoomId(@RequestParam String targetUserId, HttpServletRequest request) {
+
+    	String userId = (String)request.getAttribute("userId");
+    	
+    	if(userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+    	if(targetUserId == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+
+    	String chatRoomId = chatService.getChatRoomId(userId, targetUserId);
+    	
+    	chatService.addParticipant(chatRoomId, targetUserId, userId);
+    	
+    	return ResponseEntity.ok(chatRoomId);
+    }
+	
+	/**
+	 * 특정 채팅방의 메시지 목록 조회
+	 * - 최근 메시지 100건 가져옴
+	 * - 각 메시지에 mine 필드 세팅 (현재 유저가 보낸 메시지인지 여부)
+	 *
+	 * @param chatRoomId   채팅방 ID
+	 * @param request      HttpServletRequest (userId 포함)
+	 * @return 메시지 리스트
+	 */
     @GetMapping("/messages")
     public ResponseEntity<List<ChatVO>> messages(@RequestParam String chatRoomId, HttpServletRequest request) {
         
@@ -41,6 +72,7 @@ public class ChatRestController {
         	List<ChatVO> messages = chatService.getMessages(chatRoomId, pageable);
         	
         	String userId = (String) request.getAttribute("userId");
+        	
         	for (ChatVO message : messages) {
         		message.setMine(message.getSenderId().equals(userId));
             }
@@ -49,30 +81,47 @@ public class ChatRestController {
     	}catch(Exception e){
     		log.error(e.getMessage());
     	}
-		return null;    
-    }
-    
-    @GetMapping(value="/chatRoomId")
-    public String getChatRoomId(@RequestParam String targetUserName, HttpServletRequest request) {
     	
-    	String targetUserId = chatService.getTargetUserId(targetUserName);
-		String userId = (String)request.getAttribute("userId");
-				
-		// 사용자, 상대방 아이디 없을 때 예외 처리 해야함 
-		String chatRoomId = chatService.getChatRoomId(userId, targetUserId); 
-		
-		log.info(chatRoomId);
-		
-    	return chatRoomId;
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    
     }
     
+    /**
+     * 채팅 상대방 정보 조회
+     * - 채팅방 ID와 현재 로그인한 유저 기준으로 상대방 ID, 이름 반환
+     *
+     * @param chatRoomId  채팅방 ID
+     * @param request     HttpServletRequest (userId 포함)
+     * @return partnerId, partnerName 포함한 Map
+     */
+    @GetMapping(value="/chatPartner")
+    public ResponseEntity<Map<String,String>> getChatPartner(@RequestParam String chatRoomId, HttpServletRequest request){
+    	
+    	String userId = (String)request.getAttribute("userId");
+    	
+    	Map<String, String> chatPartner = chatService.getChatPartner(chatRoomId, userId);
+    	
+    	return ResponseEntity.ok(chatPartner);
+    }
+    
+    /**
+     * 내가 참여 중인 채팅방 목록 조회
+     * - 최근 대화 순으로 정렬되어 반환
+     *
+     * @param request  HttpServletRequest (userId 포함)
+     * @return 채팅방 목록 (ChatVO 리스트)
+     */
     @GetMapping(value="/chatRooms")
     public ResponseEntity<List<ChatVO>> getChatRooms(HttpServletRequest request){
     	
         try {
-        	String userId = (String) request.getSession().getAttribute("userId");
+        	String userId = (String) request.getAttribute("userId");
+        	
+        	if (userId == null) {
+        		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+        	}
+        	
     		List<ChatVO> chatRooms = chatService.getChatRooms(userId);
-			
+
 			return ResponseEntity.ok().body(chatRooms);
 		}catch(Exception e) {
 			log.error(e.getMessage());
@@ -80,44 +129,4 @@ public class ChatRestController {
 		}
     }
     
-    // 사용자 채팅방 목록 추가
- 	@PostMapping(value = "/addchatRooms", produces = "application/json")
-     public ResponseEntity<String> addUserToChatRoom(@RequestBody ChatVO chat) {
- 		try {
- 			String senderId = chat.getSenderId();
- 			String receiverId = chat.getReceiverId();
- 			
- 			// 채팅방 id 랜덤으로 생성
- 			//이거 변경 
- 			String chatRoomId = UUID.randomUUID().toString();
- 			
- 			chatService.addUserToChatRoom(senderId, receiverId, chatRoomId);
- 			
- 			return new ResponseEntity<>(HttpStatus.OK);
- 		}catch(Exception e) {
- 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
- 		}
- 	}
-    
- 	// 발신자와 수신자 함께하는 채팅방이 존재하는지 확인
- 	@GetMapping(value="/commonRooms")
- 	public ResponseEntity<String> getCommonChatRooms(@RequestParam String userId1, @RequestParam String userId2) {
- 		boolean existence = chatService.getCommonChatRooms(userId1, userId2);
- 		
- 		if(existence) return new ResponseEntity<>("existence", HttpStatus.OK);
- 		else return new ResponseEntity<>("nonexistence",HttpStatus.OK);
- 	}
-
-    /*
-	@GetMapping(value = "/chatRooms", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<ChatVO> getRoomsWithDetails(HttpServletRequest request) {
-		String userId = (String) request.getSession().getAttribute("userId");
-		
-		List<ChatVO> getRoomWithDetails = chatService.getRoomsWithDetails(userId);
-		
-		log.info("chatController : " + getRoomWithDetails);
-		
-		return getRoomWithDetails;
-	}*/
-	
 }

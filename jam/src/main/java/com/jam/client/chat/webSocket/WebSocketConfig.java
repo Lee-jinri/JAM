@@ -7,7 +7,6 @@ import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
 import com.jam.client.chat.service.ChatService;
-import com.jam.client.member.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,12 +17,11 @@ import lombok.RequiredArgsConstructor;
 public class WebSocketConfig implements WebSocketConfigurer  {
 	
     private final ChatService chatService;
-	private final MemberService memberService;
 	private final CustomWebSocketInterceptor customWebSocketInterceptor;
 
 	@Bean
 	public WebSocketHandler webSocketHandler() {
-		return new WebSocketHandler(chatService, memberService);
+		return new WebSocketHandler(chatService);
 	}
 
     @Override
@@ -32,7 +30,4 @@ public class WebSocketConfig implements WebSocketConfigurer  {
         		.addInterceptors(customWebSocketInterceptor)
                 .setAllowedOrigins("*");
     }
-
-
-	
 }

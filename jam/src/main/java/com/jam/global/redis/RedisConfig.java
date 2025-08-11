@@ -1,7 +1,7 @@
 package com.jam.global.redis;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.DisposableBean;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
@@ -58,26 +58,7 @@ public class RedisConfig implements DisposableBean {
         return this.clientResources;
     }
 
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory(DefaultClientResources clientResources) {
-        RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
-        LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
-            .clientResources(clientResources)
-            .build();
-        return new LettuceConnectionFactory(config, clientConfig);
-    }
 
-    /*
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
-        redisTemplate.setConnectionFactory(redisConnectionFactory);
-        redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(String.class));
-        return redisTemplate;
-    }
-    */
-    
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
@@ -114,6 +95,15 @@ public class RedisConfig implements DisposableBean {
         template.setHashValueSerializer(stringRedisSerializer);
         return template;
     }
+    
+    @Bean(destroyMethod = "destroy")
+    public RedisConnectionFactory redisConnectionFactory(DefaultClientResources clientResources) {
+    	RedisStandaloneConfiguration config = new RedisStandaloneConfiguration(host, port);
+    	LettuceClientConfiguration clientConfig = LettuceClientConfiguration.builder()
+    		.clientResources(clientResources)
+    		.build();
+    	return new LettuceConnectionFactory(config, clientConfig);
+    }
 
     @Override
     public void destroy() {
@@ -121,44 +111,5 @@ public class RedisConfig implements DisposableBean {
             this.clientResources.shutdown();
         }
     }
-    /*
     
-    @Bean(destroyMethod = "shutdown")
-    public DefaultClientResources clientResources() {
-        return DefaultClientResources.create();
-    }
-    
-    // lettuce    
-    @Bean
-    public RedisConnectionFactory redisConnectionFactory() {
-        return new LettuceConnectionFactory(host, port);
-    }
-
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate() {
-        RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>(); 
-        
-        redisTemplate.setConnectionFactory(redisConnectionFactory());  
-        redisTemplate.setKeySerializer(new StringRedisSerializer());   // Key: String 
-        redisTemplate.setValueSerializer(new Jackson2JsonRedisSerializer<>(String.class));  // Value: 직렬화에 사용할 Object 사용하기   
-        return redisTemplate;
-    }
-    
-    
-
-    @Bean
-    public RedisTemplate<String, String> stringRedisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, String> template = new RedisTemplate<>();
-        template.setConnectionFactory(redisConnectionFactory);
-        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-        template.setKeySerializer(stringRedisSerializer);
-        template.setValueSerializer(stringRedisSerializer);
-        template.setHashKeySerializer(stringRedisSerializer);
-        template.setHashValueSerializer(stringRedisSerializer);
-        return template;
-    }
-    */
-    
-
-      
 }

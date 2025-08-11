@@ -1,21 +1,19 @@
 package com.jam.client.chat.service;
 
-import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.chat.vo.ChatVO;
 
@@ -32,19 +30,6 @@ public class ChatServiceImpl implements ChatService {
     private final ObjectMapper objectMapper;
     private final UserServiceAdapter userServiceAdapter;
     
-	/*
-	 * 사용자 아이디를 키로 참여한 채팅방 저장
-	 * 메시지 전송 시점에 저장함
-	 * 계속 저장해도 상관X Set 중복 허용 안하니까
-	 * */
-	@Override
-	public void addUserToChatRoom(String userId, String targetUserId, String chatRoomId) {
-	    
-		// 사용자Id에 채팅방 Id 저장  
-		stringRedisTemplate.opsForSet().add("user:rooms:" + userId, chatRoomId);
-		stringRedisTemplate.opsForSet().add("user:rooms:"+ targetUserId, chatRoomId);
-	}
-
 	// 사용자 채팅방 Id 조회
 	public Set<String> getChatRoomId(String userId) {
 
@@ -53,108 +38,127 @@ public class ChatServiceImpl implements ChatService {
 		return rooms != null ? rooms : new HashSet<>();
 	}
 
-	/* @Parameter boolean active - true(채팅방 활성화) false(채팅방 비활성화, 채팅 목록에서 채팅방 나가기 했을 때)
-	 * 채팅방 입장,  채팅 전송, 채팅방 나가기 할 때 실행됨 */
 	@Override
-	public void addParticipant(String chatRoomId, String participant, String userId) {
+	public void addParticipant(String chatRoomId, String otherUserId, String userId) {
 		try {
-			String otherUserId = getTargetUserId(participant);
+			String otherUserName = stringRedisTemplate.opsForValue().get("users:name:" + otherUserId);
+			String userName = stringRedisTemplate.opsForValue().get("users:name:" + userId);
+
+			if(otherUserName == null) {
+				otherUserName = getUserName(otherUserId);
+		        stringRedisTemplate.opsForValue().set("users:name:" + otherUserId, otherUserName); 
+			}
 			
-			stringRedisTemplate.opsForSet().add("chatRoomId:" + chatRoomId + ":participants", otherUserId);
-			stringRedisTemplate.opsForSet().add("chatRoomId:" + chatRoomId + ":participants", userId);
+			if(userName == null) {
+				userName = getUserName(userId);
+				stringRedisTemplate.opsForValue().set("users:name:"+userId, userName);
+			}
+			
+			// 키: chatRoomId:{chatRoomId}:participants
+			// 필드: userId, 값: nickname
+			stringRedisTemplate.opsForHash().put("chatRoomId:" + chatRoomId + ":participants", userId, userName);
+			stringRedisTemplate.opsForHash().put("chatRoomId:" + chatRoomId + ":participants", otherUserId, otherUserName);
 
 		}catch(Exception e) {
 			log.error(e.getMessage());
 		}
 	}
 	
+	private String getUserName(String userId) {
+		return userServiceAdapter.getUserName(userId);
+	}
+	
 	@Override
-	public String getParticipant(String chatRoomId, String userId) {
+	public String getUserNameFromRedis(String userId) {
+		String key = "users:name:"+userId;
+    	String userName = stringRedisTemplate.opsForValue().get(key);
+    	
+    	if(userName == null) userName = getUserName(userId);
+    	
+        return userName;
+	}
+
+	@Override
+	public Map<String, String> getChatPartner(String chatRoomId, String userId) {
 		try {
-			Set<String> participants = stringRedisTemplate.opsForSet().members(chatRoomId + ":participants");
+			Map<Object, Object> participants =
+					stringRedisTemplate.opsForHash().entries("chatRoomId:" + chatRoomId + ":participants");
+
+			Map<String, String> result = new HashMap<>();
 			
-			if (participants != null) {
-		        // 현재 사용자 ID를 제외한 나머지 ID 반환
-		        for (String participant : participants) {
-		            if (!participant.equals(userId)) {
-		            	log.info(participant);
-		            	
-		                return participant;
-		            }
-		        }
-		    }
-			
+			for (Map.Entry<Object, Object> entry : participants.entrySet()) {
+				String id = (String) entry.getKey();
+				String name = (String) entry.getValue();
+
+				if (!id.equals(userId)) {
+					result.put("chatPartnerId", id);
+					result.put("chatPartnerName", name);
+				}
+			}
+			return result;
 		}catch(Exception e) {
 			log.error(e.getMessage());
 		}
 		return null;
 	}
 	
-	@Override
 	// 사용자 채팅방 목록과 마지막 메시지, 상대방 Id 조회
-	public List<ChatVO> getChatRooms(String userId){
-		
+	@Override
+	public List<ChatVO> getChatRooms(String userId) {
 		Set<String> roomIds = stringRedisTemplate.opsForSet().members("user:rooms:" + userId);
-
 		List<ChatVO> chatList = new ArrayList<>();
-		
-		for (String r : roomIds) {
-			Object message = redisTemplate.opsForList().index("chatRoomId:"+ r +":messages", -1);
-					
-			if(message != null) chatList.add((ChatVO)message);
+
+		// 방이 없으면 빈 리스트 반환
+		if (roomIds == null || roomIds.isEmpty()) {
+			return chatList;
 		}
-		
-		log.info("getChatRooms : " +chatList);
+
+		for (String roomId : roomIds) {
+			// 마지막 메시지 가져오기 (-1: 마지막 요소)
+			Object obj = redisTemplate.opsForList().index("chatRoomId:" + roomId + ":messages", -1);
+			if (obj == null) {
+				// FIXME: 메시지 없는 방은 목록에서 뺄지 말지??
+				continue;
+			}
+
+			ChatVO last;
+			try {
+				last = (ChatVO) obj; 
+			} catch (ClassCastException e) {
+				log.error("캐스팅 실패. Redis 직렬화 타입 확인 필요", e);
+				continue;
+			}
+
+			// 상대방 정보 붙이기
+			Map<String, String> partnerInfo = getChatPartner(roomId, userId);
+			last.setPartner(partnerInfo != null ? partnerInfo.getOrDefault("chatPartnerName", "") : "");
+
+			chatList.add(last);
+		}
+
+		// 최근 메시지 순 정렬
+		chatList.sort((a, b) -> {
+			String da = a.getChatDate() == null ? "" : a.getChatDate();
+			String db = b.getChatDate() == null ? "" : b.getChatDate();
+			return db.compareTo(da); // 내림차순
+		});
+
 		return chatList;
 	}
 	
-	// 채팅방에 채팅 정보 추가// 채팅 정보 조회// 사용자 채팅방 목록 조회// 사용자 채팅방 목록 추가
 	@Override
-	public void addMessageToChatRoom(String chatRoomId, ChatVO chat) {
-		
-		try {
-	        redisTemplate.opsForList().rightPush("room:" + chatRoomId + ":messages", chat);
-	    } catch (Exception e) {
-	        throw new RuntimeException("Failed to save chat message", e);
+	public boolean ensureRoomOnFirstMessage(String chatRoomId, String userId, String partnerId) {
+	    String listKey = "chatRoomId:" + chatRoomId + ":messages";
+	    Long size = redisTemplate.opsForList().size(listKey);
+        
+	    // 첫 메시지면 채팅방 참여자 등록
+	    if (size == null || size == 0) {
+	    	stringRedisTemplate.opsForSet().add("user:rooms:" + userId, chatRoomId);
+	        stringRedisTemplate.opsForSet().add("user:rooms:" + partnerId, chatRoomId);
+	        return true;
 	    }
-		
-	}
-	
-
-	
-	// 채팅 정보 조회
-	/*
-	@Override
-	public List<ChatVO> getChatMessages(String chatRoomId, Pageable pageable) {
-		long start = pageable.getOffset();
-	    long end = start + pageable.getPageSize() - 1;
-
-	    List<Object> range = redisTemplate.opsForList().range("room:" + chatRoomId + ":messages", start, end);
-
-	    // 변환 로직이 필요하다면 아래와 같이 처리합니다.
-	    return convertToChatMessageList(range);
-	}*/
-	
-	@Override
-	public List<String> getChatMessages(String chatRoomId, Pageable pageable) {
-		long start = pageable.getOffset();
-	    long end = start + pageable.getPageSize() - 1;
-
-	    log.info("start :" + start);
-	    log.info("end : " + end);
 	    
-	    List<String> previousMessages = stringRedisTemplate.opsForList().range("chatRoomId:" + chatRoomId + ":messages", start, end);
-	    
-	    log.info(previousMessages);
-	    
-	    // List<Object> range = redisTemplate.opsForList().range("room:" + chatRoomId + ":messages", start, end);
-	    
-	    return previousMessages;
-	}
-	
-	@Override
-	public String getTargetUserId(String userName) {
-		return userServiceAdapter.getUserId(userName);
+	    return false; // 이미 메시지 있음
 	}
 	
 	@Override
@@ -166,9 +170,7 @@ public class ChatServiceImpl implements ChatService {
 			chat.setMessageId(getNextMessageId(chatRoomId));
 			
 			chat.setChatDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-            chat.setStatus("unread");
             
-            log.info(chat);
 			redisTemplate.opsForList().rightPush("chatRoomId:" + chatRoomId + ":messages", chat);
 		}catch(Exception e) {
 			log.error(e);
@@ -189,7 +191,7 @@ public class ChatServiceImpl implements ChatService {
 
 		String key = "chatRoomId:" + chatRoomId + ":messages";
 
-		// 이거 잘못됨
+		// FIXME: 확인 할 것
 		log.info("start : " + start);
 		log.info("enddd : " + end);
 
@@ -207,96 +209,35 @@ public class ChatServiceImpl implements ChatService {
 		
 		return messages;
 	}
-		
-	
-	private List<ChatVO> convertToChatMessageList(List<Object> objects) {
-        return objects.stream()
-                .map(obj -> {
-                    try {
-                        // JSON 문자열을 ChatVO 객체로 변환
-                        return objectMapper.readValue((String) obj, ChatVO.class);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to convert JSON to ChatVO", e);
-                    }
-                })
-                .collect(Collectors.toList());
-    }
-	
-	/*
-	private List<ChatVO> convertToChatMessageList(List<Object> objects) {
-        return objects.stream()
-                .map(obj -> {
-                    try {
-                        // JSON 문자열을 ChatMessage 객체로 변환
-                        return objectMapper.readValue(obj.toString(), ChatVO.class);
-                    } catch (Exception e) {
-                        throw new RuntimeException("Failed to convert JSON to ChatMessage", e);
-                    }
-                })
-                .collect(Collectors.toList());
-    }*/
 
-	// 발신자와 수신자 함께하는 채팅방이 존재하는지 확인
-	@Override
-	public boolean getCommonChatRooms(String userId1, String userId2) {
-		
-		Set<String> user1Rooms = getChatRoomId(userId1);
-        Set<String> user2Rooms = getChatRoomId(userId2);
-        user1Rooms.retainAll(user2Rooms);  // 교집합 구하기
-       
-        return !user1Rooms.isEmpty();
-	}
-	
-	
-	
 	// 채팅방 Id 생성
 	@Override
 	public String getChatRoomId(String userId, String targetUserId) {
 		
-		// 유효성 검사: userId나 targetUserId가 null이거나 빈 문자열인 경우 예외 처리
-	    if (userId == null || userId.isEmpty() || targetUserId == null || targetUserId.isEmpty()) {
-	        return null;
-	    }
-	    
+		String chatRoomId = null;
 		// ASCII 값 비교를 위해 문자열을 사전순으로 정렬
 	    if (userId.compareTo(targetUserId) < 0) {
 	        // userId가 더 작으면 userId가 앞에 오도록 설정
-	        return userId + "_" + targetUserId;
+	    	chatRoomId = userId + "_" + targetUserId;
 	    } else {
 	        // targetUserId가 더 작거나 같으면 targetUserId가 앞에 오도록 설정
-	        return targetUserId + "_" + userId;
+	    	chatRoomId = targetUserId + "_" + userId;
 	    }
+	    
+	    return chatRoomId;
 	}
 	
-	private <T> Optional<T> getData(String key, Class<T> classType) {
-	    String jsonData = (String) stringRedisTemplate.opsForValue().get(key);
-
-	    try {
-	        if (StringUtils.hasText(jsonData)) {
-	            return Optional.ofNullable(objectMapper.readValue(jsonData, classType));
-	        }
-	        return Optional.empty();
-	    } catch (JsonProcessingException e) {
-	        throw new RuntimeException(e);
-	    }
-	}
-
+	// 채팅방 존재하는지
 	@Override
-	public ChatVO convertToChatMessageVO(String payload) {
-		ObjectMapper objectMapper = new ObjectMapper();
-        try {
-            return objectMapper.readValue(payload, ChatVO.class);
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to convert payload to VO", e);
-        }
+	public boolean roomExists(String chatRoomId) {
+		String key = "chatRoomId:" + chatRoomId + ":participants";
+		return Boolean.TRUE.equals(stringRedisTemplate.hasKey(key));
 	}
 
+	// 채팅방에 참여한 멤버인지
 	@Override
-	public List<ChatVO> getMessagesByRoomId(Long chatRoomId) {
-		// TODO Auto-generated method stub
-		return null;
+	public boolean isMemberOfRoom(String userId, String chatRoomId) {
+		String key = "chatRoomId:" + chatRoomId + ":participants";
+		return Boolean.TRUE.equals(stringRedisTemplate.opsForHash().hasKey(key, userId));
 	}
-
-	
-
 }
