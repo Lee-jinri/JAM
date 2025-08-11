@@ -39,7 +39,6 @@ public class JwtInterceptor implements HandlerInterceptor {
 	private void setRequestAttributes(HttpServletRequest request, Map<String, String> userMap) {
 		if(userMap != null) {
 			request.setAttribute("userId", userMap.get("userId"));
-	    	request.setAttribute("userName", userMap.get("userName"));
 	    	request.setAttribute("auth", userMap.get("auth"));
 		}
 	}

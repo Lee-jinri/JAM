@@ -39,7 +39,7 @@ public class JwtService {
 	 * @param cookies    요청에 포함된 쿠키 배열
 	 * @param request    HttpServletRequest (세션 접근용)
 	 * @param response   HttpServletResponse (401 응답 처리 등)
-	 * @return           userId, userName, auth가 포함된 Map (로그인된 경우), 실패 시 빈 Map
+	 * @return           userId, auth가 포함된 Map (로그인된 경우), 실패 시 빈 Map
 	 * @throws Exception 내부 처리 중 예외 발생 시
 	 */
 	public Map<String, String> getUserInfo(Cookie[] cookies, HttpServletRequest request, HttpServletResponse response) throws Exception {
@@ -99,7 +99,6 @@ public class JwtService {
         
         userMap.put("userId", claim.get("sub", String.class));
         userMap.put("auth", claim.get("auth", String.class));
-        userMap.put("userName", claim.get("userName", String.class));
         
 		return userMap;
 	}
@@ -146,7 +145,6 @@ public class JwtService {
         
         
         userMap.put("userId", userId);
-        userMap.put("userName", userName);
         userMap.put("auth", auth);
         
         log.info("[JWT] 새로운 AccessToken/RefreshToken 발급 - userId: " + userId + " loginType: " + loginType);

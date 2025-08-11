@@ -51,7 +51,6 @@ public class CustomWebSocketInterceptor implements HandshakeInterceptor {
 	        
 	        if(userMap != null) {
 		        attributes.put("userId", userMap.get("userId"));
-		        attributes.put("userName", userMap.get("userName"));
 		        attributes.put("auth", userMap.get("auth"));
 	        }
 	    }
