@@ -10,7 +10,8 @@
 
 <script type="text/javascript">
 	$(function(){
-			
+		if(window.MY_ID) location.href = "/";
+		
 		$('#detailAddress').on('keypress', function(e){ 
 			if(e.keyCode == '13'){ 
 				$('.join_agree').click(); 

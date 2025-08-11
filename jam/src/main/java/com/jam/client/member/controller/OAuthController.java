@@ -424,7 +424,6 @@ public class OAuthController {
 		request.getSession().setAttribute("userName", memberService.getUserName(userId));
 	    
 		// 6. 로그인 이전 페이지로 리다이렉트
-		//FIXME: 로그인 페이지나 회원가입 페이지면 메인 페이지로 이동하기, 네이버도
 		String prevPage = (String) request.getSession().getAttribute("prevPage");
 		
 		if (prevPage != null && !prevPage.isBlank()) {

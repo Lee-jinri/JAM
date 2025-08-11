@@ -138,30 +138,6 @@ public class MemberRestController {
 	}
 	
 	/**
-	 * 세션에 저장된 사용자의 아이디, 닉네임을 반환합니다.
-	 * 
-	 * @param request
-	 * @return HTTP 응답 상태 코드와 사용자 정보
-	 */
-	@GetMapping("/me/session")
-    public ResponseEntity<Map<String, String>> getCurrentUser(HttpServletRequest request , HttpServletResponse res) {
-		
-		HttpSession session = request.getSession(false);
-
-	    Map<String, String> response = new HashMap<>();
-
-	    if (session != null) {
-	        response.put("userId", (String) session.getAttribute("userId"));
-	        response.put("userName", (String) session.getAttribute("userName"));
-	    } else {
-	        response.put("userId", null);
-	        response.put("userName", null);
-	    }
-        
-        return ResponseEntity.ok(response);
-    }
-	
-	/**
 	 * 인증 여부 확인용 엔드포인트
 	 *
 	 * - 이 엔드포인트는 실제 로직은 없고, 인터셉터를 통해 인증 상태를 확인합니다.

@@ -187,49 +187,16 @@ header {
 <script>
 // FIXME : XSS 3원칙 적용할 것
 	$(function() {
-		
-		fetch('/api/member/me/session', {
-		    method: 'GET',
-		    credentials: 'include',
-		})
-		.then(response =>{
-			if (!response.ok) {
-	            throw new Error('사용자 정보 가져오기 실패');
-	        }
-	        return response.json(); 
-		})
-		.then(data => {
-			let userName = data.userName;
-        	
-        	if (data && userName) {
-        		// 헤더에 닉네임과 로그아웃 버튼 추가
-                headerName = $('#header_name');
-                headerName.html(data.userName + "님");
-                
-                $("#loggedOutDiv").css("display", "none");
-                $("#loggedInDiv").css("display", "flex");
-	            
-                $("#written").attr("data-userId", data.userId);
-                
-                /*
-                //TODO: 사용자 정보 페이지에서 jwt토큰 검증하고 관리자 버튼 만들면 좋을 것 같아요옹
-                // 로그인 한 사용자가 관리자라면 헤더에 관리자 버튼을 추가
-                if(role.includes("ROLE_ADMIN")){
-                	let headerNav = document.getElementById("headerNav");
-                	
-                	let anchor = document.createElement("a");
-                	anchor.href = "/admin/admin"; 
-                	anchor.className = "font-color-blue font-size-5 font-weight-bold padding-10"; // 클래스 설정
-                	anchor.textContent = "관리자 페이지"; 
-
-                	// 요소 추가
-                	headerNav.appendChild(anchor);
-                }*/
-            }
-	    })
-	    .catch(error => {
-	        console.error("에러 발생:", error);
-	    });
+		if(window.MY_NAME) {
+			// 헤더에 닉네임과 로그아웃 버튼 추가
+            headerName = $('#header_name');
+            headerName.html(window.MY_NAME + "님");
+            
+            $("#loggedOutDiv").css("display", "none");
+            $("#loggedInDiv").css("display", "flex");
+            
+            $("#written").attr("data-userId", window.MY_ID);
+        }
 		
 		// 로그아웃
 		$("#logout").click(function() {

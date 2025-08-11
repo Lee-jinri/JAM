@@ -186,32 +186,16 @@ function updateForm(jobReply_no, panel){
 }			
 		
 	
-async function getUserInfo() {
-	try {
-		const response = await fetch('/api/member/me/session');
-        if (!response.ok) throw new Error('사용자 정보 가져오기 실패');
-	
-        const data = await response.json();
-        return data ? { userId: data.userId, userName: data.userName } : null;
-	
-    } catch (error) {
-        console.error("reply getUserInfo error:", error);
-        return null;
-    }
-}
-	
 async function listAll() {
     $(".reply").detach(); // 기존 댓글 제거
 	    try {
         // 로그인한 사용자 정보 가져오기
         const userInfo = await getUserInfo();
-        const loggedInUserId = userInfo ? userInfo.userId : null;
+        
+        const loggedInUserId = window.MY_ID != null? window.MY_ID: null;
 	        
-	    if (!userInfo || !userInfo.userId) { 
-			replyInputUi();
-        } else {
-            $("#reply_name").text(userInfo.userName);
-        }
+    	if (!window.MY_NAME) replyInputUi();
+        else $("#reply_name").text(window.MY_NAME);
 
         
         let job_no = $("#job_no").val();

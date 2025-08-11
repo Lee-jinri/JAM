@@ -131,28 +131,17 @@
 	}) // end
 		
 	function listAll() {
-	    fetch('/api/member/me/session')
-	        .then(response => {
-	        	if(response.status === 401) {
-	        		setList(null);
-	        		return null;
-	        	}
-	        	else return response.json(); 
-	        })
-	        .then(data => {
-	        	console.log(data);
-	        	if(data)setList(data.userId, data.userName);
-	        })
-	        .catch(error => {
-	            console.error("Error fetching user info:", error);
-	            setList(null); 
-	        });
+		let userId = window.MY_ID;
+		let userName = window.MY_NAME;
+		
+		if(userId || userName) setList(userId, userName);
+		else setList(null);
 	}
 		
 	function setList(loggedInUserId, loggedInUserName){
 		setReplyInput(loggedInUserId, loggedInUserName);
 			
-		$(".reply").detach();
+		$(".reply").remove();
 		    
 		let url = "/comreplies/reply/" + ${com_no};
 		 	

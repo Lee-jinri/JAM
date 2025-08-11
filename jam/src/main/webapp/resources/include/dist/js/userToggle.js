@@ -1,25 +1,8 @@
 function toggleUserMenu() {
 	$(".user_toggle").hide();
-
-	fetch('/api/member/me/session',{
-		method: 'GET',
-		credentials: 'include',
-	})
-	.then(response =>{
-		if (!response.ok) {
-            throw new Error('사용자 정보 가져오기 실패');
-        }
-        return response.json();
-	})
-	.then(data => {
-		setUserToggle(data.userId);
-    })
-    .catch(error => {
-        console.error("에러 발생:", error);
-    }); 
+	
+	setUserToggle(window.MY_ID);
 }
-
-
 
 // 메인 페이지에서 사용할 UI 업데이트 함수
 function setUserToggle(currentUserId) {

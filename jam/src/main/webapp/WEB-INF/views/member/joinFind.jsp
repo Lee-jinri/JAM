@@ -8,6 +8,7 @@
 
 	<script>
 		$(function(){
+			if(window.MY_ID) location.href = "/";
 			
 			$("#find_id_btn").click(function(){
 				

@@ -58,6 +58,8 @@
 </style>
 <script type="text/javascript">
 $(function(){
+	if(window.MY_ID) location.href = "/";
+	
 	let params = new URLSearchParams(window.location.search);
 	let error = params.get("error");
 			
