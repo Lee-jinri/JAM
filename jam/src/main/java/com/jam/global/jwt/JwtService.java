@@ -138,12 +138,10 @@ public class JwtService {
         int maxAge = autoLogin? -1 : 24 * 60 * 60;
         addCookieToResponse(response, "RefreshToken", token.getRefreshToken(), maxAge);
         
-        // 사용자 아이디, 닉네임 세션에 저장
         request.getSession().setAttribute("userId", userId);
         request.getSession().setAttribute("userName", userName);
+        request.getSession().setMaxInactiveInterval(3 * 60 * 60);
 
-        
-        
         userMap.put("userId", userId);
         userMap.put("auth", auth);
         
