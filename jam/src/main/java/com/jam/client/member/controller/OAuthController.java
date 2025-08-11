@@ -162,7 +162,8 @@ public class OAuthController {
 		
 		request.getSession().setAttribute("userId", userId);
 		request.getSession().setAttribute("userName", memberService.getUserName(userId));
-	    
+		request.getSession().setMaxInactiveInterval(3 * 60 * 60);
+		
 		// 6. 로그인 이전 페이지로 리다이렉트
 		String prevPage = (String) request.getSession().getAttribute("prevPage");
 		
@@ -422,7 +423,8 @@ public class OAuthController {
 		
 		request.getSession().setAttribute("userId", userId);
 		request.getSession().setAttribute("userName", memberService.getUserName(userId));
-	    
+		request.getSession().setMaxInactiveInterval(3 * 60 * 60);
+		
 		// 6. 로그인 이전 페이지로 리다이렉트
 		String prevPage = (String) request.getSession().getAttribute("prevPage");
 		
