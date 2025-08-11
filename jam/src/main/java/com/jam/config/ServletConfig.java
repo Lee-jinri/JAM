@@ -16,23 +16,6 @@ import org.springframework.web.servlet.view.tiles3.TilesView;
 import com.jam.client.chat.webSocket.WebSocketConfig;
 
 @EnableWebMvc
-/*
-@ComponentScan(
-		basePackages = {
-				"com.jam.admin.controler", 
-				"com.jam.client.chat.controller" , 
-				"com.jam.client.community.controller",
-				"com.jam.client.comReply.controller",
-				"com.jam.client.fleaMarket.controller",
-				"com.jam.client.fleaReply.controller",
-				"com.jam.client.job.controller",
-				"com.jam.client.jobReply.controller",
-				"com.jam.client.member.controller",
-				"com.jam.client.message.controller",
-				"com.jam.client.roomRental.controller",
-				"com.jam.client.common.controller",
-				"com.jam.redis"
-				})*/
 @ComponentScan(
 		basePackages = {
 				"com.jam.client",

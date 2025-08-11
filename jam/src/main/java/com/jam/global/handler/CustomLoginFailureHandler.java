@@ -10,7 +10,10 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.AuthenticationFailureHandler;
 import org.springframework.stereotype.Component;
 
+import lombok.extern.log4j.Log4j;
+
 @Component
+@Log4j
 public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 
 	@Override
@@ -23,7 +26,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 	        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	        response.setContentType("application/json;charset=UTF-8");
 
-	        System.out.println("시스템 오류: " + exception.getMessage());
+	        log.error("시스템 오류: " + exception);
 	        response.getWriter().write("{ \"error\": \"시스템 오류입니다. 잠시 후 다시 시도해주세요.\" }");
 	        
 	        return;
@@ -33,7 +36,7 @@ public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 	    response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	    response.setContentType("application/json;charset=UTF-8");
 
-	    System.out.println("로그인 실패: " + exception.getMessage());
+	    log.warn("인증 실패: " + exception.getMessage());
 	    response.getWriter().write("{ \"error\": \"아이디 또는 비밀번호가 올바르지 않습니다.\" }");
     }
 }

@@ -20,47 +20,47 @@ import com.jam.global.jwt.TokenInfo;
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	private final MemberService memberService;
-    private final JwtService jwtService;
+	private final JwtService jwtService;
 
-    public CustomLoginSuccessHandler(@Lazy MemberService memberService,
-    		JwtService jwtService) {
-        this.memberService = memberService;
-        this.jwtService = jwtService;
-    }
+	public CustomLoginSuccessHandler(@Lazy MemberService memberService, JwtService jwtService) {
+		this.memberService = memberService;
+		this.jwtService = jwtService;
+	}
 
-    @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
-                                        Authentication authentication) throws IOException {
-    	
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String userId = userDetails.getUsername();
+	@Override
+	public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response,
+			Authentication authentication) throws IOException {
 
-        boolean autoLogin = Boolean.parseBoolean(request.getParameter("autoLogin"));
+		UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+		String userId = userDetails.getUsername();
 
-        TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
-        memberService.addRefreshToken(userId, token.getRefreshToken());
-        
-        Cookie accessTokenCookie = new Cookie("Authorization", token.getAccessToken());
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(3 * 60 * 60);
-        response.addCookie(accessTokenCookie);
-        
-        Cookie refreshTokenCookie = new Cookie("RefreshToken", token.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(autoLogin ? 30 * 24 * 60 * 60 : 24 * 60 * 60);
-        response.addCookie(refreshTokenCookie);
+		boolean autoLogin = Boolean.parseBoolean(request.getParameter("autoLogin"));
 
-        request.getSession().setAttribute("userId", userId);
-        request.getSession().setAttribute("userName", memberService.getUserName(userId));
+		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
+		memberService.addRefreshToken(userId, token.getRefreshToken());
 
-        response.setStatus(HttpServletResponse.SC_OK);
-        response.setContentType("application/json;charset=UTF-8");
+		Cookie accessTokenCookie = new Cookie("Authorization", token.getAccessToken());
+		accessTokenCookie.setHttpOnly(true);
+		accessTokenCookie.setPath("/");
+		accessTokenCookie.setMaxAge(3 * 60 * 60); // 3시간
+		response.addCookie(accessTokenCookie);
 
-        String prevPage = (String) request.getSession().getAttribute("prevPage");
-        String redirectUrl = (prevPage != null && !prevPage.isBlank()) ? prevPage : "/";
+		Cookie refreshTokenCookie = new Cookie("RefreshToken", token.getRefreshToken());
+		refreshTokenCookie.setHttpOnly(true);
+		refreshTokenCookie.setPath("/");
+		refreshTokenCookie.setMaxAge(autoLogin ? 30 * 24 * 60 * 60 : 24 * 60 * 60);
+		response.addCookie(refreshTokenCookie);
 
-        response.getWriter().write("{ \"redirect\": \"" + redirectUrl + "\" }"); 
-    }
+		request.getSession().setAttribute("userId", userId);
+		request.getSession().setAttribute("userName", memberService.getUserName(userId));
+		request.getSession().setMaxInactiveInterval(3 * 60 * 60);
+
+		response.setStatus(HttpServletResponse.SC_OK);
+		response.setContentType("application/json;charset=UTF-8");
+
+		String prevPage = (String) request.getSession().getAttribute("prevPage");
+		String redirectUrl = (prevPage != null && !prevPage.isBlank()) ? prevPage : "/";
+
+		response.getWriter().write("{ \"redirect\": \"" + redirectUrl + "\" }");
+	}
 }
