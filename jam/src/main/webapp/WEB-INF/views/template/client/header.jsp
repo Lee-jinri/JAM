@@ -13,6 +13,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
+
+@media screen and (max-width: 768px) {
+  
+  #header_name{
+  	font-size: 12px;
+  }
+}
+
 header {
     width: 100%;
     box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
@@ -26,7 +34,6 @@ header {
     align-items: center;
     justify-content: space-between; 
     max-width: 114rem;
-    margin: 0 135px 0 237px;
     padding: 0 20px;
     height: 42px;
 }
@@ -52,9 +59,6 @@ header {
     gap: 10px;
 }
 
-#header_name{
-	font-size: 15px;
-}
 
 #mobile-menu-btn{
 	display: none;
@@ -87,6 +91,7 @@ header {
 
 .mypage_toggle_btn {
     height: 3rem;
+    padding-top: 12px;
 }
 
 .header-board-a {

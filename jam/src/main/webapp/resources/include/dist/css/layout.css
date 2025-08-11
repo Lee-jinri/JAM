@@ -39,6 +39,43 @@ body {
 	font-size: 18px;
 }
 
+button {
+	cursor: pointer;
+}
+h2{
+	font-size: 16px;
+}
+ul{
+	list-style: none;
+	padding: 0;
+	margin: 0;
+}
+
+.text-center{
+	text-align: center !important;
+}
+
+ul.pagination {
+	display: flex;
+	list-style: none;
+	display: flex;
+	justify-content: center;
+}
+
+.pagination li {
+	display: inline-block;
+	margin-right: 4px;
+}
+
+.pagination li a{
+	padding: 5px 9px;
+	border-radius: 6px;
+}
+
+span{
+	font-size: 16px;
+}
+
 /* 고정 버튼 스타일 */
 .scroll-button {
     position: fixed;
@@ -59,7 +96,7 @@ body {
 }
 
 #content{
-	max-width: 800px;
+	max-width: 1000px;
     margin: 0 auto;	
 }
 a:hover {
@@ -325,11 +362,13 @@ ul {
 
 .mypage_toggle {
 	background-color: #fff;
-	width: 17rem;
-	height: 15rem;
+	width: 12rem;
+    height: 288px;
 	text-align: center;
 	box-shadow: 0px 0px 7px #E6E6E6;
-	top: 6rem;
+	top: 55px;
+    right: 135px;
+    z-index: 999;
 }
 
 #detailAddress {
@@ -407,8 +446,7 @@ ul {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-top: 16px;
-    margin-bottom: 16px;
+    margin: 16px;
     justify-content: flex-end;
 }
 
@@ -441,6 +479,7 @@ ul {
     margin-bottom: 3rem;
 }
 
+
 .reply_div {
     display: flex;
     flex-direction: column;
@@ -461,18 +500,9 @@ textarea.reply_content {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 5px;
-    resize: vertical;
+    resize: none;
 }
 
-.replyInsert-btn {
-    margin-top: 10px;
-    align-self: flex-end; /* 버튼을 오른쪽으로 정렬 */
-    padding: 8px 15px;
-    background-color: #a5b4fc;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-}
 
 .deco {
 	border-right: solid 2px #a5a5a5;
@@ -484,8 +514,8 @@ textarea.reply_content {
 
 
 .socialLoginBtn{
-	width: 30rem;
-	height: 4.5rem;
+	width: 350px;
+    height: 54px;
 }
 
 .socialLoginBtn:hover {
@@ -510,6 +540,7 @@ textarea.reply_content {
 	line-height: 28px;
 	color: #a5a5a5;
 	margin-top: 40px;
+	margin-bottom: 25px;
 }
 
 .write_div {
@@ -520,7 +551,7 @@ textarea.reply_content {
 }
 
 .write_btn_border {
-	height: 4rem;
+	height: 2rem;
     margin: 20px 0;
 }
 
@@ -571,11 +602,11 @@ textarea.reply_content {
 }
 
 .height4 {
-	height: 4rem;
+	height: 2rem;
 }
 
 #textarea {
-	min-height: 50rem;
+	min-height: 48rem;
 }
 
 .comWriteBtn, .fleaWriteBtn, .jobWriteBtn, .roomWriteBtn {
@@ -611,7 +642,7 @@ textarea.reply_content {
 .logoutA {
 	/*color: #fff;*/
 	font-weight: bold;
-	width: 6rem;
+	width: 4rem;
 	border: solid 2px;
 	border-radius: 13px;
 	padding: 6px;
@@ -634,12 +665,13 @@ textarea.reply_content {
 .pagination > li > .selected_btn{
 	color: #fff;
     margin: 0;
-    border-radius: 0px;
     border: 1px solid #ddd;
+    background-color: #ffdd77;
 }
 
 
 .pagination > li > .default_btn{
+	border: 1px solid #ddd;
 	color: #8f959f;
 }
 
@@ -671,7 +703,7 @@ textarea.reply_content {
 
 .mainListDiv {
 	width: 40rem;
-	height: 5.5rem;
+	height: 3.5rem;
 	/*border: #FBF3E3 solid;*/
 	border-radius: 2rem;
 	background-color: #BFC8EA;
@@ -743,6 +775,8 @@ textarea.reply_content {
     font-weight: 700;
     font-size: 14px;
     transition: all 0.2s ease-in-out;
+    margin-top: 10px;
+    align-self: flex-end;
 }
 
 .replyInsert-btn:hover{
@@ -779,7 +813,7 @@ textarea.reply_content {
 	display: inline;
 }
 
-.delBtn, .upBtn, #replyUpdateBtn, #cancel {
+.delBtn, .upBtn, #replyUpdateBtn {
     float: right;
     border: none;
     background-color: #fff;
@@ -790,7 +824,7 @@ textarea.reply_content {
     cursor: pointer;
 }
 
-.delBtn:hover, .upBtn:hover, #replyUpdateBtn:hover, #cancel:hover {
+.delBtn:hover, .upBtn:hover, #replyUpdateBtn:hover {
     background-color: #f0f0f0; /* hover 시 배경색 약간 변경 */
     color: #222; /* hover 시 글자 색 더 강조 */
     text-decoration: underline; /* 클릭 가능하다는 느낌 강조 */
@@ -1285,9 +1319,10 @@ textarea.reply_content {
     max-width: 700px;   /* 포지션/지역과 동일하게 맞춤 */
     width: 100%;
     margin: 0 auto;     /* 가운데 정렬 */
-    padding: 1rem 2rem;
+    padding: 6px 11px;
     margin-top: 30px;
 }
+
 .search-input{
 	border: none;
     border-bottom: 1px solid #e5e7eb;
@@ -1520,7 +1555,7 @@ input:checked + .slider:before {
 }*/
 
 select {
-	font-size: 1.3rem;
+	font-size: 14px;
 	font-weight: 400;
 	line-height: 1.5;
 	color: #444;
@@ -1710,12 +1745,12 @@ a {
 }
 
 .pd-2rem {
-	padding: 2rem;
+	padding: 1rem;
 }
 
 .py-2rem {
-	padding-top: 2rem;
-	padding-bottom: 2rem;
+	padding-top: 1rem;
+	padding-bottom: 1rem;
 }
 
 .py-4 {
@@ -1771,7 +1806,7 @@ a {
 }
 
 .my-bottom-4 {
-	margin-bottom: 1rem;
+	margin-bottom: 6px;
 }
 
 .my-bottom-7 {
@@ -1779,11 +1814,11 @@ a {
 }
 
 .my-bottom-8 {
-	margin-bottom: 3.5rem;
+	margin-bottom: 1.5rem;
 }
 
 .my-bottom-15 {
-	margin-bottom: 7rem;
+	margin-bottom: 5rem;
 }
 
 .mr-1 {
@@ -1887,7 +1922,7 @@ a {
 }
 
 .font-size-5 {
-	font-size: 1.5rem;
+	font-size: 16px;
 }
 
 .font600 {

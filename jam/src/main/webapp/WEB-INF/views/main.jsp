@@ -80,7 +80,44 @@
     gap: 15px;
 }
 
-	
+.jobs-banner{
+  width: 100%;
+  background-color: #f5f5f5;
+  padding: 30px 20px;
+  margin: 20px 0;
+  border-radius: 10px;
+  transition: background-color 0.3s;
+}
+
+
+.jobs-banner:hover{
+  background-color: #e0e0e0;
+}
+
+/* 링크 스타일 제거 */
+.banner-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+
+/* 텍스트 정렬 및 스타일 */
+.banner-content {
+  text-align: center;
+}
+
+.banner-content h2 {
+  margin: 0;
+  font-size: 24px;
+  font-weight: bold;
+}
+
+.banner-content p {
+  margin-top: 10px;
+  font-size: 16px;
+  color: #555;
+}
+
 
 </style>	
 	<script>

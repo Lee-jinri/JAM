@@ -7,7 +7,9 @@
 <title>JAM- 글 모아보기</title>
 <style>
 .written-div{
-	margin-top: 60px;
+	margin: 0 auto;
+    margin-top: 60px;
+    max-width: 800px;
 }
 .search-container {
 	display: flex;
