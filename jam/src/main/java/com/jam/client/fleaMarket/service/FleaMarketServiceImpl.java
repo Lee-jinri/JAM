@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
-import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.dao.FleaMarketDAO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.member.service.MemberService;
+import com.jam.common.dao.ImageFileMapper;
+import com.jam.common.vo.ImageFileVO;
+import com.jam.global.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
 
@@ -18,6 +22,8 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 
 	private final FleaMarketDAO fleaDao;
 	private final MemberService memberService;
+	private final FileUtils fileUtils;
+	private final ImageFileMapper imageFileMapper;
 	
 	@Override
 	public List<FleaMarketVO> getBoard(FleaMarketVO flea_vo) {
@@ -50,8 +56,37 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	}
 
 	@Override
-	public int writePost(FleaMarketVO flea_vo) {
-		return fleaDao.writePost(flea_vo);
+	@Transactional
+	public long writePost(FleaMarketVO flea_vo, List<MultipartFile> images) {
+		
+		long post_no = fleaDao.getNextPostId();
+		
+		flea_vo.setPost_id(post_no);
+		String thumbnail = null;
+		
+		for (int i = 0; i < images.size(); i++) {
+			MultipartFile image = images.get(i);
+            String savedFileName = fileUtils.saveToLocal(image, "flea"); // 파일 저장
+            
+            if (savedFileName == null) {
+                throw new RuntimeException("이미지 저장 실패");
+            }
+            
+            if (i == 0) thumbnail = savedFileName;
+            
+            ImageFileVO imageVO = new ImageFileVO();
+            
+            imageVO.setPost_id((long) post_no);
+            imageVO.setImage_name(savedFileName);
+            imageVO.setPost_type("flea");
+            
+            imageFileMapper.insertImage(imageVO); // 이미지 메타정보 DB에 저장
+        }
+		
+		flea_vo.setThumbnail(thumbnail);
+		fleaDao.writePost(flea_vo);
+		
+		return post_no;
 	}
 
 	@Override
@@ -69,19 +104,19 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	}
 
 	@Override
-	public int deletePost(Long flea_no) {
+	public int deletePost(Long flea_no, String userId) {
 	
-		return fleaDao.deletePost(flea_no);
+		return fleaDao.deletePost(flea_no, userId);
 	}
 
 	@Override
-	public List<CommunityVO> getPosts(FleaMarketVO flea_vo) {
-		return fleaDao.getPosts(flea_vo);
+	public List<FleaMarketVO> getMyStore(FleaMarketVO flea_vo) {
+		return fleaDao.getMyStore(flea_vo);
 	}
 
 	@Override
-	public int getUserPostCnt(FleaMarketVO flea_vo) {
-		return fleaDao.getUserPostCnt(flea_vo);
+	public int getMyStoreCnt(FleaMarketVO flea_vo) {
+		return fleaDao.getMyStoreCnt(flea_vo);
 	}
 
 	@Override
@@ -94,6 +129,16 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 		int count = memberService.nameCheck(user_name);
 		
 		return count != 0 ? true : false;
+	}
+
+	@Override
+	public List<FleaMarketVO> getFavorites(FleaMarketVO flea) {
+		return fleaDao.getFavorites(flea);
+	}
+
+	@Override
+	public List<ImageFileVO> getImages(Long post_id) {
+		return fleaDao.getImages(post_id);
 	}
 	
 

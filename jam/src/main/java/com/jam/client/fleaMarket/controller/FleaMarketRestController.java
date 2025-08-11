@@ -23,15 +23,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.google.gson.JsonObject;
-import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
-import com.jam.client.member.vo.MemberVO;
+import com.jam.common.vo.ImageFileVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -50,6 +47,9 @@ public class FleaMarketRestController {
 		try {
 			String user_id = (String)request.getAttribute("userId");
 			if(user_id != null) flea_vo.setUser_id(user_id);
+			
+			// FIXME: 임시로 해놓음
+			flea_vo.setAmount(24);
 			
 			Map<String, Object> result = new HashMap<>();
 
@@ -78,20 +78,28 @@ public class FleaMarketRestController {
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 **************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<FleaMarketVO> getBoardDetail(@PathVariable("post_id") Long post_id) throws Exception{
+	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("post_id") Long post_id) throws Exception{
 		if (post_id == null) { 
 			log.error("post_id is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
 		try {
+			Map<String, Object> result = new HashMap<>();
+			
 	        // 조회수 증가
 			fleaService.incrementReadCnt(post_id);
 			
 			// 상세 페이지 조회
-			FleaMarketVO detail = fleaService.getPostDetail(post_id);
+			FleaMarketVO post = fleaService.getPostDetail(post_id);
 			
-	        return new ResponseEntity<>(detail, HttpStatus.OK);
+			// 이미지 파일
+			List<ImageFileVO> images = fleaService.getImages(post_id);
+			
+			result.put("post", post);
+			result.put("images", images);
+			
+	        return new ResponseEntity<>(result, HttpStatus.OK);
 	    } catch (Exception e) {
 	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 	    }
@@ -111,15 +119,13 @@ public class FleaMarketRestController {
 		        @RequestParam("content") String content,
 		        @RequestParam("price") int price,
 		        @RequestParam("category_id") int categoryId,
-		        @RequestParam("images") List<MultipartFile> images
-		        
-			
-			// FIXME: 이거 모델로 받을 지 고민 좀 ;;; 프론트에 form 설정 안했음
-		        /*
-		        @ModelAttribute FleaMarketVO flea_vo,
-		        @RequestParam("images") List<MultipartFile> images*/
-		        
+		        @RequestParam("images") List<MultipartFile> images,
+		        HttpServletRequest request
 			) throws Exception{
+		
+		if(request.getAttribute("userId") == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+		}
 		
 		if (title == null || title.trim().isEmpty()) {
 		    return ResponseEntity.badRequest().body("제목을 입력하세요.");
@@ -136,11 +142,12 @@ public class FleaMarketRestController {
 		flea_vo.setContent(content);
 		flea_vo.setPrice(price);
 		flea_vo.setCategory_id(categoryId);
+		flea_vo.setUser_id((String)request.getAttribute("userId"));
 		
 		try {
-			int postId = fleaService.writePost(flea_vo);
+			long postId = fleaService.writePost(flea_vo, images);
 			
-			return new ResponseEntity<>(Integer.toString(postId), HttpStatus.OK);
+			return new ResponseEntity<>(Long.toString(postId), HttpStatus.OK);
 		} catch (Exception e) {
 			log.error("중고악기 작성 데이터 저장 중 오류: " + e.getMessage());
 			
@@ -226,8 +233,6 @@ public class FleaMarketRestController {
 		
 	}
 	
-
-	// 본인인지 확인햐여담
 	/**********************************
 	 * 중고악기 글을 삭제하는 메서드 입니다.
 	 * @param Long flea_no
@@ -235,16 +240,22 @@ public class FleaMarketRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
 	@RequestMapping(value="/post", method=RequestMethod.DELETE)
-	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id) throws Exception{
-		log.info("boardDelete : ");
+	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		
 		if (post_id == null) { 
 			log.error("flea_no is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("flea_no is required");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("postId is required");
 		}
 		
 		try {
-			fleaService.deletePost(post_id);
+			String userId = (String)request.getAttribute("userId");
+			
+			if(userId == null) {
+				log.error("Unauthorized.");
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+			}
+			
+			fleaService.deletePost(post_id, userId);
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
@@ -254,33 +265,6 @@ public class FleaMarketRestController {
 			
 			return new ResponseEntity<>(resopnseBody, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-	}
-	
-	@GetMapping("posts")
-	public ResponseEntity<Map<String, Object>> posts(@RequestParam(required=false) String user_name, @RequestParam(defaultValue = "1") int page, HttpServletRequest request) throws Exception{
-		
-		FleaMarketVO flea_vo = new FleaMarketVO();
-		
-		if(user_name == null || !fleaService.isValidUserName(user_name)) { 
-			flea_vo.setUser_id((String) request.getAttribute("userId"));
-		}else {
-			flea_vo.setUser_id(fleaService.getUserId(user_name));
-		}
-		
-		flea_vo.setPageNum(page);
-		
-		Map<String, Object> result = new HashMap<>();
-		
-		List<CommunityVO> posts = fleaService.getPosts(flea_vo);
-		result.put("posts", posts);
-		
-		int total = fleaService.getUserPostCnt(flea_vo);
-		
-	    PageDTO pageMaker = new PageDTO(flea_vo, total);
-	    
-	    result.put("pageMaker", pageMaker);
-	    
-	    return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
 	/********************************
@@ -325,4 +309,66 @@ public class FleaMarketRestController {
 		}
 	}
 	
+	@GetMapping(value="/my/store")
+	public ResponseEntity<Map<String, Object>> getMyStore(FleaMarketVO flea, HttpServletRequest request){
+		try {
+			String user_id = (String)request.getAttribute("userId");
+			
+			if(user_id == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+			flea.setUser_id(user_id);
+			// FIXME: 임시
+			flea.setAmount(36);
+			
+			Map<String, Object> result = new HashMap<>();
+
+			List<FleaMarketVO> myStoreList = fleaService.getMyStore(flea);
+			
+			result.put("fleaMarketList", myStoreList);
+			result.put("userName", request.getSession().getAttribute("userName"));
+			
+			int total = fleaService.getMyStoreCnt(flea);
+			
+			PageDTO pageMaker = new PageDTO(flea, total);
+	        result.put("pageMaker", pageMaker);
+
+	        return ResponseEntity.ok(result);
+		}catch(Exception e) {
+			log.error(e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
+		}
+	}
+	
+	@GetMapping("/my/favorites")
+	public ResponseEntity<Map<String, Object>> favorites(FleaMarketVO flea, HttpServletRequest request){
+		try {
+			String user_id = (String)request.getAttribute("userId");
+			
+			if(user_id == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+			
+			flea.setUser_id(user_id);
+			// FIXME: 임시
+			flea.setAmount(36);
+			
+			Map<String, Object> result = new HashMap<>();
+
+			List<FleaMarketVO> favoriteList = fleaService.getFavorites(flea);
+			
+			result.put("fleaMarketList", favoriteList);
+			result.put("userName", request.getSession().getAttribute("userName"));
+			
+			int total = fleaService.getMyStoreCnt(flea);
+			
+			PageDTO pageMaker = new PageDTO(flea, total);
+	        result.put("pageMaker", pageMaker);
+
+	        return ResponseEntity.ok(result);
+			
+		}catch(Exception e) {
+			log.error(e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
+		}
+		
+	}
 }

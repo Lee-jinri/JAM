@@ -1,15 +1,7 @@
 package com.jam.client.fleaMarket.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
-
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,10 +10,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.google.gson.JsonObject;
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.common.vo.PageDTO;
@@ -88,46 +77,12 @@ public class FleaMarketController {
 		return "fleaMarket/update";
 	}
 
-	/********************************
-	 * 중고악기 사진 업로드
-	 * @return String 사진 저장 경로 
-	 ********************************/
-	@RequestMapping(value="/uploadImageFile", method=RequestMethod.POST, produces = "application/json; charset=utf8")
-	@ResponseBody
-	public String uploadImageFile(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request )  {
-		JsonObject jsonObject = new JsonObject();
-		
-		// 내부경로로 저장
-		String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
-		String fileRoot = contextRoot+"resources/fileupload/";
-		
-		String originalFileName = multipartFile.getOriginalFilename();	//오리지날 파일명
-		String extension = originalFileName.substring(originalFileName.lastIndexOf("."));	//파일 확장자
-		String savedFileName = UUID.randomUUID() + extension;	//저장될 파일 명
-		
-		File targetFile = new File(fileRoot + savedFileName);	
-		try {
-			InputStream fileStream = multipartFile.getInputStream();
-			FileUtils.copyInputStreamToFile(fileStream, targetFile);	//파일 저장
-			jsonObject.addProperty("url", "/resources/fileupload/"+savedFileName); // contextroot + resources + 저장할 내부 폴더명
-			jsonObject.addProperty("responseCode", "success");
-				
-		} catch (IOException e) {
-			FileUtils.deleteQuietly(targetFile);	//저장된 파일 삭제
-			jsonObject.addProperty("responseCode", "error");
-			e.printStackTrace();
-		}
-		
-		return jsonObject.toString();
-	}
 	
-	/*********************************
-	 * @return 특정 회원의 중고악기 글 페이지 
-	 *********************************/
-	@GetMapping(value="/fleaPosts")
-	public String viewPosts() {
-		
-		return "fleaMarket/fleaPosts";
+	@GetMapping("/my")
+	public String viewMyPage(@RequestParam(value = "view", required = false, defaultValue = "store") String view,
+	                         Model model) {
+		model.addAttribute("view", view);
+		return "fleaMarket/my";
 	}
 	
 }

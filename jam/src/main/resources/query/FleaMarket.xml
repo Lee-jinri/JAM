@@ -7,44 +7,66 @@
 		<![CDATA[
 		SELECT 
 			post_id, title, 
-			to_char(created_at, 'YYYY/MM/DD HH24:MI') as created_at, 
-			comment_count, view_count, category_id, price, 
-			sales_status, user_id, user_name
+			to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
+			category_id, price, 
+			thumbnail, user_id, user_name
 		FROM (
 			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-				f.post_id, f.title, f.created_at, f.comment_count, f.view_count, f.category_id, f.price, f.sales_status, f.user_id , m.user_name,
+				f.post_id, f.title, f.created_at, f.category_id, f.price, f.thumbnail, f.user_id , m.user_name,
 				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
-			JOIN Member m ON f.user_id = m.user_id
+			JOIN member m ON f.user_id = m.user_id
 			]]>
-			<trim prefix="WHERE" suffixOverrides="AND |OR ">
-				<include refid="fleaSearch"></include> 
-			</trim>
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			f.sales_status = 0
+			<if test="keyword != null and keyword != ''">
+				AND f.title LIKE '%' || #{keyword} || '%'
+			</if>
+			<if test="category_id != null and category_id != 0">
+				AND f.category_id IN (
+				SELECT category_id
+				FROM flea_category
+				WHERE category_id = #{category_id}
+				OR parent_id = #{category_id}
+				)
+			</if>
+		</trim>
 		) 
 		<![CDATA[
 		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
 		]]>
 	</select>
-	
-	<select id="getBoardWithFavorite" parameterType="flea" resultType="flea">
+
+	<select id="getBoardWithFavorite" parameterType="flea"
+		resultType="flea">
 		<![CDATA[
 		SELECT 
 			f.post_id, f.title, 
-			to_char(f.created_at, 'YYYY/MM/DD HH24:MI') as created_at, 
-			f.comment_count, f.view_count, f.category_id, f.price, 
-			f.sales_status, f.user_id, f.user_name,
+			to_char(f.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at, 
+			f.category_id, f.price, f.thumbnail,
+			f.user_id, f.user_name,
 			CASE WHEN fav.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-				f.post_id, f.title, f.created_at, f.comment_count, f.view_count, f.category_id, f.price, f.sales_status, f.user_id, m.user_name,
+				f.post_id, f.title, f.created_at, f.category_id, f.price, f.thumbnail, f.user_id, m.user_name,
 				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
 			JOIN member m ON f.user_id = m.user_id
 		]]>
-			<where>
-		        1=1
-		        <include refid="fleaSearch"></include>
-		    </where>
+		<trim prefix="WHERE" prefixOverrides="AND |OR ">
+			f.sales_status = 0
+			<if test="keyword != null and keyword != ''">
+				AND f.title LIKE '%' || #{keyword} || '%'
+			</if>
+			<if test="category_id != null and category_id != 0">
+				AND f.category_id IN (
+				SELECT category_id
+				FROM flea_category
+				WHERE category_id = #{category_id}
+				OR parent_id = #{category_id}
+				)
+			</if>
+		</trim>
 		<![CDATA[
 		) f
 		LEFT JOIN favorite fav  
@@ -56,140 +78,158 @@
 		]]>
 	</select>
 
-	
+
 	<!-- 전체 레코드 수 조회 -->
 	<select id="listCnt" parameterType="flea" resultType="int">
-	    SELECT count(*)
-	    FROM fleaMarket f
-	    LEFT JOIN member m ON f.user_id = m.user_id
-	    <trim prefix="WHERE (" suffix=")" prefixOverrides="AND | OR">
-	        <include refid="fleaSearch"></include>
-	    </trim>
+		SELECT count(*)
+		FROM fleaMarket f
+		LEFT JOIN member m ON f.user_id = m.user_id
+		<trim prefix="WHERE" prefixOverrides="AND |OR "
+			suffixOverrides="AND |OR ">
+			<if test="keyword != null and keyword != ''">
+				f.title LIKE '%' || #{keyword} || '%'
+			</if>
+			<if test="category_id != null and category_id != 0">
+				f.category_id IN (
+				SELECT category_id
+				FROM flea_category
+				WHERE category_id = #{category_id}
+				OR parent_id = #{category_id}
+				)
+			</if>
+		</trim>
 	</select>
-	
-	<!-- 중고거래 검색 -->
-	<sql id="fleaSearch">
-		<if test="search_category=='all'">
-			<if test="search=='title'">
-				<![CDATA[f.title LIKE '%' || #{keyword} || '%']]>
-			</if>
-			<if test="search=='content'">
-				<![CDATA[f.content LIKE '%' || #{keyword} || '%']]>
-			</if>
-			<if test="search=='user_name'">
-				<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
-			</if>
-		</if>
-		
-		<if test="search_category=='buy'">
-			<if test="search=='title'">
-				<![CDATA[f.title LIKE '%' || #{keyword} || '%']]>
-			</if>
-			<if test="search=='content'">
-				<![CDATA[f.content LIKE '%' || #{keyword} || '%']]>
-			</if>
-			<if test="search=='user_name'">
-				<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
-			</if>
-		</if>
-		<if test="search_category=='sale'">
-			<if test="search=='title'">
-				<![CDATA[f.title LIKE '%' || #{keyword} || '%']]>
-			</if>
-			<if test="search=='content'">
-				<![CDATA[f.content LIKE '%' || #{keyword} || '%']]>
-			</if>
-			<if test="search=='user_name'">
-				<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
-			</if>
-		</if>
-	</sql>
-	
+
+
 	<!-- 중고거래 조회수 증가 -->
 	<update id="incrementReadCnt" parameterType="flea">
-		UPDATE fleaMarket 
-		SET	view_count = view_count + 1
+		UPDATE fleaMarket
+		SET view_count = view_count + 1
 		WHERE post_id = #{post_id}
 	</update>
-	
+
 	<!-- 중고거래 상세 글 조회 -->
 	<select id="getPostDetail" resultType="flea">
-		SELECT f.post_id, f.title, f.content, f.category_id, f.view_count, f.sales_status, to_char(f.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, f.price, m.user_name, f.user_id
+		SELECT f.post_id, f.title,
+		f.content, f.category_id, f.view_count, f.sales_status,
+		to_char(f.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, f.price,
+		m.user_name, f.user_id
 		FROM fleaMarket f
-		LEFT JOIN Member m 
+		LEFT JOIN member m
 		ON f.user_id = m.user_id
 		WHERE post_id = #{post_id}
 	</select>
-	
+
+	<select id="getNextPostId" resultType="Long">
+		SELECT flea_seq.nextval
+		from dual
+	</select>
+
 	<!-- 중고거래 글 입력 -->
 	<insert id="writePost" parameterType="flea">
-		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
-			SELECT flea_seq.nextval from dual
-		</selectKey>
-		INSERT INTO fleaMarket(post_id, user_id, title, content, view_count, comment_count, category_id, sales_status, price)
-		VALUES (#{post_id}, #{user_id}, #{title}, #{content},0, 0, #{category_id}, 0, #{price})
+		INSERT INTO
+		fleaMarket(post_id, user_id, title, content, view_count,
+		comment_count, category_id, sales_status, price, thumbnail)
+		VALUES
+		(#{post_id}, #{user_id}, #{title}, #{content},0, 0, #{category_id}, 0,
+		#{price}, #{thumbnail})
 	</insert>
-	
+
 	<!-- 중고거래 수정할 글 정보 조회 -->
-	<select id="getPostForEdit" parameterType="flea"  resultType="flea">
-		SELECT post_id, title, content, price, category_id, sales_status
+	<select id="getPostForEdit" parameterType="flea"
+		resultType="flea">
+		SELECT post_id, title, content, price, category_id,
+		sales_status
 		FROM fleaMarket
-		WHERE post_id = #{post_id} 
+		WHERE post_id = #{post_id}
 	</select>
-	
+
 	<!-- 중고거래 글 수정 -->
 	<update id="editPost" parameterType="flea">
 		UPDATE fleaMarket SET
-			title = #{title},
-			content = #{content},
-			created_at = sysdate,
-			sales_status = #{sales_status},
-			category_id = #{category_id},
-			price = #{price}
+		title = #{title},
+		content = #{content},
+		created_at = sysdate,
+		sales_status = #{sales_status},
+		category_id = #{category_id},
+		price = #{price}
 		<if test="imageFileName != ''">
 			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
 		</if>
 		where post_id = #{post_id}
 	</update>
-	
+
 	<!-- 중고거래 글 삭제 -->
 	<delete id="deletePost" parameterType="flea">
-		DELETE FROM fleaMarket WHERE post_id = #{post_id}
+		DELETE FROM fleaMarket
+		WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</delete>
-	
+
 	<!-- 댓글 개수 증감 -->
 	<update id="updateCommentCount">
 		UPDATE fleaMarket
-		SET comment_count = comment_count + #{amount}
+		SET comment_count = comment_count +
+		#{amount}
 		WHERE post_id = #{post_id}
 	</update>
-	
-	<!-- 특정 회원의 중고악기 글 조회 --> 
-	<select id="getPosts" resultType="flea" parameterType="flea">
+
+
+	<select id="getMyStore" resultType="flea" parameterType="flea">
+	    <![CDATA[
+	    SELECT post_id, title, TO_CHAR(created_at,'YYYY/MM/DD') AS created_at, price, thumbnail, sales_status
+	    FROM (
+	        SELECT 
+	            f.post_id, f.title, f.created_at, f.price, f.thumbnail, f.sales_status,
+	            ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
+	        FROM fleaMarket f
+	        WHERE f.user_id = #{user_id}
+	    ]]>
+		<if test="keyword != null and keyword != ''">
+			AND f.title LIKE '%' || #{keyword} || '%'
+		</if>
+	    <![CDATA[
+	    )
+	    WHERE rnum > (#{pageNum} - 1) * #{amount}
+	      AND rnum <= #{pageNum} * #{amount}
+	    ]]>
+	</select>
+
+	<select id="getMyStoreCnt" parameterType="flea" resultType="int">
+		SELECT count(*)
+		FROM fleaMarket f
+		WHERE user_id = #{user_id}
+		<if test="keyword != null and keyword != ''">
+			AND f.title LIKE '%' || #{keyword} || '%'
+		</if>
+	</select>
+
+	<select id="getFavorites" parameterType="flea" resultType="flea">
 		<![CDATA[
-		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, view_count
+		SELECT *
 		FROM (
-				SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-					rownum as rnum, post_id, title, created_at, view_count
-				FROM fleaMarket f
-				where ]]> 
-				<trim prefix="(" suffix=") AND" prefixOverrides="AND">
-					<include refid="fleaSearch"></include> 
-				</trim>
-			<![CDATA[ rownum <= #{pageNum} * #{amount} AND user_id  = #{user_id} 
-				) fleaList
-			WHERE rnum > (#{pageNum} - 1) * #{amount}
+			SELECT 
+				f.post_id, f.title, f.created_at, f.price, f.thumbnail, f.user_id,
+				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
+			FROM fleaMarket f
+			JOIN favorite fav ON f.post_id = fav.board_no
+			WHERE fav.user_id = #{user_id}
+			AND fav.board_type = 'fleaMarket'
 			]]>
+		<if test="keyword != null and keyword != ''">
+			AND f.title LIKE '%' || #{keyword} || '%'
+		</if>
+	    <![CDATA[
+		) 
+		WHERE rnum > (#{pageNum} - 1) * #{amount}
+		  AND rnum <= #{pageNum} * #{amount}
+		]]>
 	</select>
-	
-	<!-- 특정 회원의 중고악기 레코드 수 조회 -->
-	<select id="getUserPostCnt" parameterType="flea" resultType="int">
-	    SELECT count(*)
-	    FROM fleaMarket f
-	    WHERE user_id = #{user_id}
-	    <trim prefix="AND (" suffix=")" prefixOverrides="AND | OR">
-	        <include refid="fleaSearch"></include>
-	    </trim>
+
+	<select id="getImages" resultType="imageFile">
+		SELECT image_name
+		FROM imageFile
+		WHERE post_id = #{post_id} AND post_type = 'flea'
 	</select>
-	
+
+
 </mapper>

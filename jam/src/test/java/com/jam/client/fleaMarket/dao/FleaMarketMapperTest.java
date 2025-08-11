@@ -19,14 +19,13 @@ public class FleaMarketMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
 	private FleaMarketDAO fleaDao;
-	
 	/* 전체 글 조회 */
 	@Test
 	public void testFleaList() {
 		FleaMarketVO flea_vo = new FleaMarketVO();
 		
 		log.info("중고악기 전체 글  조회");
-		log.info(fleaDao.getBoards(flea_vo));
+		log.info(fleaDao.getBoard(flea_vo));
 		
 		flea_vo.setUser_id("abcd1234");
 		
@@ -34,7 +33,7 @@ public class FleaMarketMapperTest {
 		//log.info(fleaDao.getBoards(flea_vo));
 		
 		// 즐겨찾기 한 글 조회
-		log.info(fleaDao.getBoardsWithFavorite(flea_vo));
+		log.info(fleaDao.getBoardWithFavorite(flea_vo));
 	}
 	
 	/* 상세 페이지 조회
