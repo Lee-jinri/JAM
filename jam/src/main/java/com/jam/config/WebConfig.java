@@ -18,6 +18,7 @@ import javax.servlet.Filter;
 
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
 
@@ -60,17 +61,11 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         return new Filter[] {characterEncodingFilter};
     }
     
-    /*
     @Override
-    public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
-        StringHttpMessageConverter stringConverter = new StringHttpMessageConverter(Charset.forName("UTF-8"));
-        stringConverter.setSupportedMediaTypes(Arrays.asList(new MediaType("text", "html", Charset.forName("UTF-8"))));
-        converters.add(stringConverter);
-
-        // JSON 직렬화
-        converters.add(new MappingJackson2HttpMessageConverter());
-        
-    }*/
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        registry.addResourceHandler("/images/**")
+                .addResourceLocations("file:///C:/upload/");
+    }
     
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -109,11 +104,12 @@ public class WebConfig extends AbstractAnnotationConfigDispatcherServletInitiali
         				"/api/community/**",
         				"/api/fleaMarket/**",
         				"/api/roomRental/**",
+        				"/api/chat/**",
         				
         				"/api/**/posts",
-        				"/jobReplies/**",
-        				"/comReplies/**",
-        				"/api/chat/**",
+        				"/jobreplies/**",
+        				"/comreplies/**",
+        				
         				"/api/mypage/favorite/**",
         				"/api/mypage/written/boards",
         				"/api/mypage/account"

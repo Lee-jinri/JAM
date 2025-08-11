@@ -27,8 +27,14 @@ public class ServletConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/resources/**").addResourceLocations("/resources/");
-        registry.addResourceHandler("/uploadStorage/**").addResourceLocations("file:C:/uploadStorage/");
+        registry.addResourceHandler("/resources/**")
+        		.addResourceLocations("/resources/");
+        
+        registry.addResourceHandler("/uploadStorage/**")
+        		.addResourceLocations("file:C:/uploadStorage/");
+        
+        registry.addResourceHandler("/images/**")
+        		.addResourceLocations("file:///C:/upload/");
     }
 
     @Bean
