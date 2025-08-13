@@ -39,7 +39,7 @@
 	<div class="nav">
 		<nav>
 	        <ul class="nav-items">
-	          <li><a href="/job">구인/구직</a></li>
+	          <li><a href="/jobs">구인/구직</a></li>
 	          <li><a href="/roomRental">합주실/연습실</a></li>
 	          <li><a href="/fleeaMarket">중고악기</a></li>
 	          <li><a href="/community/communityList">커뮤니티</a></li>

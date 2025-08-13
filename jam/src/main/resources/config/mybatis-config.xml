@@ -18,8 +18,6 @@
 		
 		<typeAlias type="com.jam.client.job.vo.JobVO" alias="job"/>
 		
-		<typeAlias type="com.jam.client.jobReply.vo.JobReplyVO" alias="jobReply"/>
-		
 		<typeAlias type="com.jam.client.roomRental.vo.RoomRentalVO" alias="room"/>
 		
 		<typeAlias type="com.jam.client.roomRentalReply.vo.RoomReplyVO" alias="roomReply"/>

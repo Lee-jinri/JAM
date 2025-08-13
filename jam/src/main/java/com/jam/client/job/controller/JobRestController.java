@@ -27,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
-@RequestMapping("/api/job/")
+@RequestMapping("/api/jobs/")
 @RequiredArgsConstructor
 @Log4j
 public class JobRestController {

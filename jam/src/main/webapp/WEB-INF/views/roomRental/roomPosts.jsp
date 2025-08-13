@@ -72,7 +72,7 @@
 			$("#jobPosts").click(function(){
 				$("#searchForm").attr({
 					"method":"get",
-					"action":"/job/jobPosts?user_name=" + $("#user_name").val()
+					"action":"/jobs/jobPosts?user_name=" + $("#user_name").val()
 				});
 				$("#searchForm").submit();
 			})

@@ -130,9 +130,9 @@
 	            console.error('Error while executing mainBoards:', error);
 	        });
 			
-	        
+	        /*
 			$("#jobHeader").click(function(){
-				location.href = "/job/boards";
+				location.href = "/jobs/boards";
 			})
 			
 			$("#roomHeader").click(function(){
@@ -155,13 +155,13 @@
 		        .then(response => response.json())
 		        .then(data => {
 		        	
-		            const jobList = data.jobList;
-		            const roomList = data.roomList;
+		            //const jobList = data.jobList;
+		            //const roomList = data.roomList;
 		            const fleaList = data.fleaList;
 		            const comList = data.comList;
 
-		            renderList(jobList, "#jobList", "#jobTemplate", "/job/board/", "job");
-		            renderList(roomList, "#roomList", "#roomTemplate", "/roomRental/board/", "roomRental");
+		            //renderList(jobList, "#jobList", "#jobTemplate", "/jobs/board/", "job");
+		           // renderList(roomList, "#roomList", "#roomTemplate", "/roomRental/board/", "roomRental");
 		            renderList(comList, "#comList", "#comTemplate", "/community/board/", "com");
 		            renderList(fleaList, "#fleaList", "#fleaTemplate", "/fleaMarket/board/", "flea");
 		            resolve(); // 모든 작업이 끝나면 resolve 호출
@@ -206,7 +206,16 @@
 </head>
 <body>
 <div class="contents">
-	<!-- Jobs -->
+	<div class="jobs-banner">
+		<a href="/jobs/boards" class="banner-link">
+			<div class="banner-content">
+				<h2>채용 공고 보러가기</h2>
+		    	<p>지금 열려 있는 다양한 포지션을 확인해보세요!</p>
+		  	</div>
+	  	</a>
+	</div>
+	
+	<!-- Jobs 
     <div class="mainDiv">
         <div class="mainListDiv" id="jobHeader">📌 Jobs</div>
         <ul id="jobList" class="board-list">

@@ -5,97 +5,11 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>JAM - Jobs</title>
+<title>Jobs</title>
 <script src="/resources/include/dist/js/userToggle.js"></script>
 <script src="/resources/include/dist/js/area.js"></script>
 <script src="/resources/include/dist/js/favorite.js"></script>
 <style>
-.search-container {
-	display: flex;
-	align-items: center;
-	background-color: white;
-	border: 1px solid #ddd;
-	border-radius: 9999px; /* pill shape */
-	padding: 8px 8px;
-	width: 100%;
-	max-width: 600px;
-	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-	height: 53px;
-}
-
-.search-icon {
-	color: #333;
-	font-size: 20px;
-}
-
-.search-input {
-	border: none;
-	flex: 1;
-	outline: none;
-	font-size: 14px;
-}
-
-.search-select {
-	border: none;
-	appearance: none;
-	-webkit-appearance: none;
-	-moz-appearance: none;
-	background-color: #f2eadd;
-	border-radius: 9999px;
-	padding: 8px 25px;
-	font-size: 14px;
-	cursor: pointer;
-	text-align-last: center;
-	padding-right: 2em;
-	background-image:
-		url("data:image/svg+xml;utf8,<svg fill='black' height='12' viewBox='0 0 24 24' width='12' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
-	background-repeat: no-repeat;
-	background-position: right 0.75em center;
-	background-size: 0.8em;
-}
-
-.search-select option {
-	direction: rtl;
-	text-align: center;
-}
-
-/*****************************? r검색바 디자인 아래가 원래 위가 새로**/
-.search-div {
-	max-width: 700px; /* 포지션/지역과 동일하게 맞춤 */
-	width: 100%;
-	margin: 0 auto; /* 가운데 정렬 */
-	padding: 1rem 2rem;
-	margin-top: 30px;
-}
-
-.search-input {
-	border: none;
-	border-bottom: 1px solid #e5e7eb;
-}
-
-.search-bar-wrapper {
-	display: flex;
-	gap: 8px; /* 요소 간 간격 */
-	width: 100%;
-	max-width: 800px; /* 포지션/지역과 동일한 폭 */
-}
-
-.search-bar-wrapper select {
-	flex: 0.2; /* select는 전체의 20%만 차지 */
-	min-width: 100px; /* 너무 작아지는 거 방지 */
-}
-
-.search-bar-wrapper input {
-	flex: 1; /* input은 나머지 공간 차지 */
-	min-width: 0;
-	box-sizing: border-box;
-}
-
-.search-bar-wrapper .glass_icon {
-	cursor: pointer;
-	font-size: 18px;
-	align-self: center;
-}
 
 .selected-wrapper {
 	max-width: 600px;
@@ -380,7 +294,7 @@ $(function(){
 	        	console.log('memberListCache');
 	            $('.job-boardList').html(memberListCache);  // 캐시에서 불러오기
 	        } else {
-	        	location.href = "/job/boards?job_category=1"
+	        	location.href = "/jobs/boards?job_category=1"
 	        }
 	        
 	        
@@ -390,7 +304,7 @@ $(function(){
 	       if(companyListCache){
 	    	   $(".boardList").html(companyListCache);
 	       }else{
-	        	location.href = "/job/boards?job_category=0"
+	        	location.href = "/jobs/boards?job_category=0"
 	       }
 	       
 	       setCompanyStyle();
@@ -404,10 +318,10 @@ $(function(){
 				if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
 					location.href = "/member/login";
 				} else {
-					location.href = "/job/boards";
+					location.href = "/jobs/boards";
 				}
 			} else {
-				location.href = "/job/board/write";
+				location.href = "/jobs/board/write";
 			}
 		})
 	})
@@ -524,7 +438,7 @@ function getBoards(){
 	);
 
 	let queryString = new URLSearchParams(filteredParams).toString();
-	let url = "/api/job/boards?" + queryString;
+	let url = "/api/jobs/boards?" + queryString;
 	
     $(".position-checkbox").each(function() {
         const posValue = $(this).val();
@@ -600,7 +514,7 @@ function companyRecruit(data){
 		$clone.find(".boardArea").text(board.gu + "\u00A0\u00A0\u00A0" + board.dong);
 		$clone.find(".boardPosition").text(positionMap[board.position]);
 		$clone.find(".boardTitle").text(board.job_title);
-		$clone.find(".boardLink").attr("data-location", "/job/board/" + board.job_no);
+		$clone.find(".boardLink").attr("data-location", "/jobs/board/" + board.job_no);
 		
 		let $favoriteSpan = $clone.find(".favoriteSpan");
 		$favoriteSpan.attr("data-board-no", board.job_no);
@@ -654,7 +568,7 @@ function memberRecruit(data){
 		$clone.find(".boardArea").text(board.gu + "\u00A0\u00A0\u00A0" + board.dong);
 		$clone.find(".boardPosition").text(positionMap[board.position]);
 		$clone.find(".boardTitle").text(board.job_title);
-		$clone.find(".boardLink").attr("data-location", "/job/board/" + board.job_no);
+		$clone.find(".boardLink").attr("data-location", "/jobs/board/" + board.job_no);
 		
 		let date = formatRelativeTime(board.job_date);
 		$clone.find(".boardDate").text(date);
@@ -698,7 +612,7 @@ function updateUrl(newParams){
     }
     
     
-    let newUrl = "/job/boards?" + currentParams.toString();
+    let newUrl = "/jobs/boards?" + currentParams.toString();
     
     location.href = newUrl;
 }
@@ -852,43 +766,6 @@ function setCompanyStyle() {
 				<p class="text-center font-color-blue">Jobs</p>
 			</div>
 		
-			<div class="search-div flex justify-center items-center border border-radius-43px">
-				<div class="search-bar-wrapper item-center flex justify-space-around">
-					
-					<% String searchParam = request.getParameter("search");
-					    if (searchParam == null || searchParam.isEmpty()) {
-					        searchParam = "all";
-					    }%> 
-					   
-					<select id="search" name="search" class="search border-none">
-						<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
-					    <option value="job_title" ${param.search == 'job_title' ? 'selected' : ''}>제목</option>
-					    <option value="job_content" ${param.search == 'job_content' ? 'selected' : ''}>내용</option>
-					    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>작성자</option>
-					</select>
-					
-					<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
-					value="${not empty param.keyword ? param.keyword : ''}" />
-					<input type="hidden" id="city">
-					<input type="hidden" id="gu">
-					<input type="hidden" id="dong">
-					
-					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
-				</div>
-			</div>
-			
-			<div class="search-container">
-				<i id="searchBtn" class="fa-solid fa-magnifying-glass search-icon"></i>
-				<input type="text" placeholder="검색어를 입력하세요" class="search-input" name="keyword" />
-				<select id="search" name="search" class="search-select">
-					<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
-				    <option value="job_title" ${param.search == 'job_title' ? 'selected' : ''}>제목</option>
-				    <option value="job_content" ${param.search == 'job_content' ? 'selected' : ''}>내용</option>
-				    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>작성자</option>
-				</select>
-			</div>
-			
-			
 			
 			<div class="selected-wrapper">
 			    <div id="selectedAreaWrapper" class="selected-location inline">

@@ -30,7 +30,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @Controller
-@RequestMapping("/job")
+@RequestMapping("/jobs")
 @RequiredArgsConstructor
 @Log4j
 public class JobController {
@@ -44,7 +44,7 @@ public class JobController {
 	@RequestMapping(value="/boards", method=RequestMethod.GET)
 	public String boards() {
 		
-		return "job/boards";
+		return "jobs/boards";
 	}
 	
 	
@@ -58,7 +58,7 @@ public class JobController {
 	public String jobDetail(@PathVariable("job_no") Long job_no, Model model) {
 		model.addAttribute("job_no", job_no);
 		
-	    return "job/board";
+	    return "jobs/board";
 	}
 	
 	
@@ -68,7 +68,7 @@ public class JobController {
 	@RequestMapping(value="/board/write", method=RequestMethod.GET)
 	public String writeView() throws Exception{
 		
-		return "job/write";
+		return "jobs/write";
 	}
 	
 	/********************************
@@ -83,7 +83,7 @@ public class JobController {
 		JobVO board = jobService.getBoardById(job_no);
 		model.addAttribute("board", board);
 		
-		return "job/update";
+		return "jobs/update";
 	}
 	
 	/********************************
@@ -139,7 +139,7 @@ public class JobController {
 		
 		model.addAttribute("pageMaker",pageMaker);
 		
-		return "job/jobPosts";
+		return "jobs/jobPosts";
 	}
 	
 }

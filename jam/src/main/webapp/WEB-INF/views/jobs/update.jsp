@@ -124,7 +124,7 @@
 					'dong':dong
 			};
 			
-			fetch('/api/job/board', {
+			fetch('/api/jobs/board', {
 			    method: 'PUT',
 			    headers: {
 			        'Content-Type': 'application/json'
@@ -143,7 +143,7 @@
 			    alert("수정이 완료되었습니다.");
 
 			    if (body) {
-			        $(location).attr('href', '/job/board/' + body);
+			        $(location).attr('href', '/jobs/board/' + body);
 			    }
 			})
 			.catch(error => {
@@ -347,7 +347,7 @@
 		<!-- 등록/취소 버튼 -->
 		<div class="jam-btn-group">
 		    <button type="button" id="update" class="jam-btn register">수정</button>
-		    <button type="button" class="jam-btn cancel" onclick="location.href='/job/boards'">취소</button>
+		    <button type="button" class="jam-btn cancel" onclick="location.href='/jobs/boards'">취소</button>
 		</div>
 	</div>
 	<script>

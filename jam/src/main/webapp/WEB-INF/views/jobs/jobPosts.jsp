@@ -71,7 +71,7 @@
 			$("#jobPosts").click(function(){
 				$("#searchForm").attr({
 					"method":"get",
-					"action":"/job/jobPosts?user_name=" + $("#user_name").val()
+					"action":"/jobs/jobPosts?user_name=" + $("#user_name").val()
 				});
 				$("#searchForm").submit();
 			})
@@ -91,7 +91,7 @@
 			}
 			$("#searchForm").attr({
 				"method":"get",
-				"action":"/job/jobPosts?user_name=" + $("#user_name").val()
+				"action":"/jobs/jobPosts?user_name=" + $("#user_name").val()
 			});
 			$("#searchForm").submit();
 		}
@@ -153,7 +153,7 @@
 							<c:forEach items="${jobPosts }" var="jobPost" varStatus="status">
 								<tr class="text-center" data-num="${jobPost.job_no}">
 									<td class="class">
-										<a class="" href="/job/board/${jobPost.job_no }">${jobPost.job_title}</a>
+										<a class="" href="/jobs/board/${jobPost.job_no }">${jobPost.job_title}</a>
 									</td>
 									<td class=" ">${jobPost.job_date}</td>
 									<td class=" ">${jobPost.job_hits }</td>

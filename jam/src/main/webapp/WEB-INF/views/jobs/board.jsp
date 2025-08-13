@@ -64,7 +64,7 @@ $(function(){
 	function getBoard(){
 		if(job_no == "" || job_no == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
 		else{
-			fetch('/api/job/board/' + job_no)
+			fetch('/api/jobs/board/' + job_no)
 	        .then(response => {
 				if (!response.ok) {
 					throw new Error('Network response was not ok');
@@ -148,13 +148,13 @@ $(function(){
 	// 수정 버튼 클릭
 	$(document).on("click", "#jobUpdateBtn", function() {
 	    if(job_no == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-	    else $(location).attr('href', '/job/board/edit/'+job_no);
+	    else $(location).attr('href', '/jobs/board/edit/'+job_no);
 	});
 	
 	// 삭제 버튼 클릭
 	$(document).on("click", "#jobDeleteBtn", function() {
 		if(confirm("정말 삭제하시겠습니까?")){
-			fetch('/api/job/board/'+$("#job_no").val(), {
+			fetch('/api/jobs/board/'+$("#job_no").val(), {
 				method: 'DELETE'
 			})
 			.then(response => {
@@ -162,7 +162,7 @@ $(function(){
 					throw new Error('Network response was not ok');
 				}
 				alert("삭제가 완료 되었습니다.");
-				$(location).attr('href', '/job/boards');
+				$(location).attr('href', '/jobs/boards');
 			})
 			.catch(error => {
 				alert('게시글 삭제를 완료할 수 없습니다. 잠시 후 다시 시도해주세요.');
@@ -278,13 +278,9 @@ function formatRelativeTime(dateString) {
 		    <!-- 버튼 영역 -->
 		    <div class="board-buttons">
 		        <div id="btn-div" class="author-buttons"></div>
-		        <a href="/job/boards" class="board-btn">목록</a>
+		        <a href="/jobs/boards" class="board-btn">목록</a>
 		    </div>
 		
-		    <!-- 댓글 -->
-		    <div class="job-reply">
-		        <jsp:include page="reply.jsp"/>
-		    </div>
 		</div>
 	</div>
 </body>

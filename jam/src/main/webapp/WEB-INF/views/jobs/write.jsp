@@ -532,7 +532,7 @@
 					'dong':dong
 			};
 			
-			fetch('/api/job/board', {
+			fetch('/api/jobs/board', {
 			    method: 'POST',
 			    headers: {
 			        'Content-Type': 'application/json'
@@ -551,7 +551,7 @@
 			    alert("등록이 완료되었습니다.");
 
 			    if (body) {
-			        $(location).attr('href', '/job/board/' + body);
+			        $(location).attr('href', '/jobs/board/' + body);
 			    }
 			})
 			.catch(error => {
@@ -566,7 +566,7 @@
 					if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
 						location.href = "/member/login";
 					} else {
-						location.href = "/job/boards";
+						location.href = "/jobs/boards";
 					}
 				}
 			})
@@ -693,7 +693,7 @@
 		<!-- 등록/취소 버튼 -->
 		<div class="jam-btn-group">
 		    <button type="button" id="write" class="jam-btn register">등록</button>
-		    <button type="button" class="jam-btn cancel" onclick="location.href='/job/boards'">취소</button>
+		    <button type="button" class="jam-btn cancel" onclick="location.href='/jobs/boards'">취소</button>
 		</div>
 	</div>
 <script>
