@@ -10,16 +10,15 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper=false)
 public class JobVO extends CommonVO {
-
-	private Long job_no;
-	private String job_title;
-	private String job_content;
-	private int job_category; // 0:기업 구인 1: 멤버 구인
-	private int job_status;   // 0:구인중 1:구인 완료
-	private String imageFileName;
-	private int job_hits;
-	private int job_reply_cnt;
-	private String job_date;
+	private Long post_id;
+	private String title;  
+	private String content; 
+	
+	private int category; // 0:기업 구인 1: 멤버 구인
+	private int status;   // 0:구인중 1:구인 완료
+		
+	private String created_at; 
+	private Integer hits;
 	private Integer pay_category; // 0:시급 1:월급 
 	private Integer pay;
 	private String position;

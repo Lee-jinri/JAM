@@ -4,11 +4,11 @@
 	
 	<!-- 키워드 검색 -->
 	<sql id="jobSearch">
-		<if test="search=='job_title'">
-			<![CDATA[AND j.job_title LIKE '%' || #{keyword} || '%']]>
+		<if test="search=='title'">
+			<![CDATA[AND j.title LIKE '%' || #{keyword} || '%']]>
 		</if>
-		<if test="search=='job_content'">
-			<![CDATA[AND j.job_content LIKE '%' || #{keyword} || '%']]>
+		<if test="search=='content'">
+			<![CDATA[AND j.content LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='user_name'">
 			<![CDATA[AND m.user_name LIKE '%' || #{keyword} || '%']]>
@@ -42,22 +42,23 @@
 	<select id="getBoards" parameterType="job" resultType="job">
 		<![CDATA[
 		SELECT 
-			job_no, job_title, 
-			to_char(job_date, 'YYYY/MM/DD') AS job_date, 
-			pay_category, pay, city, gu, dong, position,
+			post_id, title, 
+			to_char(created_at, 'YYYY/MM/DD') AS created_at, 
+			pay_category, pay, 
+			city, gu, dong, position,
 			0 AS isFavorite  
 		FROM (
 			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
-				j.job_no, j.job_title, j.job_date, 
-				j.job_category, j.pay_category, j.pay, 
+				j.post_id, j.title, j.created_at, 
+				j.pay_category, j.pay, 
 				j.city, j.gu, j.dong, j.position,
-				ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
+				ROW_NUMBER() OVER (ORDER BY j.post_id DESC) AS rnum
 			FROM job j
 			LEFT JOIN Member m ON j.user_id = m.user_id
 			]]>
 			<where>
 		        1=1
-		        AND j.job_status = 0 AND j.job_category = #{job_category}
+		        AND j.status = 0 AND j.category = #{category}
 		        <include refid="jobSearch"></include>
 		        <include refid="jobLocalSearch"></include>
 		        <include refid="jobPositionSearch"/>
@@ -71,19 +72,22 @@
 	<select id="getBoardsWithFavorite" parameterType="job" resultType="job">
 		<![CDATA[
 		SELECT 
-			job_no, job_title, 
-			to_char(job_date, 'YYYY/MM/DD') AS job_date, 
-			pay_category, pay, city, gu, dong, position,
+			j.post_id, j.title, 
+			to_char(j.created_at, 'YYYY/MM/DD') AS created_at, 
+			j.pay_category, j.pay, 
+			j.city, j.gu, j.dong, j.position,
 			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
-				j.job_no, j.job_title, j.job_date, j.job_category, j.pay_category, j.pay, j.city, j.gu, j.dong, j.position,
-				ROW_NUMBER() OVER (ORDER BY j.job_no DESC) AS rnum
+				j.post_id, j.title, j.created_at, 
+				j.pay_category, j.pay, 
+				j.city, j.gu, j.dong, j.position,
+				ROW_NUMBER() OVER (ORDER BY j.post_id DESC) AS rnum
 			FROM job j
 		]]>
 			<where>
 		        1=1
-		        AND j.job_status = 0 AND j.job_category = #{job_category}
+		        AND j.status = 0 AND j.category = #{category}
 		        <include refid="jobSearch"></include>
 		        <include refid="jobLocalSearch"></include>
 		        <include refid="jobPositionSearch"/>
@@ -91,7 +95,7 @@
 		<![CDATA[
 		) j 
 		LEFT JOIN favorite f  
-			ON j.job_no = f.board_no  
+			ON j.post_id = f.board_no  
 			AND f.board_type = 'job'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -105,7 +109,7 @@
 	    LEFT JOIN member m ON j.user_id = m.user_id
 	    <where>
 			1=1
-			AND j.job_status = 0 AND j.job_category = #{job_category}
+			AND j.status = 0 AND j.category = #{category}
 		    <include refid="jobSearch"></include>
 		    <include refid="jobLocalSearch"></include>
 		    <include refid="jobPositionSearch"/>
@@ -114,72 +118,63 @@
 	
 	<!-- 조회수 -->
 	<update id="incrementReadCnt" parameterType="job">
-		UPDATE job SET job_hits = job_hits + 1 where job_no = #{job_no}
+		UPDATE job SET hits = hits + 1 where post_id = #{post_id}
 	</update>
 	
 	<!-- 상세페이지 -->
 	<select id="getBoardDetail" resultType="job">
-		SELECT j.job_no, j.job_title, j.job_content, j.job_hits, to_char(j.job_date,'YYYY/MM/DD HH24:MI:SS') as job_date, j.job_category, j.job_status,j.pay_category, pay, m.user_name, j.user_id, j.city, j.gu, j.dong, j.position
+		SELECT j.post_id, j.title, j.content, to_char(j.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, j.category, j.status,j.pay_category, pay, m.user_name, j.user_id, j.city, j.gu, j.dong, j.position
 		FROM job j
 		LEFT JOIN Member m ON j.user_id = m.user_id
-		WHERE j.job_no = #{job_no}
+		WHERE j.post_id = #{post_id}
 	</select>
 	
 	<!-- 글 입력 -->
 	<insert id="writeBoard" parameterType="job">
-		<selectKey keyProperty="job_no" resultType="Long" order="BEFORE">
+		<selectKey keyProperty="id" resultType="Long" order="BEFORE">
         	select job_seq.nextval from dual
     	</selectKey>
-		INSERT INTO job(job_no, user_id, job_title, job_content, job_category, job_status,  pay_category, pay, position, job_hits, job_reply_cnt, imageFileName, city, gu, dong)
-		VALUES(#{job_no},#{user_id}, #{job_title}, #{job_content}, #{job_category},0,  #{pay_category, jdbcType=INTEGER}, #{pay, jdbcType=INTEGER}, #{position}, 0 ,0, #{imageFileName, jdbcType = VARCHAR}, #{city}, #{gu, jdbcType = VARCHAR}, #{dong, jdbcType = VARCHAR})
+		INSERT INTO job(post_id, user_id, title, content, category, status,  pay_category, pay, position, hits, city, gu, dong)
+		VALUES(#{post_id},#{user_id}, #{title}, #{content}, #{category},0,  #{pay_category, jdbcType=INTEGER}, #{pay, jdbcType=INTEGER}, #{position}, 0, #{city}, #{gu, jdbcType = VARCHAR}, #{dong, jdbcType = VARCHAR})
 	</insert>
 	
 	<!-- 글 수정페이지 -->
 	<select id="getBoardById" parameterType="job"  resultType="job">
-		SELECT job_no, job_title, job_content,job_status,pay_category, job_status, pay, position, city, gu, dong, imageFileName
+		SELECT post_id, title, content, status, pay_category, pay, position, city, gu, dong
 		FROM job
-		WHERE job_no = #{job_no} 
+		WHERE post_id = #{post_id} 
 	</select>
 	
 	<!-- 글 수정 -->
 	<update id="editBoard" parameterType="job">
 		UPDATE job SET
-		job_title = #{job_title},
-		job_content = #{job_content},
-		job_status = #{job_status},
-		job_category = #{job_category},
+		title = #{title},
+		content = #{content},
+		status = #{status},
+		category = #{category},
 		pay_category = #{pay_category},
 		pay = #{pay},
 		position = #{position},
 		city = #{city},
 		gu = #{gu},
 		dong = #{dong},
-		job_date = sysdate
-		<if test="imageFileName != ''">
-			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
-		</if>
-		WHERE job_no = #{job_no} AND user_id = #{user_id}
+		created_at = sysdate
+		
+		WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</update>
 	
 	<!-- 글 삭제 -->
 	<delete id="boardDelete" parameterType="job">
-		DELETE FROM job WHERE job_no = #{job_no} AND user_id = #{user_id}
+		DELETE FROM job WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</delete>
-	
-	<!-- 댓글 개수 증감 -->
-	<update id="updateReplyCnt">
-		UPDATE job
-		SET job_reply_cnt = job_reply_cnt + #{amount}
-		WHERE job_no = #{job_no}
-	</update>
 
 	<!-- 특정 회원의  글 조회 --> 
 	<select id="getPosts" resultType="job" parameterType="job">
 		<![CDATA[
-		SELECT job_no, job_title, to_char(job_date,'YYYY/MM/DD') as job_date, job_hits
+		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, hits
 		FROM (
 				SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
-					rownum as rnum, job_no, job_title, job_date, job_hits
+					rownum as rnum, post_id, title, created_at
 				FROM job j
 				where ]]> 
 				<trim prefix="(" suffix=") AND" prefixOverrides="AND">

@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.client.dao.MainDAO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
-import com.jam.client.job.vo.JobVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
 
 import lombok.RequiredArgsConstructor;
@@ -17,11 +16,6 @@ import lombok.RequiredArgsConstructor;
 public class MainServiceImpl implements MainService {
 
 	private final MainDAO mainDao;
-
-	@Override
-	public List<JobVO> jobList() {
-		return mainDao.jobList();
-	}
 
 	@Override
 	public List<RoomRentalVO> roomList() {

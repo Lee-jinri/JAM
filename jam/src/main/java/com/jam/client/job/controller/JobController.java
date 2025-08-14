@@ -1,15 +1,9 @@
 package com.jam.client.job.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
-import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,11 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.google.gson.JsonObject;
 import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
@@ -50,13 +40,13 @@ public class JobController {
 	
 	/**************************************************
 	 * 구인구직 글의 상세 페이지를 반환하는 메서드 입니다.
-	 * @param job_no 조회할 구인구직 글 번호
+	 * @param id 글 번호
 	 * @param model
-	 * @return 구인구직 상세 페이지
+	 * @return 상세 페이지
 	 **************************************************/
-	@RequestMapping(value = "/board/{job_no}", method = RequestMethod.GET)
-	public String jobDetail(@PathVariable("job_no") Long job_no, Model model) {
-		model.addAttribute("job_no", job_no);
+	@RequestMapping(value = "/board/{id}", method = RequestMethod.GET)
+	public String jobDetail(@PathVariable("id") Long id, Model model) {
+		model.addAttribute("id", id);
 		
 	    return "jobs/board";
 	}
@@ -77,45 +67,13 @@ public class JobController {
 	 * @return 구인구직 글 수정 페이지
 	 *********************************/
 	@RequestMapping(value="/board/edit/{job_no}", method=RequestMethod.GET)
-	public String updateView(@PathVariable Long job_no, Model model){
+	public String updateView(@PathVariable Long id, Model model){
 	
-		model.addAttribute("job_no", job_no);
-		JobVO board = jobService.getBoardById(job_no);
+		model.addAttribute("id", id);
+		JobVO board = jobService.getBoardById(id);
 		model.addAttribute("board", board);
 		
 		return "jobs/update";
-	}
-	
-	/********************************
-	 * 구인구직 사진 업로드
-	 * @return String 사진 저장 경로
-	 ********************************/
-	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
-	@ResponseBody
-	public String uploadImageFile(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request )  {
-		JsonObject jsonObject = new JsonObject();
-		
-		// 내부경로로 저장
-		String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
-		String fileRoot = contextRoot+"resources/fileupload/";
-		
-		String originalFileName = multipartFile.getOriginalFilename();	//오리지날 파일명
-		String extension = originalFileName.substring(originalFileName.lastIndexOf("."));	//파일 확장자
-		String savedFileName = UUID.randomUUID() + extension;	//저장될 파일 명
-		
-		File targetFile = new File(fileRoot + savedFileName);	
-		try {
-			InputStream fileStream = multipartFile.getInputStream();
-			FileUtils.copyInputStreamToFile(fileStream, targetFile);	//파일 저장
-			jsonObject.addProperty("url", "/resources/fileupload/"+savedFileName); // contextroot + resources + 저장할 내부 폴더명
-			jsonObject.addProperty("responseCode", "success");
-				
-		} catch (IOException e) {
-			FileUtils.deleteQuietly(targetFile);	//저장된 파일 삭제
-			jsonObject.addProperty("responseCode", "error");
-			e.printStackTrace();
-		}
-		return jsonObject.toString();
 	}
 	
 	/*********************************

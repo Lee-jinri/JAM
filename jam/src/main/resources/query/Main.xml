@@ -2,19 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jam.client.dao.MainDAO">
 
-	<!-- 구인 구직 글 리스트  -->
-	<select id="jobList" resultType="job">
-		SELECT * 
-		FROM (
-		    SELECT j.job_no, j.job_title, to_char(j.job_date, 'YYYY/MM/DD HH24:MI') as job_date, m.user_id, m.user_name
-		    FROM job j
-		    LEFT JOIN Member m ON j.user_id = m.user_id
-		    ORDER BY j.job_date DESC
-		) WHERE <![CDATA[ROWNUM <= 5 ]]>
-	</select>
-	
-	
-	
 	<!-- 중고악기 글 리스트 -->
 	<select id="fleaList" resultType="flea">
 		SELECT *

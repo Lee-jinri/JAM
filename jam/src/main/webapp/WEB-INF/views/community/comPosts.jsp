@@ -45,7 +45,7 @@
 			setURL("/fleaMarket/fleaPosts");
 		})
 		$("#jobPosts").click(function(){
-			setURL("/job/jobPosts");
+			setURL("/jobs/jobPosts");
 		})
 		$("#roomPosts").click(function(){
 			setURL("/roomRental/roomPosts");

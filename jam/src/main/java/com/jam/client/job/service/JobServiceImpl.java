@@ -3,6 +3,7 @@ package com.jam.client.job.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.velocity.runtime.log.Log;
 import org.springframework.stereotype.Service;
 
 import com.jam.client.job.dao.JobDAO;
@@ -23,7 +24,7 @@ public class JobServiceImpl implements JobService {
 	public List<JobVO> getBoards(JobVO job_vo) {
 		List<JobVO> list = new ArrayList<>();
 		
-		if(job_vo.getUser_id() == null) list = jobDao.getBoards(job_vo);
+		if(job_vo.getUser_id().isEmpty()) list = jobDao.getBoards(job_vo);
 		else {
 			System.out.println("jobservice : " + job_vo.getUser_id());
 			list = jobDao.getBoardsWithFavorite(job_vo);

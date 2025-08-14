@@ -143,7 +143,7 @@ public class JobRestController {
 		try {
 			jobService.writeBoard(jobVO);
 			
-			String job_no = jobVO.getJob_no().toString();
+			String job_no = jobVO.getPost_id().toString();
 			
 			return new ResponseEntity<>(job_no,HttpStatus.OK);
 		} catch (Exception e) {
@@ -155,10 +155,10 @@ public class JobRestController {
 	}
 	
 	private String validateJobVO(JobVO jobVO) {
-	    if (jobVO.getJob_title() == null || jobVO.getJob_title().isEmpty()) {
+	    if (jobVO.getTitle() == null || jobVO.getTitle().isEmpty()) {
 	        return "제목은 필수 입력 항목입니다.";
 	    }
-	    if (jobVO.getJob_content() == null || jobVO.getJob_content().isEmpty()) {
+	    if (jobVO.getContent() == null || jobVO.getContent().isEmpty()) {
 	        return "내용은 필수 입력 항목입니다.";
 	    }
 	    
@@ -205,7 +205,7 @@ public class JobRestController {
 		
 		try {
 			jobService.editBoard(jobVO);
-			String job_no = jobVO.getJob_no().toString();
+			String job_no = jobVO.getPost_id().toString();
 			
 			return new ResponseEntity<>(job_no, HttpStatus.OK);
 		} catch(Exception e) {

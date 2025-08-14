@@ -294,7 +294,7 @@ $(function(){
 	        	console.log('memberListCache');
 	            $('.job-boardList').html(memberListCache);  // 캐시에서 불러오기
 	        } else {
-	        	location.href = "/jobs/boards?job_category=1"
+	        	location.href = "/jobs/boards?category=1"
 	        }
 	        
 	        
@@ -304,7 +304,7 @@ $(function(){
 	       if(companyListCache){
 	    	   $(".boardList").html(companyListCache);
 	       }else{
-	        	location.href = "/jobs/boards?job_category=0"
+	        	location.href = "/jobs/boards?category=0"
 	       }
 	       
 	       setCompanyStyle();
@@ -343,8 +343,8 @@ $(function(){
 			}
 		}
 		
-		let job_category;
-		if ($("#typeSwitch").is(":checked")) job_category = "1"; else job_category = "0";
+		let category;
+		if ($("#typeSwitch").is(":checked")) category = "1"; else category = "0";
 		
 		let city = $("#city").val();
 		let gu = $("#gu").val();
@@ -353,7 +353,7 @@ $(function(){
 		let data = {
 				search : search,
 				keyword: keyword,
-				job_category: job_category ,
+				category: category ,
 				city: city,
 				gu: gu,
 				dong: dong,
@@ -414,7 +414,7 @@ function getBoards(){
 	let pageNum = params.get("pageNum") || "1";
 	let search = params.get("search") || "all";
 	let keyword = params.get("keyword") || undefined;
-	let job_category = params.get("job_category") || "0";  
+	let category = params.get("category") || "0";  
 	
     let city = params.get("city") || undefined;
     let gu = params.get("gu") || undefined;
@@ -426,7 +426,7 @@ function getBoards(){
 	    pageNum: pageNum,
 	    search: search,
 	    keyword: keyword,
-	    job_category: job_category,
+	    category: category,
 	    city: city,
 	    gu: gu,
 	    dong: dong,
@@ -454,7 +454,7 @@ function getBoards(){
 		return response.json();
 	}).then(data=>{
 		
-		if(job_category == "0") {
+		if(category == "0") {
 			companyRecruit(data);
 			setCompanyStyle();
 			$('#typeSwitch').prop('checked', false);
@@ -513,11 +513,11 @@ function companyRecruit(data){
 		
 		$clone.find(".boardArea").text(board.gu + "\u00A0\u00A0\u00A0" + board.dong);
 		$clone.find(".boardPosition").text(positionMap[board.position]);
-		$clone.find(".boardTitle").text(board.job_title);
-		$clone.find(".boardLink").attr("data-location", "/jobs/board/" + board.job_no);
+		$clone.find(".boardTitle").text(board.title);
+		$clone.find(".boardLink").attr("data-location", "/jobs/board/" + board.id);
 		
 		let $favoriteSpan = $clone.find(".favoriteSpan");
-		$favoriteSpan.attr("data-board-no", board.job_no);
+		$favoriteSpan.attr("data-board-no", board.id);
 		$favoriteSpan.attr("data-board-type", "job");
 		
 		let $icon = $favoriteSpan.find("i"); 
@@ -529,7 +529,7 @@ function companyRecruit(data){
 		$clone.find(".boardPay").text(payText + (board.pay_category < 3 ? " " + board.pay + "원" : ""));
 
 		
-		let date = formatRelativeTime(board.job_date);
+		let date = formatRelativeTime(board.created_at);
 		$clone.find(".boardDate").text(date);
 		
 		
@@ -567,27 +567,23 @@ function memberRecruit(data){
 		$clone.find(".boardPay").remove();  
 		$clone.find(".boardArea").text(board.gu + "\u00A0\u00A0\u00A0" + board.dong);
 		$clone.find(".boardPosition").text(positionMap[board.position]);
-		$clone.find(".boardTitle").text(board.job_title);
-		$clone.find(".boardLink").attr("data-location", "/jobs/board/" + board.job_no);
+		$clone.find(".boardTitle").text(board.title);
+		$clone.find(".boardLink").attr("data-location", "/jobs/board/" + board.id);
 		
-		let date = formatRelativeTime(board.job_date);
+		let date = formatRelativeTime(board.create_at);
 		$clone.find(".boardDate").text(date);
 		
-		
 		$boardList.append($clone);
-		
-		
 	});
 	
 	loadPagination(data.pageMaker);
 }
 
 
-
 function updateUrl(newParams){
 	let currentParams = new URLSearchParams(window.location.search);
 
-	if (newParams.hasOwnProperty("search") || newParams.hasOwnProperty("keyword") || newParams.hasOwnProperty("job_category")) {
+	if (newParams.hasOwnProperty("search") || newParams.hasOwnProperty("keyword") || newParams.hasOwnProperty("category")) {
         newParams.pageNum = 1; 
     }
 	
