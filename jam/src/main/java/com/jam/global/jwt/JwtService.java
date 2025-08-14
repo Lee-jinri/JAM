@@ -1,6 +1,7 @@
 package com.jam.global.jwt;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -42,7 +43,7 @@ public class JwtService {
 	 * @return           userId, auth가 포함된 Map (로그인된 경우), 실패 시 빈 Map
 	 * @throws Exception 내부 처리 중 예외 발생 시
 	 */
-	public Map<String, String> getUserInfo(Cookie[] cookies, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public MemberVO getUserInfo(Cookie[] cookies, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
 		try {
 			String accessToken = extractToken(cookies, "Authorization");
@@ -54,8 +55,15 @@ public class JwtService {
 			switch(tokenStatus) {
 				// accessToken 인증됨
 				case VALID: 
-					return extractUserInfoFromToken(accessToken);
-					
+					MemberVO userInfo = extractUserInfoFromToken(accessToken);
+					Authentication authentication = new UsernamePasswordAuthenticationToken(
+					        userInfo,
+					        null,
+					        userInfo.getAuthorities()
+					    );
+					    SecurityContextHolder.getContext().setAuthentication(authentication);
+					 log.info("[JwtService] getUserInfo: " + userInfo.getUser_name());
+					return userInfo;
 				case EXPIRED:
 				case EMPTY:
 					
@@ -89,40 +97,44 @@ public class JwtService {
 	        log.error("[JWT] 내부 처리 중 예외 발생", e);
 	        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	    }
-		return new HashMap<>();
+		return new MemberVO();
 	}
 	
-	private Map<String, String> extractUserInfoFromToken(String accessToken){
+	private MemberVO extractUserInfoFromToken(String accessToken){
 		Claims claim = jwtTokenProvider.getClaims(accessToken);
 		
-		Map<String, String> userMap = new HashMap<>();
+		MemberVO userInfo = new MemberVO();
+		
+		userInfo.setUser_id(claim.get("sub", String.class));
+		userInfo.setUser_name(claim.get("userName", String.class));
+
+        @SuppressWarnings("unchecked")
+		List<String> authList = claim.get("auth", List.class);
         
-        userMap.put("userId", claim.get("sub", String.class));
-        userMap.put("auth", claim.get("auth", String.class));
-        
-		return userMap;
+		userInfo.setRoles(authList);
+		
+		return userInfo;
 	}
 	
-	private Map<String, String> processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
-		
-		Map<String, String> userMap = new HashMap<>();
+	private MemberVO processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
 		
 		// 1. RefreshToken으로 사용자 정보 가져옴.
-		MemberVO member = memberService.getUserInfo(refreshToken);
+		MemberVO userInfo = memberService.getUserInfo(refreshToken);
     	
-		if (member == null) {
+		if (userInfo == null) {
 		    log.error("[JWT] refreshToken으로 사용자 정보 조회 실패");
-		    return userMap;
+		    return new MemberVO();
 		}
 		
-    	String userId = member.getUser_id();
-    	String userName = member.getUser_name();
-    	String auth = member.getRole();
+    	String userId = userInfo.getUser_id();
+    	String userName = userInfo.getUser_name();
     	String loginType = jwtTokenProvider.extractLoginType(refreshToken);
     	
+    	log.info("[JwtService] processRefreshToken: " + userName);
+
     	// 2. SecurityContext에 Authentication 설정
     	Authentication authentication = new UsernamePasswordAuthenticationToken(
-        	    userId, null,  member.getAuthorities());
+    			userInfo, null,  userInfo.getAuthorities());
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
     	
@@ -142,12 +154,9 @@ public class JwtService {
         request.getSession().setAttribute("userName", userName);
         request.getSession().setMaxInactiveInterval(3 * 60 * 60);
 
-        userMap.put("userId", userId);
-        userMap.put("auth", auth);
-        
         log.info("[JWT] 새로운 AccessToken/RefreshToken 발급 - userId: " + userId + " loginType: " + loginType);
 
-        return userMap;
+        return userInfo;
 	}
 	
 	// 쿠키에서 토큰 추출

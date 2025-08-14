@@ -1,6 +1,7 @@
 package com.jam.client.chat.webSocket;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.Cookie;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.socket.WebSocketHandler;
 import org.springframework.web.socket.server.HandshakeInterceptor;
 
+import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.JwtService;
 
 import lombok.extern.log4j.Log4j;
@@ -41,18 +43,20 @@ public class CustomWebSocketInterceptor implements HandshakeInterceptor {
 	        ServletServerHttpResponse servletResponse = (ServletServerHttpResponse) response;
 	        HttpServletResponse httpResponse = servletResponse.getServletResponse();
 	        
-	        Map<String, String> userMap = new HashMap<>();
+	        MemberVO userInfo = new MemberVO();
 	        
 	        Cookie[] cookies = httpRequest.getCookies();
 	        
 	        if (cookies != null) {
-	        	userMap = jwtService.getUserInfo(cookies, httpRequest, httpResponse); 
+	        	userInfo = jwtService.getUserInfo(cookies, httpRequest, httpResponse); 
 	        }
 	        
-	        if(userMap != null) {
-		        attributes.put("userId", userMap.get("userId"));
-		        attributes.put("auth", userMap.get("auth"));
+	        if(userInfo != null) {
+		        attributes.put("userId", userInfo.getUser_id());
+		        attributes.put("auth", userInfo.getRoles());
 	        }
+	        
+	        log.info(userInfo);
 	    }
 	    return true;
 	}

@@ -1,11 +1,10 @@
 package com.jam.global.jwt;
 
 import java.security.Key;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -17,6 +16,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.TokenInfo.TokenStatus;
 
 import io.jsonwebtoken.Claims;
@@ -46,14 +48,25 @@ public class JwtTokenProvider {
     public TokenInfo generateToken(Authentication authentication, boolean autoLogin, String loginType) {
     	
         // 회원의 권한 가져오기
-        String authorities = authentication.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
+        List<String> auth = authentication.getAuthorities().stream()
+        		.map(GrantedAuthority::getAuthority)
+        		.toList();
         
+        if (auth.isEmpty()) {
+        	auth = List.of("ROLE_USER");
+    	}
+        MemberVO member = (MemberVO) authentication.getPrincipal(); 
+        
+        String userName = member.getUser_name();
+        
+
+    	log.info("[JwtTokenProvider] generateToken: " + userName);
+    	
         // Access Token 생성
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
-                .claim("auth", authorities)
+                .claim("auth", auth) 	// 리스트
+                .claim("userName", userName)
                 .claim("loginType", loginType)
                 .setExpiration(new Date(System.currentTimeMillis() + 3 * 3600 * 1000)) // 유효 기간 3시간
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -92,6 +105,7 @@ public class JwtTokenProvider {
     public Authentication getAuthentication(String accessToken) {
         
     	if(validateToken(accessToken) == TokenStatus.VALID) {
+
     		// 토큰 복호화
             Claims claims = getClaims(accessToken);
      
@@ -100,15 +114,27 @@ public class JwtTokenProvider {
             }
      
             // 클레임에서 권한 정보 가져오기
+            /*
             Collection<? extends GrantedAuthority> authorities =
                     Arrays.stream(claims.get("auth").toString().split(","))
                             .map(SimpleGrantedAuthority::new)
                             .collect(Collectors.toList());
-     
-            // UserDetails 객체를 만들어서 Authentication 리턴
-            UserDetails principal = new User(claims.getSubject(), "", authorities);
+            */
+            Object raw = claims.get("auth");
+            List<String> roles = new ObjectMapper().convertValue(raw, new TypeReference<List<String>>() {});
             
-            return new UsernamePasswordAuthenticationToken(principal, "", authorities);
+            Collection<? extends GrantedAuthority> authorities =
+            	roles.stream().map(SimpleGrantedAuthority::new).toList();
+     
+            MemberVO member = new MemberVO();
+            member.setUser_id(claims.getSubject()); // sub
+            member.setUser_name(claims.get("userName", String.class));
+            member.setRoles(roles);
+            
+
+        	log.info("[JwtTokenProvider] getAuthentication: " + claims.get("userName", String.class));
+        	
+            return new UsernamePasswordAuthenticationToken(member, "", authorities);
     	}
 		return null;
     }

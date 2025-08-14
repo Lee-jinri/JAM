@@ -1,12 +1,14 @@
 package com.jam.global.jwt;
 
-import java.util.Map;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
+
+import com.jam.client.member.vo.MemberVO;
 
 import lombok.extern.log4j.Log4j;
 
@@ -24,22 +26,22 @@ public class JwtInterceptor implements HandlerInterceptor {
 	@Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		
-		Map<String, String> userMap = jwtService.getUserInfo(request.getCookies(), request, response);
+		MemberVO userInfo = jwtService.getUserInfo(request.getCookies(), request, response);
 		
-		if (userMap == null || userMap.isEmpty()) {
+		if (userInfo == null) {
 			return true; 
 		}
-		
-		setRequestAttributes(request, userMap);
-		
+		log.info(userInfo);
+		setRequestAttributes(request, userInfo);
 		return true;
 	}
 
 	
-	private void setRequestAttributes(HttpServletRequest request, Map<String, String> userMap) {
-		if(userMap != null) {
-			request.setAttribute("userId", userMap.get("userId"));
-	    	request.setAttribute("auth", userMap.get("auth"));
+	private void setRequestAttributes(HttpServletRequest request, MemberVO userInfo) {
+		if(userInfo != null) {
+			request.setAttribute("userId", userInfo.getUser_id());
+			List<String> roles = userInfo.getRoles();
+			request.setAttribute("roles", roles);
 		}
 	}
 }

@@ -1,13 +1,16 @@
 package com.jam.global.handler;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.velocity.runtime.log.Log;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
 import org.springframework.stereotype.Component;
@@ -16,7 +19,10 @@ import com.jam.client.member.service.MemberService;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 
+import lombok.extern.log4j.Log4j;
+
 @Component
+@Log4j
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	private final MemberService memberService;
@@ -53,6 +59,13 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
 		request.getSession().setAttribute("userId", userId);
 		request.getSession().setAttribute("userName", memberService.getUserName(userId));
+		
+		List<String> roles = authentication.getAuthorities().stream()
+			    .map(GrantedAuthority::getAuthority)
+			    .toList();
+
+		request.getSession().setAttribute("auth", roles);
+		
 		request.getSession().setMaxInactiveInterval(3 * 60 * 60);
 
 		response.setStatus(HttpServletResponse.SC_OK);

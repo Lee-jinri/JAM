@@ -44,12 +44,37 @@
   		WHERE email = #{email}
   	</select>
   	
-  	<!-- 사용자 정보 확인 -->
+  	<!-- 사용자 정보 확인 
   	<select id="findByUserInfo" resultType="member">
-  		SELECT user_id, user_pw, user_name, address, phone, email, role
+  		SELECT user_id, user_pw, user_name, address, phone, email
   		FROM member
   		WHERE user_id = #{user_id}
-  	</select>
+  	</select>-->
+  	
+  	
+	
+  	<resultMap id="userWithRolesMap" type="member">
+		<id property="user_id" column="user_id"/>
+		<result property="user_name" column="user_name"/>
+		<result property="user_pw" column="user_pw"/>
+		<collection property="roles" ofType="string"
+					column="user_id" select="findRolesByUserId"/>
+	</resultMap>
+	
+	<select id="findByUserInfo" parameterType="string" resultMap="userWithRolesMap">
+		SELECT user_id, user_pw, user_name, 1 AS enabled
+  		FROM member
+  		WHERE user_id = #{user_id}
+	</select>
+	
+	<select id="findRolesByUserId" parameterType="string" resultType="string">
+	    SELECT role_code
+	    FROM member_role
+	    WHERE user_id = #{value} 
+	</select>
+	
+  	
+  	
   	
   	<!-- 회원 닉네임 가져오기 -->
   	<select id="getUserName" resultType="String">

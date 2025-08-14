@@ -1,5 +1,9 @@
 package com.jam.global.security;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -30,12 +34,7 @@ public class CustomUserDetailsService implements UserDetailsService {
 	        throw new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다. 입력한 ID: " + username);
 	    }
 		
-		SimpleGrantedAuthority authority = new SimpleGrantedAuthority("ROLE_" + user.getRole());
-		
-		return User.builder()
-				.username(user.getUser_id())
-				.password(user.getUser_pw())
-				.authorities(authority)
-	            .build();
+		log.info(user);
+		return user;
 	}
 }

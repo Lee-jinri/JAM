@@ -39,13 +39,11 @@
 	
 	<script src="/resources/include/dist/js/userToggle.js"></script>
 	
-	<script>
-		window.MY_ID = <%= session.getAttribute("userId") != null 
-			? "'" + session.getAttribute("userId") + "'" 
-			: "null" %>;
-	
-		window.MY_NAME = <%= session.getAttribute("userName") != null 
-			? "'" + session.getAttribute("userName") + "'" 
-			: "null" %>;
-	</script>
+	<sec:authorize access="isAuthenticated()">
+		<script>
+			window.MY_ID = '<sec:authentication property="name" />';
+			window.MY_AUTH = '<sec:authentication property="principal.authorities" />';
+			window.MY_NAME = '<sec:authentication property="principal.user_name" />';
+		</script>
+	</sec:authorize>
 </head>
