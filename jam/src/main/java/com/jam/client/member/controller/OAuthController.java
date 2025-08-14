@@ -33,6 +33,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.member.service.MemberService;
+import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 
@@ -145,10 +146,12 @@ public class OAuthController {
 		
 		if(userInfo.isEmpty()) return "/member/login?error=oauth";
 
-		memberService.socialLoginOrRegister(userInfo, "kakao");
+		MemberVO user = memberService.socialLoginOrRegister(userInfo, "kakao");
+		
+		if(user == null) log.error("FIXME~~");
 		
 		// 4. 서비스 로그인
-		Authentication authentication = memberService.authenticateSocialUser((String) userInfo.get("user_id"), (String) userInfo.get("user_name"));
+		Authentication authentication = memberService.authenticateSocialUser(user);
 
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "kakao");
 		
@@ -408,11 +411,10 @@ public class OAuthController {
 		if(userInfo.isEmpty()) return "/member/login?error=oauth";
 		
 		// 사용자 정보가 DB에 없으면 회원가입
-		memberService.socialLoginOrRegister(userInfo, "naver");
+		MemberVO user = memberService.socialLoginOrRegister(userInfo, "naver");
 		
 		// 4.서비스 로그인
-		
-		Authentication authentication = memberService.authenticateSocialUser((String) userInfo.get("user_id"), (String) userInfo.get("user_name"));
+		Authentication authentication = memberService.authenticateSocialUser(user);
 
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "naver");
 		

@@ -53,7 +53,7 @@ public interface MemberService {
 	public ResponseEntity<String> updatePwAndSendEmail(String user_id, String email);
 
 	// 소셜 로그인 정보 저장
-	public void socialLoginOrRegister(Map<String, Object> userInfo, String provider);
+	public MemberVO socialLoginOrRegister(Map<String, Object> userInfo, String provider);
 	
 	// 닉네임 변경
 	public boolean updateUserName(MemberVO member);
@@ -92,7 +92,7 @@ public interface MemberService {
 	
 	MemberVO getUserProfile(String user_id);
 
-	Authentication authenticateSocialUser(String user_id, String user_name);
+	Authentication authenticateSocialUser(MemberVO user);
 
 	public void kakaoDeleteAccount(String kakaoAccessToken);
 	

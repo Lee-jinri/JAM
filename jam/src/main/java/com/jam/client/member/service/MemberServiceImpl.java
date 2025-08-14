@@ -243,11 +243,14 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 소셜 회원가입 여부 확인
 	@Override
-	public void socialLoginOrRegister(Map<String, Object> userInfo, String provider) {
+	public MemberVO socialLoginOrRegister(Map<String, Object> userInfo, String provider) {
 	
 		try {
+	        MemberVO user = new MemberVO();
+	        
 	        // 가입 여부 확인
-	        int result = memberDao.findSocialUser((String)userInfo.get("user_id"));
+	        String userId = (String)userInfo.get("user_id");
+	        int result = memberDao.findSocialUser(userId);
 
 	        // 회원 정보 없으면 회원가입
 	        if (result == 0) {
@@ -262,13 +265,16 @@ public class MemberServiceImpl implements MemberService {
 
 	            userInfo.put("user_name", user_name);
 	            memberDao.SocialRegister(userInfo);
-	        }
+	            user.setUser_name(user_name);
+	        }else user = memberDao.findByUserInfo(userId);
 
 	        log.info("소셜 로그인 처리 완료");
-
+	        
+	        return user;
 	    } catch (Exception e) {
 	        log.error("소셜 로그인 처리 중 오류 발생: " + e.getMessage());
 	    }
+		return null;
 	}
 	
 	// 닉네임 변경
@@ -365,11 +371,12 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.getUserProfile(user_id);
 	}
 
-	public Authentication authenticateSocialUser(String user_id, String user_name) {
+	
+	public Authentication authenticateSocialUser(MemberVO user) {
 		
 		try {
 			Authentication authentication = new UsernamePasswordAuthenticationToken(
-					user_id,
+					user,
 				    null,
 				    List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
 				);
