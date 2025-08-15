@@ -38,8 +38,6 @@ import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
-import com.jam.global.jwt.JwtService;
-import com.jam.global.jwt.TokenInfo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -53,7 +51,6 @@ public class MemberServiceImpl implements MemberService {
 	private final PasswordEncoder encoder;    
     private final RedisTemplate<String, String> stringRedisTemplate;
 	private final JavaMailSender mailSender;
-	private final JwtService jwtService;
 	
 	// 회원가입
 	@Override
@@ -482,7 +479,7 @@ public class MemberServiceImpl implements MemberService {
 
 	@Override
 	@Transactional
-	public TokenInfo updateUserNameAndTokens(MemberVO user, boolean autoLogin, String loginType,
+	public Authentication updateUserNameAndTokens(MemberVO user, boolean autoLogin, String loginType,
 			HttpServletResponse response) {
 		
 		boolean isUpdated = updateUserName(user);
@@ -492,8 +489,7 @@ public class MemberServiceImpl implements MemberService {
 		}
 		
 		Authentication authentication = authenticateUser(user);
-		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
-			
-		return token;
+		
+		return authentication;
 	}
 }

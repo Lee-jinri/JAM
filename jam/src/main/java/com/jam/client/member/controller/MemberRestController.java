@@ -8,6 +8,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -399,8 +400,10 @@ public class MemberRestController {
         	// 변경할 닉네임 세팅
         	user.setUser_name(member.getUser_name());
         	
-        	TokenInfo token = memberService.updateUserNameAndTokens(user, autoLogin, loginType, response);
+        	Authentication authentication = memberService.updateUserNameAndTokens(user, autoLogin, loginType, response);
 	    	
+        	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
+			
         	setJwtCookies(token, response, autoLogin);
 	    	
 	        return new ResponseEntity<>(HttpStatus.OK);

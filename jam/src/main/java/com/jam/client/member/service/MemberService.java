@@ -14,7 +14,6 @@ import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
-import com.jam.global.jwt.TokenInfo;
 
 public interface MemberService {
 
@@ -103,7 +102,7 @@ public interface MemberService {
 
 	public Authentication authenticateUser(MemberVO user);
 
-	public TokenInfo updateUserNameAndTokens(MemberVO member, boolean autoLogin, String loginType,
+	public Authentication updateUserNameAndTokens(MemberVO member, boolean autoLogin, String loginType,
 			HttpServletResponse response);
 	
 	
