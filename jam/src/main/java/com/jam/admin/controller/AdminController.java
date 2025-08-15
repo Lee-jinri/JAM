@@ -32,9 +32,9 @@ public class AdminController {
 	@GetMapping("/admin")
 	public String doAdmin(HttpServletRequest request) {
 		Cookie[] cookies = request.getCookies();
-		String role = jwtService.extractUserRole(request, cookies);
+		List<String> roles = jwtService.extractUserRole(request, cookies);
 		
-		if (!"ROLE_ADMIN".equals(role)) {
+		if (!roles.contains("ROLE_ADMIN")) {
 		    return "redirect:/";
 		}
 		
