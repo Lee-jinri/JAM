@@ -57,17 +57,6 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		refreshTokenCookie.setMaxAge(autoLogin ? 30 * 24 * 60 * 60 : 24 * 60 * 60);
 		response.addCookie(refreshTokenCookie);
 
-		request.getSession().setAttribute("userId", userId);
-		request.getSession().setAttribute("userName", memberService.getUserName(userId));
-		
-		List<String> roles = authentication.getAuthorities().stream()
-			    .map(GrantedAuthority::getAuthority)
-			    .toList();
-
-		request.getSession().setAttribute("auth", roles);
-		
-		request.getSession().setMaxInactiveInterval(3 * 60 * 60);
-
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.setContentType("application/json;charset=UTF-8");
 

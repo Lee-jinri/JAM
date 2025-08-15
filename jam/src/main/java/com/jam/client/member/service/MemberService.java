@@ -4,6 +4,8 @@ package com.jam.client.member.service;
 import java.util.List;
 import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
@@ -12,6 +14,7 @@ import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
+import com.jam.global.jwt.TokenInfo;
 
 public interface MemberService {
 
@@ -97,6 +100,11 @@ public interface MemberService {
 	public void kakaoDeleteAccount(String kakaoAccessToken);
 	
 	public void naverDeleteAccount(String naverAccessToken);
+
+	public Authentication authenticateUser(MemberVO user);
+
+	public TokenInfo updateUserNameAndTokens(MemberVO member, boolean autoLogin, String loginType,
+			HttpServletResponse response);
 	
 	
 }

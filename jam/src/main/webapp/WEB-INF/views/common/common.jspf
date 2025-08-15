@@ -44,6 +44,10 @@
 			window.MY_ID = '<sec:authentication property="name" />';
 			window.MY_AUTH = '<sec:authentication property="principal.authorities" />';
 			window.MY_NAME = '<sec:authentication property="principal.user_name" />';
+			
+			console.log(window.MY_ID);
+			console.log(window.MY_NAME);
+			console.log(window.MY_AUTH);
 		</script>
 	</sec:authorize>
 </head>

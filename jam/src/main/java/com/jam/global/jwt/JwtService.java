@@ -1,8 +1,6 @@
 package com.jam.global.jwt;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -62,7 +60,6 @@ public class JwtService {
 					        userInfo.getAuthorities()
 					    );
 					    SecurityContextHolder.getContext().setAuthentication(authentication);
-					 log.info("[JwtService] getUserInfo: " + userInfo.getUser_name());
 					return userInfo;
 				case EXPIRED:
 				case EMPTY:
@@ -100,7 +97,7 @@ public class JwtService {
 		return new MemberVO();
 	}
 	
-	private MemberVO extractUserInfoFromToken(String accessToken){
+	public MemberVO extractUserInfoFromToken(String accessToken){
 		Claims claim = jwtTokenProvider.getClaims(accessToken);
 		
 		MemberVO userInfo = new MemberVO();
@@ -147,13 +144,9 @@ public class JwtService {
         
         memberService.addRefreshToken(userId, token.getRefreshToken());
         
-        int maxAge = autoLogin? -1 : 24 * 60 * 60;
+        int maxAge = autoLogin? 30 * 24 * 60 * 60 : 24 * 60 * 60;
         addCookieToResponse(response, "RefreshToken", token.getRefreshToken(), maxAge);
         
-        request.getSession().setAttribute("userId", userId);
-        request.getSession().setAttribute("userName", userName);
-        request.getSession().setMaxInactiveInterval(3 * 60 * 60);
-
         log.info("[JWT] 새로운 AccessToken/RefreshToken 발급 - userId: " + userId + " loginType: " + loginType);
 
         return userInfo;
@@ -250,7 +243,7 @@ public class JwtService {
 	 * @param token JWT 문자열
 	 * @return 사용자의 역할 (예: "ROLE_USER", "ROLE_ADMIN")
 	 */
-	public String extractUserRole(HttpServletRequest request, Cookie[] cookies) {
+	public List<String> extractUserRole(HttpServletRequest request, Cookie[] cookies) {
 		
 		String token = extractToken(cookies, "Authorization");
 		
@@ -264,5 +257,24 @@ public class JwtService {
 		return jwtTokenProvider.extractUserRole(token);
 	}
 	
+	
+	/**
+	 * JWT 토큰에서 자동 로그인 여부를 추출합니다.
+	 * 
+	 * @param token JWT 문자열
+	 * @return 사용자의 자동 로그인 여부 (true, false)
+	 * */
+	public Boolean extractAutoLogin(HttpServletRequest request, Cookie[] cookies) {
+		String token = extractToken(cookies, "RefreshToken");
+		
+		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
+            request.getSession().invalidate();
+            log.warn("유효하지 않은 토큰입니다: " + token);
+
+            return null;
+        }
+		
+		return jwtTokenProvider.extractAutoLogin(token); 
+	}
 	
 }

@@ -12,8 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -59,9 +57,6 @@ public class JwtTokenProvider {
         
         String userName = member.getUser_name();
         
-
-    	log.info("[JwtTokenProvider] generateToken: " + userName);
-    	
         // Access Token 생성
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
@@ -113,13 +108,6 @@ public class JwtTokenProvider {
                 throw new RuntimeException("권한 정보가 없는 토큰입니다.");
             }
      
-            // 클레임에서 권한 정보 가져오기
-            /*
-            Collection<? extends GrantedAuthority> authorities =
-                    Arrays.stream(claims.get("auth").toString().split(","))
-                            .map(SimpleGrantedAuthority::new)
-                            .collect(Collectors.toList());
-            */
             Object raw = claims.get("auth");
             List<String> roles = new ObjectMapper().convertValue(raw, new TypeReference<List<String>>() {});
             
@@ -131,9 +119,6 @@ public class JwtTokenProvider {
             member.setUser_name(claims.get("userName", String.class));
             member.setRoles(roles);
             
-
-        	log.info("[JwtTokenProvider] getAuthentication: " + claims.get("userName", String.class));
-        	
             return new UsernamePasswordAuthenticationToken(member, "", authorities);
     	}
 		return null;
@@ -254,9 +239,17 @@ public class JwtTokenProvider {
 	 * JWT 토큰에서 사용자 역할(Role)을 추출합니다.
 	 *
 	 * @param token JWT 문자열 
-	 * @return 사용자의 역할 (예: "ROLE_USER", "ROLE_ADMIN")
+	 * @return 사용자의 역할 리스트 (예: "ROLE_USER", "ROLE_ADMIN")
 	 * */
-	public String extractUserRole(String token) {
-		return (String) getClaims(token).get("auth");
+	public List<String> extractUserRole(String token) {
+
+        @SuppressWarnings("unchecked")
+		List<String> authList = getClaims(token).get("auth", List.class);
+        
+		return authList;
+	}
+
+	public boolean extractAutoLogin(String token) {
+		return (boolean) getClaims(token).get("autoLogin");
 	}
 }

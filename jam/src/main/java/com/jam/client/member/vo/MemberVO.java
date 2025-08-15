@@ -1,8 +1,5 @@
 package com.jam.client.member.vo;
 
-import com.jam.common.vo.CommonVO;
-
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -83,5 +80,12 @@ public class MemberVO extends CommonVO implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+    
+    public boolean isEmpty() {
+        return (user_id == null || user_id.isBlank())
+            && (user_name == null || user_name.isBlank())
+            && (roles == null || roles.isEmpty());
+    }
+
 	
 }

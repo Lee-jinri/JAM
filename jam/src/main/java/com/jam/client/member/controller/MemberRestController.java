@@ -1,8 +1,5 @@
 package com.jam.client.member.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,6 +8,7 @@ import javax.servlet.http.HttpSession;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -27,7 +25,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.JwtService;
+import com.jam.global.jwt.TokenInfo;
 
+import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
@@ -197,8 +197,6 @@ public class MemberRestController {
 	 */
 	@GetMapping(value="/userName/check")
 	public ResponseEntity<String> nameChk(@RequestParam String userName) throws Exception {
-
-		log.info(userName);
 		
 		if(userName == null || userName == "") return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User name is null.");
 		
@@ -365,7 +363,7 @@ public class MemberRestController {
 	 * @return HTTP 응답 상태코드
 	 */
 	@PutMapping(value ="/userName")
-	public ResponseEntity<Void> updateUserName(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
+	public ResponseEntity<Void> updateUserName(HttpServletRequest request, HttpServletResponse response, @RequestBody MemberVO member) throws Exception {
 		Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
 		
 		if (verifyStatus == null || !verifyStatus) {
@@ -378,25 +376,44 @@ public class MemberRestController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 		
-	    String userId = (String) request.getSession().getAttribute("userId");
-	    
-	    if(userId == null) {
-	    	log.error("Unauthorized user.");
-	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    try {
+	    	Cookie[] cookies = request.getCookies();
+	    	
+	    	String loginType = jwtService.extractLoginType(request, cookies);
+        	boolean autoLogin = jwtService.extractAutoLogin(request, cookies);
+        	
+        	String accessToken = jwtService.extractToken(cookies, "Authorization");
+        	
+        	MemberVO user = jwtService.extractUserInfoFromToken(accessToken);
+        	
+        	if(user.isEmpty()) {
+    	    	log.error("Unauthorized user.");
+    	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+    	    }
+        	
+        	// 변경할 닉네임 세팅
+        	user.setUser_name(member.getUser_name());
+        	
+        	TokenInfo token = memberService.updateUserNameAndTokens(user, autoLogin, loginType, response);
+	    	
+        	setJwtCookies(token, response, autoLogin);
+	    	
+	        return new ResponseEntity<>(HttpStatus.OK);
+	    } catch (JwtException e) {
+	        log.error("JWT 처리 중 오류 발생", e);
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+	    } catch (AuthenticationException e) {
+	        log.error("인증 객체 갱신 실패", e);
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+	    } catch (IllegalStateException e) {
+	    	log.error("닉네임 변경 로직 실패", e);
+	    	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    } catch (Exception e) {
+	        log.error("닉네임 변경 처리 중 알 수 없는 오류 발생", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	    }
-	    
-	    member.setUser_id(userId);
-		
-		boolean isUpdated = memberService.updateUserName(member);
-		
-        if (isUpdated) {
-            // 세션에 저장된 닉네임 갱신
-            request.getSession().setAttribute("userName", member.getUser_name());
-            
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-        	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();	        
-        }
 	}
 	
 	/**
@@ -637,6 +654,23 @@ public class MemberRestController {
 	        }
 	    }
 	    return null;
+	}
+	
+	private void setJwtCookies(TokenInfo tokenInfo, HttpServletResponse response, boolean autoLogin) {
+		// 쿠키에 jwt 토큰 저장
+		Cookie accessTokenCookie = new Cookie("Authorization", tokenInfo.getAccessToken());
+        accessTokenCookie.setHttpOnly(true);
+        accessTokenCookie.setPath("/");
+        accessTokenCookie.setMaxAge(3 * 60 * 60);
+        response.addCookie(accessTokenCookie);
+
+        int maxAge = autoLogin? 30 * 24 * 60 * 60  : 24 * 60 * 60;
+        
+        Cookie refreshTokenCookie = new Cookie("RefreshToken", tokenInfo.getRefreshToken());
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge(maxAge);
+        response.addCookie(refreshTokenCookie);
 	}
 
 	private void deleteJwtCookies(Cookie[] cookies, HttpServletResponse response) {

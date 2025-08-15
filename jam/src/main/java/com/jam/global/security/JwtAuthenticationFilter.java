@@ -39,6 +39,7 @@ public class JwtAuthenticationFilter extends GenericFilterBean {
 		if(tokenStatus == TokenStatus.VALID) {
 			// 유저의 인증 정보를 가져옴
 			Authentication authentication = jwtTokenProvider.getAuthentication(token);
+			
 			//  사용자 인증 정보를 현재 스레드의 보안 컨텍스트에 저장 
 			//SecurityContextHolder는 Spring Security에서 현재 보안 관련 정보를 관리하는 클래스
 			SecurityContextHolder.getContext().setAuthentication(authentication);

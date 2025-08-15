@@ -148,7 +148,10 @@ public class OAuthController {
 
 		MemberVO user = memberService.socialLoginOrRegister(userInfo, "kakao");
 		
-		if(user == null) log.error("FIXME~~");
+		if(user.isEmpty()) {
+			log.error("소셜 로그인 사용자 매핑 실패");
+		    return "redirect:/member/login?error=oauth";
+	    }
 		
 		// 4. 서비스 로그인
 		Authentication authentication = memberService.authenticateSocialUser(user);
@@ -158,14 +161,8 @@ public class OAuthController {
 		// RefreshToken DB에 저장
 		memberService.addRefreshToken((String)userInfo.get("user_id"), token.getRefreshToken());
 		
-		// 5. JWT 쿠키, 세션 저장
+		// 5. JWT 쿠키 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
-		
-		String userId = (String)userInfo.get("user_id");
-		
-		request.getSession().setAttribute("userId", userId);
-		request.getSession().setAttribute("userName", memberService.getUserName(userId));
-		request.getSession().setMaxInactiveInterval(3 * 60 * 60);
 		
 		// 6. 로그인 이전 페이지로 리다이렉트
 		String prevPage = (String) request.getSession().getAttribute("prevPage");
@@ -413,19 +410,18 @@ public class OAuthController {
 		// 사용자 정보가 DB에 없으면 회원가입
 		MemberVO user = memberService.socialLoginOrRegister(userInfo, "naver");
 		
+		if(user.isEmpty()) {
+			log.error("소셜 로그인 사용자 매핑 실패");
+		    return "redirect:/member/login?error=oauth";
+	    }
+		
 		// 4.서비스 로그인
 		Authentication authentication = memberService.authenticateSocialUser(user);
 
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "naver");
 		
-		// 5. JWT 쿠키, 세션 저장
+		// 5. JWT 쿠키 저장
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
-		
-		String userId = (String)userInfo.get("user_id");
-		
-		request.getSession().setAttribute("userId", userId);
-		request.getSession().setAttribute("userName", memberService.getUserName(userId));
-		request.getSession().setMaxInactiveInterval(3 * 60 * 60);
 		
 		// 6. 로그인 이전 페이지로 리다이렉트
 		String prevPage = (String) request.getSession().getAttribute("prevPage");

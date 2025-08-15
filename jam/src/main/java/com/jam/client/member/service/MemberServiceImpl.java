@@ -9,6 +9,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -26,6 +27,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -36,6 +38,8 @@ import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
+import com.jam.global.jwt.JwtService;
+import com.jam.global.jwt.TokenInfo;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -49,6 +53,7 @@ public class MemberServiceImpl implements MemberService {
 	private final PasswordEncoder encoder;    
     private final RedisTemplate<String, String> stringRedisTemplate;
 	private final JavaMailSender mailSender;
+	private final JwtService jwtService;
 	
 	// 회원가입
 	@Override
@@ -381,9 +386,6 @@ public class MemberServiceImpl implements MemberService {
 				    List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
 				);
 			
-			// SecurityContextHolder에 현재 사용자의 정보를 설정합니다.
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			
 			return authentication;
 			
 		} catch (AuthenticationException e) {
@@ -393,6 +395,26 @@ public class MemberServiceImpl implements MemberService {
 	        log.error("로그인 처리 중 오류 발생", e);
 	        throw new RuntimeException("로그인 처리 중 오류 발생", e); // 커스터마이징 가능
 	    }
+	}
+	
+	public Authentication authenticateUser(MemberVO user) {
+		try {
+			Authentication authentication = new UsernamePasswordAuthenticationToken(
+					user,
+					null,
+					user.getAuthorities()
+				);
+			
+			SecurityContextHolder.getContext().setAuthentication(authentication);
+			
+			return authentication;
+		}catch(AuthenticationException e) {
+			log.error("인증 실패", e);
+			throw e;
+		}catch(Exception e) {
+			log.error("Authentication 발급 중 오류 발생", e);
+			throw new RuntimeException("Authentication 발급 중 오류 발생", e);
+		}
 	}
 
 	// 회원 탈퇴
@@ -456,5 +478,22 @@ public class MemberServiceImpl implements MemberService {
 	    } catch (Exception e) {
 	        log.error("네이버 연결 끊기 실패: " + e.getMessage());
 	    }
+	}
+
+	@Override
+	@Transactional
+	public TokenInfo updateUserNameAndTokens(MemberVO user, boolean autoLogin, String loginType,
+			HttpServletResponse response) {
+		
+		boolean isUpdated = updateUserName(user);
+		
+		if (!isUpdated) {
+		    throw new IllegalStateException("닉네임 변경 실패");
+		}
+		
+		Authentication authentication = authenticateUser(user);
+		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
+			
+		return token;
 	}
 }
