@@ -20,6 +20,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -282,6 +283,7 @@ public class OAuthController {
 		memberService.deleteRefreshToken(userId);
 		
 		// 모든 세션 만료
+		SecurityContextHolder.clearContext();
 		request.getSession().invalidate();
 		
 		// 2. kakaoAccessToken 추출
@@ -545,6 +547,7 @@ public class OAuthController {
 			deleteCookies(response, "naverAccessToken");
 			
 			// 모든 세션 만료
+			SecurityContextHolder.clearContext();
 			request.getSession().invalidate();
 
 			return ResponseEntity.ok().build();

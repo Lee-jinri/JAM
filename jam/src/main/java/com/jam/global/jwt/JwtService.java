@@ -68,9 +68,12 @@ public class JwtService {
 					
 					if (refreshToken == null || 
 					    jwtTokenProvider.validateToken(refreshToken) != TokenStatus.VALID) {
+						
+						log.warn("[JWT] 자동로그인 실패: refreshToken 없음.");
+						
+						clearAuth(request);
 						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-					        
-					    break;
+						return new MemberVO();
 					}
 	
 					boolean autoLogin = jwtTokenProvider.getAutoLoginFromRefreshToken(refreshToken);
@@ -80,20 +83,23 @@ public class JwtService {
 						return processRefreshToken(refreshToken, response, request, true);
 					}
 					
-					request.getSession().invalidate();
+					log.warn("[JWT] 자동로그인 실패: 자동로그인 설정되지 않음.");
 					
+					clearAuth(request);
 					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-	                break;
+					return new MemberVO();
 				case INVALID:
-					log.warn("[JWT] 토큰 유효성 실패 - 토큰 이름: Authorization, 값: " + accessToken);
-	                request.getSession().invalidate();
-	                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-	                break;
+					log.warn("[JWT] 유효하지 않은 토큰");
+					
+					clearAuth(request);
+					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+	                return new MemberVO();
 			}
 		}catch(Exception e) {
 	        log.error("[JWT] 내부 처리 중 예외 발생", e);
 	        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	    }
+		
 		return new MemberVO();
 	}
 	
@@ -165,7 +171,6 @@ public class JwtService {
 		return null;
 	}
 
-	
 	// 쿠키 추가
 	private void addCookieToResponse(HttpServletResponse response, String name, String value, int maxAge) {
 		Cookie cookie = new Cookie(name, value);
@@ -188,7 +193,7 @@ public class JwtService {
 		String token = extractToken(cookies, "Authorization");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-            request.getSession().invalidate();
+			clearAuth(request);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -212,7 +217,7 @@ public class JwtService {
     	String token = extractToken(cookies, "Authorization");
     	
     	if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-            request.getSession().invalidate();
+    		clearAuth(request);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -248,7 +253,7 @@ public class JwtService {
 		String token = extractToken(cookies, "Authorization");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-            request.getSession().invalidate();
+			clearAuth(request);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -268,7 +273,7 @@ public class JwtService {
 		String token = extractToken(cookies, "RefreshToken");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-            request.getSession().invalidate();
+			clearAuth(request);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -276,5 +281,11 @@ public class JwtService {
 		
 		return jwtTokenProvider.extractAutoLogin(token); 
 	}
+	
+	private void clearAuth(HttpServletRequest request) {
+	    SecurityContextHolder.clearContext();
+	    request.getSession().invalidate();
+	}
+
 	
 }

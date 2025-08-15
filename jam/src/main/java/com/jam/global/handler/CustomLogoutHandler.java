@@ -6,6 +6,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -72,6 +73,7 @@ public class CustomLogoutHandler implements LogoutHandler  {
             deleteCookies(response);
             
             // 세션 무효화
+            SecurityContextHolder.clearContext();
             request.getSession().invalidate();
         }
     }

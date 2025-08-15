@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -388,6 +389,10 @@ public class MemberRestController {
         	
         	if(user.isEmpty()) {
     	    	log.error("Unauthorized user.");
+    	    	
+    	    	SecurityContextHolder.clearContext();
+    		    request.getSession().invalidate();
+    		    
     	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     	    }
         	
@@ -406,7 +411,6 @@ public class MemberRestController {
 	    } catch (AuthenticationException e) {
 	        log.error("인증 객체 갱신 실패", e);
 	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
 	    } catch (IllegalStateException e) {
 	    	log.error("닉네임 변경 로직 실패", e);
 	    	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -479,6 +483,8 @@ public class MemberRestController {
 			if (cookies != null) {
 			    deleteJwtCookies(cookies, response);
 			}
+			
+			SecurityContextHolder.clearContext();
         	request.getSession().invalidate();
         	
 			log.error("VerifyPassword: userId is null.");
@@ -630,6 +636,7 @@ public class MemberRestController {
         	if(userId == null) userId = (String) request.getSession().getAttribute("userId");
             
             // 세션, 쿠키 삭제
+        	SecurityContextHolder.clearContext();
         	request.getSession().invalidate();
         	deleteJwtCookies(cookies, response);
         	
