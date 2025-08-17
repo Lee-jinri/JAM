@@ -34,21 +34,20 @@ public class JobRestController {
 
 	private final JobService jobService;
 	
-	@GetMapping(value = "boards")
-	public ResponseEntity<Map<String, Object>> getBoards(JobVO job_vo, HttpServletRequest request){
+	@GetMapping(value = "board")
+	public ResponseEntity<Map<String, Object>> getBoard(JobVO job_vo, HttpServletRequest request){
 		try {
 			if (job_vo.getPositions() == null) {
 			    job_vo.setPositions(Collections.emptyList());
 			}
 			
 			String user_id = (String)request.getAttribute("userId");
-			if(user_id != null) job_vo.setUser_id(user_id);
+			
+			job_vo.setUser_id(user_id); 
 			
 			Map<String, Object> result = new HashMap<>();
 
-			List<JobVO> jobList = jobService.getBoards(job_vo);
-			JobVO job = jobList.get(0);
-			
+			List<JobVO> jobList = jobService.getBoard(job_vo);
 			result.put("jobList", jobList);
 			
 			int total = jobService.listCnt(job_vo);
@@ -67,22 +66,22 @@ public class JobRestController {
 	/*************************************
 	 * 구인 글 상세정보를 조회하는 메서드입니다.
 	 *
-	 * @param job_no 조회할 구인 글의 번호
+	 * @param post_id 조회할 구인 글의 번호
 	 * @return ResponseEntity<JobVO> - 조회된 구인 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 ************************************/
-	@GetMapping(value = "/board/{job_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<JobVO> getBoardDetail(@PathVariable("job_no") Long job_no, HttpServletRequest request) throws Exception{
-		if (job_no == null) { 
-			log.error("job_no is required");
+	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<JobVO> getPost(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
+		if (post_id == null) { 
+			log.error("post_id is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
 		// 조회수 증가
-		jobService.incrementReadCnt(job_no);
+		jobService.incrementReadCnt(post_id);
 					
 		try {
-			JobVO detail = jobService.getBoardDetail(job_no);
+			JobVO detail = jobService.getPost(post_id);
 			
 			detail.setPosition(getTranslatedPosition(detail.getPosition()));
 			detail.setAuthor(false);
@@ -94,7 +93,7 @@ public class JobRestController {
 			
 			return ResponseEntity.ok(detail);
 	    } catch (Exception e) {
-	    	log.error("Error fetching job detail for job_no: {}"+ job_no + e);
+	    	log.error("Error fetching job detail for post_id: {}"+ post_id + e);
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	    }
 	}
@@ -122,8 +121,8 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
-	@RequestMapping(value="/board", method=RequestMethod.POST)
-	public ResponseEntity<String> writeBoard(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
+	@RequestMapping(value="/post", method=RequestMethod.POST)
+	public ResponseEntity<String> writePost(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
 		
 		if (jobVO == null) {
 	        log.error("jobVO is null");
@@ -141,11 +140,11 @@ public class JobRestController {
 	    preprocessJobVO(jobVO, request);
 		
 		try {
-			jobService.writeBoard(jobVO);
+			jobService.writePost(jobVO);
 			
-			String job_no = jobVO.getPost_id().toString();
+			String post_id = jobVO.getPost_id().toString();
 			
-			return new ResponseEntity<>(job_no,HttpStatus.OK);
+			return new ResponseEntity<>(post_id,HttpStatus.OK);
 		} catch (Exception e) {
 			log.error("구인 글 작성 데이터 저장 중 오류 : " + e);
 			
@@ -186,8 +185,8 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
-	@RequestMapping(value="/board", method=RequestMethod.PUT)
-	public ResponseEntity<String> editBoard(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
+	@RequestMapping(value="/post", method=RequestMethod.PUT)
+	public ResponseEntity<String> editPost(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
 		if (jobVO == null) {
 	        log.error("jobVO is null");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("jobVO is null.");
@@ -204,10 +203,10 @@ public class JobRestController {
 	    preprocessJobVO(jobVO, request);
 		
 		try {
-			jobService.editBoard(jobVO);
-			String job_no = jobVO.getPost_id().toString();
+			jobService.editPost(jobVO);
+			String post_id = jobVO.getPost_id().toString();
 			
-			return new ResponseEntity<>(job_no, HttpStatus.OK);
+			return new ResponseEntity<>(post_id, HttpStatus.OK);
 		} catch(Exception e) {
 			log.error("구인 editBoard 데이터 수정 중 오류 : " + e.getMessage());
 			String responseBody = "시스템 오류 입니다. 잠시 후 다시 시도하세요.";
@@ -220,16 +219,16 @@ public class JobRestController {
 
 	/**********************************
 	 * 구인 글을 삭제하는 메서드 입니다.
-	 * @param Long job_no 삭제할 글 번호
+	 * @param Long post_id 삭제할 글 번호
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@RequestMapping(value="/board", method=RequestMethod.DELETE)
-	public ResponseEntity<String> boardDelete(@RequestParam("job_no") Long job_no, HttpServletRequest request) throws Exception{
+	@RequestMapping(value="/post", method=RequestMethod.DELETE)
+	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		
-		if (job_no == null) { 
-			log.error("job_no is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("job_no is required");
+		if (post_id == null) { 
+			log.error("post_id is required");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("post_id is required");
 		}
 		
 		// 오류 메시지 수정
@@ -238,7 +237,7 @@ public class JobRestController {
 		
 		// 이거 추가해야됨
 		try {
-			jobService.boardDelete(job_no, user_id);
+			jobService.deletePost(post_id, user_id);
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {

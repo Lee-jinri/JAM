@@ -31,10 +31,10 @@ public class JobController {
 	 * @param JobVO job_vo
 	 * @return 구인구직 글 리스트 페이지
 	 ******************************/
-	@RequestMapping(value="/boards", method=RequestMethod.GET)
+	@RequestMapping(value="/board", method=RequestMethod.GET)
 	public String boards() {
 		
-		return "jobs/boards";
+		return "jobs/board";
 	}
 	
 	
@@ -44,11 +44,11 @@ public class JobController {
 	 * @param model
 	 * @return 상세 페이지
 	 **************************************************/
-	@RequestMapping(value = "/board/{id}", method = RequestMethod.GET)
-	public String jobDetail(@PathVariable("id") Long id, Model model) {
-		model.addAttribute("id", id);
+	@RequestMapping(value = "/post/{post_id}", method = RequestMethod.GET)
+	public String jobDetail(@PathVariable("post_id") Long post_id, Model model) {
+		model.addAttribute("post_id", post_id);
 		
-	    return "jobs/board";
+	    return "jobs/post";
 	}
 	
 	
@@ -66,12 +66,12 @@ public class JobController {
 	 * @param job_no 수정할 구인구직 글 번호
 	 * @return 구인구직 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/board/edit/{job_no}", method=RequestMethod.GET)
-	public String updateView(@PathVariable Long id, Model model){
+	@RequestMapping(value="/board/edit/{post_id}", method=RequestMethod.GET)
+	public String updateView(@PathVariable Long post_id, Model model){
 	
-		model.addAttribute("id", id);
-		JobVO board = jobService.getBoardById(id);
-		model.addAttribute("board", board);
+		model.addAttribute("post_id", post_id);
+		JobVO post = jobService.getPostById(post_id);
+		model.addAttribute("post", post);
 		
 		return "jobs/update";
 	}
@@ -79,7 +79,8 @@ public class JobController {
 	/*********************************
 	 * @return 특정 회원의 구인구직 글 페이지 
 	 *********************************/
-	@GetMapping(value="/jobPosts")
+	// FIXME: 기업회원 확인 + 구인 글 목록
+	@GetMapping(value="/jobPosts") 
 	public String viewPosts(@ModelAttribute JobVO job_vo, Model model, HttpServletRequest request) throws Exception {
 		
 		if(job_vo.getUser_name() == null || jobService.isValidUserName(job_vo.getUser_name()))

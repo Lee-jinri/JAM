@@ -28,7 +28,7 @@ public class JobMapperTest {
 	@Setter(onMethod_=@Autowired)
 	private JobDAO jobDao;
 	
-	/* 전체 글 조회 */
+	/* 전체 글 조회*/
 	@Test
 	public void testJobList() {
 		JobVO vo = new JobVO();
@@ -37,14 +37,15 @@ public class JobMapperTest {
 		Map<String, Object> result = new HashMap<>();
 		
 		vo.setUser_id("abcd1234");
-		vo.setJob_category(0);
-		//vo.setCity("서울");
+		vo.setCategory(0);
+		vo.setCity("서울");
+		vo.setGu("강서구");
 		//vo.setPositions(List.of("guitar"));
 
 		List<JobVO> jobList = new ArrayList<>();
-		// jobList = jobDao.getBoards(vo);
+		jobList = jobDao.getBoard(vo);
 		
-		jobList = jobDao.getBoardsWithFavorite(vo);
+		//jobList = jobDao.getBoardsWithFavorite(vo);
 		
 		result.put("jobList", jobList);
 		
@@ -55,7 +56,7 @@ public class JobMapperTest {
 		
 		log.info("result :" +result);
 	}
-	
+	 
 	
 	/* 상세 페이지 조회
 	@Test

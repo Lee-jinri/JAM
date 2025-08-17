@@ -63,7 +63,8 @@ header {
     align-items: center;
     gap: 10px;
     margin-left: 0;
-    min-width: 110px;
+    max-width: 110px;
+    min-width: auto;
     margin-right: 15px;
 }
 
@@ -103,13 +104,10 @@ header {
 }
 
 .search-div {
-	max-width: 700px; 
-	min-width: 400px;
+	max-width: 500px; 
+	min-width: 345px;
 	width: 100%;    
-	margin: 0;
-    margin-left: 32px;
-	margin: 0;
-    margin-left: 32px;
+	margin: 0 15px;
 	padding: 3px 8px;
 	border: 2px solid #0F2D4A;
 }
@@ -207,15 +205,30 @@ header {
 	background:#DAEAED; 
 	color:#0F2D4A; 
 }
+.userTypeSpan{
+	display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    color: white;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.typeUser{
+    background: linear-gradient(135deg, #ffd400, #ffdd77);
+}
 
-@media (max-width: 690px) {
+.typeCompany{
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+
+@media (max-width: 691px) {
 	.header{padding:0;}
 	.nav-icon {
     	width: 35px;
     }
-	#header_name {
-		font-size: 12px;
-	}
 
 	.header-container { 
 		margin: 0 10px;
@@ -224,9 +237,10 @@ header {
 
 	.search-div {
 		min-width: 0;
+		 /*flex-basis: 240px; max-width: 280px;*/ 
 		max-width: 240px;
 		width: 100%;
-		margin-left: 8px;
+		margin: 0 8px
 		padding: 0 8px;
 		border: 1px solid #0F2D4A; 
 	}
@@ -242,8 +256,11 @@ header {
 		font-size: 7px;
 		margin-left: 2px;
 	}
-	#header_name {
+	#header_name, .userTypeSpan {
         font-size: 7px;
+    }
+    .userTypeSpan {
+        padding: 3px 5px;
     }
 	.menu{
 		margin-right: 10px;
@@ -264,6 +281,9 @@ header {
 	.search-input {font-size: 8px;}
 	.search{margin:0;}
 	.fa-caret-down{font-size:6px;}
+	.auth-buttons a{
+    	font-size: 8px;
+    }
 }
 
 @media (min-width: 691px) and (max-width: 1024px) {
@@ -277,14 +297,17 @@ header {
 		margin: 0 12px; 
 		padding: 0 12px; 
 	}
-	#header_name{font-size:12px;}
+	#header_name, .userTypeSpan{font-size:12px;}
 	.brand-link span{font-size: 12px;}
 	.search-div {
-    	min-width: 300px;
+		/*flex-basis: 420px; */
+		max-width: 350px;
+    	min-width: 250px;
     	padding: 3px 8px;
     }
     .search-bar-wrapper .glass_icon{font-size: 14px;}
     .search{margin:0;}
+    
 	@keyframes fadeSlide {
 		from {
 			opacity: 0;
@@ -406,10 +429,10 @@ function logout(loginType){
 <header>
 	<div class="header">
 		<div class="header-container">
-			<div class="flex items-center">
+			<div class="flex items-center" style="flex: 1 1 auto;">
 				<div class="nav-container">    
 					<div class="header-left">
-						<a href="/jobs/boards" class="flex"> 
+						<a href="/jobs/board" class="flex"> 
 							<img class="nav-icon"src="/resources/include/images/jobs-icon.png" alt="JAM">
 						</a>
 					</div>
@@ -438,6 +461,14 @@ function logout(loginType){
 				
 				<!-- 로그인 후: 드롭다운(닉네임 + caret) -->
 				<sec:authorize access="isAuthenticated()">
+					<li class="userType">
+						<sec:authorize access="hasRole('COMPANY')">
+							<span class="userTypeSpan typeCompany">기업회원</span>
+						</sec:authorize>
+						<sec:authorize access="!hasRole('COMPANY')">
+							<span class="userTypeSpan typeUser">개인회원</span>
+						</sec:authorize>
+					</li>
 					<li class="menu">
 						<button type="button" class="menu__toggle" id="jobsMenuBtn" aria-haspopup="true" aria-expanded="false" aria-controls="jobsMenu">
 							<span id="header_name"></span>

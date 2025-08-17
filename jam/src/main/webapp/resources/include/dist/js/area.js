@@ -5,7 +5,6 @@ let selectedDong;
 $(function() {
 
 	$(".city").click(function() {
-		console.log("??");
 		let cityName = this.dataset.city;
 		showGuList(cityName);
 		selectedCity = cityName;
@@ -156,7 +155,7 @@ function updateSelectedArea(selectedCity, selectedGu, selectedDong){
     // 새로운 x버튼 추가
     const removeBtn = $("<button>")
         .addClass("area-remove-btn")
-        .text("x")
+        .html('<i class="fa-solid fa-x"></i>')
         .on("click", function() {
             removeArea();
         });

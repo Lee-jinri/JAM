@@ -387,6 +387,6 @@ function logout(loginType){
 			<a href="/community/boards">커뮤니티</a>
 			<a href="/roomRental/boards">연습실</a>
 			<a href="/fleaMarket/boards">중고악기</a>
-			<a href="/jobs/boards">Jobs</a>
+			<a href="/jobs/board">Jobs</a>
 		</div>
 </header>

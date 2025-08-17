@@ -132,7 +132,7 @@
 			
 	        /*
 			$("#jobHeader").click(function(){
-				location.href = "/jobs/boards";
+				location.href = "/jobs/board";
 			})
 			
 			$("#roomHeader").click(function(){
@@ -207,7 +207,7 @@
 <body>
 <div class="contents">
 	<div class="jobs-banner">
-		<a href="/jobs/boards" class="banner-link">
+		<a href="/jobs/board" class="banner-link">
 			<div class="banner-content">
 				<h2>채용 공고 보러가기</h2>
 		    	<p>지금 열려 있는 다양한 포지션을 확인해보세요!</p>

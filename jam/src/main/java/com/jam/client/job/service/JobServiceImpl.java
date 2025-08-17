@@ -3,7 +3,6 @@ package com.jam.client.job.service;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.velocity.runtime.log.Log;
 import org.springframework.stereotype.Service;
 
 import com.jam.client.job.dao.JobDAO;
@@ -21,13 +20,13 @@ public class JobServiceImpl implements JobService {
 	
 	//  
 	@Override
-	public List<JobVO> getBoards(JobVO job_vo) {
+	public List<JobVO> getBoard(JobVO job) {
 		List<JobVO> list = new ArrayList<>();
 		
-		if(job_vo.getUser_id().isEmpty()) list = jobDao.getBoards(job_vo);
+		if(job.getUser_id() == null || job.getUser_id().isEmpty()) list = jobDao.getBoard(job);
 		else {
-			System.out.println("jobservice : " + job_vo.getUser_id());
-			list = jobDao.getBoardsWithFavorite(job_vo);
+			System.out.println("jobservice : " + job.getUser_id());
+			list = jobDao.getBoardWithFavorite(job);
 		}
 		
 		return list;
@@ -41,38 +40,38 @@ public class JobServiceImpl implements JobService {
 
 	//  조회수 증가 
 	@Override
-	public void incrementReadCnt(Long job_no) {
-		jobDao.incrementReadCnt(job_no);
+	public void incrementReadCnt(Long post_id) {
+		jobDao.incrementReadCnt(post_id);
 	}
 
 	//  상세페이지
 	@Override
-	public JobVO getBoardDetail(Long job_no) {
-		return jobDao.getBoardDetail(job_no);
+	public JobVO getPost(Long post_id) {
+		return jobDao.getPost(post_id);
 	}
 
 	//  글 작성
 	@Override
-	public int writeBoard(JobVO job_vo) throws Exception {
-		return jobDao.writeBoard(job_vo);
+	public int writePost(JobVO job_vo) throws Exception {
+		return jobDao.writePost(job_vo);
 	}
 
 	//  글 수정 페이지
 	@Override
-	public JobVO getBoardById(Long job_no) {
-		return jobDao.getBoardById(job_no);
+	public JobVO getPostById(Long post_id) {
+		return jobDao.getPostById(post_id);
 	}
 
 	//  글 수정
 	@Override
-	public int editBoard(JobVO job_vo) {
-		return jobDao.editBoard(job_vo);
+	public int editPost(JobVO job_vo) {
+		return jobDao.editPost(job_vo);
 	}
 
 	//  글 삭제
 	@Override
-	public int boardDelete(Long job_no, String user_id) {
-		return jobDao.boardDelete(job_no, user_id);
+	public int deletePost(Long post_id, String user_id) {
+		return jobDao.deletePost(post_id, user_id);
 	}
 	
 	@Override

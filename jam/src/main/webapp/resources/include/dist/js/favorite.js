@@ -21,7 +21,7 @@ $(function(){
 
 
 function removeFavorite(boardNo, boardType, $icon){
-	let url = '/api/favorite/'+boardNo + '?boardType=' + boardType;
+	let url = '/api/mypage/favorite/'+boardNo + '?boardType=' + boardType;
 	
 	if(!boardNo || !boardType) {
 		alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
@@ -50,19 +50,20 @@ function removeFavorite(boardNo, boardType, $icon){
     })
     .catch(error => {
 		if (error.status === 401) { 
-            if (confirm(error.message)) {
+            if (confirm(error.message.replace(/^"|"$/g, ''))){
                 location.href = "/member/login";  // 로그인 페이지로 이동
             }
         } else {
-            alert(error.message);
+            alert(error.message.replace(/^"|"$/g, ''));
             console.error("즐겨찾기 삭제 에러 :", error);
         }
 	}); 
 }
 		
 function addFavorite(boardNo, boardType, $icon){
-	let url = '/api/favorite/'+boardNo + '?boardType=' + boardType;
+	let url = '/api/mypage/favorite/'+boardNo + '?boardType=' + boardType;
 	
+	console.log(url);
 	if(!boardNo || !boardType) {
 		alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
 		return false;
@@ -81,12 +82,12 @@ function addFavorite(boardNo, boardType, $icon){
     })
     .catch(error => {
 		if (error.status === 401) { 
-            if (confirm(error.message)) {
+            if (confirm(error.message.replace(/^"|"$/g, ''))) {
                 location.href = "/member/login";  // 로그인 페이지로 이동
             }
         } else {
-            alert(error.message);
-            console.error("즐겨찾기 삭제 에러 :", error);
+            alert(error.message.replace(/^"|"$/g, ''));
+            console.error("즐겨찾기 에러 :", error);
         }
 	});
 }
