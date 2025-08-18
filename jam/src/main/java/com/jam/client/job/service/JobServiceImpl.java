@@ -18,16 +18,14 @@ public class JobServiceImpl implements JobService {
 	private final JobDAO jobDao;
 	private final MemberService memberService;
 	
-	//  
 	@Override
 	public List<JobVO> getBoard(JobVO job) {
 		List<JobVO> list = new ArrayList<>();
 		
-		if(job.getUser_id() == null || job.getUser_id().isEmpty()) list = jobDao.getBoard(job);
-		else {
-			System.out.println("jobservice : " + job.getUser_id());
+		if(job.getUser_id() == null || job.getUser_id().isEmpty()) 
+			list = jobDao.getBoard(job);
+		else 
 			list = jobDao.getBoardWithFavorite(job);
-		}
 		
 		return list;
 	}

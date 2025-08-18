@@ -4,14 +4,13 @@
 	
 	<!-- 키워드 검색 -->
 	<sql id="jobSearch">
-		<if test="search=='title'">
-			<![CDATA[AND j.title LIKE '%' || #{keyword} || '%']]>
-		</if>
-		<if test="search=='content'">
-			<![CDATA[AND j.content LIKE '%' || #{keyword} || '%']]>
-		</if>
-		<if test="search=='user_name'">
-			<![CDATA[AND m.user_name LIKE '%' || #{keyword} || '%']]>
+		<if test="keyword != null and keyword != ''">
+			<![CDATA[
+			AND (
+				LOWER(j.title) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
+        		OR LOWER(j.content) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
+			)
+			]]>
 		</if>
 	</sql>
 	
@@ -48,19 +47,17 @@
 			city, gu, dong, position,
 			0 AS isFavorite  
 		FROM (
-			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
+			SELECT /*+ INDEX_DESC(j IX_JOB_STATUS_CATEGORY_POSTID) */
 				j.post_id, j.title, j.created_at, 
 				j.pay_category, j.pay, 
 				j.city, j.gu, j.dong, j.position,
 				ROW_NUMBER() OVER (ORDER BY j.post_id DESC) AS rnum
 			FROM job j
-			LEFT JOIN Member m ON j.user_id = m.user_id
 			]]>
 			<where>
-		        1=1
-		        AND j.status = 0 AND j.category = #{category}
-		        <!-- <include refid="jobSearch"></include> -->
-		        <include refid="jobLocalSearch"></include>
+		        j.status = 0 AND j.category = #{category}
+		        <include refid="jobSearch"/>
+		        <include refid="jobLocalSearch"/>
 		        <include refid="jobPositionSearch"/>
 		    </where>
 		) 
@@ -78,7 +75,7 @@
 			j.city, j.gu, j.dong, j.position,
 			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
-			SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
+			SELECT /*+ INDEX_DESC(j IX_JOB_STATUS_CATEGORY_POSTID) */
 				j.post_id, j.title, j.created_at, 
 				j.pay_category, j.pay, 
 				j.city, j.gu, j.dong, j.position,
@@ -86,12 +83,11 @@
 			FROM job j
 		]]>
 			<where>
-		        1=1
-		        AND j.status = 0 AND j.category = #{category}
-		        <include refid="jobSearch"></include>
-		        <include refid="jobLocalSearch"></include>
-		        <include refid="jobPositionSearch"/>
-		    </where>
+				j.status = 0 AND j.category = #{category}
+				<include refid="jobSearch"/>
+				<include refid="jobLocalSearch"/>
+				<include refid="jobPositionSearch"/>
+			</where>
 		<![CDATA[
 		) j 
 		LEFT JOIN favorite f  
@@ -110,8 +106,8 @@
 	    <where>
 			1=1
 			AND j.status = 0 AND j.category = #{category}
-		    <include refid="jobSearch"></include>
-		    <include refid="jobLocalSearch"></include>
+		    <include refid="jobSearch"/>
+		    <include refid="jobLocalSearch"/>
 		    <include refid="jobPositionSearch"/>
 		</where>
 	</select>

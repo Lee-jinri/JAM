@@ -34,16 +34,28 @@ public class JobRestController {
 
 	private final JobService jobService;
 	
+	/**
+	 * jobs 게시판 조회 API
+	 * 요청 파라미터(JobVO)에 따라 채용공고 목록을 조회하고 페이징 정보를 함께 반환합니다.
+	 *
+	 * @param job_vo	요청 파라미터를 담은 VO 객체
+	 * @param request	HttpServletRequest, userId 추출용
+	 * @return			jobList(채용공고 목록), pageMaker(페이징 정보)
+	 */
 	@GetMapping(value = "board")
 	public ResponseEntity<Map<String, Object>> getBoard(JobVO job_vo, HttpServletRequest request){
 		try {
-			if (job_vo.getPositions() == null) {
-			    job_vo.setPositions(Collections.emptyList());
-			}
+			if (job_vo.getPositions() == null) job_vo.setPositions(Collections.emptyList());
 			
 			String user_id = (String)request.getAttribute("userId");
 			
 			job_vo.setUser_id(user_id); 
+			
+			String kw = job_vo.getKeyword();
+			
+			if (kw != null) kw = kw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
+			
+			job_vo.setKeyword(kw);
 			
 			Map<String, Object> result = new HashMap<>();
 

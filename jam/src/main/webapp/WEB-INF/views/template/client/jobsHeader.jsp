@@ -357,49 +357,46 @@ header {
 		
 		const btn  = document.getElementById('jobsMenuBtn');
 	    const menu = document.getElementById('jobsMenu');
-	    if (!btn || !menu) return;
+	    if (btn && menu) {
+	    	function open(){ btn.setAttribute('aria-expanded','true'); menu.hidden = false; }
+		    function close(){ btn.setAttribute('aria-expanded','false'); menu.hidden = true; }
 
-	    function open(){ btn.setAttribute('aria-expanded','true'); menu.hidden = false; }
-	    function close(){ btn.setAttribute('aria-expanded','false'); menu.hidden = true; }
+		    btn.addEventListener('click', function(){
+		    	(btn.getAttribute('aria-expanded') === 'true') ? close() : open();
+		    });
 
-	    btn.addEventListener('click', function(){
-	    	(btn.getAttribute('aria-expanded') === 'true') ? close() : open();
-	    });
+		    document.addEventListener('click', function(e){
+		    	if (!btn.contains(e.target) && !menu.contains(e.target)) close();
+		    });
 
-	    document.addEventListener('click', function(e){
-	    	if (!btn.contains(e.target) && !menu.contains(e.target)) close();
-	    });
-
-	    btn.addEventListener('keydown', (e)=>{
-	    	if(e.key==='Enter' || e.key===' '){ 
-				e.preventDefault(); 
-				(btn.getAttribute('aria-expanded')==='true'?close():open()); 
-			}
-	    });
+		    btn.addEventListener('keydown', (e)=>{
+		    	if(e.key==='Enter' || e.key===' '){ 
+					e.preventDefault(); 
+					(btn.getAttribute('aria-expanded')==='true'?close():open()); 
+				}
+		    });
+	    }
 	    
-
-	    
-		$("#account").click(function() {
-			$(location).attr('href', '/mypage/account');
-		});
+		$("#account").click(function() {$(location).attr('href', '/mypage/account');});
 		
-		$("#지원현황").click(function(){
-			$(location).attr('href','/jobs/지원현황');
-		})
+		$("#지원현황").click(function(){$(location).attr('href','/jobs/지원현황');})
 		
-		$("#스크랩").click(function(){
-			$(location).attr('href','/jobs/스크랩');
-		})	
+		$("#스크랩").click(function(){$(location).attr('href','/jobs/스크랩');})	
 		
-		$("#공고관리").click(function(){
-			$(location).attr('href','/jobs/공고관리')
-		})
+		$("#공고관리").click(function(){$(location).attr('href','/jobs/공고관리')})
 		
-		$("#지원자관리").click(function(){
-			$(location).attr('href','/jobs/지원자관리')
-		})
+		$("#지원자관리").click(function(){$(location).attr('href','/jobs/지원자관리')})
 		
 		$(".mypage_toggle").hide();
+		
+		$("#keyword").val();
+		
+		document.getElementById("searchBtn").addEventListener("click", searchJobs);
+		document.getElementById("keyword").addEventListener("keydown", function (e) {
+		  if (e.key === "Enter") {
+			  searchJobs();
+		  }
+		});
 		
 	})
 
@@ -424,6 +421,11 @@ function logout(loginType){
         console.error('로그아웃 중 오류 발생 : ', error);
     });
 }
+	
+function searchJobs(){
+	let keyword = $("#keyword").val();
+	$(location).attr('href', "/jobs/board?keyword="+keyword);
+}
 </script>
 </head>
 <header>
@@ -438,17 +440,13 @@ function logout(loginType){
 					</div>
 				</div>
 				
-
 				<div class="search-div flex justify-center items-center border-radius-43px">
 					<div class="search-bar-wrapper item-center flex justify-space-around">
 						<input type="text" name="keyword" id="keyword" class="search search-input">
 						<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
 					</div>
 				</div>
-
 			</div>
-			
-			
 			
 			<ul class="jobs-nav">
 				<!-- 로그인 전 -->

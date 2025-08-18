@@ -634,6 +634,7 @@ function getBoard() {
 	
 	if (keywordParam) {
 	    boardState.keyword = keywordParam;
+	    $("#keyword").val(keywordParam);
 	} else {
 	    boardState.keyword = '';
 	}
