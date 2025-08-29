@@ -4,8 +4,7 @@
 <%@ taglib prefix="tiles" uri="http://tiles.apache.org/tags-tiles"%>
 <%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
-<%@ taglib uri="http://www.springframework.org/security/tags"
-	prefix="sec"%>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec"%>
 	
 <head>
 <meta charset="utf-8">
@@ -426,6 +425,13 @@ function searchJobs(){
 	let keyword = $("#keyword").val();
 	$(location).attr('href', "/jobs/board?keyword="+keyword);
 }
+
+function openBusinessPopup() {
+	var url = "<c:url value='/jobs/toBusiness'/>"; 
+	var option = "width=500,height=695,top=100,left=100,resizable=no,scrollbars=yes";
+	window.open(url, "convertBusinessPopup", option);
+}
+
 </script>
 </head>
 <header>
@@ -476,18 +482,20 @@ function searchJobs(){
 						<ul class="menu__list" id="jobsMenu" role="menu" hidden>
 							<!-- 기업회원 전용 -->
 							<sec:authorize access="hasRole('COMPANY')">
-								<li role="none"><a role="menuitem" href="<c:url value='/jobs/company/profile'/>">회사 정보</a></li>
+								<li role="none"><a role="menuitem" href="<c:url value='/jobs/company/profile'/>">회사정보</a></li>
+								<li role="none"><a role="menuitem" href="<c:url value='/jobs/post/write"'/>">공고등록</a></li>
 								<li role="none"><a role="menuitem" href="<c:url value='/jobs/company/postings'/>">공고관리</a></li>
 								<li role="none"><a role="menuitem" href="<c:url value='/jobs/company/candidates'/>">지원자관리</a></li>
-								<li role="none"><a role="menuitem" href="<c:url value='/logout'/>">로그아웃</a></li>
+								<li role="none"><a role="menuitem" href="javascript:void(0);" id="logout">로그아웃</a></li>
 							</sec:authorize>
 							
 							<!-- 개인회원 전용 -->
 							<sec:authorize access="isAuthenticated() and !hasRole('COMPANY')">
 								<li role="none"><a role="menuitem" href="<c:url value='/jobs/profile'/>">내 프로필</a></li>
-								<li role="none"><a role="menuitem" href="<c:url value='/jobs/applications'/>">지원현황</a></li>
-								<li role="none"><a role="menuitem" href="<c:url value='/jobs/saved'/>">스크랩</a></li>
-								<li role="none"><a role="menuitem" href="<c:url value='/logout'/>">로그아웃</a></li>
+								<li role="none"><a role="menuitem" href="<c:url value='/jobs/user/applications'/>">지원현황</a></li>
+								<li role="none"><a role="menuitem" href="<c:url value='/jobs/user/favorites'/>">스크랩</a></li>
+								<li role="none"><a role="menuitem" href="javascript:void(0);" onclick="openBusinessPopup();">기업회원 전환</a>
+								<li role="none"><a role="menuitem" href="javascript:void(0);" id="logout">로그아웃</a></li>
 							</sec:authorize>
 						</ul>
 					</li>

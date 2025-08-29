@@ -1,6 +1,7 @@
 package com.jam.client.member.service;
 
 import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -12,6 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -488,6 +490,33 @@ public class MemberServiceImpl implements MemberService {
 		    throw new IllegalStateException("닉네임 변경 실패");
 		}
 		
+		Authentication authentication = authenticateUser(user);
+		
+		return authentication;
+	}
+
+	@Override
+	@Transactional
+	public Authentication convertBusiness(String userId, String company_name, MemberVO user) {
+		Map<String, String> param = Map.of(
+				"user_id", userId,
+				"company_name", company_name
+			);
+		
+		memberDao.updateCompanyName(param);
+		
+		try {
+		    memberDao.insertRole(param);
+		} catch (DuplicateKeyException e) {
+		    log.info("이미 존재하는 ROLE, 무시합니다.");
+		}
+		
+		if (user.getRoles() == null) 
+			user.setRoles(new ArrayList<>());
+		
+		if (!user.getRoles().contains("ROLE_COMPANY")) 
+			user.getRoles().add("ROLE_COMPANY");
+	
 		Authentication authentication = authenticateUser(user);
 		
 		return authentication;

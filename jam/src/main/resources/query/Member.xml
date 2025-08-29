@@ -198,4 +198,15 @@
 		WHERE user_id = #{user_id}
 	</select>
 	
+	<update id="updateCompanyName" parameterType="map">
+	    UPDATE member
+	    SET company_name = #{company_name}
+	    WHERE user_id = #{user_id}
+	</update>
+	
+	<insert id="insertRole" parameterType="map">
+	    INSERT INTO member_role (user_id, role_code)
+	    VALUES (#{user_id}, 'ROLE_COMPANY')
+	</insert>
+	
 </mapper>

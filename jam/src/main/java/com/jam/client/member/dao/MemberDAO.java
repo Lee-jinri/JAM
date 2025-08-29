@@ -97,4 +97,8 @@ public interface MemberDAO {
 	
 	// 사용자 프로필 가져오기
 	MemberVO getUserProfile(String user_id);
+
+	void updateCompanyName(Map<String, String> param);
+
+	void insertRole(Map<String, String> param);
 }

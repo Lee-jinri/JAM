@@ -104,6 +104,8 @@ public interface MemberService {
 
 	public Authentication updateUserNameAndTokens(MemberVO member, boolean autoLogin, String loginType,
 			HttpServletResponse response);
+
+	public Authentication convertBusiness(String userId, String company_name, MemberVO user);
 	
 	
 }

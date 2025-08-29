@@ -1,5 +1,8 @@
 package com.jam.client.member.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -128,7 +131,7 @@ public class MemberRestController {
 				}
 			}else {
 				Cookie[] cookies = request.getCookies();
-				deleteJwtCookies(cookies, response);
+				if(cookies != null) deleteJwtCookies(cookies, response);
 			}
 			
 			return ResponseEntity.ok().body(member);
@@ -378,24 +381,20 @@ public class MemberRestController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
 		}
 		
-	    try {
-	    	Cookie[] cookies = request.getCookies();
-	    	
-	    	String loginType = jwtService.extractLoginType(request, cookies);
-        	boolean autoLogin = jwtService.extractAutoLogin(request, cookies);
+	    try {        	
+        	Map<String, Object> data = resolveAuthenticatedUser(request, response);
         	
-        	String accessToken = jwtService.extractToken(cookies, "Authorization");
+			if(data == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			
+        	MemberVO user = (MemberVO)data.get("user");
         	
-        	MemberVO user = jwtService.extractUserInfoFromToken(accessToken);
-        	
-        	if(user.isEmpty()) {
+        	if(user == null || user.isEmpty()) {
     	    	log.error("Unauthorized user.");
-    	    	
-    	    	SecurityContextHolder.clearContext();
-    		    request.getSession().invalidate();
-    		    
     	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
     	    }
+        	
+        	boolean autoLogin = (boolean)data.get("autoLogin");
+        	String loginType = (String)data.get("loginType");
         	
         	// 변경할 닉네임 세팅
         	user.setUser_name(member.getUser_name());
@@ -559,6 +558,60 @@ public class MemberRestController {
 	}
 
 	/**
+	 * 일반 회원을 기업 회원으로 전환합니다.
+	 * 
+	 * @param request  HttpServletRequest (userId attribute 포함)
+	 * @param response HttpServletResponse (JWT 쿠키 세팅/삭제에 사용)
+	 * @param member   요청 본문에 포함된 MemberVO (company_name 필수)
+	 * @return 성공 시 "기업회원 전환 성공" 메시지 반환,
+	 *         실패 시 상황에 맞는 HTTP 상태 코드와 에러 메시지 반환
+	 */
+	@PostMapping(value="/convertBusiness")
+	public ResponseEntity<String> convertBusiness(HttpServletRequest request, HttpServletResponse response, @RequestBody MemberVO member){
+		String userId = (String)request.getAttribute("userId");
+		
+		if (userId == null || userId.isEmpty()) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+		}
+		
+		String company_name = member.getCompany_name();
+		if (company_name == null || company_name.trim().isEmpty()) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회사명을 입력해주세요.");
+		}
+		
+		try {
+			Map<String, Object> data = resolveAuthenticatedUser(request, response);
+
+			if(data == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			
+			MemberVO user = (MemberVO)data.get("user");
+			if(!user.getUser_id().equals(userId)) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 유효하지 않습니다.");
+			}
+				
+        	Authentication authentication = memberService.convertBusiness(userId, company_name, user);
+        	
+        	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, (boolean)data.get("autoLogin"), (String)data.get("loginType"));
+			
+        	setJwtCookies(token, response, (boolean)data.get("autoLogin"));
+
+    		return ResponseEntity.ok("기업회원 전환 성공");
+	    } catch (JwtException e) {
+	        log.error("JWT 처리 중 오류 발생", e);
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    } catch (AuthenticationException e) {
+	        log.error("인증 객체 갱신 실패", e);
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+	    } catch (IllegalStateException e) {
+	    	log.error("기업회원 전환 로직 실패", e);
+	    	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    } catch (Exception e) {
+	        log.error("기업회원 전환 처리 중 알 수 없는 오류 발생", e);
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+	    }
+	}
+	
+	/**
 	 * 사용자의 주소를 변경합니다.
 	 * 
 	 * @param address 변경할 주소
@@ -709,5 +762,54 @@ public class MemberRestController {
 		cookie.setPath("/");
 	    
 	    response.addCookie(cookie);
+	}
+	
+	/**
+	 * HttpServletRequest와 쿠키 정보를 기반으로 사용자 인증을 검증합니다.
+	 * 
+	 * return:
+	 * - 인증 성공 시: loginType, autoLogin, user 정보를 포함한 Map
+	 * - 인증 실패 시: null
+	 *
+	 * @param request HttpServletRequest (쿠키와 세션 접근)
+	 * @return Map<String, Object> 인증 데이터 또는 null
+	 */
+	private Map<String, Object> resolveAuthenticatedUser(HttpServletRequest request, HttpServletResponse response) {
+		Map<String, Object> data = new HashMap<>();
+		
+		Cookie[] cookies = request.getCookies();
+    	if(cookies == null) {
+    		log.error("쿠키가 없습니다."); 
+    		return null;
+    	}
+    	
+    	String loginType = jwtService.extractLoginType(request, cookies);
+    	boolean autoLogin = jwtService.extractAutoLogin(request, cookies);
+
+		data.put("loginType", loginType);
+		data.put("autoLogin", autoLogin);
+		
+    	String accessToken = jwtService.extractToken(cookies, "Authorization");
+    	if (accessToken == null || accessToken.isEmpty()) {
+    		log.error("인증 토큰이 없습니다.");
+			return null;
+		}
+
+    	MemberVO user = jwtService.extractUserInfoFromToken(accessToken);
+    	
+    	if (user == null) {
+			SecurityContextHolder.clearContext();
+			HttpSession session = request.getSession(false);
+			if (session != null) session.invalidate();
+			
+        	if(cookies != null) deleteJwtCookies(cookies, response);
+        	
+			log.error("유효하지 않은 사용자입니다.");
+			return null;
+		}
+    	
+    	data.put("user", user);
+    	
+    	return data;
 	}
 }
