@@ -480,6 +480,27 @@ background-color: #fff;
 	    align-items: center;
 	}
 }
+#jobWriteBtn {
+	background-color: #0F2D4A;  
+	color: #fff;                
+	font-weight: 600;       
+	padding: 10px 18px;
+	border-radius: 7px;
+	cursor: pointer;
+	transition: background-color 0.25s ease, transform 0.15s ease;
+}
+
+/* hover 효과 */
+#jobWriteBtn:hover {
+	background-color: #163B63; 
+	transform: translateY(-2px); 
+}
+
+/* 클릭(활성) 효과 */
+#jobWriteBtn:active {
+	background-color: #0A1E34;
+	transform: translateY(0);
+}
 </style>
 <script type="text/javascript">
 let memberListCache = null;
@@ -551,80 +572,44 @@ $(function(){
 			}
 	 		return;
 	 	}
-	 	
-		location.href = "/jobs/board/write";
+		location.href = "/jobs/post/write";
 	})
-		
-	/*
-	$("#searchBtn").click(function(){
-		let search = $("#search").val();
-		let keyword = $("#keyword").val();
-		
-		if(search == "all"){
-			search = undefined; 
-	        keyword = undefined;
-		}
-		else{
-			if(keyword.replace(/\s/g, "") == ""){
-				alert("검색어를 입력하세요.");
-				$("#keyword").focus();
-				return;
-			}
-		}
-		
-		let category;
-		if ($("#typeSwitch").is(":checked")) category = "1"; else category = "0";
-		
-		let city = $("#city").val();
-		let gu = $("#gu").val();
-		let dong = $("#dong").val();
-		
-		let data = {
-				search : search,
-				keyword: keyword,
-				category: category ,
-				city: city,
-				gu: gu,
-				dong: dong,
-				positions: getSelectedPositions()
-		}
-		updateUrl(data);
-	})*/
 	
 	$("#positionBtn").click(function() {
-	    const $icon = $(this).find("i");
-	    if ($("#positionContainer").css("display") === "none") {
-	        $("#positionContainer").css("display", "block");
-	        $("#areaContainer").css("display", "none");
-	
-	        // ▼ → ▲ 변경
-	        $icon.removeClass("fa-caret-down").addClass("fa-caret-up");
-	    } else {
-	        $("#positionContainer").css("display", "none");
-	
-	        // ▲ → ▼ 변경
-	        $icon.removeClass("fa-caret-up").addClass("fa-caret-down");
-	    }
+		const $icon = $(this).find("i");
+		const $pos = $("#positionContainer");
+		const $area = $("#areaContainer");
+
+		if ($pos.is(":visible")) {
+			$pos.slideUp(300);
+			$icon.removeClass("fa-caret-up").addClass("fa-caret-down");
+		} else {
+			$area.slideUp(300); 
+			$pos.slideDown(300);
+			$("#areaBtn i").removeClass("fa-caret-up").addClass("fa-caret-down");
+			$icon.removeClass("fa-caret-down").addClass("fa-caret-up");
+		}
 	});
 
 	$("#areaBtn").click(function() {
 		const $icon = $(this).find("i");
-		
-	    if ($("#areaContainer").css("display") === "none") {
-	        $("#areaContainer").css("display", "block");
-	        $("#positionContainer").css("display", "none");
-	        
-	        $icon.removeClass("fa-caret-down").addClass("fa-caret-up");
-	    } else {
-	        $("#areaContainer").css("display", "none");
-	        $icon.removeClass("fa-caret-up").addClass("fa-caret-down");
-	    }
+		const $pos = $("#positionContainer");
+		const $area = $("#areaContainer");
+
+		if ($area.is(":visible")) {
+			$area.slideUp(300);
+			$icon.removeClass("fa-caret-up").addClass("fa-caret-down");
+		} else {
+			$pos.slideUp(300);
+			$area.slideDown(300);
+			$("#positionBtn i").removeClass("fa-caret-up").addClass("fa-caret-down");
+			$icon.removeClass("fa-caret-down").addClass("fa-caret-up");
+		}
 	});
 	
 	$(document).on("change", ".position-checkbox", function() {
 	    updateSelectedPosition();
 	});
-
 })
 
 function getBoard() {
@@ -642,7 +627,6 @@ function getBoard() {
 	let queryString = new URLSearchParams(boardState).toString();
 	let url = "/api/jobs/board?" + queryString;
 
-	console.log(url);
 	fetch(url)
 		.then(res => res.json())
 		.then(data => {
@@ -688,11 +672,11 @@ function companyRecruit(data){
 		        '<span>등록일</span>' +
 		    '</div>'
 	);
-//여기용
 	data.jobList.forEach(board => {
 		let $clone = $template.clone().removeAttr("id").show();
+		
 		let $boardDiv = $clone.find(".boardDiv");
-		$boardDiv.addClass("company-list-row");
+		$boardDiv.removeClass("member-list-row").addClass("company-list-row");
 		
 		let areaText = board.city;
 		if(board.gu != null) areaText += "\u00A0" + board.gu;
@@ -728,7 +712,7 @@ function companyRecruit(data){
 		if(board.pay_category == 0) $payCategory.addClass("daily");
 		else if(board.pay_category == 1) $payCategory.addClass("weekly");
 		else if(board.pay_category == 2) $payCategory.addClass("monthly");
-		
+
 		let date = timeAgo(board.created_at);
 		$clone.find(".created_at").text(date);
 		
@@ -757,12 +741,11 @@ function memberRecruit(data){
 		    '</div>'
 	);
 
-	$("#boardDiv").removeClass("company-list-row");
-	
-	$("#boardDiv").addClass("member-list-row");
-
 	data.jobList.forEach(board => {
 		let $clone = $template.clone().removeAttr("id").show();
+		
+		let $boardDiv = $clone.find(".boardDiv");
+		$boardDiv.removeClass("company-list-row").addClass("member-list-row");
 		
 		let $favoriteSpan = $clone.find(".favoriteSpan");
 		$favoriteSpan.attr("data-board-no", board.post_id);
@@ -1037,8 +1020,11 @@ function timeAgo(dateString) {
 				    <span class="switch-label">멤버 모집🏕️</span>
 				</div>
 				<sec:authorize access="hasRole('ROLE_COMPANY')">
-				    <div class="write_btn write_btn_border write_border flex items-center border-radius-7px">
-						<button type="button" id="jobWriteBtn" class="write_btn_font border-none bColor_fff ">작성하기</button>
+				    <div class="write_btn flex items-center">
+						<button type="button" id="jobWriteBtn" class="write_btn_font border-none ">
+							<i class="fa-solid fa-pen-to-square write-icon"></i>
+							작성하기
+						</button>
 					</div>
 				</sec:authorize>
 			</div>
