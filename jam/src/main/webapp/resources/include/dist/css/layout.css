@@ -565,9 +565,6 @@ textarea.reply_content {
 	border: 2px solid #ffdd77;
 }
 
-.write_btn {
-	padding: 5px;
-}
 /*
 .com_title, .flea_title {
 	border: 3px solid #ffdd77;
@@ -975,7 +972,6 @@ textarea.reply_content {
 .member-mode .job-title p{
 	color:#ffdd77;
 }
-.member-mode .write_btn,
 .community .write_btn,
 .fleaMarket .write_btn {
     border: 2px solid #ffdd77;
@@ -1006,9 +1002,6 @@ textarea.reply_content {
 
 .company-mode .job-title p{
 	color: #003366;
-}
-.company-mode .write_btn {
-    border: 2px solid #003366;
 }
 .company-mode .glass_icon {
     color: #003366;
@@ -1613,6 +1606,9 @@ a {
 
 .inline-block {
 	display: inline-block;
+}
+.none{
+	display: none; 
 }
 
 .justify-space-around {
