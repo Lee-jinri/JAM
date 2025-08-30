@@ -11,7 +11,7 @@
 	<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	
-	 <%-- Tiles 값 꺼내기 --%>
+	<%-- Tiles 값 꺼내기 --%>
     <tiles:importAttribute  name="title"   ignore="true" />
     <tiles:importAttribute  name="favicon" ignore="true" />
 
@@ -42,12 +42,16 @@
 	<sec:authorize access="isAuthenticated()">
 		<script>
 			window.MY_ID = '<sec:authentication property="name" />';
-			window.MY_AUTH = '<sec:authentication property="principal.authorities" />';
 			window.MY_NAME = '<sec:authentication property="principal.user_name" />';
 			
-			console.log(window.MY_ID);
-			console.log(window.MY_NAME);
-			console.log(window.MY_AUTH);
+			const auth = '<sec:authentication property="principal.authorities" />';
+			window.MY_AUTH = decodeHtmlEntities(auth);
+			
+			function decodeHtmlEntities(str) {
+				const txt = document.createElement("textarea");
+				txt.innerHTML = str;
+				return txt.value;
+			}
 		</script>
 	</sec:authorize>
 </head>
