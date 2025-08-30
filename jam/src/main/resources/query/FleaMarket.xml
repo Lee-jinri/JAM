@@ -176,10 +176,12 @@
 
 	<select id="getMyStore" resultType="flea" parameterType="flea">
 	    <![CDATA[
-	    SELECT post_id, title, TO_CHAR(created_at,'YYYY/MM/DD') AS created_at, price, thumbnail, sales_status
+	    SELECT post_id, title, thumbnail,
+	    TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at, 
+	    price, sales_status
 	    FROM (
-	        SELECT 
-	            f.post_id, f.title, f.created_at, f.price, f.thumbnail, f.sales_status,
+	        SELECT
+	            f.post_id, f.title, f.thumbnail, f.created_at, f.price, f.sales_status,
 	            ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 	        FROM fleaMarket f
 	        WHERE f.user_id = #{user_id}
@@ -209,6 +211,7 @@
 		FROM (
 			SELECT 
 				f.post_id, f.title, f.created_at, f.price, f.thumbnail, f.user_id,
+				TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at, 
 				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
 			JOIN favorite fav ON f.post_id = fav.board_no
