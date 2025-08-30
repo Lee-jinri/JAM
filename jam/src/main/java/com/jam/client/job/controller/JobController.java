@@ -45,9 +45,9 @@ public class JobController {
 	 * @param model
 	 * @return 상세 페이지
 	 **************************************************/
-	@RequestMapping(value = "/post/{post_id}", method = RequestMethod.GET)
-	public String jobDetail(@PathVariable("post_id") Long post_id, Model model) {
-		model.addAttribute("post_id", post_id);
+	@RequestMapping(value = "/post/{postId}", method = RequestMethod.GET)
+	public String jobDetail(@PathVariable("postId") Long postId, Model model) {
+		model.addAttribute("postId", postId);
 		
 	    return "jobs/post";
 	}
@@ -56,7 +56,8 @@ public class JobController {
 	/***************************************
 	 * @return 구인구직 글 작성 페이지
 	 ***************************************/
-	@RequestMapping(value="/board/write", method=RequestMethod.GET)
+	@PreAuthorize("isAuthenticated()")
+	@RequestMapping(value="/post/write", method=RequestMethod.GET)
 	public String writeView() throws Exception{
 		
 		return "jobs/write";
@@ -67,7 +68,8 @@ public class JobController {
 	 * @param job_no 수정할 구인구직 글 번호
 	 * @return 구인구직 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/board/edit/{post_id}", method=RequestMethod.GET)
+	@PreAuthorize("isAuthenticated()")
+	@RequestMapping(value="/post/edit/{post_id}", method=RequestMethod.GET)
 	public String updateView(@PathVariable Long post_id, Model model){
 	
 		model.addAttribute("post_id", post_id);
