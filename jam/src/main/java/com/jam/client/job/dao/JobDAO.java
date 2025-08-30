@@ -4,7 +4,11 @@ import java.util.List;
 
 import org.apache.ibatis.annotations.Param;
 
+import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
+import com.jam.file.vo.FileAssetVO;
+
+import jakarta.validation.Valid;
 
 public interface JobDAO {
 
@@ -36,6 +40,11 @@ public interface JobDAO {
 	public List<JobVO> getPosts(JobVO job_vo);
 
 	public int getUserPostCnt(JobVO job_vo);
-
 	
+	
+	public String findCompanyIdByPostId(@Param("post_id") Long post_id);
+	
+	public void createApplication(@Valid ApplicationVO app);
+
+	public int existsJobPost(@Param("post_id") Long postId);
 }

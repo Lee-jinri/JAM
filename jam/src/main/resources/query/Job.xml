@@ -192,4 +192,29 @@
 	    </trim>
 	</select>
 	
+	<select id="findCompanyIdByPostId" parameterType="long" resultType="String">
+		SELECT user_id
+		FROM job
+		WHERE post_id = #{post_id}
+	</select>
+	
+	<insert id="createApplication">
+		<selectKey resultType="long" order="BEFORE" keyProperty="application_id">
+	        SELECT application_seq.NEXTVAL FROM dual
+	    </selectKey>
+		INSERT INTO application
+			(application_id, user_id, post_id, title, content, created_at, company_id)
+		VALUES
+			(#{application_id}, #{user_id}, #{post_id}, #{title}, #{content}, sysdate, #{company_id})
+	</insert>
+	
+	<select id="existsJobPost" parameterType="long" resultType="int">
+		SELECT count(*)
+		FROM job
+		WHERE post_id = #{post_id}
+	</select>
+	
+
+
+	
 </mapper>

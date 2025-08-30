@@ -2,7 +2,10 @@ package com.jam.client.job.service;
 
 import java.util.List;
 
+import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
+
+import jakarta.validation.Valid;
 
 public interface JobService {
 
@@ -37,5 +40,10 @@ public interface JobService {
 	boolean isValidUserName(String user_name) throws Exception;
 	
 	String getUserId(String user_name);
+
+
+	String findCompanyIdByPostId(Long post_id);
+
+	void createApplication(@Valid ApplicationVO app);
 
 }

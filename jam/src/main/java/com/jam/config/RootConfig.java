@@ -4,8 +4,10 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import org.apache.ibatis.session.ExecutorType;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.mybatis.spring.SqlSessionFactoryBean;
+import org.mybatis.spring.SqlSessionTemplate;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -55,6 +57,11 @@ public class RootConfig {
 		return (SqlSessionFactory) sqlSessionFactory.getObject();
 	}
 	
+	// 배치 전용
+	@Bean 
+	public SqlSessionTemplate batchSqlSessionTemplate(SqlSessionFactory factory) {
+		return new SqlSessionTemplate(factory, ExecutorType.BATCH);
+	}
 
     @Bean
     public PlatformTransactionManager transactionManager() {

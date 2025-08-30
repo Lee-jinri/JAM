@@ -12,6 +12,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -19,10 +20,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.job.service.JobService;
+import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.global.util.ValueUtils;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
@@ -260,4 +263,23 @@ public class JobRestController {
 			return new ResponseEntity<>(resopnseBody, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
+	
+	
+	
+	@PostMapping("/application")
+	public ResponseEntity<String> createApplication(
+			@Valid @RequestBody ApplicationVO app,
+			HttpServletRequest request){
+		
+		String companyId = jobService.findCompanyIdByPostId(app.getPost_id());
+		
+		app.setCompany_id(companyId);
+		app.setUser_id((String)request.getAttribute("userId"));
+		
+		jobService.createApplication(app);
+		
+		return ResponseEntity.ok(null);
+	}
+	
+	
 }

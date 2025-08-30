@@ -4,6 +4,7 @@ import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -101,4 +102,18 @@ public class JobController {
 		return "jobs/jobPosts";
 	}
 	
+	@GetMapping(value="/toBusiness")
+	@PreAuthorize("isAuthenticated() and hasRole('USER')")
+	public String convertToBusinessPage() {
+		return "forward:/WEB-INF/views/jobs/toBusiness.jsp";
+	}
+	
+	@GetMapping(value="/applyForm/{postId}")
+	@PreAuthorize("isAuthenticated() and hasRole('USER')")
+	public String applyFormPage(@PathVariable("postId") String postId, Model model) {
+		
+	    model.addAttribute("postId", postId);
+	    
+		return "forward:/WEB-INF/views/jobs/applyForm.jsp";
+	}
 }

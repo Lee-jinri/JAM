@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.file.dao.FileAssetDAO">
+
+	<insert id="insertFileAsset">
+		INSERT INTO file_asset
+			(file_id, post_id, post_type, file_key, file_name, file_type, file_size, created_at)
+		VALUES
+			(file_seq.NEXTVAL, #{post_id}, #{post_type}, #{file_key}, #{file_name}, #{file_type}, #{file_size}, sysdate)
+	</insert>
+</mapper>
