@@ -1,13 +1,20 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://www.springframework.org/security/tags"
+	prefix="sec"%>
 <!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
 <title>JAM - JOB</title>
-<style>
 
+<script src="/resources/include/dist/js/favorite.js"></script>
+<style>
+.post-title{
+    font-size: 20px;
+    font-weight: 700;
+}
 .job-meta-box {
     background-color: #f9f9f9;
     border: 1px solid #eee;
@@ -29,8 +36,8 @@
 }
 
 .job-meta-label {
-    font-weight: bold;
     color: #444;
+    font-size: 16px;
 }
 
 .job-status {
@@ -43,28 +50,99 @@
     border-radius: 4px;
 }
 
-
-
-/* 이거 지우면 안됨 */
-.user_toggle {
-    top: 2rem;
+.post-actions{
+	justify-content: center;
+    display: flex;
+    align-items: center;
+    gap: 12px; 
+    margin-top: 16px;
 }
 
+#apply {
+	background-color: #ff5722; 
+	color: #fff;
+	padding: 10px 20px;
+	border: none;
+	border-radius: 6px;
+	font-size: 14px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
+}
+#apply:hover {
+	background-color: #e64a19; 
+	box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
+	transform: translateY(-2px);
+}
+#apply:active {
+	transform: translateY(1px);
+}
+
+.favoriteSpan {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 40px;
+	height: 40px;
+	border: 1px solid #ccc;
+	border-radius: 6px;
+	background: #fff;
+	cursor: pointer;
+	transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+.favoriteSpan:hover {
+	background: #f8f9fa;
+	border-color: #999;
+	box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+.favoriteSpan:hover {
+	color: #ff9800; 
+}
+.post-buttons {
+	position: relative;
+	display: flex;
+	justify-content: center;  
+	align-items: center;
+	margin-top: 16px;
+	margin-bottom: 16px;
+}
+
+.post-buttons .board-btn {
+	position: absolute;
+	right: 0; 
+}
+.favorite{
+	width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFD43B;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+.post-view-count{
+	margin-left: 15px;
+}
+.company-name{
+	font-weight:800;
+	font-size:1.125rem; /* 18px */
+	letter-spacing:.2px;
+	color:#111827;
+}
 </style>
 	
 <script type="text/javascript">
+
 $(function(){
 		
-	let post_id = $("#post_id").val();
-	let authorUserId;
-	let authorUserName;
-		
+	let postId = $("#postId").val();
 	getBoard();
 		
 	function getBoard(){
-		if(post_id == "" || post_id == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
+		if(postId == "" || postId == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
 		else{
-			fetch('/api/jobs/post/' + post_id)
+			fetch('/api/jobs/post/' + postId)
 	        .then(response => {
 				if (!response.ok) {
 					throw new Error('Network response was not ok');
@@ -72,24 +150,27 @@ $(function(){
 				return response.json();
 			})
 	        .then(data => {
-	        	authorUserId = data.user_id;
-	        	authorUserName = data.user_name;
-		        	
-	        	$("#job_title").html(data.job_title);
-	        	$("#userName").html(data.user_name);
-	        	$(".boardUserName").attr("data-userId", data.user_id);
+	        	$("#title").html(data.title);
 				
-	        	$("#job_date").html('🕒' +formatRelativeTime(data.job_date));
-	        	$("#job_hits").html('👀' +data.job_hits);
-	        	$("#job_content").html(data.job_content);
+	        	$("#created_at").html(timeAgo(data.created_at));
+	        	$("#view_count").html(data.view_count);
+	        	
+	        	$("#post-content").html(data.content);
 		        	
-	        	$("#city").html(data.city);
-	        	$("#gu").html(data.gu);
-	        	$("#dong").html(data.dong);
+	        	$("#post-city").html(data.city);
+	        	$("#post-gu").html(data.gu);
+	        	$("#post-dong").html(data.dong);
 		        	
 	        	$("#position").html(data.position);
+	        	
+	        	$(".favoriteSpan").attr("data-board-no", data.post_id);
+	        	$(".favoriteSpan").attr("data-board-type", "job");
+	    		
+	    		let $icon = $(".favoriteSpan").find("i"); 
+	    		data.favorite ? $icon.addClass("fa-solid")
+	    					   : $icon.addClass("fa-regular");
 		        
-	        	if(data.job_category == 0){
+	        	if(data.category == 0){
 	        		const payCategoryMap = {
 	        			    0: "건별",
 	        			    1: "주급",
@@ -99,157 +180,94 @@ $(function(){
 	        		let pay_category = payCategoryMap[data.pay_category];
 
 	        		$("#pay_category").html(pay_category);
-	        		$("#pay").html(data.pay_category < 3 ? ${data.pay} + "원" : "협의 후 결정");
+	        		$("#pay").html(data.pay_category < 3 ? formatNumberKo(data.pay) + "원" : "협의 후 결정");
 
-		        	
-	        	}else $(".pay-div").css("display", "none");
-				
-		        	
-	        	if(data.job_status == 1){
-	        		$("#job_status").css("display","block");
-	        		$("#job_status").html("구인 완료된 글 입니다.");
+		        	$("#company-name").html(data.company_name);
+	        	}else {
+					$(".pay-div").css("display", "none");
+					$(".userName").html(data.user_name + "님");
 	        	}
-	        	toggleUserMenu();
-	         	currentUserIsAuthor(data.author);
+		        	
+	        	if(data.status == 1){
+	        		$("#status").css("display","block");
+	        		$("#status").html("구인 완료된 글 입니다.");
+	        	}
 	        })
 	        .catch(error => console.error('Error:', error));
 		}
 	}
+	
+	$("#apply").click(function(){
 		
-	// 현재 로그인한 사용자와 글쓴이가 같은지 비교하는 함수
-	function currentUserIsAuthor(isAuthor){
-		console.log(isAuthor);
-		// 글쓴이와 현재 로그인한 사용자가 다르면 메세지 버튼 생성
-        if (isAuthor) {		        
-	        // 글쓴이와 사용자가 같으면 수정, 삭제 버튼 추가
-	        var btnDiv = document.getElementById("btn-div");
-			
-	        // 수정 버튼 생성
-	        var updateButton = document.createElement("button");
-	        updateButton.type = "button";
-	        updateButton.id = "jobUpdateBtn";
-	        updateButton.classList.add("board-btn");
-	        updateButton.textContent = "수정"; 
-			
-	        // 삭제 버튼 생성
-	        var deleteButton = document.createElement("button");
-	        deleteButton.type = "button";
-	        deleteButton.id = "jobDeleteBtn";
-	        deleteButton.classList.add("board-btn");
-	        deleteButton.textContent = "삭제";
-
-	        btnDiv.appendChild(updateButton);
-	        btnDiv.appendChild(deleteButton);
-	    }
-        
-	}
+		var url = "/jobs/applyForm/" + postId;
+	    var option = "width=500, height=610, top=10, left=10";
+	    var name = "applyPopup";
+	    window.open(url, name, option);
+	})
 	
-	
-	// 수정 버튼 클릭
-	$(document).on("click", "#jobUpdateBtn", function() {
-	    if(post_id == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-	    else $(location).attr('href', '/jobs/post/edit/'+post_id);
-	});
-	
-	// 삭제 버튼 클릭
-	$(document).on("click", "#jobDeleteBtn", function() {
-		if(confirm("정말 삭제하시겠습니까?")){
-			fetch('/api/jobs/post/'+$("#post_id").val(), {
-				method: 'DELETE'
-			})
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
-				}
-				alert("삭제가 완료 되었습니다.");
-				$(location).attr('href', '/jobs/post');
-			})
-			.catch(error => {
-				alert('게시글 삭제를 완료할 수 없습니다. 잠시 후 다시 시도해주세요.');
-				console.error('Error : ' , error);
-			});
-		}
-	});
-	
-	/* 쪽지 아이콘 클릭 */
-	$(document).on("click", "#sendMsg", function() {
-	    $("#receiver_id").val(authorUserId);
-	    $("#receiver").val(authorUserName);
-		var url = "/message/send";
-	    var option = "width=500, height=430, top=10, left=10";
-	    var name = "팝업";
-		window.open("", name, option);
-	    
-	    $("#formPopup").attr("action", url);
-	    $("#formPopup").attr("target","팝업");
-	    $("#formPopup").attr("method","post");
-	    $("#formPopup").submit();
-	});
-
-
 	
 })
 
-function formatRelativeTime(dateString) {
+function timeAgo(dateString) {
+	let now = new Date();
+	let past = new Date(dateString);
+	let diff = Math.floor((now - past) / 1000); 
+
+	if (diff < 10) return '방금 전';
+	if (diff < 60) return diff + '초 전';
+	if (diff < 3600) return Math.floor(diff / 60) + '분 전';
+	if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
+	if (diff < 172800) return '어제';
+	if (diff < 2592000) return Math.floor(diff / 86400) + '일 전';
 	
-    const postDate = new Date(dateString.replace(' ', 'T').replaceAll('/', '-'));  
-    const now = new Date();
-
-    const diffMs = now - postDate;
-    const diffSec = Math.floor(diffMs / 1000);
-    const diffMin = Math.floor(diffSec / 60);
-    const diffHour = Math.floor(diffMin / 60);
-    const diffDay = Math.floor(diffHour / 24);
-
-    if (diffDay >= 7) {
-    	return dateString.slice(0, -3);
-    } else if (diffDay >= 1) {
-        return diffDay + '일 전';
-    } else if (diffHour >= 1) {
-        return diffHour + '시간 전';
-    } else if (diffMin >= 1) {
-        return diffMin + '분 전';
-    } else {
-        return '방금 전';
-    }
+    let months = Math.floor(diff / 2592000); 
+    if (months < 12) return months + '개월 전';
+    
+	let dateStr = past.toLocaleDateString();
+	return dateStr.replace(/\.$/, '');
 }
-		
+
+function formatNumberKo(pay) {
+	const num = Number(String(pay).replace(/[^\d]/g, ''));
+	console.log(num.toLocaleString('ko-KR'));
+	return num ? num.toLocaleString('ko-KR') : '';
+}
 </script>
 </head>
 <body class="wrap">
 	<div class="my-top-15 my-bottom-15">
-		<input type="hidden" id="post_id" name="post_id" value="${post_id }"/>
+		<input type="hidden" id="postId" name="postId" value="${postId }"/>
 		
-		<form name="formPopup" id="formPopup">
-			<input type="hidden" id="receiver_id" name="receiver_id" value="${detail.user_id }">
-			<input type="hidden" id="receiver" name="receiver" value="${detail.user_name }">
-		</form>
-		
-		<!--  -->
 		<div class="board-detail-container">
 		    <!-- 제목 & 작성자 정보 -->
 		    <div class="board-header">
-		        <p id="job_title" class="board-title"></p>
-		        <div class="board-info">
-				    <span id="userName" class="userName boardUserName"></span>  
-				    <div class="userNameToggle"></div> 
-		        	<span class="divider">|</span>
-		        	<span id="job_date"></span>
-		        	<span class="divider">|</span>
-		            <span class="board-hits">
-		                <span id="job_hits"></span>
+		        <p id="title" class="post-title"></p>
+		        <div class="post-info">
+		        	<i class="fa-solid fa-clock" style="font-size: 16px;"></i>
+		        	<span id="created_at"></span>
+		        	
+		            <span class="post-view-count">
+		            	<i class="fa-solid fa-eye"></i>
+		                <span id="view_count"></span>
 		            </span>
 		        </div>
 		    </div>
 		
 		    <!-- 기본 정보 영역 -->
 		    <div class="job-meta-box">
+		    	<div class="job-meta-row">
+		    		<div class="job-meta-label"></div>
+		    		<div class="job-meta-value">
+		    			<span id="company-name" class="company-name"></span>
+		    			<span id="user-name" class="userName"></span>
+		    		</div>
+		    	</div>
 		        <div class="job-meta-row">
 		            <div class="job-meta-label">지역</div>
 		            <div class="job-meta-value">
-		                <span id="city"></span> 
-		                <span id="gu"></span> 
-		                <span id="dong"></span>
+		                <span id="post-city"></span> 
+		                <span id="post-gu"></span> 
+		                <span id="post-dong"></span>
 		            </div>
 		        </div>
 		        <div class="job-meta-row pay-div">
@@ -267,20 +285,27 @@ function formatRelativeTime(dateString) {
 		        </div>
 		    </div>
 		
-		    <!-- 모집 완료 표시 (선택적 표시) -->
-		    <div class="job-status" id="job_status" style="display: none;"></div>
+		    <!-- 모집 완료 표시 -->
+		    <div class="job-status" id="status" style="display: none;"></div>
 		
 		    <!-- 본문 영역 -->
 		    <div class="board-content">
-		        <p id="job_content"></p>
+		        <p id="post-content"></p>
 		    </div>
 		
 		    <!-- 버튼 영역 -->
-		    <div class="board-buttons">
-		        <div id="btn-div" class="author-buttons"></div>
-		        <a href="/jobs/board" class="board-btn">목록</a>
+		    <div class="post-buttons">
+		    	<sec:authorize access="isAuthenticated() and !hasRole('COMPANY')">
+		    	<div class="post-actions">
+		    		<button id="apply">지원하기</button>
+	    			<span class="favoriteSpan">
+	    				<i class="favorite fa-star"></i>
+						<!-- <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>-->
+					</span>
+		    	</div>
+		    	</sec:authorize>
+		    	<a href="/jobs/board" class="board-btn">목록</a>
 		    </div>
-		
 		</div>
 	</div>
 </body>
