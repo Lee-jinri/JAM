@@ -41,8 +41,11 @@
 	
 	<sec:authorize access="isAuthenticated()">
 		<script>
-			window.MY_ID = '<sec:authentication property="name" />';
-			window.MY_NAME = '<sec:authentication property="principal.user_name" />';
+			const id = '<sec:authentication property="name" />';
+			window.MY_ID = decodeHtmlEntities(id);
+			
+			const nickname = '<sec:authentication property="principal.user_name" />';
+			window.MY_NAME = decodeHtmlEntities(nickname);
 			
 			const auth = '<sec:authentication property="principal.authorities" />';
 			window.MY_AUTH = decodeHtmlEntities(auth);
