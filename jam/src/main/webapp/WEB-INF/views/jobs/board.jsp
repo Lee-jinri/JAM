@@ -544,8 +544,9 @@ $(function(){
 				};
 		
 	    let category = $(this).is(':checked') ? "1" : "0";
-	    
+	   
 	    boardState.category = category;
+	    
 	    getBoard();
 	});
 
@@ -699,7 +700,7 @@ function companyRecruit(data){
 		let payText = payTexts[board.pay_category] || "협의 후 결정";
 		
 		let $payDiv =$clone.find(".payDiv");
-		$payDiv.find(".pay").text(board.pay_category < 3 ? board.pay + "원" : "협의 후 결정");
+		$payDiv.find(".pay").text(board.pay_category < 3 ? formatNumberKo(board.pay) + "원" : "협의 후 결정");
 		
 		let $payCategory = $payDiv.find(".pay_category");
 		if(board.pay_category < 3){
@@ -892,9 +893,20 @@ function removeAllPosition(){
 
 function setMemberStyle() {
     $(".content").addClass("member-mode").removeClass("company-mode");
+    
+    let canWrite = false;
+    canWrite = window.MY_AUTH && !window.MY_AUTH.includes("ROLE_COMPANY");
+    
+	$(".write_btn").css("display", canWrite ? "flex" : "none");
 }
+
 function setCompanyStyle() {
     $(".content").addClass("company-mode").removeClass("member-mode");
+    
+    let canWrite = false;
+    canWrite = window.MY_AUTH?.includes("ROLE_COMPANY");
+    
+	$(".write_btn").css("display", canWrite ? "flex" : "none");
 }
 
 function timeAgo(dateString) {
@@ -917,6 +929,10 @@ function timeAgo(dateString) {
 	return dateStr.replace(/\.$/, '');
 }
 
+function formatNumberKo(pay) {
+	const num = Number(String(pay).replace(/[^\d]/g, ''));
+	return num ? num.toLocaleString('ko-KR') : '';
+}
 </script>
 </head>
 
@@ -1019,14 +1035,15 @@ function timeAgo(dateString) {
 				    </label>
 				    <span class="switch-label">멤버 모집🏕️</span>
 				</div>
-				<sec:authorize access="hasRole('ROLE_COMPANY')">
-				    <div class="write_btn flex items-center">
-						<button type="button" id="jobWriteBtn" class="write_btn_font border-none ">
+				
+			    <div class="write_btn items-center none">
+			    	<sec:authorize access="isAuthenticated()">
+				    	<button type="button" id="jobWriteBtn" class="write_btn_font border-none ">
 							<i class="fa-solid fa-pen-to-square write-icon"></i>
 							작성하기
 						</button>
-					</div>
-				</sec:authorize>
+			    	</sec:authorize>
+				</div>
 			</div>
 			
 			<div>
