@@ -472,7 +472,7 @@ public class MemberRestController {
 	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
 	 */
 	@RequestMapping(value = "/verify-password", method = RequestMethod.POST)
-	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpSession session, HttpServletResponse response) throws Exception {
+	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		if(member.getUser_pw() == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");
 		
@@ -487,7 +487,8 @@ public class MemberRestController {
 			}
 			
 			SecurityContextHolder.clearContext();
-        	request.getSession().invalidate();
+			HttpSession session = request.getSession(false);
+			if (session != null) session.invalidate();
         	
 			log.error("VerifyPassword: userId is null.");
 			return ResponseEntity.status(440).body("Login required or token expired.");
@@ -520,6 +521,15 @@ public class MemberRestController {
 	@PutMapping(value = "/password")
 	public ResponseEntity<String> updatePw(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
 
+		/* FIXME: 비밀번호 변경 후 로그아웃 처리, 재로그인 하도록 함 
+		DB에서 비밀번호 변경 완료
+		RefreshToken 삭제 (DB에서 해당 유저 토큰 전부 제거)
+		SecurityContextHolder.clearContext()
+		request.getSession().invalidate()
+		쿠키 삭제 (Authorization, RefreshToken)
+		로그인 페이지로 리다이렉트
+		*/
+		
 		if(member.getUser_pw() == null) {
 			log.error("user password is required.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");
@@ -671,15 +681,16 @@ public class MemberRestController {
                 	        memberService.kakaoDeleteAccount(kakaoAccessToken);
                 	    }
                 		
-                    	deleteCookie(cookies, response, "kakaoAccessToken");
+                		if(cookies != null)	deleteCookie(cookies, response, "kakaoAccessToken");
                 		break;
+                		
                     case "naver":
                     	String naverAccessToken = getCookieValue(cookies, "naverAccessToken");
 
                     	if(naverAccessToken != null)
                 			memberService.naverDeleteAccount(naverAccessToken);
                 			
-                		deleteCookie(cookies, response, "naverAccessToken");
+                    	if(cookies != null)	deleteCookie(cookies, response, "kakaoAccessToken");
                 		break;
                 }
             } catch (Exception e) {
@@ -693,7 +704,8 @@ public class MemberRestController {
             
             // 세션, 쿠키 삭제
         	SecurityContextHolder.clearContext();
-        	request.getSession().invalidate();
+        	HttpSession session = request.getSession(false);
+        	if (session != null) session.invalidate();
         	deleteJwtCookies(cookies, response);
         	
             if (userId == null) {
@@ -708,6 +720,8 @@ public class MemberRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
+	
+	
 	
 	private String getCookieValue(Cookie[] cookies, String name) {
 	    if (cookies == null) return null;
