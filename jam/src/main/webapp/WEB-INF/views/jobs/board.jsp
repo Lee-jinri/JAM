@@ -688,14 +688,16 @@ function companyRecruit(data){
 		$clone.find(".title").text(board.title);
 		$clone.find(".postLink").attr("data-location", "/jobs/post/" + board.post_id);
 		
-		let $favoriteSpan = $clone.find(".favoriteSpan");
-		$favoriteSpan.attr("data-board-no", board.post_id);
-		$favoriteSpan.attr("data-board-type", "job");
+		if(!window.MY_AUTH || !window.MY_AUTH.includes('ROLE_COMPANY')){
+			let $favoriteSpan = $clone.find(".favoriteSpan");
+			$favoriteSpan.attr("data-board-no", board.post_id);
+			$favoriteSpan.attr("data-board-type", "job");
+			
+			let $icon = $favoriteSpan.find("i"); 
+			board.favorite ? $icon.addClass("fa-solid")
+						   : $icon.addClass("fa-regular");
+		}
 		
-		let $icon = $favoriteSpan.find("i"); 
-		board.favorite ? $icon.addClass("fa-solid")
-					   : $icon.addClass("fa-regular");
-
 		const payTexts = ["건별 ", "주급 ", "월급 ", "협의 후 결정"];
 		let payText = payTexts[board.pay_category] || "협의 후 결정";
 		
