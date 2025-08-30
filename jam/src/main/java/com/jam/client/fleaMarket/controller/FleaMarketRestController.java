@@ -28,8 +28,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
-import com.jam.common.vo.ImageFileVO;
 import com.jam.common.vo.PageDTO;
+import com.jam.file.vo.ImageFileVO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;

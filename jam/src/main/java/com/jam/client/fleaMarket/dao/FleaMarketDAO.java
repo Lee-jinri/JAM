@@ -5,7 +5,7 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
-import com.jam.common.vo.ImageFileVO;
+import com.jam.file.vo.ImageFileVO;
 
 public interface FleaMarketDAO {
 

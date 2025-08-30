@@ -1,4 +1,4 @@
-package com.jam.common.vo;
+package com.jam.file.vo;
 
 import java.time.LocalDateTime;
 

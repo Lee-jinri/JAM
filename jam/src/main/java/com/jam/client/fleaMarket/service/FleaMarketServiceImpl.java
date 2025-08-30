@@ -10,8 +10,8 @@ import org.springframework.web.multipart.MultipartFile;
 import com.jam.client.fleaMarket.dao.FleaMarketDAO;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.client.member.service.MemberService;
-import com.jam.common.dao.ImageFileMapper;
-import com.jam.common.vo.ImageFileVO;
+import com.jam.file.dao.ImageFileDAO;
+import com.jam.file.vo.ImageFileVO;
 import com.jam.global.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	private final FleaMarketDAO fleaDao;
 	private final MemberService memberService;
 	private final FileUtils fileUtils;
-	private final ImageFileMapper imageFileMapper;
+	private final ImageFileDAO imageFileDao;
 	
 	@Override
 	public List<FleaMarketVO> getBoard(FleaMarketVO flea_vo) {
@@ -80,7 +80,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
             imageVO.setImage_name(savedFileName);
             imageVO.setPost_type("flea");
             
-            imageFileMapper.insertImage(imageVO); // 이미지 메타정보 DB에 저장
+            imageFileDao.insertImage(imageVO); // 이미지 메타정보 DB에 저장
         }
 		
 		flea_vo.setThumbnail(thumbnail);

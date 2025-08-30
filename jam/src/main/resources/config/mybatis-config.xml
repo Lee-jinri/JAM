@@ -26,7 +26,7 @@
 		
 		<typeAlias type="com.jam.client.mypage.vo.MemberBoardVO" alias="memberBoard"/>
 		
-		<typeAlias type="com.jam.common.vo.ImageFileVO" alias="imageFile"/>
+		<typeAlias type="com.jam.file.vo.ImageFileVO" alias="imageFile"/>
 	</typeAliases>
 	<!-- 
 	<typeHandlers>java.sql.Date를 java.util.Date 형으로 반환 
