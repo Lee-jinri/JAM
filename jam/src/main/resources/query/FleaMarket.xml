@@ -210,8 +210,8 @@
 		SELECT *
 		FROM (
 			SELECT 
-				f.post_id, f.title, f.created_at, f.price, f.thumbnail, f.user_id,
-				TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at, 
+				f.post_id, f.title, f.price, f.thumbnail, f.user_id,
+				TO_CHAR(f.created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at, 
 				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
 			JOIN favorite fav ON f.post_id = fav.board_no
