@@ -12,6 +12,7 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
@@ -24,7 +25,6 @@ import com.zaxxer.hikari.HikariDataSource;
 @Configuration
 @MapperScan(basePackages= {"com.jam.**.dao"})
 @PropertySource("classpath:application.properties")
-//@ComponentScan(basePackages = {"com.jam"})
 public class RootConfig {
 	
 	@Value("${db.username}")
@@ -55,6 +55,13 @@ public class RootConfig {
 		sqlSessionFactory.setMapperLocations(new PathMatchingResourcePatternResolver().getResources("classpath:query/*.xml"));
 		
 		return (SqlSessionFactory) sqlSessionFactory.getObject();
+	}
+	
+	// 기본 템플릿
+	@Bean
+	@Primary
+	public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory factory) {
+		return new SqlSessionTemplate(factory, ExecutorType.SIMPLE);
 	}
 	
 	// 배치 전용
