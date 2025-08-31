@@ -5,7 +5,7 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>JAM - 중고악기</title>
+<title>JAM</title>
 
 <script src="/resources/include/dist/js/favorite.js"></script>	
 <style>
@@ -230,34 +230,37 @@ $(function(){
 		}
 	});
 
-		
 	$("#flea-writeBtn").click(function(){
-		fetch("/api/member/auth/check").then((res) => {
-			if (res.status === 401) {
-				if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
-					location.href = "/member/login";
-				} else {
-					location.href = "/fleaMarket/board";
-				}
-			} else {
-				location.href = "/fleaMarket/board/write";
-			}
-		})
-	})	
-	
+		redirectWithLogin("/fleaMarket/board/write");
+	});
+
 	$("#flea-myStoreBtn").click(function(){
-		location.href = '/fleaMarket/my?view=store';
-	})
-	
+		redirectWithLogin("/fleaMarket/my?view=store");
+	});
+
 	$("#flea-favoriteBtn").click(function(){
-		location.href = '/fleaMarket/my?view=favorites';
-	})
-	
+		redirectWithLogin("/fleaMarket/my?view=favorites");
+	});
+
 	$("#flea-chatBtn").click(function(){
-		sessionStorage.removeItem("chatRoomId");
-		location.href = '/chat';
-	})
+		redirectWithLogin("/chat", function(){
+			sessionStorage.removeItem("chatRoomId");
+		});
+	});
 })
+
+function redirectWithLogin(authedUrl, beforeAuthed) {
+	if (!window.MY_ID) {
+		if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+			location.href = "/member/login";
+		} else {
+			location.href = "/fleaMarket/board";
+		}
+	} else {
+		if (beforeAuthed) beforeAuthed(); 
+		location.href = authedUrl;
+	}
+}
 
 function getBoard(){
 	return new Promise((resolve, reject) => {
