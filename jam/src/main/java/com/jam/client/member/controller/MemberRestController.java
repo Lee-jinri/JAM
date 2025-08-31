@@ -598,7 +598,8 @@ public class MemberRestController {
 			if(!user.getUser_id().equals(userId)) {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 유효하지 않습니다.");
 			}
-				
+			
+			user.setCompany_name(company_name);	
         	Authentication authentication = memberService.convertBusiness(userId, company_name, user);
         	
         	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, (boolean)data.get("autoLogin"), (String)data.get("loginType"));

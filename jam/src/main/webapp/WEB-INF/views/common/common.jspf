@@ -30,8 +30,8 @@
 	<!-- 제이쿼리 -->
 	<script type="text/javascript" src="/resources/include/dist/js/jquery-3.7.1.min.js"></script>
 	
-	<!-- 부트스트랩 -->
-	<link rel="/resources/include/dist/css/bootstrap.min.css">
+	<!-- 부트스트랩
+	<link rel="stylesheet" href="/resources/include/dist/css/bootstrap.min.css"> -->
 	<link rel="stylesheet" href="/resources/include/dist/css/css/all.min.css">
 	
 	<link rel="stylesheet" href="/resources/include/dist/css/layout.css" />
@@ -49,6 +49,14 @@
 			
 			const auth = '<sec:authentication property="principal.authorities" />';
 			window.MY_AUTH = decodeHtmlEntities(auth);
+			
+			// 회사명 (기업 회원일 때만)
+			let companyNameVal = null;
+			if (window.MY_AUTH.includes('ROLE_COMPANY')) {
+				companyNameVal = '<sec:authentication property="principal.company_name" />';
+				companyNameVal = decodeHtmlEntities(companyNameVal);
+			}
+			window.COMPANY_NAME = companyNameVal;
 			
 			function decodeHtmlEntities(str) {
 				const txt = document.createElement("textarea");

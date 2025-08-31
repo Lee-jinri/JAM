@@ -110,6 +110,7 @@ public class JwtService {
 		
 		userInfo.setUser_id(claim.get("sub", String.class));
 		userInfo.setUser_name(claim.get("userName", String.class));
+		userInfo.setCompany_name(claim.get("companyName", String.class));
 
         @SuppressWarnings("unchecked")
 		List<String> authList = claim.get("auth", List.class);
@@ -128,12 +129,9 @@ public class JwtService {
 		    log.error("[JWT] refreshToken으로 사용자 정보 조회 실패");
 		    return new MemberVO();
 		}
-		
+
     	String userId = userInfo.getUser_id();
-    	String userName = userInfo.getUser_name();
     	String loginType = jwtTokenProvider.extractLoginType(refreshToken);
-    	
-    	log.info("[JwtService] processRefreshToken: " + userName);
 
     	// 2. SecurityContext에 Authentication 설정
     	Authentication authentication = new UsernamePasswordAuthenticationToken(

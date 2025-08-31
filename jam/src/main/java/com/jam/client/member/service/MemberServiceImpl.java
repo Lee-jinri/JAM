@@ -25,7 +25,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -271,7 +270,7 @@ public class MemberServiceImpl implements MemberService {
 	            memberDao.SocialRegister(userInfo);
 	            user.setUser_name(user_name);
 	        }else user = memberDao.findByUserInfo(userId);
-
+	        
 	        log.info("소셜 로그인 처리 완료");
 	        
 	        return user;
@@ -377,12 +376,11 @@ public class MemberServiceImpl implements MemberService {
 
 	
 	public Authentication authenticateSocialUser(MemberVO user) {
-		
 		try {
 			Authentication authentication = new UsernamePasswordAuthenticationToken(
 					user,
 				    null,
-				    List.of(new SimpleGrantedAuthority("ROLE_MEMBER"))
+				    user.getAuthorities()
 				);
 			
 			return authentication;

@@ -4,10 +4,9 @@
 
 	<!-- 회원가입 -->
 	<insert id="memberJoin" parameterType="member">
-	INSERT INTO member (user_id, public_id, user_pw, user_name, phone, email, address)
+	INSERT INTO member (user_id, user_pw, user_name, phone, email, address)
 	VALUES (
 		#{user_id}, 
-		SYS_GUID(),
 		#{user_pw}, 
 		#{user_name}, 
 		#{phone}, 
@@ -62,7 +61,7 @@
 	</resultMap>
 	
 	<select id="findByUserInfo" parameterType="string" resultMap="userWithRolesMap">
-		SELECT user_id, user_pw, user_name, 1 AS enabled
+		SELECT user_id, user_pw, user_name, company_name, 1 AS enabled
   		FROM member
   		WHERE user_id = #{user_id}
 	</select>
@@ -70,7 +69,7 @@
 	<select id="findRolesByUserId" parameterType="string" resultType="string">
 	    SELECT role_code
 	    FROM member_role
-	    WHERE user_id = #{value} 
+	    WHERE user_id = #{user_id} 
 	</select>
 	
   	
@@ -186,7 +185,7 @@
 	
 	<!-- refresh token으로 회원 아이디, 닉네임, 권한 조회 -->
 	<select id="getUserInfo" parameterType="String" resultType="member">
-		SELECT user_id, user_name, role
+		SELECT user_id, user_name, role, company_name
 		FROM member
 		WHERE refreshToken = #{refreshToken}
 	</select>

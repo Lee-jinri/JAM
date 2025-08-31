@@ -56,12 +56,14 @@ public class JwtTokenProvider {
         MemberVO member = (MemberVO) authentication.getPrincipal(); 
         
         String userName = member.getUser_name();
+        String companyName = member.getCompany_name();
         
         // Access Token 생성
         String accessToken = Jwts.builder()
                 .setSubject(authentication.getName())
                 .claim("auth", auth) 	// 리스트
                 .claim("userName", userName)
+                .claim("companyName", companyName)
                 .claim("loginType", loginType)
                 .setExpiration(new Date(System.currentTimeMillis() + 3 * 3600 * 1000)) // 유효 기간 3시간
                 .signWith(key, SignatureAlgorithm.HS256)
@@ -96,7 +98,7 @@ public class JwtTokenProvider {
         return refreshToken;
     }
      
-    // JWT 토큰에서 아이디, 권한을 꺼내는 메서드
+    // JWT 토큰에서 아이디, 닉네임, 회사명, 권한을 꺼내는 메서드
     public Authentication getAuthentication(String accessToken) {
         
     	if(validateToken(accessToken) == TokenStatus.VALID) {
@@ -118,6 +120,7 @@ public class JwtTokenProvider {
             member.setUser_id(claims.getSubject()); // sub
             member.setUser_name(claims.get("userName", String.class));
             member.setRoles(roles);
+            member.setCompany_name(claims.get("companyName", String.class));
             
             return new UsernamePasswordAuthenticationToken(member, "", authorities);
     	}

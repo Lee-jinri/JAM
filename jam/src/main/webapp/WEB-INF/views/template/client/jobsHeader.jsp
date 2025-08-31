@@ -324,35 +324,15 @@ header {
 		if(window.MY_NAME) {
 			// 헤더에 닉네임과 로그아웃 버튼 추가
             headerName = $('#header_name');
-            headerName.html(window.MY_NAME + "님");
+			
+			if(window.COMPANY_NAME)headerName.html(window.COMPANY_NAME + "님");
+			else headerName.html(window.MY_NAME + "님");
             
             $("#loggedOutDiv").css("display", "none");
             $("#loggedInDiv").css("display", "flex");
             
             $("#written").attr("data-userId", window.MY_ID);
         }
-		
-		// 로그아웃
-		$("#logout").click(function() {
-			fetch('/api/member/loginType')
-			.then(res => {
-				if(res.status == 200) return res.text();
-				else if(res.status == 401) {
-					alert('로그인이 만료되었습니다. 메인 페이지로 이동합니다.');
-			        $(location).attr('href', "/");
-			        return;
-				} else {
-			    	throw new Error('응답 상태: ' + res.status);
-			    }
-			})
-			.then(loginType => {
-				logout(loginType);
-			})
-			.catch(error => {
-				console.error("오류:", error);
-				alert('알 수 없는 오류가 발생했습니다.');
-			});
-		})
 		
 		const btn  = document.getElementById('jobsMenuBtn');
 	    const menu = document.getElementById('jobsMenu');
@@ -376,6 +356,28 @@ header {
 		    });
 	    }
 	    
+	 	// 로그아웃
+		$("#logout").click(function() {
+			fetch('/api/member/loginType')
+			.then(res => {
+				if(res.status == 200) return res.text();
+				else if(res.status == 401) {
+					alert('로그인이 만료되었습니다. 메인 페이지로 이동합니다.');
+			        $(location).attr('href', "/");
+			        return;
+				} else {
+			    	throw new Error('응답 상태: ' + res.status);
+			    }
+			})
+			.then(loginType => {
+				logout(loginType);
+			})
+			.catch(error => {
+				console.error("오류:", error);
+				alert('알 수 없는 오류가 발생했습니다.');
+			});
+		})
+	    
 		$("#account").click(function() {$(location).attr('href', '/mypage/account');});
 		
 		$("#지원현황").click(function(){$(location).attr('href','/jobs/지원현황');})
@@ -392,9 +394,9 @@ header {
 		
 		document.getElementById("searchBtn").addEventListener("click", searchJobs);
 		document.getElementById("keyword").addEventListener("keydown", function (e) {
-		  if (e.key === "Enter") {
-			  searchJobs();
-		  }
+			if (e.key === "Enter") {
+			 searchJobs();
+			}
 		});
 		
 	})
@@ -482,7 +484,6 @@ function openBusinessPopup() {
 						<ul class="menu__list" id="jobsMenu" role="menu" hidden>
 							<!-- 기업회원 전용 -->
 							<sec:authorize access="hasRole('COMPANY')">
-								<li role="none"><a role="menuitem" href="<c:url value='/jobs/company/profile'/>">회사정보</a></li>
 								<li role="none"><a role="menuitem" href="<c:url value='/jobs/post/write"'/>">공고등록</a></li>
 								<li role="none"><a role="menuitem" href="<c:url value='/jobs/company/postings'/>">공고관리</a></li>
 								<li role="none"><a role="menuitem" href="<c:url value='/jobs/company/candidates'/>">지원자관리</a></li>
