@@ -45,6 +45,7 @@ public class JwtService {
 		
 		try {
 			String accessToken = extractToken(cookies, "Authorization");
+			if(accessToken == null) return null;
 			
 			TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
 			
@@ -63,7 +64,6 @@ public class JwtService {
 					return userInfo;
 				case EXPIRED:
 				case EMPTY:
-					
 					String refreshToken = extractToken(cookies, "RefreshToken");
 					
 					if (refreshToken == null || 
@@ -73,7 +73,7 @@ public class JwtService {
 						
 						clearAuth(request);
 						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-						return new MemberVO();
+						return null;
 					}
 	
 					boolean autoLogin = jwtTokenProvider.getAutoLoginFromRefreshToken(refreshToken);
@@ -87,7 +87,7 @@ public class JwtService {
 					
 					clearAuth(request);
 					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-					return new MemberVO();
+					return null;
 				case INVALID:
 					log.warn("[JWT] 유효하지 않은 토큰");
 					
@@ -100,7 +100,7 @@ public class JwtService {
 	        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 	    }
 		
-		return new MemberVO();
+		return null;
 	}
 	
 	public MemberVO extractUserInfoFromToken(String accessToken){
