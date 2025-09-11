@@ -25,15 +25,12 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 public class S3Service {
 	
 	private final FileUtils fileUtils;
+	private final S3Presigner presigner;
 	
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
 
 	
-	//Presigned URL을 만들어주는 핵심 객체.
-	private final S3Presigner presigner = S3Presigner.builder()
-			.region(Region.AP_NORTHEAST_2) // 서울
-			.build();
 
 	/**
 	 * 업로드용 Presigned URL 생성.
