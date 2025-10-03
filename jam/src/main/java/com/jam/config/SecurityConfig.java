@@ -106,7 +106,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			.logout()
 				.logoutRequestMatcher(new AntPathRequestMatcher("/api/member/logout", "POST")) // POST 방식으로 로그아웃 처리
 				.invalidateHttpSession(true)
-				.deleteCookies("remember-me", "JSESSTION_ID")
+				.deleteCookies("remember-me", "JSESSIONID")
 				.deleteCookies("JSESSIONID")
 				.addLogoutHandler(customLogoutHandler)
 				.logoutSuccessHandler(customLogoutSuccessHanler)
