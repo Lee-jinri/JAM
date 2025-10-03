@@ -1,28 +1,21 @@
 package com.jam.config;
 
-import java.util.Arrays;
-
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.access.AccessDeniedHandlerImpl;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.CorsConfigurationSource;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import com.jam.global.handler.CustomAccessDeniedHandler;
+import com.jam.global.handler.CustomAuthEntryPoint;
 import com.jam.global.handler.CustomLoginFailureHandler;
 import com.jam.global.handler.CustomLoginSuccessHandler;
 import com.jam.global.handler.CustomLogoutHandler;
@@ -35,6 +28,7 @@ import lombok.RequiredArgsConstructor;
 
 @Configuration
 @EnableWebSecurity()
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 @RequiredArgsConstructor
 @ComponentScan(basePackages = "com.jam")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
@@ -46,6 +40,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private final PasswordEncoder passwordEncoder;
 	private final CustomLogoutSuccessHandler customLogoutSuccessHanler;
 	private final CustomUserDetailsService customUserDetailsService;
+	private final CustomAuthEntryPoint customAuthEntryPoint;
+	private final CustomAccessDeniedHandler customAccessDeniedHandler;
 	
 	/*
 	@Bean
@@ -85,8 +81,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http
 			.exceptionHandling()
-				.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-				.accessDeniedHandler(new AccessDeniedHandlerImpl())
+				.authenticationEntryPoint(customAuthEntryPoint)
+				.accessDeniedHandler(customAccessDeniedHandler)
 			.and()
 			.httpBasic()
 				.disable()
