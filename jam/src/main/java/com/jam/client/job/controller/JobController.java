@@ -110,12 +110,17 @@ public class JobController {
 		return "forward:/WEB-INF/views/jobs/toBusiness.jsp";
 	}
 	
+	/**************************************
+	 * @return 지원서 작성 폼
+	 *************************************/
 	@GetMapping(value="/applyForm/{postId}")
 	@PreAuthorize("isAuthenticated() and hasRole('USER')")
-	public String applyFormPage(@PathVariable("postId") String postId, Model model) {
+	public String applyFormPage(@PathVariable("postId") String postId, @RequestParam String category, Model model) {
 		
 	    model.addAttribute("postId", postId);
+	    model.addAttribute("category", category);
 	    
 		return "forward:/WEB-INF/views/jobs/applyForm.jsp";
 	}
+			
 }

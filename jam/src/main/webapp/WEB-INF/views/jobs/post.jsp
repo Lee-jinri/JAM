@@ -187,19 +187,28 @@ $(function(){
 					$(".pay-div").css("display", "none");
 					$(".userName").html(data.user_name + "님");
 	        	}
-		        	
+	        	
+	        	$("#apply").attr("data-category", data.category);
+	        	
 	        	if(data.status == 1){
 	        		$("#status").css("display","block");
 	        		$("#status").html("구인 완료된 글 입니다.");
+	        		$(".post-actions").remove();
 	        	}
+	        	
+	        	if (result.isAuthor === true) {
+	        		$(".post-actions").remove();
+	        	}
+
 	        })
 	        .catch(error => console.error('Error:', error));
 		}
 	}
 	
 	$("#apply").click(function(){
-		
-		var url = "/jobs/applyForm/" + postId;
+		var category = $(this).attr("data-category");
+				
+		var url = "/jobs/applyForm/" + postId + "?category="+category;
 	    var option = "width=500, height=610, top=10, left=10";
 	    var name = "applyPopup";
 	    window.open(url, name, option);

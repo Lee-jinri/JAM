@@ -6,6 +6,8 @@
 <meta charset="UTF-8">
 <title></title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
+<script type="text/javascript" src="/resources/include/dist/js/jquery-3.7.1.min.js"></script>
+	
 <style>
 	:root{
 		--bg:#f5f7fa; --card:#ffffff; --text:#1e1e1e; --muted:#6c757d;
@@ -86,7 +88,7 @@
 				<div class="hint">제출 전 내용을 한번 더 확인해 주세요.</div>
 			</div>
 
-			<form id="applyForm" method="post" action="/api/jobs/application">
+			<form id="applyForm" method="post" action="/api/jobs/applications">
 				<input type="hidden" name="postId" value="${postId}">
 				<div class="row">
 					<label for="title">제목</label>
@@ -100,7 +102,7 @@
 					<div class="count" id="contentCount">0 / 800</div>
 				</div>
 
-				<div class="row">
+				<div class="row file-row">
 					<label>이력서 파일 업로드</label>
 					<div class="file">
 						<label for="resume" class="btn">파일 선택</label>
@@ -127,7 +129,18 @@
 	
 	
 <script>
-// FIMXE: 이미 지원한 공고는 제외 (db에 유니크 제약 있음.)
+$(function() {
+	var category = ${category}; 
+
+	if (category === 1) {
+		$(".file-row").remove();
+		
+		$("#content").attr("placeholder", "간단한 자기소개와 연락 가능한 방법(메일, 전화번호 등)을 적어주세요. (최대 800자)");
+		$("#title").attr("placeholder", "예) 보컬 지원 – 홍길동");
+		
+		$("#submitBtn").prop("disabled", false);
+	} 
+});
 	const titleEl = document.getElementById('title');
 	const contentEl = document.getElementById('content');
 	const titleCount = document.getElementById('titleCount');
@@ -166,9 +179,9 @@
 		contentCount.textContent = contentEl.value.length + ' / ' + contentEl.maxLength;
 	});
 
-
-	resumeInput.addEventListener('change', renderFiles);
-	
+	if (resumeInput) {
+		resumeInput.addEventListener('change', renderFiles);
+	}
 	function renderFiles(){
 		fileMsg.style.display = 'none';
 		fileMsg.textContent = '';
@@ -231,7 +244,7 @@
 		submitBtn.disabled = false;
 	}
 
-	// 초기 카운트 업데이트
+	// 카운트 업데이트
 	titleCount.textContent = '0 / ' + titleEl.maxLength;
 	contentCount.textContent = '0 / ' + contentEl.maxLength;
 	
@@ -245,21 +258,107 @@
 	}
 	
 	const form = document.getElementById("applyForm");
-	form.addEventListener('submit', function(e){
+	
+	form.addEventListener('submit', async function(e){
 		e.preventDefault(); 
-		fileMsg.style.display = 'none';
-		fileMsg.textContent = '';
 		
+		if (fileMsg) { 
+		  fileMsg.style.display = 'none';
+		  fileMsg.textContent = '';
+		}
+		
+		const postId = Number(document.querySelector('input[name="postId"]').value);
+		const title = titleEl.value;
+		const content = contentEl.value;
+		const category = ${category};
+		
+		if (!postId || isNaN(postId)) {
+			alert("잘못된 접근입니다.");
+			return;
+		}
+		if (!title.trim()) {
+			alert("제목을 입력하세요.");
+			return;
+		}
+		if (!content.trim()) {
+			alert("내용을 입력하세요.");
+			return;
+		}
+		
+		// 버튼 잠금
+		submitBtn.disabled = true;
+		submitBtn.textContent = '제출 중...';
+		
+		// 멤버 모집: 파일 업로드 없이 바로 저장
+		if (category === 1) {
+			const payload = {
+				post_id: postId,
+				title: title,
+				content: content,
+				category: 1
+			};
+			fetch('/api/jobs/applications', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			})
+			.then(res => { 
+				if (!res.ok) {
+					let serverMsg = '업로드/저장 중 오류가 발생했습니다.';
+					
+					if (res.status !== 204) {
+						const ct = res.headers.get('content-type') || '';
+						if (ct.includes('application/json')) {
+							return res.json().then(data => {
+								if (data && typeof data.error === 'string') {
+									serverMsg = data.error;
+								}
+								throw new Error(serverMsg);
+							});
+						} else {
+							return res.text().then(text => {
+								if (text) serverMsg = text;
+								throw new Error(serverMsg);
+							});
+						}
+					}
+					
+					if (res.status === 400) serverMsg = serverMsg || '잘못된 요청입니다.';
+					if (res.status === 404) serverMsg = serverMsg || '해당 공고를 찾을 수 없습니다.';
+					if (res.status === 409) serverMsg = serverMsg || '이미 해당 공고에 지원했습니다.';
+
+					throw new Error(serverMsg);
+				}
+			})
+			.then(() => {
+				submitBtn.disabled = false;
+				submitBtn.textContent = '제출';
+				alert("참여 신청이 완료되었습니다.");
+				window.close();
+			})
+			.catch(err => {
+				const msg = err && err.message ? err.message : '업로드/저장 중 오류가 발생했습니다.';
+				
+				const el = document.getElementById('fileMsg');
+				if (el && el.isConnected) {
+					el.textContent = msg;
+					el.style.display = 'block';
+				} else {
+					alert(msg);
+				}
+				submitBtn.disabled = false;
+				submitBtn.textContent = '제출';
+			});
+			return; 
+		}
+		
+		// 기업 공고 
 		let files = Array.from(resumeInput.files || []);
 		if (files.length === 0) {
 			fileMsg.textContent = '이력서 파일을 선택하세요.';
 			fileMsg.style.display = 'block';
 			return;
 		}
-
-		// 버튼 잠금
-		submitBtn.disabled = true;
-		submitBtn.textContent = '업로드 중...';
 
 		function uploadOne(file) {
 			if (file.size > MAX) {
@@ -268,45 +367,40 @@
 			    );
 			}
 			
-			
 			const contentType = getMime(file) || 'application/octet-stream';
-			const qs = new URLSearchParams({
-				filename: file.name,
-				contentType: contentType
-			});
-
+		
 			// presigned url 발급
 			return fetch('/api/files/s3/presign/upload?' + qs.toString(), { method: 'GET' })
-				.then(res => res.json())
-				.then(json => {
-					if (json.error){
-						throw new Error(json.error);
-					}
-					// S3 PUT 업로드
-					return fetch(json.url, {
-						method: 'PUT',
-						headers: { 'Content-Type': json.contentType || contentType },
-						body: file
-					}).then(r => {
-						if (!r.ok) throw new Error('S3 업로드 실패(' + r.status + ')');
-						
-						return {
-							key: json.key,
-							name: file.name,
-							type: json.contentType || contentType,
-							size: String(file.size)
-						};
-					});
-				})
+			.then(res => res.json())
+			.then(json => {
+				if (json.error){
+					throw new Error(json.error);
+				}
+				// S3 PUT 업로드
+				return fetch(json.url, {
+					method: 'PUT',
+					headers: { 'Content-Type': json.contentType || contentType },
+					body: file
+				}).then(r => {
+					if (!r.ok) throw new Error('S3 업로드 실패(' + r.status + ')');
+					
+					return {
+						key: json.key,
+						name: file.name,
+						type: json.contentType || contentType,
+						size: String(file.size)
+					};
+				});
+			})
 		}
 		
 		
 		Promise.all(files.map(uploadOne))
 		.then(results => {
 			const payload = {
-				post_id: Number(document.querySelector('input[name="postId"]').value),
-				title: titleEl.value,
-				content: contentEl.value,
+				post_id: postId,
+				title: title,
+				content: content,
 				file_assets: results.map(m => ({
 					file_key:  m.key,
 					file_name: m.name,
@@ -314,14 +408,39 @@
 					file_size: Number(m.size)
 				}))
 			};
-			return fetch('/api/jobs/application', {
+			return fetch('/api/jobs/applications', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(payload)
 			});
 		})
 		.then(res => {
-			if (!res.ok) throw new Error('서버 저장 실패');
+			if (!res.ok) {
+				let serverMsg = '업로드/저장 중 오류가 발생했습니다.';
+				
+				if (res.status !== 204) {
+					const ct = res.headers.get('content-type') || '';
+					if (ct.includes('application/json')) {
+						return res.json().then(data => {
+							if (data && typeof data.error === 'string') {
+								serverMsg = data.error;
+							}
+							throw new Error(serverMsg);
+						});
+					} else {
+						return res.text().then(text => {
+							if (text) serverMsg = text;
+							throw new Error(serverMsg);
+						});
+					}
+				}
+				
+				if (res.status === 400) serverMsg = serverMsg || '잘못된 요청입니다.';
+				if (res.status === 404) serverMsg = serverMsg || '해당 공고를 찾을 수 없습니다.';
+				if (res.status === 409) serverMsg = serverMsg || '이미 해당 공고에 지원했습니다.';
+
+				throw new Error(serverMsg);
+			}
 			
 			submitBtn.disabled = false;
 			submitBtn.textContent = '제출';
@@ -329,8 +448,15 @@
 			window.close();
 		})
 		.catch(err => {
-			fileMsg.textContent = err.message || '업로드/저장 중 오류가 발생했습니다.';
-			fileMsg.style.display = 'block';
+			const msg = err && err.message ? err.message : '업로드/저장 중 오류가 발생했습니다.';
+			
+			const el = document.getElementById('fileMsg');
+			if (el && el.isConnected) {
+				el.textContent = msg;
+				el.style.display = 'block';
+			} else {
+				alert(msg);
+			}
 			submitBtn.disabled = false;
 			submitBtn.textContent = '제출';
 		});

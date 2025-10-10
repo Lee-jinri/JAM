@@ -264,9 +264,16 @@ public class JobRestController {
 		}
 	}
 	
-	
-	
-	@PostMapping("/application")
+	/**
+	 * 지원서 생성 API
+	 * 요청 본문(ApplicationVO)에 담긴 정보로 지원서를 생성합니다.
+	 * post_id로 company_id를 조회해 설정하고 인증 컨텍스트(request.userId)에서 사용자 ID를 추출하여 저장합니다.
+	 *
+	 * @param app		지원서 데이터(ApplicationVO, @Valid)
+	 * @param request	HttpServletRequest, userId 추출용
+	 * @return			HTTP 200 OK (본문 없음) — 생성 성공
+	 */
+	@PostMapping("/applications")
 	public ResponseEntity<String> createApplication(
 			@Valid @RequestBody ApplicationVO app,
 			HttpServletRequest request){
