@@ -6,7 +6,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 import org.springframework.stereotype.Component;
@@ -14,6 +13,7 @@ import org.springframework.stereotype.Component;
 import com.jam.client.member.service.MemberService;
 import com.jam.global.jwt.JwtTokenProvider;
 import com.jam.global.jwt.TokenInfo.TokenStatus;
+import com.jam.global.util.AuthClearUtil;
 
 import lombok.extern.log4j.Log4j;
 
@@ -69,30 +69,8 @@ public class CustomLogoutHandler implements LogoutHandler  {
     	}catch(Exception e) {
     		log.error(e.getMessage());
     	} finally {
-    		// JWT 토큰 쿠키 삭제
-            deleteCookies(response);
-            
-            // 세션 무효화
-            SecurityContextHolder.clearContext();
-            request.getSession().invalidate();
+    		// 세션, JWT 토큰 쿠키 삭제
+    		AuthClearUtil.clearAuth(request, response);
         }
     }
-    
-	private void deleteCookies(HttpServletResponse response) {
-	    // Authorization 쿠키 삭제
-	    Cookie cookie = new Cookie("Authorization", null);
-	    cookie.setHttpOnly(true);
-	    cookie.setPath("/");
-	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
-	    
-	    response.addCookie(cookie);
-	    
-	    // refreshToken 쿠키 삭제
-	    Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
-	    refreshTokenCookie.setHttpOnly(true); 
-	    refreshTokenCookie.setMaxAge(0);
-	    refreshTokenCookie.setPath("/");
-	    
-	    response.addCookie(refreshTokenCookie);
-	}
 }

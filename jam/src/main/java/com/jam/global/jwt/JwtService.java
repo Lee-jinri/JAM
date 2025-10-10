@@ -14,6 +14,7 @@ import org.springframework.stereotype.Component;
 import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.TokenInfo.TokenStatus;
+import com.jam.global.util.AuthClearUtil;
 
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -45,7 +46,10 @@ public class JwtService {
 		
 		try {
 			String accessToken = extractToken(cookies, "Authorization");
-			if(accessToken == null) return null;
+			if(accessToken == null) {
+				AuthClearUtil.clearAuth(request, response);
+				return null;
+			}
 			
 			TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
 			
@@ -71,7 +75,7 @@ public class JwtService {
 						
 						log.warn("[JWT] 자동로그인 실패: refreshToken 없음.");
 						
-						clearAuth(request);
+						AuthClearUtil.clearAuth(request, response);
 						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 						return null;
 					}
@@ -85,13 +89,13 @@ public class JwtService {
 					
 					log.warn("[JWT] 자동로그인 실패: 자동로그인 설정되지 않음.");
 					
-					clearAuth(request);
+					AuthClearUtil.clearAuth(request, response);
 					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 					return null;
 				case INVALID:
 					log.warn("[JWT] 유효하지 않은 토큰");
 					
-					clearAuth(request);
+					AuthClearUtil.clearAuth(request, response);
 					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 	                return new MemberVO();
 			}
@@ -187,11 +191,11 @@ public class JwtService {
 	 * @param request HttpServletRequest (쿠키에서 AccessToken을 추출)
 	 * @return 로그인 타입 문자열 또는 유효하지 않을 경우 null
 	 */
-	public String extractUserId(HttpServletRequest request, Cookie[] cookies) {
+	public String extractUserId(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
 		String token = extractToken(cookies, "Authorization");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-			clearAuth(request);
+			AuthClearUtil.clearAuth(request, response);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -210,12 +214,12 @@ public class JwtService {
 	 * @param request HttpServletRequest (쿠키에서 AccessToken을 추출)
 	 * @return 로그인 타입 문자열 또는 유효하지 않을 경우 null
 	 */
-    public String extractLoginType(HttpServletRequest request, Cookie[] cookies) {
+    public String extractLoginType(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
         
     	String token = extractToken(cookies, "Authorization");
     	
     	if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-    		clearAuth(request);
+    		AuthClearUtil.clearAuth(request, response);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -246,12 +250,12 @@ public class JwtService {
 	 * @param token JWT 문자열
 	 * @return 사용자의 역할 (예: "ROLE_USER", "ROLE_ADMIN")
 	 */
-	public List<String> extractUserRole(HttpServletRequest request, Cookie[] cookies) {
+	public List<String> extractUserRole(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
 		
 		String token = extractToken(cookies, "Authorization");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-			clearAuth(request);
+			AuthClearUtil.clearAuth(request, response);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -267,11 +271,11 @@ public class JwtService {
 	 * @param token JWT 문자열
 	 * @return 사용자의 자동 로그인 여부 (true, false)
 	 * */
-	public Boolean extractAutoLogin(HttpServletRequest request, Cookie[] cookies) {
+	public Boolean extractAutoLogin(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
 		String token = extractToken(cookies, "RefreshToken");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-			clearAuth(request);
+			AuthClearUtil.clearAuth(request, response);
             log.warn("유효하지 않은 토큰입니다: " + token);
 
             return null;
@@ -279,11 +283,4 @@ public class JwtService {
 		
 		return jwtTokenProvider.extractAutoLogin(token); 
 	}
-	
-	private void clearAuth(HttpServletRequest request) {
-	    SecurityContextHolder.clearContext();
-	    request.getSession().invalidate();
-	}
-
-	
 }

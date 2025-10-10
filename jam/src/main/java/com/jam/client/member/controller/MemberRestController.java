@@ -13,7 +13,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -31,6 +30,7 @@ import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
+import com.jam.global.util.AuthClearUtil;
 
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -96,9 +96,9 @@ public class MemberRestController {
 	
 	
 	@GetMapping(value="/loginType")
-	public ResponseEntity<String> getLoginType(HttpServletRequest request) {
+	public ResponseEntity<String> getLoginType(HttpServletRequest request, HttpServletResponse response) {
 		Cookie[] cookies = request.getCookies();
-    	String loginType = jwtService.extractLoginType(request, cookies);
+    	String loginType = jwtService.extractLoginType(request, response, cookies);
     	
     	return ResponseEntity.ok(loginType);
 	}
@@ -479,17 +479,8 @@ public class MemberRestController {
 		String user_id = (String)request.getAttribute("userId");
 		
 		if(user_id == null || user_id.equals("")) {
-			// 세션, 쿠키 만료
-			Cookie[] cookies = request.getCookies();
+			AuthClearUtil.clearAuth(request, response);
 			
-			if (cookies != null) {
-			    deleteJwtCookies(cookies, response);
-			}
-			
-			SecurityContextHolder.clearContext();
-			HttpSession session = request.getSession(false);
-			if (session != null) session.invalidate();
-        	
 			log.error("VerifyPassword: userId is null.");
 			return ResponseEntity.status(440).body("Login required or token expired.");
 		}
@@ -668,7 +659,7 @@ public class MemberRestController {
         	// 2. loginType 확인 (local, kakao, naver)
         	Cookie[] cookies = request.getCookies();
         	
-        	String loginType = jwtService.extractLoginType(request, cookies);
+        	String loginType = jwtService.extractLoginType(request, response, cookies);
         	
         	if (loginType == null) log.error("loginType 확인 실패 : (무시하고 회원 탈퇴 진행):");
         	
@@ -699,15 +690,11 @@ public class MemberRestController {
             }
             
             // 4. 로컬 회원 탈퇴 
-        	String userId = jwtService.extractUserId(request, cookies);
+        	String userId = jwtService.extractUserId(request, response, cookies);
         	
         	if(userId == null) userId = (String) request.getSession().getAttribute("userId");
             
-            // 세션, 쿠키 삭제
-        	SecurityContextHolder.clearContext();
-        	HttpSession session = request.getSession(false);
-        	if (session != null) session.invalidate();
-        	deleteJwtCookies(cookies, response);
+        	AuthClearUtil.clearAuth(request, response);
         	
             if (userId == null) {
             	log.error("회원 탈퇴 오류: 사용자 아이디 없음.");
@@ -721,8 +708,6 @@ public class MemberRestController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
         }
     }
-	
-	
 	
 	private String getCookieValue(Cookie[] cookies, String name) {
 	    if (cookies == null) return null;
@@ -798,8 +783,8 @@ public class MemberRestController {
     		return null;
     	}
     	
-    	String loginType = jwtService.extractLoginType(request, cookies);
-    	boolean autoLogin = jwtService.extractAutoLogin(request, cookies);
+    	String loginType = jwtService.extractLoginType(request, response, cookies);
+    	boolean autoLogin = jwtService.extractAutoLogin(request, response, cookies);
 
 		data.put("loginType", loginType);
 		data.put("autoLogin", autoLogin);
@@ -813,12 +798,8 @@ public class MemberRestController {
     	MemberVO user = jwtService.extractUserInfoFromToken(accessToken);
     	
     	if (user == null) {
-			SecurityContextHolder.clearContext();
-			HttpSession session = request.getSession(false);
-			if (session != null) session.invalidate();
-			
-        	if(cookies != null) deleteJwtCookies(cookies, response);
-        	
+    		AuthClearUtil.clearAuth(request, response);
+    		
 			log.error("유효하지 않은 사용자입니다.");
 			return null;
 		}

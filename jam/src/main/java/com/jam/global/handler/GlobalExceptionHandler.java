@@ -4,17 +4,14 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Map;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -23,6 +20,7 @@ import com.jam.global.exception.ConflictException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
+import com.jam.global.util.AuthClearUtil;
 
 import lombok.extern.log4j.Log4j;
 
@@ -106,26 +104,8 @@ public class GlobalExceptionHandler {
     private void clearAuthAndRedirect(HttpServletRequest request,
                                       HttpServletResponse response,
                                       String redirectPath) throws IOException {
-        SecurityContextHolder.clearContext();
-
-        HttpSession session = request.getSession(false);
-        if (session != null) session.invalidate();
-
-        // access 토큰 쿠키 삭제
-        Cookie auth = new Cookie("Authorization", null);
-        auth.setHttpOnly(true);
-        auth.setPath("/");
-        auth.setMaxAge(0);
-        response.addCookie(auth);
-
-        // refresh 토큰 쿠키 삭제
-        Cookie refresh = new Cookie("RefreshToken", null);
-        refresh.setHttpOnly(true);
-        refresh.setPath("/");
-        refresh.setMaxAge(0);
-        response.addCookie(refresh);
+    	AuthClearUtil.clearAuth(request, response);
 
         response.sendRedirect(redirectPath);
     }
-
 }

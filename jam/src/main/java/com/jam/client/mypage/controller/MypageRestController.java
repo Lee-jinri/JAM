@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.http.HttpStatus;
@@ -219,9 +220,9 @@ public class MypageRestController {
 	 * @return 사용자 정보(MemberVO) 또는 HTTP 상태 코드
 	 */
 	@GetMapping(value = "/account", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<MemberVO> getAccount(HttpServletRequest request){
+	public ResponseEntity<MemberVO> getAccount(HttpServletRequest request, HttpServletResponse response){
 		try {
-			boolean verifyStatus = isVerified(request);
+			boolean verifyStatus = isVerified(request, response);
 			
 			if(verifyStatus) {
 				String userId = (String) request.getAttribute("userId");
@@ -249,7 +250,7 @@ public class MypageRestController {
 	 * @return 인증 상태(boolean) 또는 HTTP 상태 코드
 	 */
 	@GetMapping(value = "/account/verify-status")
-	public ResponseEntity<Boolean> getVerifyStatus(HttpServletRequest request) {
+	public ResponseEntity<Boolean> getVerifyStatus(HttpServletRequest request, HttpServletResponse response) {
 		
 		HttpSession session = request.getSession(false);;
 		
@@ -258,7 +259,7 @@ public class MypageRestController {
 	    }
 		
 		try {
-			boolean verifyStatus = isVerified(request);
+			boolean verifyStatus = isVerified(request, response);
 			
 			Long verifiedTime = (Long) session.getAttribute("verifyStatusTime");
 	
@@ -304,7 +305,7 @@ public class MypageRestController {
 	 * @param request 클라이언트 요청 객체
 	 * @return 인증 여부 (true: 인증됨, false: 인증되지 않음)
 	 */
-	private boolean isVerified(HttpServletRequest request) {
+	private boolean isVerified(HttpServletRequest request, HttpServletResponse response) {
 		
 		HttpSession session = request.getSession(false);
 		if (session == null) return false;
@@ -313,7 +314,7 @@ public class MypageRestController {
 
 		if (Boolean.TRUE.equals(verifyStatus)) return true;
 
-		String loginType = jwtService.extractLoginType(request, request.getCookies());
+		String loginType = jwtService.extractLoginType(request, response, request.getCookies());
 		
 		if ("naver".equals(loginType) || "kakao".equals(loginType)) {
 			session.setAttribute("verifyStatus", true);
