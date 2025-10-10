@@ -370,7 +370,14 @@ $(function() {
 			const contentType = getMime(file) || 'application/octet-stream';
 		
 			// presigned url 발급
-			return fetch('/api/files/s3/presign/upload?' + qs.toString(), { method: 'GET' })
+			return fetch('/api/files/upload-url', { 
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					file_name: file.name,
+					file_type: contentType
+				})
+			})
 			.then(res => res.json())
 			.then(json => {
 				if (json.error){
