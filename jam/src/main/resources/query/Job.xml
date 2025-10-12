@@ -112,6 +112,58 @@
 		</where>
 	</select>
 	
+	<select id="getMyJobPosts" resultType="job" parameterType="job">
+		SELECT 
+			j.post_id, j.title, 
+			TO_CHAR(j.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS created_at,
+			j.pay_category, j.pay, j.status,
+			j.city, j.gu, j.dong, j.position, count(a.application_id) AS applyCount
+		FROM job j
+		LEFT JOIN application a
+			ON j.post_id = a.post_id
+		WHERE 
+			j.user_id = #{user_id} AND j.category = 0 
+			<include refid="jobLocalSearch"/>
+		    <include refid="jobPositionSearch"/>
+		GROUP BY
+			j.post_id, j.title, j.created_at,
+			j.pay_category, j.pay, j.status,
+			j.city, j.gu, j.dong, j.position
+		ORDER BY j.post_id DESC
+		OFFSET (#{pageNum} - 1) * #{amount} ROWS
+		FETCH NEXT #{amount} ROWS ONLY
+	</select>
+	
+	<select id="getMyRecruitPosts" resultType="job" parameterType="job">
+		SELECT 
+			j.post_id, j.title, 
+			TO_CHAR(j.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') AS created_at,
+			j.status, j.city, j.gu, j.dong, j.position, count(a.application_id) AS applyCount
+		FROM job j
+		LEFT JOIN application a
+			ON j.post_id = a.post_id
+		WHERE 
+			j.user_id = #{user_id} AND j.category = 1 
+			<include refid="jobLocalSearch"/>
+		    <include refid="jobPositionSearch"/>
+		GROUP BY
+			j.post_id, j.title, j.created_at, 
+			j.status, j.city, j.gu, j.dong, j.position
+		ORDER BY j.post_id DESC
+		OFFSET (#{pageNum} - 1) * #{amount} ROWS
+		FETCH NEXT #{amount} ROWS ONLY
+	</select>
+	
+	<!-- 특정 회원의 레코드 수 조회 -->
+	<select id="getMyPostCnt" parameterType="job" resultType="int">
+	    SELECT count(*)
+	    FROM job j
+	    WHERE user_id = #{user_id} AND j.category = #{category}
+        <include refid="jobLocalSearch"/>
+	    <include refid="jobPositionSearch"/>
+	</select>
+
+	
 	<!-- 조회수 -->
 	<update id="incrementReadCnt" parameterType="job">
 		UPDATE job SET hits = hits + 1 where post_id = #{post_id}

@@ -1,6 +1,7 @@
 package com.jam.client.job.dao;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class JobMapperTest {
 	@Setter(onMethod_=@Autowired)
 	private JobDAO jobDao;
 	
-	/* 전체 글 조회*/
+	/* 전체 글 조회
 	@Test
 	public void testJobList() {
 		JobVO vo = new JobVO();
@@ -55,7 +56,7 @@ public class JobMapperTest {
 		result.put("pageMaker", pageMaker);
 		
 		log.info("result :" +result);
-	}
+	}*/
 	 
 	
 	/* 상세 페이지 조회
@@ -115,12 +116,46 @@ public class JobMapperTest {
 		vo.setDong("전체");
 		vo.setPosition("piano");
 		log.info(jobDao.editBoard(vo));
-	}
-	*/
+	}*/
 	
-	/* 삭제
+	
+	/*삭제
 	@Test
 	public void testJobDelete() {
-		log.info("글 삭제 " + jobDao.boardDelete(36L));
+		
+		Long post_id = 70L;
+		String user_id = "abcd1234";
+		int applicants = jobDao.appCountByPostId(post_id);
+		//log.info(applicants);
+		log.info("글 삭제 " + jobDao.deletePost(post_id, user_id));
 	} */
+	
+	@Test
+	public void testGetMyJobPosts() {
+		JobVO jobs = new JobVO();
+		jobs.setUser_id("abcd1234");
+		jobs.setPositions(Collections.emptyList());
+		jobs.setCity("서울");
+		log.info(jobDao.getMyJobPosts(jobs));
+	}
+	
+	@Test
+	public void testGetMyRecruitPosts() {
+		JobVO jobs = new JobVO();
+		jobs.setUser_id("abcd1234");
+		jobs.setPositions(Collections.emptyList());
+		jobs.setCity("서울");
+		log.info(jobDao.getMyRecruitPosts(jobs));
+	}
+	
+	@Test
+	public void testGetMyPostCnt() {
+		JobVO jobs = new JobVO();
+		jobs.setUser_id("abcd1234");
+		jobs.setCategory(0);
+		jobs.setPositions(Collections.emptyList());
+		jobs.setCity("서울");
+		log.info(jobDao.getMyPostCnt(jobs));
+	}
+	
 }

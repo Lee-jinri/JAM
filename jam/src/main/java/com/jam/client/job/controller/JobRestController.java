@@ -288,5 +288,49 @@ public class JobRestController {
 		return ResponseEntity.ok(null);
 	}
 	
+	/**
+	 * 작성한 jobs 글 조회 API
+	 * 요청 파라미터(JobVO)에 따라 내가 작성한 채용공고 목록을 조회하고 페이징 정보를 함께 반환합니다.
+	 * 
+	 * @param jobs	요청 파라미터를 담은 VO 객체
+	 * @param request	HttpServletRequest, userId 추출용
+	 * @return jobList(채용공고 목록), pageMaker(페이징 정보)
+	 */
+	@GetMapping("/my/posts")
+	public ResponseEntity<Map<String, Object>> getPostings(JobVO jobs, HttpServletRequest request){		
+		try {
+			String userId = (String)request.getAttribute("userId");
+			if(userId == null ||userId.isEmpty()) throw new UnauthorizedException("인증되지 않은 사용자 입니다.");
+			jobs.setUser_id(userId); 
+			
+			if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
+
+			Map<String, Object> result = new HashMap<>();
+			List<JobVO> postings = new ArrayList<>();
+			
+			@SuppressWarnings("unchecked")
+			List<String> roles = (List<String>) request.getAttribute("roles");
+			
+			if (roles.contains("ROLE_USER")) {
+				postings = jobService.getMyRecruitPosts(jobs);
+			}else if (roles.contains("ROLE_COMPANY")) {
+				postings = jobService.getMyJobPosts(jobs);
+			}
+			
+			result.put("postings", postings);
+			
+			int total = jobService.getMyPostCnt(jobs);
+			PageDTO pageMaker = new PageDTO(jobs, total);
+	        result.put("pageMaker", pageMaker);
+
+	        return ResponseEntity.ok(result);
+		}catch(UnauthorizedException e) {
+			throw e;
+		}catch(Exception e) {
+			log.error(e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
+		}
+	}
 	
 }

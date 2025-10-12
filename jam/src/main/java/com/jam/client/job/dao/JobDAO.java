@@ -39,8 +39,9 @@ public interface JobDAO {
 
 	public List<JobVO> getPosts(JobVO job_vo);
 
-	public int getUserPostCnt(JobVO job_vo);
-	
+	public List<JobVO> getMyJobPosts(JobVO jobs);
+	public List<JobVO> getMyRecruitPosts(JobVO jobs);
+	public int getMyPostCnt(JobVO job_vo);
 	
 	public String findCompanyIdByPostId(@Param("post_id") Long post_id);
 	

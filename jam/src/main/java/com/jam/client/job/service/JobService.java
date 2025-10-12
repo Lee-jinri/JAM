@@ -1,11 +1,12 @@
 package com.jam.client.job.service;
 
 import java.util.List;
+import java.util.Map;
+
+import javax.validation.Valid;
 
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
-
-import jakarta.validation.Valid;
 
 public interface JobService {
 
@@ -35,15 +36,14 @@ public interface JobService {
 
 	List<JobVO> getPosts(JobVO job_vo);
 
-	int getUserPostCnt(JobVO job_vo);
-
 	boolean isValidUserName(String user_name) throws Exception;
 	
 	String getUserId(String user_name);
 
-
-	String findCompanyIdByPostId(Long post_id);
-
+	List<JobVO> getMyRecruitPosts(JobVO jobs);
+	List<JobVO> getMyJobPosts(JobVO jobs);
+	int getMyPostCnt(JobVO job_vo);
+	
 	void createApplication(@Valid ApplicationVO app);
 
 }

@@ -95,8 +95,8 @@ public class JobServiceImpl implements JobService {
 	}
 
 	@Override
-	public int getUserPostCnt(JobVO job_vo) {
-		return jobDao.getUserPostCnt(job_vo);
+	public List<JobVO> getPosts(JobVO job_vo){
+		return jobDao.getPosts(job_vo);
 	}
 
 	@Override
@@ -110,6 +110,21 @@ public class JobServiceImpl implements JobService {
 		return memberService.getUserId(user_name);
 	}
 
+	@Override
+	public List<JobVO> getMyJobPosts(JobVO jobs) {
+		return jobDao.getMyJobPosts(jobs);
+	}
+	
+	@Override
+	public List<JobVO> getMyRecruitPosts(JobVO jobs) {
+		return jobDao.getMyRecruitPosts(jobs);
+	}
+
+	@Override
+	public int getMyPostCnt(JobVO job_vo) {
+		return jobDao.getMyPostCnt(job_vo);
+	}
+	
 	@Override
 	public String findCompanyIdByPostId(Long post_id) {
 		return jobDao.findCompanyIdByPostId(post_id);
