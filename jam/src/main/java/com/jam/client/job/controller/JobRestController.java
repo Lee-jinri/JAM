@@ -86,7 +86,7 @@ public class JobRestController {
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 ************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<JobVO> getPost(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
+	public ResponseEntity<Map<String, Object>> getPost(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		if (post_id == null) { 
 			log.error("post_id is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
@@ -96,19 +96,21 @@ public class JobRestController {
 		jobService.incrementReadCnt(post_id);
 					
 		try {
-			JobVO detail = jobService.getPost(post_id);
+			Map<String, Object> result = new HashMap<>();
 			
-			detail.setPosition(getTranslatedPosition(detail.getPosition()));
-			detail.setAuthor(false);
+			JobVO post = jobService.getPost(post_id);
+			post.setPosition(getTranslatedPosition(post.getPosition()));
+			result.put("post", post);
 			
-			String userId = (String) request.getAttribute("userId");
-			if (userId != null && userId.equals(detail.getUser_id())) {
-			   detail.setAuthor(true);
-			}
+			String userId = (String)request.getAttribute("userId");
+			Boolean isAuthor = false;
 			
-			return ResponseEntity.ok(detail);
+			if(userId != null && userId.equals(post.getUser_id())) isAuthor = true;
+			result.put("isAuthor", isAuthor);
+			
+			return ResponseEntity.ok(result);
 	    } catch (Exception e) {
-	    	log.error("Error fetching job detail for post_id: {}"+ post_id + e);
+	    	log.error("Error fetching job detail for post_id: "+ post_id + e);
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 	    }
 	}
