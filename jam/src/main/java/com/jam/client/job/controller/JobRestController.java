@@ -251,13 +251,21 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@RequestMapping(value="/post", method=RequestMethod.DELETE)
-	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id, HttpServletRequest request) throws Exception{
-		
-		if (post_id == null) { 
-			log.error("post_id is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("post_id is required");
+	@DeleteMapping("/post/{postId}")
+	public ResponseEntity<Void> deletePost(@PathVariable Long postId, HttpServletRequest request) {
+
+		String user_id = (String)request.getAttribute("userId");
+		if(user_id == null) {
+			log.error("Unauthorized request: 사용자 아이디가 없습니다.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
+		
+		if (postId == null) { 
+			log.error("Missing required parameter: postId in deletePost()");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+	
+		jobService.deletePost(postId, user_id);
 		
 		// 오류 메시지 수정
 		String user_id = (String)request.getAttribute("userId");
