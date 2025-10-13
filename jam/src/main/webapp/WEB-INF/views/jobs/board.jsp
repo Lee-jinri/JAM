@@ -502,6 +502,7 @@ background-color: #fff;
 	transform: translateY(0);
 }
 </style>
+<link rel="stylesheet" href="/resources/include/dist/css/job-common.css">
 <script type="text/javascript">
 let memberListCache = null;
 let companyListCache = null;
@@ -629,15 +630,15 @@ function getBoard() {
 	let url = "/api/jobs/board?" + queryString;
 
 	fetch(url)
-		.then(res => res.json())
-		.then(data => {
-			if (boardState.category === "0") {
-				companyRecruit(data);
-				setCompanyStyle();
-			} else {
-				memberRecruit(data);
-				setMemberStyle();
-			}
+	.then(res => res.json())
+	.then(data => {
+		if (boardState.category === "0") {
+			companyRecruit(data);
+			setCompanyStyle();
+		} else {
+			memberRecruit(data);
+			setMemberStyle();
+		}
 		loadPagination(data.pageMaker);
 	});
 }
@@ -911,25 +912,7 @@ function setCompanyStyle() {
 	$(".write_btn").css("display", canWrite ? "flex" : "none");
 }
 
-function timeAgo(dateString) {
-	let now = new Date();
-	let past = new Date(dateString);
-	let diff = Math.floor((now - past) / 1000); 
 
-	if (diff < 10) return '방금 전';
-	if (diff < 60) return diff + '초 전';
-	if (diff < 3600) return Math.floor(diff / 60) + '분 전';
-	if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
-	if (diff < 172800) return '어제';
-	if (diff < 2592000) return Math.floor(diff / 86400) + '일 전';
-	
-	// 개월 계산 (30일 단위)
-    let months = Math.floor(diff / 2592000); 
-    if (months < 12) return months + '개월 전';
-    
-	let dateStr = past.toLocaleDateString();
-	return dateStr.replace(/\.$/, '');
-}
 
 function formatNumberKo(pay) {
 	const num = Number(String(pay).replace(/[^\d]/g, ''));

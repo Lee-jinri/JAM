@@ -55,3 +55,23 @@ function chkFile(item){
 	}
 }
 
+function timeAgo(dateString) {
+	let now = new Date();
+	let past = new Date(dateString);
+	let diff = Math.floor((now - past) / 1000); 
+
+	if (diff < 10) return '방금 전';
+	if (diff < 60) return diff + '초 전';
+	if (diff < 3600) return Math.floor(diff / 60) + '분 전';
+	if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
+	if (diff < 172800) return '어제';
+	if (diff < 2592000) return Math.floor(diff / 86400) + '일 전';
+	
+	// 개월 계산 (30일 단위)
+    let months = Math.floor(diff / 2592000); 
+    if (months < 12) return months + '개월 전';
+    
+	let dateStr = past.toLocaleDateString();
+	return dateStr.replace(/\.$/, '');
+}
+
