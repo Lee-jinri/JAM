@@ -58,8 +58,7 @@ public class JobRestController {
 			jobs.setUser_id(user_id); 
 			
 			String kw = jobs.getKeyword();
-			if (kw != null) kw = kw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-			jobs.setKeyword(kw);
+			jobs.setKeyword(ValueUtils.sanitizeForLike(kw));
 			
 			Map<String, Object> result = new HashMap<>();
 
