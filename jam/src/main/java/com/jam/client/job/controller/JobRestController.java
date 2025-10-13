@@ -267,24 +267,27 @@ public class JobRestController {
 	
 		jobService.deletePost(postId, user_id);
 		
-		// 오류 메시지 수정
-		String user_id = (String)request.getAttribute("userId");
-		if(user_id == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 안됨.");
-		
-		// 이거 추가해야됨
-		try {
-			jobService.deletePost(post_id, user_id);
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("구인 delete 데이터 삭제 중 오류 : " + e.getMessage());
-			
-			String resopnseBody = "구인 delete 데이터 삭제 중 오류 : " + e.getMessage();
-			
-			return new ResponseEntity<>(resopnseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
+	@PatchMapping("/post/{postId}")
+	public ResponseEntity<Void> closeJob(@PathVariable Long postId, HttpServletRequest request) {
+		String user_id = (String)request.getAttribute("userId");
+		if(user_id == null) {
+			log.error("Unauthorized request: 사용자 아이디가 없습니다.");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+		
+		if (postId == null) { 
+			log.error("Missing required parameter: postId in closeJob()");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		}
+	
+		jobService.closePost(postId, user_id);
+		
+		return ResponseEntity.noContent().build();
+	}
+
 	/**
 	 * 지원서 생성 API
 	 * 요청 본문(ApplicationVO)에 담긴 정보로 지원서를 생성합니다.

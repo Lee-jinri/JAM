@@ -215,6 +215,13 @@
 	<delete id="deletePost" parameterType="job">
 		DELETE FROM job WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</delete>
+	
+	<!-- 공고 마감  -->
+	<update id="closePost" parameterType="job">
+		UPDATE job 
+		SET status = 1
+		WHERE post_id = #{post_id} AND user_id = #{user_id}
+	</update>
 
 	<!-- 특정 회원의  글 조회 --> 
 	<select id="getPosts" resultType="job" parameterType="job">

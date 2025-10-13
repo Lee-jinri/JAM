@@ -46,6 +46,9 @@ public interface JobDAO {
 	public String findCompanyIdByPostId(@Param("post_id") Long post_id);
 	
 	public void createApplication(@Valid ApplicationVO app);
-
+	
 	public int existsJobPost(@Param("post_id") Long postId);
+
+	public int closePost(@Param("post_id") Long post_id, @Param("user_id") String user_id);
+	
 }

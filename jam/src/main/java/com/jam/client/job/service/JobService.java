@@ -43,6 +43,8 @@ public interface JobService {
 	List<JobVO> getMyRecruitPosts(JobVO jobs);
 	List<JobVO> getMyJobPosts(JobVO jobs);
 	int getMyPostCnt(JobVO job_vo);
+
+	int closePost(Long post_id, String user_id);
 	
 	void createApplication(@Valid ApplicationVO app);
 

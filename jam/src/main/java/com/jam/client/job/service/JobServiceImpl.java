@@ -90,8 +90,9 @@ public class JobServiceImpl implements JobService {
 	}
 	
 	@Override
-	public List<JobVO> getPosts(JobVO job_vo){
-		return jobDao.getPosts(job_vo);
+	public int closePost(Long post_id, String user_id) {
+		
+		return jobDao.closePost(post_id, user_id);
 	}
 
 	@Override
