@@ -1,6 +1,7 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib uri="http://www.springframework.org/security/tags" prefix="sec"%>
 <!DOCTYPE html>
 <html>
 <head>
@@ -12,6 +13,33 @@
 <script src="/resources/include/dist/js/area.js"></script>	
 <script>
 	$(function(){
+		if(!window.MY_ID){
+			if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+				location.href = "/member/login";
+			} else {
+				location.href = "/jobs/boards";
+			}
+			return;
+		}
+		
+		window.ROLE_COMPANY = !!window.ROLE_COMPANY;
+
+		if (window.ROLE_COMPANY) {
+			// 기업회원
+			$('#jobCategoryText').text("기업 구인");
+			$("#jobCategoryText").addClass("jam-type-company");
+			$('.jam-pay-section').stop(true, true).slideDown(300);
+		} else {
+			// 개인회원
+			$('#jobCategoryText').text("멤버 모집");
+			$("#jobCategoryText").addClass("jam-type-member");
+			$('.jam-pay-section').stop(true, true).hide();
+		}
+		
+		$('input[name="position"]').on('change', function() {
+			$('.position-wrapper').removeClass('focused'); 
+	    });
+		
 		setInitialSelections();
 		
 		$('input[name="job_category"]').on('change', function() {
@@ -57,23 +85,20 @@
 		});
 		
 		$("#update").click(function(){
-			let job_no = ${board.job_no};
-			let job_title = $("#job_title").val();
-			let job_content = $("#job_content").val();
-			let pay = ${board.pay} ? ${board.pay} : null;
-			let job_category = $('input[name="job_category"]:checked').val() || null;
-			let job_status = $("#job_status").is(":checked") ? 1 : 0;
+			
+			let post_id = ${post.post_id};
+			let title = $("#job_title").val();
+			let content = $("#job_content").val();
+			let pay = $("#pay").val() || null;
+			let category = window.ROLE_COMPANY ? '0' : '1';
 			let pay_category = $("#payNegotiable").is(":checked") ? '3' : $("#pay_category").val();
 			let city = $("#city").val() || null;
 			let gu = $("#gu").val() || null;
 			let dong = $("#dong").val() || null;
 			let position = $('input[name="position"]:checked').val() || null;
 			
-			if(job_category == null){
-				alert("구인 종류를 선택하세요.");
-				$('.jam-type-select-wrapper').addClass('focused');
-
-				return false;
+			if(post_id == null) {
+				alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
 			}
 			
 			if(city == null){
@@ -82,13 +107,14 @@
 				return false;
 			}
 			
-			if(job_category == '0' && job_status == 0){
-				if(pay_category != '3' && pay == null){
+			if(category == '0'){
+				if(pay_category === '3'){
+					pay = 0;
+				}else if(pay_category !== '3' && pay == null){
 					alert("급여를 입력하세요.");
 					$("#pay").focus();
-					
 					return false;
-				}else pay = 0;
+				}
 			}
 			
 			if(position == null){
@@ -98,24 +124,22 @@
 				return false;
 			}
 			
-			if(job_title.replace(/\s/g,"") == ""){
+			if(title.replace(/\s/g,"") == ""){
 				alert("제목을 입력하세요.");
 				$("#job_title").focus();
 				return false;
 			}
 			
-			if(job_content.replace(/\s/g,"") == ""){
+			if(content.replace(/\s/g,"") == ""){
 				alert("본문을 입력하세요.");
-				$("#job_content").focus();
+				$("#job_content").focus(); 
 				return false;
 			}
 			
 			var data = {
-					'job_no': job_no,
-					'job_title': job_title.trim(),
-				    'job_content': job_content.trim(),
-					'job_category':job_category,
-					'job_status':job_status,
+					'title':title,
+					'content':content,
+					'category':category,
 					'pay':pay,
 					'pay_category':pay_category,
 					'position':position,
@@ -124,7 +148,7 @@
 					'dong':dong
 			};
 			
-			fetch('/api/jobs/board', {
+			fetch('/api/jobs/post/' + post_id, {
 			    method: 'PUT',
 			    headers: {
 			        'Content-Type': 'application/json'
@@ -143,16 +167,13 @@
 			    alert("수정이 완료되었습니다.");
 
 			    if (body) {
-			        $(location).attr('href', '/jobs/board/' + body);
+			        $(location).attr('href', '/jobs/post/' + body);
 			    }
 			})
 			.catch(error => {
 			    alert(error.message);
 			});
 		})
-		
-		
-		
 	})
 	
 	function setInitialSelections(){
@@ -162,13 +183,13 @@
 	}
 	
 	function updateJobCategory(){
-		let job_category = ${board.job_category};	
-		$("input[name='job_category'][value='" + job_category + "']").prop("checked", true);
+		let category = ${post.category};	
+		$("input[name='job_category'][value='" + category + "']").prop("checked", true);
 		
-		if(job_category == 0){ 
+		if(category == 0){ 
 			$(".jam-pay-section").css("display", "flex");
 			
-			let pay_category = ${board.pay_category};
+			let pay_category = ${post.pay_category};
 			
 			if (pay_category == 3) {
 		        // "협의 후 결정" 체크박스 선택 & 급여 입력창 비활성화
@@ -179,12 +200,12 @@
 		        $("#pay_category").val(pay_category);
 		    }
 			
-			$("#pay").val(${board.pay});
+			$("#pay").val(${post.pay});
 		}
 	}
 	
 	function updateSelectedPosition(){
-		let position = "${board.position}";
+		let position = "${post.position}";
 		
 		let $selectedPosition = $("input[name='position'][value='" + position + "']");
 		$selectedPosition.prop("checked", true);
@@ -194,14 +215,12 @@
 		    color: "#fff",
 		    borderColor: "#003366"
 		});
-		    
-		
 	}
 	
 	function initSelectedArea(){
-		let city = "${board.city}";
-		let gu = ("${board.gu}" !== "null" && "${board.gu}" !== "") ? "${board.gu}" : "";
-		let dong = ("${board.dong}" !== "null" && "${board.dong}" !== "") ? "${board.dong}" : "";
+		let city = "${post.city}";
+		let gu = ("${post.gu}" !== "null" && "${post.gu}" !== "") ? "${post.gu}" : "";
+		let dong = ("${post.dong}" !== "null" && "${post.dong}" !== "") ? "${post.dong}" : "";
 
 		$("#city").val(city);
 	    $("#gu").val(gu);
@@ -211,7 +230,6 @@
 	    if (gu) selectedAreaText += ' > ' + (gu === 'all' ? '전체' : gu);
 	    if (dong) selectedAreaText += ' > ' + (dong === 'all' ? '전체' : dong);
 
-	    console.log(selectedAreaText);
 	    // 선택 지역 표시 업데이트
 	    $("#selectedArea").html(selectedAreaText);
 
@@ -229,21 +247,14 @@
 </script>
 </head>
 <body class="wrap">
-	<div class="rem-30 my-top-15 my-bottom-15">
+	<div class="my-top-15 my-bottom-15">
 		<div class="jam-type-select-wrapper">
+			<sec:authorize access="hasRole('COMPANY')">
+				<script>window.ROLE_COMPANY = true;</script>
+			</sec:authorize>
 			<div class="jam-type-select">
-			    <label class="jam-radio-label">
-			        <input type="radio" name="job_category" value="0">
-			        <span class="jam-radio-text">기업 구인</span>
-			    </label>
-			    <label class="jam-radio-label">
-			        <input type="radio" name="job_category" value="1">
-			        <span class="jam-radio-text">멤버 모집</span>
-			    </label>
+				<span class="jam-radio-text" id="jobCategoryText"></span>
 			</div>	
-			<div class="">
-				<label><input id="job_status" type="checkbox">구인 완료 시 체크하세요.</label>
-			</div>
 		</div>
 	
 		<!-- 기업 구인일 때만 보여줄 급여 정보 -->
@@ -256,7 +267,7 @@
 		        <option value="1">주급</option>
 		        <option value="2">월급</option>
 		    </select>
-		    <input type="number" id="pay" class="pay_input" placeholder="급여 (원)" style="text-align: right;">
+		    <input type="number" id="pay" class="pay_input" placeholder="급여 (원)" style="text-align: right;"  value="${post.pay }">
 		    <label><input type="checkbox" id="payNegotiable" value="3"> 협의 후 결정</label>
 		</div>
 	
@@ -337,10 +348,10 @@
 				<div class="jam-card-header">
 					<h3 class="jam-card-title">제목</h3>
 				</div>	
-				<input type="text" id="job_title" class="jam-input" style="margin-bottom: 10px;" value="${board.job_title }">
+				<input type="text" id="job_title" class="jam-input" style="margin-bottom: 10px;" value="${post.title }">
 			</div>
 			<div>
-			    <textarea id="job_content" class="summernote" >${board.job_content }</textarea>
+			    <textarea id="job_content" class="summernote" >${post.content }</textarea>
 		    </div>
 		</div>
 		
@@ -366,30 +377,8 @@
 		fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
 		height: 450,
 		lang: "ko-KR",
-		placeholder : "내용을 작성하세요.",
-		callbacks : {
-	    	onImageUpload : function(files, editor, welEditable){
-	    		for(var i = files.length - 1; i >= 0; i--){
-	    			uploadImageFile(files[i],this);
-	    		}
-	    	}
-	    }
+		placeholder : "내용을 작성하세요."
 	});
-	function uploadImageFile(file, el) {
-		data = new FormData();
-		data.append("file", file);
-		$.ajax({                                                              
-			data : data,
-			type : "POST",
-			url : 'uploadImageFile',
-			contentType : false,
-			enctype : 'multipart/form-data',
-			processData : false,
-			success : function(data) {                                         
-				$(el).summernote('editor.insertImage',data.url);
-			}
-		});
-	}
 	</script>
 </body>
 </html>

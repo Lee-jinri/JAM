@@ -210,13 +210,18 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
-	@PutMapping("/post")
-	public ResponseEntity<String> editPost(@RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
+	@PutMapping("/post/{postId}")
+	public ResponseEntity<String> editPost(@PathVariable Long postId, @RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
+		if (postId == null || postId <= 0) {
+			throw new IllegalArgumentException("유효하지 않은 게시글 ID입니다.");
+		}
+
 		if (jobs == null) {
-	        log.error("jobVO is null");
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("jobVO is null.");
+	        log.error("요청 본문이 비어 있습니다. (Jobs 데이터 누락)"); 
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("서버가 요청 데이터를 처리할 수 없습니다. 요청 형식을 확인해주세요.");
 	    }
 
+		jobs.setPost_id(postId);
 	    // 유효성 검사
 	    String validationError = validateJobVO(jobs);
 	    if (validationError != null) {
@@ -233,11 +238,10 @@ public class JobRestController {
 			return new ResponseEntity<>(post_id, HttpStatus.OK);
 		} catch(Exception e) {
 			log.error("Jobs editBoard 데이터 수정 중 오류 : " + e.getMessage());
-			String responseBody = "시스템 오류 입니다. 잠시 후 다시 시도하세요.";
+			String responseBody = "시스템 오류가 발생했습니다. 잠시 후 다시 시도하세요.";
 			
 			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
-		
 	}
 	
 
