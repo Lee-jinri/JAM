@@ -1,31 +1,35 @@
 package com.jam.client.job.controller;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
+import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.util.ValueUtils;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
@@ -36,37 +40,34 @@ import lombok.extern.log4j.Log4j;
 public class JobRestController {
 
 	private final JobService jobService;
-	
+
 	/**
 	 * jobs 게시판 조회 API
 	 * 요청 파라미터(JobVO)에 따라 채용공고 목록을 조회하고 페이징 정보를 함께 반환합니다.
 	 *
-	 * @param job_vo	요청 파라미터를 담은 VO 객체
+	 * @param jobs	요청 파라미터를 담은 VO 객체
 	 * @param request	HttpServletRequest, userId 추출용
 	 * @return			jobList(채용공고 목록), pageMaker(페이징 정보)
 	 */
 	@GetMapping(value = "board")
-	public ResponseEntity<Map<String, Object>> getBoard(JobVO job_vo, HttpServletRequest request){
+	public ResponseEntity<Map<String, Object>> getBoard(JobVO jobs, HttpServletRequest request){
 		try {
-			if (job_vo.getPositions() == null) job_vo.setPositions(Collections.emptyList());
+			if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
 			
 			String user_id = (String)request.getAttribute("userId");
+			jobs.setUser_id(user_id); 
 			
-			job_vo.setUser_id(user_id); 
-			
-			String kw = job_vo.getKeyword();
-			
+			String kw = jobs.getKeyword();
 			if (kw != null) kw = kw.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
-			
-			job_vo.setKeyword(kw);
+			jobs.setKeyword(kw);
 			
 			Map<String, Object> result = new HashMap<>();
 
-			List<JobVO> jobList = jobService.getBoard(job_vo);
+			List<JobVO> jobList = jobService.getBoard(jobs);
 			result.put("jobList", jobList);
 			
-			int total = jobService.listCnt(job_vo);
-			PageDTO pageMaker = new PageDTO(job_vo, total);
+			int total = jobService.listCnt(jobs);
+			PageDTO pageMaker = new PageDTO(jobs, total);
 	        result.put("pageMaker", pageMaker);
 
 	        return ResponseEntity.ok(result);
@@ -132,32 +133,32 @@ public class JobRestController {
 	
 	/******************************
 	 * 구인 글을 작성하는 메서드 입니다.
-	 * @param JobVO job_vo 작성자 id와 닉네임, 제목과 내용, 카테고리, 급여 지불 방법, 급여
+	 * @param JobVO jobs 작성자 id와 닉네임, 제목과 내용, 카테고리, 급여 지불 방법, 급여
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
-	@RequestMapping(value="/post", method=RequestMethod.POST)
-	public ResponseEntity<String> writePost(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
+	@PostMapping("/post")
+	public ResponseEntity<String> writePost(@RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
 		
-		if (jobVO == null) {
+		if (jobs == null) {
 	        log.error("jobVO is null");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("jobVO is null.");
 	    }
 
 	    // 유효성 검사
-	    String validationError = validateJobVO(jobVO);
+	    String validationError = validateJobVO(jobs);
 	    if (validationError != null) {
 	        log.error(validationError);
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
 	    }
 
 	    // 기본값 및 사용자 정보 세팅
-	    preprocessJobVO(jobVO, request);
+	    preprocessJobVO(jobs, request);
 		
 		try {
-			jobService.writePost(jobVO);
+			jobService.writePost(jobs);
 			
-			String post_id = jobVO.getPost_id().toString();
+			String post_id = jobs.getPost_id().toString();
 			
 			return new ResponseEntity<>(post_id,HttpStatus.OK);
 		} catch (Exception e) {
@@ -168,30 +169,38 @@ public class JobRestController {
 		}
 	}
 	
-	private String validateJobVO(JobVO jobVO) {
-	    if (jobVO.getTitle() == null || jobVO.getTitle().isEmpty()) {
+	private String validateJobVO(JobVO jobs) {
+	    if (jobs.getTitle() == null || jobs.getTitle().isEmpty()) {
 	        return "제목은 필수 입력 항목입니다.";
 	    }
-	    if (jobVO.getContent() == null || jobVO.getContent().isEmpty()) {
+	    if (jobs.getContent() == null || jobs.getContent().isEmpty()) {
 	        return "내용은 필수 입력 항목입니다.";
 	    }
 	    
-	    if (jobVO.getPosition() == null || jobVO.getPosition().isEmpty()) {
+	    if (jobs.getPosition() == null || jobs.getPosition().isEmpty()) {
 	        return "포지션을 선택해주세요.";
+	    }
+	    
+	    if(jobs.getCategory() == 0 && jobs.getPay() == null) {
+	    	return "급여를 입력하세요.";
+	    }
+	    
+	    if(jobs.getCity() == null || jobs.getCity().isEmpty()) {
+	    	return "지역을 선택하세요.";
 	    }
 	    
 	    return null;
 	}
 
-	private void preprocessJobVO(JobVO jobVO, HttpServletRequest request) {
-	    jobVO.setUser_id((String) request.getAttribute("userId"));
-	    jobVO.setUser_name((String) request.getAttribute("userName"));
+	private void preprocessJobVO(JobVO jobs, HttpServletRequest request) {
+		jobs.setUser_id((String) request.getAttribute("userId"));
+		jobs.setUser_name((String) request.getAttribute("userName"));
 
 	    // gu, dong 기본값 처리
-	    jobVO.setGu(ValueUtils.guNullToAll(jobVO.getGu()));
-	    jobVO.setDong(ValueUtils.emptyToNull(jobVO.getDong()));
+		jobs.setGu(ValueUtils.guNullToAll(jobs.getGu()));
+		jobs.setDong(ValueUtils.emptyToNull(jobs.getDong()));
 	    
-	   // jobVO.setPay(ValueUtils.)
+		jobs.setPay(jobs.getPay());
 	}
 	
 	/***********************************
@@ -200,30 +209,29 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
-	@RequestMapping(value="/post", method=RequestMethod.PUT)
-	public ResponseEntity<String> editPost(@RequestBody JobVO jobVO, HttpServletRequest request) throws Exception{
-		if (jobVO == null) {
+	@PutMapping("/post")
+	public ResponseEntity<String> editPost(@RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
+		if (jobs == null) {
 	        log.error("jobVO is null");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("jobVO is null.");
 	    }
 
 	    // 유효성 검사
-	    String validationError = validateJobVO(jobVO);
+	    String validationError = validateJobVO(jobs);
 	    if (validationError != null) {
 	        log.error(validationError);
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
 	    }
-
+	    
 	    // 기본값 및 사용자 정보 세팅
-	    preprocessJobVO(jobVO, request);
-		
-		try {
-			jobService.editPost(jobVO);
-			String post_id = jobVO.getPost_id().toString();
+	    preprocessJobVO(jobs, request);
+	    try {
+			jobService.editPost(jobs);
+			String post_id = jobs.getPost_id().toString();
 			
 			return new ResponseEntity<>(post_id, HttpStatus.OK);
 		} catch(Exception e) {
-			log.error("구인 editBoard 데이터 수정 중 오류 : " + e.getMessage());
+			log.error("Jobs editBoard 데이터 수정 중 오류 : " + e.getMessage());
 			String responseBody = "시스템 오류 입니다. 잠시 후 다시 시도하세요.";
 			
 			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
