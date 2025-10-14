@@ -279,7 +279,19 @@
 		WHERE post_id = #{post_id}
 	</select>
 	
-
-
+	<select id="findPostInfoByAppId" parameterType="Long" resultType="app">
+		SELECT j.post_id, j.user_id AS company_id, j.category, a.user_id 
+		FROM job j
+			JOIN application a
+			ON a.post_id = j.post_id
+		WHERE a.application_id = #{application_id}
+	</select>
+	
+	<select id="getApplication" parameterType="Long" resultType="app">
+		SELECT title, content, TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
+		FROM application
+		WHERE application_id = #{application_id}
+	</select>
+	
 	
 </mapper>

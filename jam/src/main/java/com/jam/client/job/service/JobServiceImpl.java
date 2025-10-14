@@ -198,6 +198,66 @@ public class JobServiceImpl implements JobService {
 		return jobDao.findPostInfo(post_id);
 	}
 
-	
+	@Override
+	public Map<String, Object> getApplication(Long applicationId, String userId) {
+		
+		ApplicationVO info = findPostInfoByAppId(applicationId); 
+		
+		if (info == null) {
+			log.error("getApplication 실패: 공고 정보 조회 불가. applicationId="+ applicationId);
+			throw new NotFoundException("공고 정보를 찾을 수 없습니다.");
+		}
+		if (info.getUser_id() == null) {
+			log.error("getApplication 실패: 공고에 user_id 없음. post_id="+ info.getPost_id());
+			throw new IllegalStateException("공고의 작성자 정보가 누락되었습니다.");
+		}
+		
+		if(!info.getUser_id().equals(userId) && !info.getCompany_id().equals(userId)) {
+			log.error("getApplication 실패: 공고 작성자 또는 지원자와 조회하는 사람의 아이디가 다름. post_id="+ info.getPost_id());
+			throw new ForbiddenException("지원서를 볼 권한이 없습니다.");
+		}
+		
+		Map<String, Object> result = new HashMap<>();
+		ApplicationVO app = jobDao.getApplication(applicationId);
+		
+		int category = info.getCategory();
+		
+		switch(category) {
+		case 0: 
+			FileAssetVO param = new FileAssetVO();
+			param.setPost_id(applicationId);
+			param.setPost_type("APPLICATION");
+			
+			List<FileAssetVO> files = fileService.getFileByApplicationId(param);
+			
+			if (app == null || files == null) {
+				log.error("getApplication 실패: 기업공고 지원 데이터 누락. post_id=" + applicationId);
+				throw new NotFoundException("지원서를 찾을 수 없습니다.");
+			}
+			
+			result.put("category", "COMPANY");
+			result.put("files", files);
+			result.put("app", app);
+			
+			break;
+		case 1:
+			if (app == null) {
+				log.error("getApplication 실패: 멤버공고 지원 데이터 없음. applicationId=" + applicationId);
+				throw new NotFoundException("지원서를 찾을 수 없습니다.");
+			}
+			result.put("category", "USER");
+			result.put("app", app);	
+			break;
+		default:
+			log.error("getApplication 실패: 알 수 없는 category. category=" + category + ", applicationId=" + applicationId);
+			throw new BadRequestException("알 수 없는 공고 유형입니다.");
+		}
+		
+		return result;
+	}
+
+	private ApplicationVO findPostInfoByAppId(Long applicationId) {
+		return jobDao.findPostInfoByAppId(applicationId);
+	}
 
 }

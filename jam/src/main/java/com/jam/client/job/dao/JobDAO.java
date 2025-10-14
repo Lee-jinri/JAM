@@ -51,4 +51,8 @@ public interface JobDAO {
 
 	public int closePost(@Param("post_id") Long post_id, @Param("user_id") String user_id);
 	
+	public ApplicationVO findPostInfoByAppId(Long applicationId);
+	public ApplicationVO getApplication(Long applicationId);
+	
+
 }

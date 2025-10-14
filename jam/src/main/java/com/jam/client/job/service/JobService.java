@@ -48,4 +48,6 @@ public interface JobService {
 	
 	void createApplication(@Valid ApplicationVO app);
 
+	Map<String, Object> getApplication(Long applicationId, String userId);
+
 }

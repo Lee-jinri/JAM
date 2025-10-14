@@ -357,4 +357,15 @@ public class JobRestController {
 		}
 	}
 	
+	@GetMapping("/applications/{applicationId}")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<Map<String, Object>> getApplication(@PathVariable Long applicationId, HttpServletRequest request){
+		String userId = (String) request.getAttribute("userId");
+		if(userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+		if(applicationId == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+		
+		Map<String, Object> result = jobService.getApplication(applicationId, userId);
+		return ResponseEntity.ok(result);
+	}
+	
 }

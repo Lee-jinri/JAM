@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.jam.file.dao.FileAssetDAO;
 import com.jam.file.vo.FileAssetVO;
 import com.jam.global.util.FileUtils;
 
@@ -20,6 +21,7 @@ public class FileService {
 	
 	private final FileUtils fileUtils;
 	private final SqlSessionTemplate batchSqlSessionTemplate;
+	private final FileAssetDAO fileDao;
 	
 	@Transactional(propagation = Propagation.MANDATORY, rollbackFor = Exception.class)
 	public void insertFiles(List<FileAssetVO> files, Long application_id) {
@@ -37,5 +39,9 @@ public class FileService {
 			batchSqlSessionTemplate.insert(
 				"com.jam.file.dao.FileAssetDAO.insertFileAsset", f);
 		}
+	}
+
+	public List<FileAssetVO> getFileByApplicationId(FileAssetVO file) {
+		return fileDao.getFileByApplicationId(file);
 	}
 }
