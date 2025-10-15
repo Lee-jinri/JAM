@@ -23,7 +23,10 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 
 @Configuration
-@MapperScan(basePackages= {"com.jam.**.dao"})
+@MapperScan(basePackages= { 
+	"com.jam.**.dao",
+	"com.jam.global.mapper"
+})
 @PropertySource("classpath:application.properties")
 public class RootConfig {
 	

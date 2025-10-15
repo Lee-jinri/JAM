@@ -9,6 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jam.file.dao.FileAssetDAO;
 import com.jam.file.vo.FileAssetVO;
+import com.jam.global.exception.NotFoundException;
 import com.jam.global.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -43,5 +44,15 @@ public class FileService {
 
 	public List<FileAssetVO> getFileByApplicationId(FileAssetVO file) {
 		return fileDao.getFileByApplicationId(file);
+	}
+
+	public FileAssetVO getFileMetaByFileId(Long fileId) {
+		FileAssetVO fileMeta = fileDao.getFileMetaByFileId(fileId);
+		
+		if (fileMeta == null || fileMeta.getFile_key() == null || fileMeta.getFile_name() == null) {
+	        throw new NotFoundException("파일 정보를 찾을 수 없습니다.");
+	    }
+		
+		return fileMeta;
 	}
 }

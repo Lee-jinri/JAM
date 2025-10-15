@@ -14,4 +14,10 @@
 		FROM file_asset
 		WHERE post_id = #{post_id} AND post_type = #{post_type}
 	</select>
+	
+	<select id="getFileMetaByFileId" parameterType="Long" resultType="file">
+		SELECT file_key, file_name
+		FROM file_asset
+		WHERE file_id = #{file_id}
+	</select>
 </mapper>

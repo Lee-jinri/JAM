@@ -125,8 +125,10 @@ public class ServletConfig implements WebMvcConfigurer {
         				"/comreplies/**",
         				
         				"/api/mypage/favorite/**",
-        				"/api/mypage/written/boards",
-        				"/api/mypage/account"
+        				"/api/mypage/myPosts",
+        				"/api/mypage/account",
+        				
+        				"/api/files/**/download-url"
         		);
    }
     
