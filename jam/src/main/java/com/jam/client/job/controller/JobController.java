@@ -127,5 +127,15 @@ public class JobController {
 		return "jobs/postsManage";
 	}
 	
+	/**********************************
+	 * 지원서 상세 페이지 확인
+	 * @param applicationId 지원서 ID
+	 * @return 지원서 상세 JSP
+	 *********************************/
+	@GetMapping(value="/applications/{applicationId}")
+	@PreAuthorize("isAuthenticated()")
+	public String viewApplication(@PathVariable Long applicationId, Model model) {
+		return "forward:/WEB-INF/views/jobs/application.jsp";
+	}
 	
 }
