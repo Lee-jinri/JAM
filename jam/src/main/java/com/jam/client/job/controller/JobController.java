@@ -1,21 +1,15 @@
 package com.jam.client.job.controller;
 
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.JobVO;
-import com.jam.common.vo.PageDTO;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -122,5 +116,16 @@ public class JobController {
 	    
 		return "forward:/WEB-INF/views/jobs/applyForm.jsp";
 	}
-			
+
+	/**************************************
+	 * @return 작성한 기업 공고/ 멤버 모집 글
+	 *************************************/
+	@GetMapping(value="/postsManage/{mode}")
+	@PreAuthorize("isAuthenticated()")
+	public String postsManagePage(@PathVariable String mode, Model model) {
+		model.addAttribute("mode", mode);
+		return "jobs/postsManage";
+	}
+	
+	
 }
