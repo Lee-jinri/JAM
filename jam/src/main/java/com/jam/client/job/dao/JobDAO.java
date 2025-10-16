@@ -57,4 +57,8 @@ public interface JobDAO {
 	public int applicationsListCnt(ApplicationVO application);
 	public ApplicationVO findPostInfoByAppId(Long applicationId);
 	
+	// 지원 내역
+	public List<Map<String, Object>> getMyApplications(ApplicationVO app);
+	public int getMyApplicationsCnt(ApplicationVO app);
+	
 }

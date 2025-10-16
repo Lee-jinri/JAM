@@ -395,4 +395,46 @@ public class JobRestController {
 		return ResponseEntity.ok(result);
 	}
 	
+	/**
+	 * 사용자의 지원한 공고 목록 조회 API 
+	 * 요청 파라미터(ApplicationVO)에 따라 내가 지원한 채용공고 목록을 조회하고 페이징 정보를 함께 반환합니다.
+	 * 
+	 * @param app	요청 파라미터를 담은 VO 객체
+	 * @param request	HttpServletRequest, userId 추출용
+	 * @return apps(지원한 공고 목록), pageMaker(페이징 정보)
+	 */
+	@GetMapping("/my/applications")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<Map<String, Object>> getMyApplications(ApplicationVO app, HttpServletRequest request){
+		String userId = (String) request.getAttribute("userId");
+		if(userId == null) throw new UnauthorizedException("인증되지 않은 사용자입니다."); 
+
+		app.setUser_id(userId);
+		app.setKeyword(ValueUtils.sanitizeForLike(app.getKeyword()));
+		
+		try {
+			Map<String, Object> result = new HashMap<>(); 
+			
+			List<Map<String, Object>> raw  = jobService.getMyApplications(app);
+			
+			List<Map<String,Object>> apps = raw.stream().map(row -> {
+				Map<String,Object> m = new HashMap<>();
+				row.forEach((k,v) -> m.put(k.toLowerCase(), v)); 
+				return m;
+			}).toList();
+			
+			result.put("apps", apps);
+			
+			log.info(apps);			
+			int total = jobService.getMyApplicationsCnt(app);
+			PageDTO pageMaker = new PageDTO(app, total);
+	        result.put("pageMaker", pageMaker);
+
+	        return ResponseEntity.ok(result);
+		}catch(Exception e) {
+			log.error("getMyApplications:" + e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
+	
 }

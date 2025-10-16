@@ -53,4 +53,5 @@ public interface JobService {
 	List<Map<String, Object>> getMyApplications(ApplicationVO app);
 	int getMyApplicationsCnt(ApplicationVO app);
 
+
 }

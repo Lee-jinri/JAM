@@ -266,5 +266,4 @@ public class JobServiceImpl implements JobService {
 	public int getMyApplicationsCnt(ApplicationVO app) {
 		return jobDao.getMyApplicationsCnt(app);
 	} 
-
 }

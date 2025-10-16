@@ -277,4 +277,74 @@
 		WHERE a.application_id = #{application_id}
 	</select>
 	
+	<!-- 지원 내역 -->
+	<select id="getMyApplications" parameterType="app" resultType="java.util.Map">
+		<bind name="periodDays" 
+      		value="period != null &amp;&amp; period != '' &amp;&amp; period != 'all' ? @java.lang.Integer@valueOf(period) : null"/>
+
+		SELECT 
+			a.application_id,
+			a.title       AS application_title,
+			TO_CHAR(a.created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at,
+			a.post_id,
+			j.title       AS job_title,
+			j.category,
+			j.status,
+			m.company_name
+		FROM application a
+		JOIN job j
+			ON a.post_id = j.post_id
+		LEFT JOIN member m
+			ON m.user_id = j.user_id 
+		WHERE a.user_id = #{user_id}
+		<if test="periodDays != null">
+			<![CDATA[
+				AND a.created_at >= SYSDATE - #{periodDays}
+			]]>
+		</if>
+	
+		<if test="job_status != null">
+			AND j.status = #{job_status}
+		</if>
+		<if test="keyword != null">
+			AND (
+				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
+				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
+				OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
+			)
+		</if>
+		ORDER BY a.created_at DESC
+	</select>
+	
+	<select id="getMyApplicationsCnt" parameterType="app" resultType="int">
+		<bind name="periodDays" 
+      		value="period != null &amp;&amp; period != '' &amp;&amp; period != 'all' ? @java.lang.Integer@valueOf(period) : null"/>
+
+		SELECT COUNT(*)
+		FROM application a
+		WHERE a.user_id = #{user_id}
+	
+		<if test="periodDays != null">
+			<![CDATA[
+				AND a.created_at >= SYSDATE - #{periodDays}
+			]]>
+		</if>
+	
+		<if test="job_status != null">
+			AND EXISTS (
+				SELECT 1
+				FROM job j
+				WHERE j.post_id = a.post_id
+				  AND j.status = #{}
+			)
+		</if>
+		<if test="keyword != null">
+			AND (
+				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
+				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
+				OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
+			)
+		</if>
+	</select>
+	
 </mapper>
