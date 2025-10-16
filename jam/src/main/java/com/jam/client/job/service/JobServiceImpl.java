@@ -14,7 +14,6 @@ import org.springframework.validation.annotation.Validated;
 import com.jam.client.job.dao.JobDAO;
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
-import com.jam.client.member.service.MemberService;
 import com.jam.file.service.FileService;
 import com.jam.file.vo.FileAssetVO;
 import com.jam.global.exception.BadRequestException;
@@ -32,7 +31,6 @@ import lombok.extern.log4j.Log4j;
 public class JobServiceImpl implements JobService {
 
 	private final JobDAO jobDao;
-	private final MemberService memberService;
 	private final FileService fileService;
 	
 	@Override
@@ -86,51 +84,23 @@ public class JobServiceImpl implements JobService {
 	//  글 삭제
 	@Override
 	public int deletePost(Long post_id, String user_id) {
+
+		int applicants = jobDao.appCountByPostId(post_id);
+		if (applicants > 0) {
+			throw new ConflictException("지원자가 있어 삭제할 수 없습니다. 공고를 마감 처리하세요.");
+		}
+		
 		return jobDao.deletePost(post_id, user_id);
 	}
 	
+	// 공고 마감
 	@Override
 	public int closePost(Long post_id, String user_id) {
 		
 		return jobDao.closePost(post_id, user_id);
 	}
-
-	@Override
-	public List<JobVO> getPosts(JobVO job_vo){
-		return jobDao.getPosts(job_vo);
-	}
-
-	@Override
-	public boolean isValidUserName(String user_name) throws Exception {
-		int count = memberService.nameCheck(user_name);
-		return count != 0 ? true : false;
-	}
 	
-	@Override
-	public String getUserId(String user_name) {
-		return memberService.getUserId(user_name);
-	}
-
-	@Override
-	public List<JobVO> getMyJobPosts(JobVO jobs) {
-		return jobDao.getMyJobPosts(jobs);
-	}
-	
-	@Override
-	public List<JobVO> getMyRecruitPosts(JobVO jobs) {
-		return jobDao.getMyRecruitPosts(jobs);
-	}
-
-	@Override
-	public int getMyPostCnt(JobVO job_vo) {
-		return jobDao.getMyPostCnt(job_vo);
-	}
-	
-	@Override
-	public String findCompanyIdByPostId(Long post_id) {
-		return jobDao.findCompanyIdByPostId(post_id);
-	}
-
+	// 지원서 작성
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public void createApplication(@Valid ApplicationVO app) {
@@ -198,6 +168,25 @@ public class JobServiceImpl implements JobService {
 		return jobDao.findPostInfo(post_id);
 	}
 
+	// 작성한 기업 공고
+	@Override
+	public List<JobVO> getMyJobPosts(JobVO jobs) {
+		return jobDao.getMyJobPosts(jobs);
+	}
+	
+	// 작성한 멤버 모집 공고
+	@Override
+	public List<JobVO> getMyRecruitPosts(JobVO jobs) {
+		return jobDao.getMyRecruitPosts(jobs);
+	}
+
+	// 작성한 공고 페이징
+	@Override
+	public int getMyPostCnt(JobVO job_vo) {
+		return jobDao.getMyPostCnt(job_vo);
+	}
+
+	// 지원서 상세
 	@Override
 	public Map<String, Object> getApplication(Long applicationId, String userId) {
 		
@@ -256,8 +245,26 @@ public class JobServiceImpl implements JobService {
 		return result;
 	}
 
+	// 지원서 상세 페이징
+	@Override
+	public int applicationsListCnt(ApplicationVO application) {
+		return jobDao.applicationsListCnt(application);
+	}
+
 	private ApplicationVO findPostInfoByAppId(Long applicationId) {
 		return jobDao.findPostInfoByAppId(applicationId);
 	}
+
+	// 지원내역
+	@Override
+	public List<Map<String, Object>> getMyApplications(ApplicationVO app) {
+		return jobDao.getMyApplications(app);
+	}
+	
+	// 지원내역 페이징
+	@Override
+	public int getMyApplicationsCnt(ApplicationVO app) {
+		return jobDao.getMyApplicationsCnt(app);
+	} 
 
 }

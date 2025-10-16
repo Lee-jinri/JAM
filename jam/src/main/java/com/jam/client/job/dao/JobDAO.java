@@ -1,58 +1,60 @@
 package com.jam.client.job.dao;
 
 import java.util.List;
+import java.util.Map;
+
+import javax.validation.Valid;
 
 import org.apache.ibatis.annotations.Param;
 
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
-import com.jam.file.vo.FileAssetVO;
-
-import jakarta.validation.Valid;
 
 public interface JobDAO {
 
-	// 리스트
+	// 전체 공고 조회
 	public List<JobVO> getBoard(JobVO job_vo);
 	public List<JobVO> getBoardWithFavorite(JobVO job_vo);
-
-	// 페이징
 	public int listCnt(JobVO job_vo);
 
 	// 조회수 증가
 	public void incrementReadCnt(Long post_id);
 
-	// 상세페이지
+	// 공고 상세페이지
 	public JobVO getPost(Long post_id);
 
-	// 글 입력
+	// 공고 입력
 	public int writePost(JobVO job_vo);
 
-	// 글 수정 페이지
+	// 공고 수정 페이지
 	public JobVO getPostById(Long post_id);
 
-	// 글 수정
+	// 공고 수정
 	public int editPost(JobVO job_vo);
 
-	// 글 삭제
+	// 공고 삭제
 	public int deletePost(@Param("post_id") Long post_id, @Param("user_id") String user_id);
-
-	public List<JobVO> getPosts(JobVO job_vo);
-
+	// 지원자 수 count
+	public int appCountByPostId(Long post_id);
+	
+	// 작성한 기업 공고/ 멤버 모집 공고/ 페이징
 	public List<JobVO> getMyJobPosts(JobVO jobs);
 	public List<JobVO> getMyRecruitPosts(JobVO jobs);
 	public int getMyPostCnt(JobVO job_vo);
-	
-	public String findCompanyIdByPostId(@Param("post_id") Long post_id);
-	
-	public void createApplication(@Valid ApplicationVO app);
-	
-	public int existsJobPost(@Param("post_id") Long postId);
 
+	// 공고 마감
 	public int closePost(@Param("post_id") Long post_id, @Param("user_id") String user_id);
 	
-	public ApplicationVO findPostInfoByAppId(Long applicationId);
+	// 지원
+	public void createApplication(@Valid ApplicationVO app);
+	// 존재하는 공고인지 확인
+	public int existsJobPost(@Param("post_id") Long postId);
+	// 공고 조회
+	public JobVO findPostInfo(Long post_id);
+		
+	// 지원서 상세
 	public ApplicationVO getApplication(Long applicationId);
+	public int applicationsListCnt(ApplicationVO application);
+	public ApplicationVO findPostInfoByAppId(Long applicationId);
 	
-
 }

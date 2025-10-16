@@ -34,20 +34,23 @@ public interface JobService {
 	// 구인구직 글 삭제
 	int deletePost(Long post_id, String user_id);
 
-	List<JobVO> getPosts(JobVO job_vo);
-
-	boolean isValidUserName(String user_name) throws Exception;
-	
-	String getUserId(String user_name);
-
+	// 작성한 기업 공고/ 멤버 모집 공고/ 페이징
 	List<JobVO> getMyRecruitPosts(JobVO jobs);
 	List<JobVO> getMyJobPosts(JobVO jobs);
 	int getMyPostCnt(JobVO job_vo);
 
+	// 공고 마감
 	int closePost(Long post_id, String user_id);
 	
+	// 지원
 	void createApplication(@Valid ApplicationVO app);
 
+	// 지원서 상세
 	Map<String, Object> getApplication(Long applicationId, String userId);
+	int applicationsListCnt(ApplicationVO application);
+	
+	// 지원 내역
+	List<Map<String, Object>> getMyApplications(ApplicationVO app);
+	int getMyApplicationsCnt(ApplicationVO app);
 
 }

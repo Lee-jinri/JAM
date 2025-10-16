@@ -270,6 +270,16 @@ public class JobRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
+	/**
+	 * 공고 마감 API
+	 *
+	 * 로그인한 사용자가 자신이 작성한 공고를 마감 처리합니다.
+	 * 마감 시 해당 공고에는 더 이상 지원할 수 없습니다.
+	 * 
+	 * @param postId	마감할 공고 ID
+	 * @param request	HttpServletRequest (userId 추출용)
+	 * @return	처리 성공 시 204 No Content 
+	 */
 	@PatchMapping("/post/{postId}")
 	public ResponseEntity<Void> closeJob(@PathVariable Long postId, HttpServletRequest request) {
 		String user_id = (String)request.getAttribute("userId");
@@ -302,9 +312,6 @@ public class JobRestController {
 			@Valid @RequestBody ApplicationVO app,
 			HttpServletRequest request){
 		
-		String companyId = jobService.findCompanyIdByPostId(app.getPost_id());
-		
-		app.setCompany_id(companyId);
 		app.setUser_id((String)request.getAttribute("userId"));
 		
 		jobService.createApplication(app);
@@ -357,6 +364,26 @@ public class JobRestController {
 		}
 	}
 	
+	/**
+	 * 지원서 상세 조회 API
+	 *
+	 * 로그인한 사용자가 특정 지원서(applicationId)를 조회합니다.
+	 * 해당 지원서에 대한 접근 권한을 확인하며, 요청 사용자가 지원자이거나 해당 공고의 작성자인 경우에만 조회할 수 있습니다.
+	 * category 값에 따라 반환되는 데이터 구조가 달라집니다.
+	 *
+	 * [회사 공고 지원서] (category = 0)
+	 * - category: COMPANY
+	 * - files: 이력서 파일 목록
+	 * - app: 지원서 상세 정보 (title, content, created_at)
+	 *
+	 * [멤버 모집 지원서] (category = 1)
+	 * - category: USER
+	 * - app: 지원서 상세 정보 (title, content, created_at)
+	 *
+	 * @param applicationId 조회할 지원서 ID
+	 * @param request       HttpServletRequest (userId 추출용)
+	 * @return 지원서 상세 정보 (category, app, files 등 포함)
+	 */
 	@GetMapping("/applications/{applicationId}")
 	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Map<String, Object>> getApplication(@PathVariable Long applicationId, HttpServletRequest request){

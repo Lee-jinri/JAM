@@ -29,7 +29,7 @@
 	
 	<sql id="jobPositionSearch">
 	    <if test="positions != null and positions.size() > 0">
-	        AND position IN 
+	        AND j.position IN 
 	        <foreach collection="positions" item="pos" open="(" separator="," close=")">
 	            #{pos}
 	        </foreach>
@@ -37,12 +37,12 @@
 	</sql>
 	
 	
-	<!-- list -->
+	<!-- 전체 공고 조회 -->
 	<select id="getBoard" parameterType="job" resultType="job">
 		<![CDATA[
 		SELECT 
 			post_id, title, 
-			to_char(created_at, 'YYYY/MM/DD') AS created_at, 
+			to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
 			pay_category, pay, 
 			city, gu, dong, position,
 			0 AS isFavorite  
@@ -70,7 +70,7 @@
 		<![CDATA[
 		SELECT 
 			j.post_id, j.title, 
-			to_char(j.created_at, 'YYYY/MM/DD') AS created_at, 
+			to_char(j.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
 			j.pay_category, j.pay, 
 			j.city, j.gu, j.dong, j.position,
 			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
@@ -98,7 +98,7 @@
 		AND rnum <= #{pageNum} * #{amount}
 		]]>
 	</select>
-	
+		
 	<select id="listCnt" parameterType="job" resultType="int">
 	    SELECT count(*)
 	    FROM job j
@@ -112,6 +112,63 @@
 		</where>
 	</select>
 	
+	<!-- 상세페이지 -->
+	<select id="getPost" resultType="job">
+		SELECT 
+			j.post_id, j.title, j.content, 
+			to_char(j.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
+			j.category, j.status,j.pay_category, pay, 
+			m.user_name, j.user_id, m.company_name,
+			j.city, j.gu, j.dong, 
+			j.position, j.view_count, 0 AS isFavorite  
+		FROM job j
+		LEFT JOIN Member m ON j.user_id = m.user_id
+		WHERE j.post_id = #{post_id}
+	</select>
+	
+	<!-- 글 입력 -->
+	<insert id="writePost" parameterType="job">
+		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
+        	select job_seq.nextval from dual
+    	</selectKey>
+		INSERT INTO job(post_id, user_id, title, content, category, status,  pay_category, pay, position, view_count, city, gu, dong)
+		VALUES(#{post_id},#{user_id}, #{title}, #{content}, #{category},0,  #{pay_category, jdbcType=INTEGER}, #{pay, jdbcType=INTEGER}, #{position}, 0, #{city}, #{gu, jdbcType = VARCHAR}, #{dong, jdbcType = VARCHAR})
+	</insert>
+	
+	<!-- 글 수정페이지 -->
+	<select id="getPostById" parameterType="job"  resultType="job">
+		SELECT post_id, title, content, status, category, pay_category, pay, position, city, gu, dong
+		FROM job
+		WHERE post_id = #{post_id} 
+	</select>
+	
+	<!-- 글 수정 -->
+	<update id="editPost" parameterType="job">
+		UPDATE job SET
+			title = #{title}, 
+			content = #{content},
+			status = #{status},
+			
+			category = #{category},
+			pay_category = #{pay_category, jdbcType=INTEGER},
+			pay = #{pay, jdbcType=INTEGER},
+			position = #{position},
+			city = #{city},
+			gu = #{gu, jdbcType = VARCHAR},
+			dong = #{dong, jdbcType = VARCHAR}
+		WHERE post_id = #{post_id} AND user_id = #{user_id}
+	</update>
+	
+	<select id="appCountByPostId" parameterType="Long" resultType="int">
+		SELECT count(*) FROM application WHERE post_id = #{post_id}
+	</select>
+	
+	<!-- 글 삭제 -->
+	<delete id="deletePost" parameterType="job">
+		DELETE FROM job WHERE post_id = #{post_id} AND user_id = #{user_id}
+	</delete>
+	
+	<!--  작성한 기업 공고 -->
 	<select id="getMyJobPosts" resultType="job" parameterType="job">
 		SELECT 
 			j.post_id, j.title, 
@@ -134,6 +191,7 @@
 		FETCH NEXT #{amount} ROWS ONLY
 	</select>
 	
+	<!-- 작성한 멤버 모집 공고 -->
 	<select id="getMyRecruitPosts" resultType="job" parameterType="job">
 		SELECT 
 			j.post_id, j.title, 
@@ -154,7 +212,6 @@
 		FETCH NEXT #{amount} ROWS ONLY
 	</select>
 	
-	<!-- 특정 회원의 레코드 수 조회 -->
 	<select id="getMyPostCnt" parameterType="job" resultType="int">
 	    SELECT count(*)
 	    FROM job j
@@ -163,58 +220,10 @@
 	    <include refid="jobPositionSearch"/>
 	</select>
 
-	
 	<!-- 조회수 -->
 	<update id="incrementReadCnt" parameterType="job">
-		UPDATE job SET hits = hits + 1 where post_id = #{post_id}
+		UPDATE job SET view_count = view_count + 1 where post_id = #{post_id}
 	</update>
-	
-	<!-- 상세페이지 -->
-	<select id="getPost" resultType="job">
-		SELECT j.post_id, j.title, j.content, to_char(j.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, j.category, j.status,j.pay_category, pay, m.user_name, j.user_id, j.city, j.gu, j.dong, j.position
-		FROM job j
-		LEFT JOIN Member m ON j.user_id = m.user_id
-		WHERE j.post_id = #{post_id}
-	</select>
-	
-	<!-- 글 입력 -->
-	<insert id="writePost" parameterType="job">
-		<selectKey keyProperty="id" resultType="Long" order="BEFORE">
-        	select job_seq.nextval from dual
-    	</selectKey>
-		INSERT INTO job(post_id, user_id, title, content, category, status,  pay_category, pay, position, hits, city, gu, dong)
-		VALUES(#{post_id},#{user_id}, #{title}, #{content}, #{category},0,  #{pay_category, jdbcType=INTEGER}, #{pay, jdbcType=INTEGER}, #{position}, 0, #{city}, #{gu, jdbcType = VARCHAR}, #{dong, jdbcType = VARCHAR})
-	</insert>
-	
-	<!-- 글 수정페이지 -->
-	<select id="getPostById" parameterType="job"  resultType="job">
-		SELECT post_id, title, content, status, pay_category, pay, position, city, gu, dong
-		FROM job
-		WHERE post_id = #{post_id} 
-	</select>
-	
-	<!-- 글 수정 -->
-	<update id="editPost" parameterType="job">
-		UPDATE job SET
-		title = #{title},
-		content = #{content},
-		status = #{status},
-		category = #{category},
-		pay_category = #{pay_category},
-		pay = #{pay},
-		position = #{position},
-		city = #{city},
-		gu = #{gu},
-		dong = #{dong},
-		created_at = sysdate
-		
-		WHERE post_id = #{post_id} AND user_id = #{user_id}
-	</update>
-	
-	<!-- 글 삭제 -->
-	<delete id="deletePost" parameterType="job">
-		DELETE FROM job WHERE post_id = #{post_id} AND user_id = #{user_id}
-	</delete>
 	
 	<!-- 공고 마감  -->
 	<update id="closePost" parameterType="job">
@@ -222,40 +231,6 @@
 		SET status = 1
 		WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</update>
-
-	<!-- 특정 회원의  글 조회 --> 
-	<select id="getPosts" resultType="job" parameterType="job">
-		<![CDATA[
-		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, hits
-		FROM (
-				SELECT /*+ INDEX_DESC(JOB SYS_C0025522) */
-					rownum as rnum, post_id, title, created_at
-				FROM job j
-				where ]]> 
-				<trim prefix="(" suffix=") AND" prefixOverrides="AND">
-					<include refid="jobSearch"></include> 
-				</trim>
-			<![CDATA[ rownum <= #{pageNum} * #{amount} AND user_id  = #{user_id} 
-				) jobList
-			WHERE rnum > (#{pageNum} - 1) * #{amount}
-			]]>
-	</select>
-	
-	<!-- 특정 회원의 레코드 수 조회 -->
-	<select id="getUserPostCnt" parameterType="job" resultType="int">
-	    SELECT count(*)
-	    FROM job j
-	    WHERE user_id = #{user_id}
-	    <trim prefix="AND (" suffix=")" prefixOverrides="AND | OR">
-	        <include refid="jobSearch"></include>
-	    </trim>
-	</select>
-	
-	<select id="findCompanyIdByPostId" parameterType="long" resultType="String">
-		SELECT user_id
-		FROM job
-		WHERE post_id = #{post_id}
-	</select>
 	
 	<select id="findPostInfo" parameterType="long" resultType="job">
 		SELECT user_id, category
@@ -263,6 +238,7 @@
 		WHERE post_id = #{post_id}
 	</select>
 	
+	<!-- 지원 -->
 	<insert id="createApplication">
 		<selectKey resultType="long" order="BEFORE" keyProperty="application_id">
 	        SELECT application_seq.NEXTVAL FROM dual
@@ -273,9 +249,23 @@
 			(#{application_id}, #{user_id}, #{post_id}, #{title}, #{content}, sysdate, #{company_id})
 	</insert>
 	
+	<!-- 존재하는 공고인지 확인 -->
 	<select id="existsJobPost" parameterType="long" resultType="int">
 		SELECT count(*)
 		FROM job
+		WHERE post_id = #{post_id}
+	</select>
+	
+	<!-- 지원서 상세 -->
+	<select id="getApplication" parameterType="Long" resultType="app">
+		SELECT title, content, TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
+		FROM application
+		WHERE application_id = #{application_id}
+	</select>
+	
+	<select id="applicationsListCnt" parameterType="app" resultType="int">
+		SELECT count(*)
+		FROM application
 		WHERE post_id = #{post_id}
 	</select>
 	
@@ -286,12 +276,5 @@
 			ON a.post_id = j.post_id
 		WHERE a.application_id = #{application_id}
 	</select>
-	
-	<select id="getApplication" parameterType="Long" resultType="app">
-		SELECT title, content, TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
-		FROM application
-		WHERE application_id = #{application_id}
-	</select>
-	
 	
 </mapper>
