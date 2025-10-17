@@ -453,4 +453,41 @@ public class JobRestController {
 		return ResponseEntity.ok().build();
 	}
 
+	/**
+	 * 특정 공고의 지원자 조회 API
+	 * 요청 파라미터(JobVO)에 따라 특정 공고의 지원자를 조회하고 페이징 정보를 함께 반환합니다.
+	 * 
+	 * @param jobs	요청 파라미터를 담은 VO 객체
+	 * @param request	HttpServletRequest, userId 추출용
+	 * @return apps(지원자 목록), pageMaker(페이징 정보)
+	 */
+	@GetMapping("/candidates")
+	public ResponseEntity<Map<String, Object>> getcandidates(ApplicationVO application, HttpServletRequest request){		
+		try {
+			Long postId = application.getPost_id();
+			if(postId == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+			
+			String userId = (String)request.getAttribute("userId");
+			if(userId == null ||userId.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+			
+			String writer = jobService.findCompanyIdByPostId(postId);
+			if (writer == null || !writer.equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+			
+			Map<String, Object> result = new HashMap<>();
+			
+			List<ApplicationVO> apps = jobService.getApplicationsByPostId(postId);
+			result.put("apps", apps);
+			
+			int total = jobService.applicationsListCnt(application);
+			PageDTO pageMaker = new PageDTO(application, total);
+			result.put("pageMaker", pageMaker);
+			
+	        return ResponseEntity.ok(result);
+		}catch(Exception e) {
+			log.error(e.getMessage());
+	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+	                .body(null);
+		}
+	}
+	
 }

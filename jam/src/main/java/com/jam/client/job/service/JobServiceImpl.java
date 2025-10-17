@@ -247,7 +247,18 @@ public class JobServiceImpl implements JobService {
 		return result;
 	}
 
-	// 지원서 상세 페이징
+	@Override
+	public String findCompanyIdByPostId(Long post_id) {
+		return jobDao.findCompanyIdByPostId(post_id);
+	}
+	
+	// 지원자 목록
+	@Override
+	public List<ApplicationVO> getApplicationsByPostId(Long post_id) {
+		return jobDao.getApplicationsByPostId(post_id);
+	}
+
+	// 지원자 목록 페이징
 	@Override
 	public int applicationsListCnt(ApplicationVO application) {
 		return jobDao.applicationsListCnt(application);

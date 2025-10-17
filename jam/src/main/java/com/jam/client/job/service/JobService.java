@@ -47,6 +47,11 @@ public interface JobService {
 
 	// 지원서 상세
 	Map<String, Object> getApplication(Long applicationId, String userId);
+	
+	String findCompanyIdByPostId(Long postId);
+	
+	// 지원자 목록
+	List<ApplicationVO> getApplicationsByPostId(Long post_id);
 	int applicationsListCnt(ApplicationVO application);
 	
 	// 지원 내역

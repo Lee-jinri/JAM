@@ -55,6 +55,11 @@ public interface JobDAO {
 	// 지원서 상세
 	public ApplicationVO getApplication(Long applicationId);
 	public int applicationsListCnt(ApplicationVO application);
+
+	public String findCompanyIdByPostId(@Param("post_id") Long post_id);
+	
+	// 지원자 목록
+	public List<ApplicationVO> getApplicationsByPostId(@Param("post_id") Long post_id);
 	public ApplicationVO findPostInfoByAppId(Long applicationId);
 	
 	// 지원 내역

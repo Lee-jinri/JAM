@@ -263,6 +263,20 @@
 		WHERE application_id = #{application_id}
 	</select>
 	
+	<select id="findCompanyIdByPostId" parameterType="long" resultType="String">
+		SELECT user_id
+		FROM job
+		WHERE post_id = #{post_id}
+	</select>
+	
+	<!-- 지원자 목록 -->
+	<select id="getApplicationsByPostId" parameterType="Long" resultType="app">
+		SELECT application_id, title, content, TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at
+		FROM application
+		WHERE post_id = #{post_id}
+	</select>
+	
+	<!-- 지원자 목록 페이징 -->
 	<select id="applicationsListCnt" parameterType="app" resultType="int">
 		SELECT count(*)
 		FROM application
