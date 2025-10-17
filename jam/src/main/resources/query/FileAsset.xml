@@ -9,14 +9,8 @@
 			(file_seq.NEXTVAL, #{post_id}, #{post_type}, #{file_key}, #{file_name}, #{file_type}, #{file_size}, sysdate)
 	</insert>
 	
-	<select id="getFileByApplicationId" parameterType="file" resultType="file">
-		SELECT file_id, file_name
-		FROM file_asset
-		WHERE post_id = #{post_id} AND post_type = #{post_type}
-	</select>
-	
 	<select id="getFilesByPost" parameterType="file" resultType="file">
-		SELECT file_key
+		SELECT file_id, file_name, file_key
 		FROM file_asset
 		WHERE post_id = #{post_id} AND post_type = #{post_type}
 	</select>
@@ -28,7 +22,6 @@
 			#{f.file_id}
 		</foreach>
 	</delete>
-	
 	
 	<select id="getFileMetaByFileId" parameterType="Long" resultType="file">
 		SELECT file_key, file_name

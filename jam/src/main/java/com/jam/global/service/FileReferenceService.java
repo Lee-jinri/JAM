@@ -1,5 +1,7 @@
 package com.jam.global.service;
 
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
 import com.jam.file.service.FileService;
@@ -15,6 +17,8 @@ public class FileReferenceService {
 	public void deleteFiles(FileAssetVO param) {
 		fileService.deleteFiles(param);
 	}
-	
-	
+
+	public List<FileAssetVO> getFilesByPost(FileAssetVO param) {
+		return fileService.getFilesByPost(param);
+	}
 }

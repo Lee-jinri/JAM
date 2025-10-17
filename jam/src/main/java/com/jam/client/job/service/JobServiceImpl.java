@@ -219,8 +219,8 @@ public class JobServiceImpl implements JobService {
 			param.setPost_id(applicationId);
 			param.setPost_type("APPLICATION");
 			
-			List<FileAssetVO> files = fileService.getFileByApplicationId(param);
-			
+			List<FileAssetVO> files = fileRefService.getFilesByPost(param);
+					
 			if (app == null || files == null) {
 				log.error("getApplication 실패: 기업공고 지원 데이터 누락. post_id=" + applicationId);
 				throw new NotFoundException("지원서를 찾을 수 없습니다.");
