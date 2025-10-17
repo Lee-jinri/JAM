@@ -5,6 +5,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,8 +17,11 @@ import com.jam.global.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
+import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import software.amazon.awssdk.services.s3.model.S3Exception;
 import software.amazon.awssdk.services.s3.presigner.S3Presigner;
 import software.amazon.awssdk.services.s3.presigner.model.GetObjectPresignRequest;
 import software.amazon.awssdk.services.s3.presigner.model.PresignedGetObjectRequest;
@@ -30,6 +34,7 @@ public class S3Service {
 	
 	private final FileUtils fileUtils;
 	private final S3Presigner presigner;
+	private final S3Client s3Client;
 	
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
@@ -112,6 +117,30 @@ public class S3Service {
 		String uuid = UUID.randomUUID().toString().replace("-", "");
 		return String.format("applications/%s/%s/%s",
 			today, uuid, filename);
+	}
+	
+	/**
+	 * S3에 저장된 파일들을 삭제합니다.
+	 *
+	 * @param fileKeys 삭제할 파일의 S3 key 목록
+	 * 
+	 * @implNote
+	 *  - 파일이 존재하지 않아도 예외 없이 무시합니다.
+	 *  - 일부 파일의 삭제를 실패해도 나머지 삭제 작업은 계속 진행됩니다.
+	 */
+	public void deleteObjects(List<String> fileKeys) {
+		if (fileKeys == null || fileKeys.isEmpty()) return;
+		
+		for (String key : fileKeys) {
+			try {
+				s3Client.deleteObject(DeleteObjectRequest.builder()
+					.bucket(bucket)
+					.key(key)
+					.build());
+			} catch (S3Exception e) {
+				log.warn("S3 파일 삭제 실패: key=" + key + ", err=" + e.getMessage());
+			}
+		}
 	}
 
 }

@@ -53,5 +53,7 @@ public interface JobService {
 	List<Map<String, Object>> getMyApplications(ApplicationVO app);
 	int getMyApplicationsCnt(ApplicationVO app);
 
-
+	// 지원 취소
+	void withdrawApplication(Long applicationId, String userId);
+	
 }

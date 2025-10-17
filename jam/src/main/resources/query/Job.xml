@@ -347,4 +347,22 @@
 		</if>
 	</select>
 	
+	<!-- 지원 취소 -->
+	<delete id="withdrawApplication" parameterType="app">
+		DELETE 
+		FROM application
+		WHERE user_id = #{user_id} AND application_id = #{application_id}
+	</delete>
+	
+	<select id="findAppJobInfo" parameterType="long" resultType="java.util.Map">
+		SELECT 
+			a.application_id 	AS applicationId, 
+			a.user_id 			AS userId,
+			j.post_id          	AS postId,
+			j.category         	AS jobCategory 
+		FROM application a
+		JOIN job j ON a.post_id = j.post_id
+		WHERE application_id = #{application_id}
+	</select>
+	
 </mapper>

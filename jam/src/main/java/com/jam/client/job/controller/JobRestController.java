@@ -424,8 +424,7 @@ public class JobRestController {
 			}).toList();
 			
 			result.put("apps", apps);
-			
-			log.info(apps);			
+					
 			int total = jobService.getMyApplicationsCnt(app);
 			PageDTO pageMaker = new PageDTO(app, total);
 	        result.put("pageMaker", pageMaker);
@@ -436,5 +435,22 @@ public class JobRestController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
 		}
 	}
-	
+
+	/**
+	 * 지원 취소 API
+	 * 
+	 * @param applicationId	지원 취소할 지원서 ID
+	 * @param request	HttpServletRequest, userId 추출용	
+	 * @return	Http 상태코드
+	 */
+	@DeleteMapping("/applications/{applicationId}/withdraw")
+	public ResponseEntity<Void>  withdrawApplication(@PathVariable Long applicationId, HttpServletRequest request){
+		String userId = (String) request.getAttribute("userId");
+		if(userId == null) throw new UnauthorizedException("로그인이 만료 되었습니다."); 
+
+		jobService.withdrawApplication(applicationId, userId);
+		
+		return ResponseEntity.ok().build();
+	}
+
 }

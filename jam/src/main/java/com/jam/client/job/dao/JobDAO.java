@@ -61,4 +61,8 @@ public interface JobDAO {
 	public List<Map<String, Object>> getMyApplications(ApplicationVO app);
 	public int getMyApplicationsCnt(ApplicationVO app);
 	
+	// 지원 취소
+	public void withdrawApplication(@Param("application_id") Long applicationId, @Param("user_id") String userId);
+	public Map<String, Object> findAppJobInfo(@Param("application_id") Long applicationId);
+	
 }

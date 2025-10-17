@@ -15,6 +15,21 @@
 		WHERE post_id = #{post_id} AND post_type = #{post_type}
 	</select>
 	
+	<select id="getFilesByPost" parameterType="file" resultType="file">
+		SELECT file_key
+		FROM file_asset
+		WHERE post_id = #{post_id} AND post_type = #{post_type}
+	</select>
+	
+	<delete id="deleteFiles" parameterType="list">
+		DELETE FROM file_asset
+		WHERE file_id IN
+		<foreach collection="list" item="f" open="(" separator="," close=")">
+			#{f.file_id}
+		</foreach>
+	</delete>
+	
+	
 	<select id="getFileMetaByFileId" parameterType="Long" resultType="file">
 		SELECT file_key, file_name
 		FROM file_asset

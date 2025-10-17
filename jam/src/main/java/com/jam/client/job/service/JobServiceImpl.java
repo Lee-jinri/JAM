@@ -20,6 +20,7 @@ import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ConflictException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.NotFoundException;
+import com.jam.global.service.FileReferenceService;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -32,6 +33,7 @@ public class JobServiceImpl implements JobService {
 
 	private final JobDAO jobDao;
 	private final FileService fileService;
+	private final FileReferenceService fileRefService;	
 	
 	@Override
 	public List<JobVO> getBoard(JobVO job) {
@@ -266,4 +268,47 @@ public class JobServiceImpl implements JobService {
 	public int getMyApplicationsCnt(ApplicationVO app) {
 		return jobDao.getMyApplicationsCnt(app);
 	} 
+
+	// 지원 취소
+	@Override
+	public void withdrawApplication(Long applicationId, String userId) {
+		
+		Map<String, Object> appJobInfo = jobDao.findAppJobInfo(applicationId); 
+		
+		if (appJobInfo == null || appJobInfo.isEmpty()) {
+			log.error("appJobInfo 실패: 지원서 정보 조회 불가. applicationId="+ applicationId);
+			throw new NotFoundException("지원서 정보를 찾을 수 없습니다.");
+		}
+		
+		String applicantUserId = (String) appJobInfo.get("USERID");
+		if (applicantUserId == null) {
+			log.error("appJobInfo 실패: 지원서 정보에 user_id 없음. applicationId="+ applicationId);
+			throw new IllegalStateException("공고의 작성자 정보가 누락되었습니다.");
+		}
+		
+		if(!applicantUserId.equals(userId)) {
+			log.error("appJobInfo 실패: 지원자와 조회하는 사람의 아이디가 다름. applicationId="+ applicationId);
+			throw new ForbiddenException("지원서를 삭제할 권한이 없습니다.");
+		}
+		
+		jobDao.withdrawApplication(applicationId, userId);
+
+		Object categoryObj = appJobInfo.get("JOBCATEGORY");
+		if (categoryObj == null) {
+			log.warn("jobCategory null: applicationId= "+ applicationId);
+			return;
+		}
+		
+		int category = ((java.math.BigDecimal) categoryObj).intValue();
+
+		if(category == 0) {
+			FileAssetVO param = new FileAssetVO();
+			
+			param.setPost_id(applicationId);
+			param.setPost_type("APPLICATION");
+			
+			fileRefService.deleteFiles(param);
+		}
+	}
+
 }
