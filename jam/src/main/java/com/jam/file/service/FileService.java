@@ -43,9 +43,10 @@ public class FileService {
 				"com.jam.file.dao.FileAssetDAO.insertFileAsset", f);
 		}
 	}
-
 	public List<FileAssetVO> getFileByApplicationId(FileAssetVO file) {
 		return fileDao.getFileByApplicationId(file);
+	public List<FileAssetVO> getFilesByPost(FileAssetVO file) {
+		return fileDao.getFilesByPost(file);
 	}
 
 	public FileAssetVO getFileMetaByFileId(Long fileId) {
