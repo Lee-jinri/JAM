@@ -137,5 +137,14 @@ public class JobController {
 	public String viewApplication(@PathVariable Long applicationId, Model model) {
 		return "forward:/WEB-INF/views/jobs/application.jsp";
 	}
-	
+
+	/***********************************
+	 * @return 내가 지원한 공고/이력서
+	 **********************************/
+	@GetMapping(value="/my/applications")
+	@PreAuthorize("isAuthenticated() and hasRole('USER')")
+	public String applicationsPage() {
+		return "jobs/my/applications";
+	}
+
 }
