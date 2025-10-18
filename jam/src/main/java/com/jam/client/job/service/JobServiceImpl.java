@@ -321,5 +321,14 @@ public class JobServiceImpl implements JobService {
 			fileRefService.deleteFiles(param);
 		}
 	}
+	
+	@Override
+	public List<Map<String, Object>> getMyFavorites(JobVO job) {
+		return jobDao.getMyFavorites(job);
+	}
 
+	@Override
+	public int getMyFavoritesCnt(JobVO job) {
+		return jobDao.getMyFavoritesCnt(job);
+	}
 }

@@ -61,4 +61,8 @@ public interface JobService {
 	// 지원 취소
 	void withdrawApplication(Long applicationId, String userId);
 	
+	// 스크랩
+	List<Map<String, Object>> getMyFavorites(JobVO job);
+	int getMyFavoritesCnt(JobVO job);
+	
 }

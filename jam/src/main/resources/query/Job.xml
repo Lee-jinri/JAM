@@ -379,4 +379,88 @@
 		WHERE application_id = #{application_id}
 	</select>
 	
+	<!-- 스크랩 -->
+	<select id="getMyFavorites" parameterType="job" resultType="java.util.Map">
+		<bind name="periodDays" 
+			value="period != null &amp;&amp; period != '' &amp;&amp; period != 'all' ? @java.lang.Integer@valueOf(period) : null"/>
+	
+		SELECT
+			j.post_id,
+			j.title AS job_title,
+			TO_CHAR(j.created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at,
+			j.category,
+			j.status,
+			j.city, j.gu, j.dong,
+			j.position, j.pay_category, j.pay,
+			m.company_name
+		FROM job j
+		LEFT JOIN member m
+			ON m.user_id = j.user_id
+		WHERE EXISTS (
+			SELECT 1
+			FROM favorite f
+			WHERE f.board_no = j.post_id
+				AND f.board_type = 'job'
+				AND f.user_id = #{user_id, jdbcType=VARCHAR}
+		)
+		AND j.category = #{category}
+		
+		<if test="periodDays != null">
+			AND j.created_at >= SYSDATE - #{periodDays}
+		</if>
+	
+		<if test="status != null">
+			AND j.status = #{status}
+		</if>
+	
+		<if test="keyword != null and keyword != ''">
+			AND (
+				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
+				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
+				<if test="category == 0">
+					OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
+				</if>
+			)
+		</if>
+	
+		ORDER BY j.post_id DESC
+		OFFSET (#{pageNum} - 1) * #{amount} ROWS
+		FETCH NEXT #{amount} ROWS ONLY
+	</select>
+
+	<select id="getMyFavoritesCnt" parameterType="job" resultType="int">
+		<bind name="periodDays" 
+			value="period != null &amp;&amp; period != '' &amp;&amp; period != 'all' ? @java.lang.Integer@valueOf(period) : null"/>
+	
+		SELECT
+			COUNT(*)
+		FROM job j
+		LEFT JOIN member m
+			ON m.user_id = j.user_id
+		WHERE EXISTS (
+			SELECT 1
+			FROM favorite f
+			WHERE f.board_no = j.post_id
+				AND f.board_type = 'job'
+				AND f.user_id = #{user_id, jdbcType=VARCHAR}
+		)
+		AND j.category = #{category}
+		<if test="periodDays != null">
+			AND j.created_at >= SYSDATE - #{periodDays}
+		</if>
+	
+		<if test="status != null">
+			AND j.status = #{status}
+		</if>
+	
+		<if test="keyword != null and keyword != ''">
+			AND (
+				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
+				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
+				<if test="category == 0">
+					OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
+				</if>
+			)
+		</if>
+	</select>
 </mapper>

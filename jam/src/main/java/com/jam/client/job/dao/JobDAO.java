@@ -70,4 +70,7 @@ public interface JobDAO {
 	public void withdrawApplication(@Param("application_id") Long applicationId, @Param("user_id") String userId);
 	public Map<String, Object> findAppJobInfo(@Param("application_id") Long applicationId);
 	
+	// 스크랩
+	public List<Map<String, Object>> getMyFavorites(JobVO job);
+	public int getMyFavoritesCnt(JobVO job);
 }

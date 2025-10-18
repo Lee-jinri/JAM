@@ -490,4 +490,44 @@ public class JobRestController {
 		}
 	}
 	
+	/**
+	 * 사용자가 스크랩한 글 목록 조회 API
+	 * 
+	 * @param job	요청 파라미터를 담은 VO 객체	
+	 * @param request	HttpServletRequest, userId 추출용	
+	 * @return favorites(스크랩한 글 목록), pageMaker(페이징 정보)
+	 */
+	@GetMapping("/my/favorites")
+	@PreAuthorize("isAuthenticated()")
+	public ResponseEntity<Map<String, Object>> getMyFavorites(JobVO job, HttpServletRequest request){
+		String userId = (String) request.getAttribute("userId");
+		if(userId == null) throw new UnauthorizedException("로그인이 만료 되었습니다."); 
+
+		job.setUser_id(userId);
+		job.setKeyword(ValueUtils.sanitizeForLike(job.getKeyword()));
+		
+		try {
+			Map<String, Object> result = new HashMap<>(); 
+			
+			List<Map<String, Object>> raw  = jobService.getMyFavorites(job);
+			
+			List<Map<String,Object>> favorites = raw.stream().map(row -> {
+				Map<String,Object> m = new HashMap<>();
+				row.forEach((k,v) -> m.put(k.toLowerCase(), v)); 
+				return m;
+			}).toList();
+			
+			result.put("favorites", favorites);
+			
+			int total = jobService.getMyFavoritesCnt(job);
+			PageDTO pageMaker = new PageDTO(job, total);
+	        result.put("pageMaker", pageMaker);
+
+			log.info(result);
+	        return ResponseEntity.ok(result);
+		}catch(Exception e) {
+			log.error("getMyFavorites:" + e);
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+		}
+	}
 }
