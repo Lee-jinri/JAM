@@ -147,4 +147,13 @@ public class JobController {
 		return "jobs/my/applications";
 	}
 
+	/***********************************
+	 * @return 스크랩(즐겨찾기)
+	 **********************************/
+	@GetMapping(value="/my/favorites")
+	@PreAuthorize("isAuthenticated() and hasRole('USER')")
+	public String favoritesPage() {
+		return "jobs/my/favorites";
+	}
+	
 }
