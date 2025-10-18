@@ -492,8 +492,8 @@ function openBusinessPopup() {
 							<!-- 개인회원 전용 -->
 							<sec:authorize access="isAuthenticated() and !hasRole('COMPANY')">
 								<li role="none"><a role="menuitem" href="<c:url value='/jobs/postsManage/user'/>">작성한 글</a></li>
-								<li role="none"><a role="menuitem" href="<c:url value='/jobs/user/applications'/>">지원현황</a></li>
-								<li role="none"><a role="menuitem" href="<c:url value='/jobs/user/favorites'/>">스크랩</a></li>
+								<li role="none"><a role="menuitem" href="<c:url value='/jobs/my/applications'/>">지원현황</a></li>
+								<li role="none"><a role="menuitem" href="<c:url value='/jobs/my/favorites'/>">스크랩</a></li>
 								<li role="none"><a role="menuitem" href="javascript:void(0);" onclick="openBusinessPopup();">기업회원 전환</a>
 								<li role="none"><a role="menuitem" href="javascript:void(0);" id="logout">로그아웃</a></li>
 							</sec:authorize>
