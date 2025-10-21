@@ -14,7 +14,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
@@ -33,7 +32,8 @@ public class CommunityController {
 	/*************************
 	 * 
 	 */
-	@RequestMapping(value = "/boards")
+	
+	@GetMapping("/boards")
 	public String communityBoards() {
 		return "community/boards";
 	}
@@ -43,7 +43,7 @@ public class CommunityController {
 	 * @param com_no 조회할 커뮤니티의 글 번호
 	 * @return 커뮤니티 상세 페이지
 	 **************************************************/
-	@RequestMapping(value = "/board/{com_no}", method = RequestMethod.GET)
+	@GetMapping("/board/{com_no}")
 	public String communityDetail(@PathVariable("com_no") Long com_no, Model model) {
 		model.addAttribute("com_no", com_no);
 		
@@ -54,7 +54,7 @@ public class CommunityController {
 	/***************************************
 	 * @return 커뮤니티 글 작성 페이지
 	 ***************************************/
-	@RequestMapping(value="/board/write", method=RequestMethod.GET)
+	@GetMapping("/board/write")
 	public String writeView() throws Exception{
 				
 		return "community/write";
@@ -65,7 +65,7 @@ public class CommunityController {
 	 * @param com_no 수정할 커뮤니티의 글 번호
 	 * @return 커뮤니티 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/board/edit/{com_no}", method=RequestMethod.GET)
+	@GetMapping("/board/edit/{com_no}")
 	public String updateView(@PathVariable("com_no") Long com_no, Model model) throws Exception{
 
 		model.addAttribute("com_no", com_no);

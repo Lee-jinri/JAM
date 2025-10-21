@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.jam.client.fleaMarket.service.FleaMarketService;
@@ -31,7 +30,7 @@ public class FleaMarketController {
 	 * @param FleaMarketVO flea_vo
 	 * @return 중고악기 글 리스트 
 	 ***************************************/
-	@RequestMapping(value="/board", method=RequestMethod.GET)
+	@GetMapping("/board")
 	public String fleaMarketList(Model model, @ModelAttribute FleaMarketVO flea_vo) {
 		
 		List<FleaMarketVO> fleaMarketList = fleaService.getBoard(flea_vo);
@@ -48,7 +47,7 @@ public class FleaMarketController {
 	 * @param com_no 조회할 중고악기 글 번호
 	 * @return 중고악기 상세 페이지
 	 **************************************************/
-	@RequestMapping(value = "/post/{post_id}", method = RequestMethod.GET)
+	@GetMapping("/post/{post_id}")
 	public String fleaDetail(@PathVariable("post_id") Long post_id, Model model) {
 		model.addAttribute("post_id", post_id);
 		
@@ -58,7 +57,7 @@ public class FleaMarketController {
 	/***************************************
 	 * @return 중고악기 글 작성 페이지
 	 ***************************************/
-	@RequestMapping(value="/board/write", method=RequestMethod.GET)
+	@GetMapping("/board/write")
 	public String writeView() throws Exception{
 				
 		return "fleaMarket/write";
@@ -69,7 +68,7 @@ public class FleaMarketController {
 	 * @param flea_no 수정할 중고악기 글 번호
 	 * @return 중고악기 글 수정 페이지
 	 ******************************/
-	@RequestMapping(value="/board/edit/{flea_no}", method=RequestMethod.GET)
+	@GetMapping("/board/edit/{flea_no}")
 	public String updateView(@PathVariable("flea_no") Long flea_no, Model model) throws Exception{
 	
 		model.addAttribute("flea_no",flea_no);

@@ -22,7 +22,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -471,7 +470,7 @@ public class MemberRestController {
 	 *      - 440 (Custom): JWT 토큰 인증되지 않음
 	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
 	 */
-	@RequestMapping(value = "/verify-password", method = RequestMethod.POST)
+	@PostMapping("/verify-password")
 	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
 		if(member.getUser_pw() == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");

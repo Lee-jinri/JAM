@@ -16,9 +16,11 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -192,7 +194,7 @@ public class FleaMarketRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 * @return 성공 시 수정한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 수정 페이지
 	 ***********************************/
-	@RequestMapping(value="/post", method=RequestMethod.PUT)
+	@PutMapping("/post")
 	public ResponseEntity<String> editBoard(@RequestBody FleaMarketVO flea_vo) throws Exception{
 		String errorMsg;
 		if (flea_vo == null) { 
@@ -239,7 +241,7 @@ public class FleaMarketRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@RequestMapping(value="/post", method=RequestMethod.DELETE)
+	@DeleteMapping("/post")
 	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		
 		if (post_id == null) { 

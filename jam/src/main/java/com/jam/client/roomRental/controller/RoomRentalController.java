@@ -13,17 +13,17 @@ import javax.servlet.http.HttpServletRequestWrapper;
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.google.gson.JsonObject;
 import com.jam.client.roomRental.service.RoomRentalService;
+import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.RequiredArgsConstructor;
@@ -41,7 +41,7 @@ public class RoomRentalController {
 	 * @param RoomRentalVO room_vo
 	 * @return 합주실/연습실 글 리스트 페이지
 	 ******************************/
-	@RequestMapping(value="/boards", method=RequestMethod.GET)
+	@GetMapping("/boards")
 	public String roomList(Model model, @ModelAttribute RoomRentalVO room_vo, @RequestParam(required=false) String cd) {
 		
 		List<RoomRentalVO> roomList = roomService.getBoards(room_vo);
@@ -60,7 +60,7 @@ public class RoomRentalController {
 	 * @param roomRental_no 조회할 합주실 글 번호
 	 * @return 합주실/연습실 상세페이지
 	 *****************************************/
-	@RequestMapping(value="/board/{roomRental_no}", method=RequestMethod.GET)
+	@GetMapping("/boards/{roomRental_no}") 
 	public String roomDetail(@PathVariable("roomRental_no") Long roomRental_no, Model model) throws Exception{
 		
 		model.addAttribute("roomRental_no",roomRental_no);
@@ -71,7 +71,7 @@ public class RoomRentalController {
 	/***************************************
 	 * @return 합주실/연습실 글 작성 페이지
 	 ***************************************/
-	@RequestMapping(value="/board/write", method=RequestMethod.GET)
+	@GetMapping("/boards/write") 
 	public String roomWriteForm() throws Exception{
 
 		return "roomRental/write";
@@ -82,7 +82,7 @@ public class RoomRentalController {
 	 * @param roomRental_no 수정할 합주실 글 번호
 	 * @return 합주실 글 수정 페이지
 	 *********************************/
-	@RequestMapping(value="/board/edit/{roomRental_no}", method=RequestMethod.GET)
+	@GetMapping("/boards/edit/{roomRental_no")
 	public String updateView(@PathVariable("roomRental_no") Long roomRental_no, Model model) throws Exception{
 
 		model.addAttribute("roomRental_no", roomRental_no);
@@ -124,7 +124,7 @@ public class RoomRentalController {
 	/*********************************
 	 * @return 특정 회원의 합주실/연습실 글 페이지 
 	 *********************************/
-	@RequestMapping(value="/roomPosts")
+	@GetMapping("/roomPosts")
 	public String viewPosts(@ModelAttribute RoomRentalVO room_vo, Model model, HttpServletRequest request) throws Exception {
 
 		if(room_vo.getUser_name() == null || roomService.isValidUserName(room_vo.getUser_name()))

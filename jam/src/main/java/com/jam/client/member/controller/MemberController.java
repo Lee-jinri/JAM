@@ -5,7 +5,6 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
 import lombok.extern.log4j.Log4j;
 
@@ -19,7 +18,7 @@ public class MemberController {
 	 *  회원 가입 성공 시 회원 가입 이전 페이지로 이동하기 위해 이전 페이지 uri를 세션에 저장
 	 * @return 회원가입 페이지
 	 ******************************/
-	@RequestMapping(value = "/join", method = RequestMethod.GET)
+	@GetMapping("/join")
 	public String joinPage(HttpServletRequest request) {
 		
 		String uri = request.getHeader("Referer");
@@ -51,7 +50,7 @@ public class MemberController {
 	/***********************************
 	 * @return 아이디/비밀번호 찾기 페이지
 	 ***********************************/
-	@RequestMapping(value = "/joinFind", method = RequestMethod.GET)
+	@GetMapping("/joinFind")
 	public String findUserPage() {
 		
 		return "member/joinFind";

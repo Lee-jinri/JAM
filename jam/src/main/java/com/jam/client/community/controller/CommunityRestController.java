@@ -13,13 +13,16 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import com.jam.client.community.service.CommunityService;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.common.vo.PageDTO;
@@ -118,7 +121,7 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
-	@RequestMapping(value="/board", method=RequestMethod.POST)
+	@PostMapping("/board")
 	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO com_vo, HttpSession session) throws Exception{
 		
 		if (com_vo == null) {
@@ -197,7 +200,7 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK와 글 번호를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
-	@RequestMapping(value="/board", method=RequestMethod.PUT)
+	@PutMapping("/board")
 	public ResponseEntity<String> editBoard(@RequestBody CommunityVO com_vo, HttpServletRequest request) throws Exception{
 		
 		if (com_vo == null) { 
@@ -246,7 +249,7 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@RequestMapping(value="/board", method=RequestMethod.DELETE)
+	@DeleteMapping("/board")
 	public ResponseEntity<String> boardDelete(@RequestParam("com_no") Long com_no, HttpServletRequest request) throws Exception{
 		
 		if (com_no == null) { 

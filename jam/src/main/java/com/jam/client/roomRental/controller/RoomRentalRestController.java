@@ -10,11 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -95,7 +97,7 @@ public class RoomRentalRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
-	@RequestMapping(value="/board", method=RequestMethod.POST)
+	@PostMapping("/board")
 	public ResponseEntity<String> writeBoard(@RequestBody RoomRentalVO room_vo) throws Exception{
 		
 		String errorMsg;
@@ -141,7 +143,7 @@ public class RoomRentalRestController {
 	 * @param RoomRentalVO room_vo 
 	 * @return ResponseEntity<RoomRentalVO> - 조회된 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
 	 *********************************/
-	@RequestMapping(value="/board/edit/{roomRental_no}", method=RequestMethod.PUT)
+	@PutMapping("/board/edit/{roomRental_no}")
 	public ResponseEntity<RoomRentalVO> getBoardById(@PathVariable("roomRental_no") Long roomRental_no) throws Exception{
 	
 		if(roomRental_no == null) {
@@ -168,7 +170,7 @@ public class RoomRentalRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
-	@RequestMapping(value="/board", method=RequestMethod.PUT)
+	@PutMapping("/board")
 	public ResponseEntity<String> roomUpdate(@RequestBody RoomRentalVO room_vo) throws Exception{
 		String errorMsg;
 		if(room_vo == null) {
@@ -216,7 +218,7 @@ public class RoomRentalRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@RequestMapping(value="/board", method=RequestMethod.DELETE)
+	@DeleteMapping("/board")
 	public ResponseEntity<String> boardDelete(@RequestParam("roomRental_no") Long roomRental_no) throws Exception{
 		
 		if(roomRental_no == null) {
