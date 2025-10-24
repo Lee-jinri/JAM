@@ -11,13 +11,16 @@ import lombok.EqualsAndHashCode;
 public class CommunityVO extends CommonVO{
 	
 	/* 커뮤니티 게시판 */
-	private Long com_no;				// 글 번호
-	private String com_title;		// 제목
-	private String com_content;		// 내용
-	private String imageFileName;	// 사진 파일 이름
-	private int com_hits;			// 조회수
-	private int com_reply_cnt;		// 댓글 수
-	private String com_date;		// 작성일
-	private String user_id;			// 작성자 id
-	private String user_name;		// 작성자 닉네임
+	private Long post_id;
+	private String title;
+	private String content;
+	
+	private int view_count;
+	private int comment_count;
+	private String created_at;
+	
+	private String user_id;			
+	private String user_name;		
+	
+	private String imageFileName;	// 사진 파일
 }  
