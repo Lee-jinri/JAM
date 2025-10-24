@@ -5,10 +5,10 @@
 	<!-- 합주실 키워드 검색 -->
 	<sql id="roomSearch">
 		<if test="search=='room_title'">
-			<![CDATA[AND r.roomRental_title LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[AND r.title LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='room_content'">
-			<![CDATA[AND r.roomRental_content LIKE '%' || #{keyword} || '%']]>
+			<![CDATA[AND r.content LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='user_name'">
 			<![CDATA[AND m.user_name LIKE '%' || #{keyword} || '%']]>
@@ -33,20 +33,20 @@
 	<select id="getBoards" parameterType="room" resultType="room">
 		<![CDATA[
 		SELECT 
-			roomRental_no, roomRental_title, 
-			to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') AS roomRental_date, 
-			roomRental_reply_cnt, roomRental_hits, 
-			roomRental_status, roomRental_price, 
-			roomRental_duration, user_id , user_name, 
+			post_id, title, 
+			to_char(created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+			comment_count, view_count, 
+			status, price, 
+			duration, user_id , user_name, 
 			city, gu, dong,
 			0 AS isFavorite  
 		FROM (
 			SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
-				r.roomRental_no, r.roomRental_title, r.roomRental_date, 
-				r.roomRental_reply_cnt, r.roomRental_price, r.roomRental_duration, 
-				r.roomRental_hits, r.roomRental_status, r.user_id , 
+				r.post_id, r.title, r.created_at, 
+				r.comment_count, r.price, r.roomRental_duration, 
+				r.view_count, r.status, r.user_id , 
 				m.user_name, r.city, r.gu, r.dong,
-				ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
+				ROW_NUMBER() OVER (ORDER BY r.post_id DESC) AS rnum
 			FROM roomRental r
 			LEFT JOIN Member m ON r.user_id = m.user_id
 			]]>
@@ -65,17 +65,17 @@
 	<select id="getBoardsWithFavorite" parameterType="room" resultType="room">
 	    <![CDATA[
 		SELECT 
-		    roomRental_no, roomRental_title, 
-			to_char(roomRental_date, 'YYYY/MM/DD HH24:MI') AS roomRental_date, 
-			roomRental_reply_cnt, roomRental_hits, 
-			roomRental_status, roomRental_price, 
+		    post_id, title, 
+			to_char(created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+			comment_count, view_count, 
+			status, price, 
 			roomRental_duration, r.user_id , user_name, 
 			city, gu, dong,
 			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 		    SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
-				r.roomRental_no, r.roomRental_title, r.roomRental_date, r.roomRental_reply_cnt, r.roomRental_price, r.roomRental_duration, r.roomRental_hits, r.roomRental_status, r.user_id , m.user_name, r.city, r.gu, r.dong,
-				ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
+				r.post_id, r.title, r.created_at, r.comment_count, r.price, r.roomRental_duration, r.view_count, r.status, r.user_id , m.user_name, r.city, r.gu, r.dong,
+				ROW_NUMBER() OVER (ORDER BY r.post_id DESC) AS rnum
 			FROM roomRental r
 			JOIN Member m ON r.user_id = m.user_id
 		]]>
@@ -87,7 +87,7 @@
 		<![CDATA[
 		) r
 		LEFT JOIN favorite f  
-			ON r.roomRental_no = f.board_no  
+			ON r.post_id = f.board_no  
 			AND f.board_type = 'roomRental'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -110,67 +110,67 @@
 	<!-- 합주실 조회수 -->
 	<update id="incrementReadCnt" parameterType="Long">
 		UPDATE roomRental 
-		SET roomRental_hits = roomRental_hits + 1 
-		WHERE roomRental_no = #{roomRental_no}
+		SET view_count = view_count + 1 
+		WHERE post_id = #{post_id}
 	</update>
 	
 	<!-- 합주실 상세페이지 -->
 	<select id="getBoardDetail" parameterType="Long" resultType="room">
-		SELECT r.roomRental_no, r.roomRental_title, r.roomRental_content, r.roomRental_status, r.roomRental_hits, to_char(r.roomRental_date,'YYYY/MM/DD HH24:MI:SS') as roomRental_date, r.roomRental_price, m.user_name, r.user_id
+		SELECT r.post_id, r.title, r.content, r.status, r.view_count, to_char(r.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, r.price, m.user_name, r.user_id
 		FROM roomRental r
 		LEFT JOIN Member m ON r.user_id = m.user_id
-		WHERE roomRental_no = #{roomRental_no}
+		WHERE post_id = #{post_id}
 	</select>
 	
 	<!-- 합주실 글 입력 -->
 	<insert id="writeBoard" parameterType="room">
-		<selectKey keyProperty="roomRental_no" resultType="Long" order="BEFORE">
+		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
 			SELECT roomRental_seq.nextval from dual
 		</selectKey>
-		INSERT INTO roomRental(roomRental_no,  roomRental_title, roomRental_content,roomRental_status, roomRental_hits, roomRental_reply_cnt,roomRental_date, roomRental_price, user_id, city, gu, dong)
-		VALUES(#{roomRental_no}, #{roomRental_title}, #{roomRental_content}, 0, 0, 0, sysdate, #{roomRental_price}, #{user_id}, #{city}, #{gu}, #{dong})
+		INSERT INTO roomRental(post_id,  title, content,status, view_count, comment_count,created_at, price, user_id, city, gu, dong)
+		VALUES(#{post_id}, #{title}, #{content}, 0, 0, 0, sysdate, #{price}, #{user_id}, #{city}, #{gu}, #{dong})
 	</insert>
 	
 	<!-- 합주실 글 수정 페이지 -->
 	<select id="getBoardById" parameterType="Long" resultType="room">
-		SELECT roomRental_no, roomRental_title, roomRental_content,roomRental_status,roomRental_price, imageFileName
+		SELECT post_id, title, content,status,price, imageFileName
 		FROM roomRental
-		WHERE roomRental_no = #{roomRental_no}
+		WHERE post_id = #{post_id}
 	</select>
 	
 	<!-- 합주실 글 수정 -->
 	<update id="editBoard" parameterType="room">
 		UPDATE roomRental SET
-		roomRental_title = #{roomRental_title},
-		roomRental_content = #{roomRental_content},
-		roomRental_status = #{roomRental_status},
-		roomRental_price = #{roomRental_price},
-		roomRental_date = sysdate
+		title = #{title},
+		content = #{content},
+		status = #{status},
+		price = #{price},
+		created_at = sysdate
 		<if test="imageFileName != ''">
 			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
 		</if>
-		WHERE roomRental_no = #{roomRental_no}
+		WHERE post_id = #{post_id}
 	</update>
 	
 	<!-- 합주실 글 삭제 -->
 	<delete id="boardDelete" parameterType="Long">
-		DELETE FROM roomRental WHERE roomRental_no = #{roomRental_no}
+		DELETE FROM roomRental WHERE post_id = #{post_id}
 	</delete>
 	
 	<!-- 댓글 개수 증감 -->
 	<update id="updateReplyCnt">
 		UPDATE roomRental
-		SET roomRental_reply_cnt = roomRental_reply_cnt + #{amount}
-		WHERE roomRental_no = #{roomRental_no}
+		SET comment_count = comment_count + #{amount}
+		WHERE post_id = #{post_id}
 	</update>
 	
 	<!-- 특정 회원의 커뮤니티 글 조회 --> 
 	<select id="getRoomPosts" resultType="room" parameterType="room">
 		<![CDATA[
-		SELECT roomRental_no, roomRental_title, to_char(roomRental_date,'YYYY/MM/DD') as roomRental_date, roomRental_hits
+		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, view_count
 		FROM (
 				SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
-					rownum as rnum, roomRental_no, roomRental_title, roomRental_date, roomRental_hits
+					rownum as rnum, post_id, title, created_at, view_count
 				FROM roomRental r
 				where ]]> 
 				<trim prefix="(" suffix=") AND" prefixOverrides="AND">

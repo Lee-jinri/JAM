@@ -129,11 +129,11 @@ public class CommunityRestController {
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body (com_vo) is missing.");
 	    }
 
-	    if (com_vo.getCom_title() == null || com_vo.getCom_title().trim().isEmpty()) {
+	    if (com_vo.getTitle() == null || com_vo.getTitle().trim().isEmpty()) {
 	        log.error("Title (com_title) cannot be null or empty.");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Title (com_title) cannot be null or empty.");
 	    }
-	    if (com_vo.getCom_content() == null || com_vo.getCom_content().trim().isEmpty()) {
+	    if (com_vo.getContent() == null || com_vo.getContent().trim().isEmpty()) {
 	        log.error("Content (com_content) cannot be null or empty.");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Content (com_content) cannot be null or empty.");
 	    }
@@ -152,7 +152,7 @@ public class CommunityRestController {
 			
 			comService.writeBoard(com_vo);
 			
-			String com_no = com_vo.getCom_no().toString();
+			String com_no = com_vo.getPost_id().toString();
 			
 			return new ResponseEntity<>(com_no,HttpStatus.OK);
 		} catch (NullPointerException e) {
@@ -184,7 +184,7 @@ public class CommunityRestController {
 		try {
 			CommunityVO board = comService.getBoardById(com_no);
 			
-			board.setCom_no(com_no);
+			board.setPost_id(com_no);
 			    
 			return ResponseEntity.ok(board);
 		}catch (Exception e) {
@@ -207,8 +207,8 @@ public class CommunityRestController {
 			log.error("com_vo is null.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("com_vo is null.");
 		}
-		String com_title = com_vo.getCom_title();
-		String com_content = com_vo.getCom_content();
+		String com_title = com_vo.getTitle();
+		String com_content = com_vo.getContent();
 		
 		if (com_title == null) {
 			log.error("com_title is null.");
@@ -227,7 +227,7 @@ public class CommunityRestController {
 		
 		try {
 			comService.editBoard(com_vo, user_id);
-			String com_no = com_vo.getCom_no().toString();
+			String com_no = com_vo.getPost_id().toString();
 			
 			return new ResponseEntity<>(com_no, HttpStatus.OK);
 		} catch(Exception e) {

@@ -4,11 +4,11 @@
 	
 	<!-- 커뮤니티 검색 -->
 	<sql id="comSearch">
-		<if test="search=='com_title'">
-			<![CDATA[c.com_title LIKE '%' || #{keyword} || '%']]>
+		<if test="search=='title'">
+			<![CDATA[c.title LIKE '%' || #{keyword} || '%']]>
 		</if>
-		<if test="search=='com_content'">
-			<![CDATA[c.com_content LIKE '%' || #{keyword} || '%']]>
+		<if test="search=='content'">
+			<![CDATA[c.content LIKE '%' || #{keyword} || '%']]>
 		</if>
 		<if test="search=='user_name'">
 			<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
@@ -19,14 +19,14 @@
 	<select id="getBoards" parameterType="community" resultType="community">
 	    <![CDATA[
 	    SELECT 
-	        com_no, com_title, 
-	        TO_CHAR(com_date, 'YYYY/MM/DD HH24:MI') AS com_date, 
-	        com_reply_cnt, com_hits, user_id, user_name,
+	        post_id, title, 
+	        TO_CHAR(created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+	        comment_count, view_count, user_id, user_name,
 	        0 AS isFavorite  
 	    FROM (
 	        SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-	            c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
-	            ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+	            c.post_id, c.title, c.created_at, c.comment_count, c.view_count, c.user_id, m.user_name,
+	            ROW_NUMBER() OVER (ORDER BY c.post_id DESC) AS rnum
 	        FROM community c
 	        JOIN member m ON c.user_id = m.user_id
 	        ]]>
@@ -45,15 +45,15 @@
 	<select id="getBoardsWithFavorite" parameterType="community" resultType="community">
 	    <![CDATA[
 		SELECT 
-		    c.com_no, c.com_title, 
-		    TO_CHAR(c.com_date, 'YYYY/MM/DD HH24:MI') AS com_date, 
-		    c.com_reply_cnt, c.com_hits, c.user_id, c.user_name,
+		    c.post_id, c.title, 
+		    TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+		    c.comment_count, c.view_count, c.user_id, c.user_name,
 		    CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 		    SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-		        c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, 
+		        c.post_id, c.title, c.created_at, c.comment_count, c.view_count, 
 		        c.user_id, m.user_name,
-		        ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+		        ROW_NUMBER() OVER (ORDER BY c.post_id DESC) AS rnum
 		    FROM community c
 		    JOIN Member m ON c.user_id = m.user_id
 		]]>
@@ -64,7 +64,7 @@
 		<![CDATA[
 		) c  
 		LEFT JOIN favorite f  
-			ON c.com_no = f.board_no  
+			ON c.post_id = f.board_no  
 			AND f.board_type = 'community'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -87,19 +87,19 @@
 	<select id="getBoardsWithFavorite" parameterType="community" resultType="community">
 	    <![CDATA[
 	    SELECT 
-	        c.com_no, c.com_title, 
-	        TO_CHAR(c.com_date, 'YYYY/MM/DD HH24:MI') AS com_date, 
-	        c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
+	        c.post_id, c.title, 
+	        TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+	        c.comment_count, c.view_count, c.user_id, m.user_name,
 	        CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 	    FROM (
 	        SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-	            c.com_no, c.com_title, c.com_date, c.com_reply_cnt, c.com_hits, c.user_id, m.user_name,
-	            ROW_NUMBER() OVER (ORDER BY c.com_no DESC) AS rnum
+	            c.post_id, c.title, c.created_at, c.comment_count, c.view_count, c.user_id, m.user_name,
+	            ROW_NUMBER() OVER (ORDER BY c.post_id DESC) AS rnum
 	        FROM community c
 	        JOIN member m ON c.user_id = m.user_id
 	    ) c
 	    LEFT JOIN favorite f  
-	        ON c.com_no = f.board_no  
+	        ON c.post_id = f.board_no  
 	        AND f.board_type = 'community'  
 	        AND f.user_id = #{user_id, jdbcType=VARCHAR}  
 	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -110,65 +110,65 @@
 	
 	<!-- 커뮤니티 조회수 증가  -->
 	<update id="incrementReadCnt" parameterType="Long">
-		UPDATE community SET com_hits = com_hits + 1 where com_no = #{com_no}
+		UPDATE community SET view_count = view_count + 1 where post_id = #{post_id}
 	</update>
 	
 	<!-- 커뮤니티 상세 페이지 -->
 	<select id="getBoardDetail" resultType="community">
-		SELECT c.com_no, c.com_title, c.com_content, c.com_hits, to_char(c.com_date,'YYYY/MM/DD HH24:MI:SS') as com_date, m.user_name, c.user_id 
+		SELECT c.post_id, c.title, c.content, c.view_count, to_char(c.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, m.user_name, c.user_id 
 		FROM community c
 		LEFT JOIN Member m 
 		ON c.user_id = m.user_id
-		WHERE com_no = #{com_no}
+		WHERE post_id = #{post_id}
 	</select>
 	
 	<!-- 커뮤니티 글 작성 -->
 	<insert id="writeBoard" parameterType="community">
-		<selectKey keyProperty="com_no" resultType="Long" order="BEFORE">
+		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
         	select com_seq.nextval from dual
     	</selectKey>
-		INSERT INTO community(com_no, user_id, com_title, com_content, com_hits, com_reply_cnt, imageFileName)
-		VALUES(#{com_no},#{user_id}, #{com_title}, #{com_content}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
+		INSERT INTO community(post_id, user_id, title, content, view_count, comment_count, imageFileName)
+		VALUES(#{post_id},#{user_id}, #{title}, #{content}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
 	</insert>
 	
 	<!-- 커뮤니티 수정 할 글 불러오기 -->
 	<select id="getBoardById" parameterType="community"  resultType="community">
-		SELECT com_title, com_content, imageFileName, user_id
+		SELECT title, content, imageFileName, user_id
 		FROM community
-		WHERE com_no = #{com_no} 
+		WHERE post_id = #{post_id} 
 	</select>
 	
 	<!-- 커뮤니티 글 수정 -->
 	<update id="editBoard" parameterType="community">
 		UPDATE community SET
-		com_title = #{com_title},
-		com_content = #{com_content},
-		com_date = sysdate
+		title = #{title},
+		content = #{content},
+		created_at = sysdate
 		<if test="imageFileName != ''">
 			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
 		</if>
-		WHERE com_no = #{com_no} AND user_id = #{user_id}
+		WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</update>
 	
 	<!-- 커뮤니티 글 삭제 -->
 	<delete id="boardDelete" parameterType="community">
-		DELETE FROM community WHERE com_no = #{com_no} AND user_id = #{user_id}
+		DELETE FROM community WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</delete>
 	
 	<!-- 댓글 개수 증감 -->
 	<update id="updateReplyCnt">
 		update community
-		set com_reply_cnt = com_reply_cnt + #{amount}
-		where com_no = #{com_no} 
+		set comment_count = comment_count + #{amount}
+		where post_id = #{post_id} 
 	</update>
 	
 	<!-- 특정 회원의 커뮤니티 글 조회 --> 
 	<select id="getPosts" resultType="community" parameterType="community">
 		<![CDATA[
-		SELECT com_no, com_title, to_char(com_date,'YYYY/MM/DD') as com_date, com_hits
+		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, view_count
 		FROM (
 				SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-					rownum as rnum, com_no, com_title, com_date, com_hits
+					rownum as rnum, post_id, title, created_at, view_count
 				FROM community c
 				where ]]> 
 				<trim prefix="(" suffix=") AND" prefixOverrides="AND">

@@ -83,7 +83,7 @@ public class RoomRentalRestController {
 			// 상세 페이지 조회
 			RoomRentalVO detail = roomService.getBoardDetail(room_no);
 	       
-			log.info(detail.getRoomRental_status());
+			log.info(detail.getStatus());
 			
 	        return new ResponseEntity<>(detail, HttpStatus.OK);
 	    } catch (Exception e) {
@@ -109,8 +109,8 @@ public class RoomRentalRestController {
 		}
 		
 		// 유효성 검사
-		String room_title = room_vo.getRoomRental_title();
-		String room_content = room_vo.getRoomRental_content();
+		String room_title = room_vo.getTitle();
+		String room_content = room_vo.getContent();
 		
 		if(room_title == null) {
 			log.error("room_title is null.");
@@ -126,7 +126,7 @@ public class RoomRentalRestController {
 		try {
 			roomService.writeBoard(room_vo);
 			
-			String room_no = room_vo.getRoomRental_no().toString();
+			String room_no = room_vo.getPost_id().toString();
 			
 			return new ResponseEntity<>(room_no,HttpStatus.OK);
 			
@@ -153,7 +153,7 @@ public class RoomRentalRestController {
 		}else {
 			try {
 				RoomRentalVO board = roomService.getBoardById(roomRental_no);
-				board.setRoomRental_no(roomRental_no);
+				board.setPost_id(roomRental_no);
 				
 				return ResponseEntity.ok(board);
 			}catch(Exception e) {
@@ -181,8 +181,8 @@ public class RoomRentalRestController {
 		}
 		
 		// 유효성 검사
-		String room_title = room_vo.getRoomRental_title();
-		String room_content = room_vo.getRoomRental_content();
+		String room_title = room_vo.getTitle();
+		String room_content = room_vo.getContent();
 		
 		if(room_title == null) {
 			log.error("room_title is null.");
@@ -199,7 +199,7 @@ public class RoomRentalRestController {
 		
 		try {
 			roomService.editBoard(room_vo);
-			String room_no = room_vo.getRoomRental_no().toString();
+			String room_no = room_vo.getPost_id().toString();
 			
 			return new ResponseEntity<>(room_no, HttpStatus.OK);
 		}catch(Exception e) {
