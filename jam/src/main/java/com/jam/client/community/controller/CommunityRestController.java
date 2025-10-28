@@ -38,6 +38,15 @@ public class CommunityRestController {
 
 	private final CommunityService comService;
 	
+	/**
+	 * community 게시판 조회 API
+	 * 요청 파라미터(pageNum, keyword)에 따라 커뮤니티 글 목록을 조회하고 페이징 정보를 함께 반환합니다.
+	 * 
+	 * @param request	HttpServletRequest, userId 추출용
+	 * @param pageNum	요청한 페이지 번호
+	 * @param keyword	검색 키워드 (없을 경우 전체 조회)
+	 * @return communityList(커뮤니티 글 목록), pageMaker(페이징 정보)
+	 */
 	@GetMapping(value = "boards")
 	public ResponseEntity<Map<String, Object>> getBoards(
 			HttpServletRequest request,
