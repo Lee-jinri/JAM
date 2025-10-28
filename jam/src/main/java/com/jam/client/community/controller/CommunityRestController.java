@@ -42,25 +42,23 @@ public class CommunityRestController {
 	public ResponseEntity<Map<String, Object>> getBoards(
 			HttpServletRequest request,
 			@RequestParam (defaultValue = "1")int pageNum,
-			@RequestParam(required=false) String search,
 			@RequestParam(required=false) String keyword){
-		
+			
 		try {
-			CommunityVO com_vo = new CommunityVO();
-			com_vo.setPageNum(pageNum);
-			com_vo.setSearch(search);
-			com_vo.setKeyword(keyword);
+			CommunityVO community = new CommunityVO();
+			community.setPageNum(pageNum);
+			if(!keyword.isEmpty()) community.setKeyword(keyword);
 			
 			String user_id = (String)request.getAttribute("userId");
-			if(user_id != null) com_vo.setUser_id(user_id);
+			if(user_id != null) community.setUser_id(user_id);
 			
 			Map<String, Object> result = new HashMap<>();
 
-			List<CommunityVO> communityList = comService.getBoards(com_vo);
+			List<CommunityVO> communityList = comService.getBoards(community);
 			result.put("communityList", communityList);
 			
-			int total = comService.listCnt(com_vo);
-			PageDTO pageMaker = new PageDTO(com_vo, total);
+			int total = comService.listCnt(community);
+			PageDTO pageMaker = new PageDTO(community, total);
 	        result.put("pageMaker", pageMaker);
 
 	        return ResponseEntity.ok(result);

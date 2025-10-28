@@ -15,29 +15,22 @@
 		</if>
 	</sql>
 	
-	
 	<select id="getBoards" parameterType="community" resultType="community">
+		<![CDATA[
+		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+	        	c.comment_count, c.view_count, m.user_id, m.user_name, 0 AS isFavorite  
+	    FROM community c
+	    JOIN member m 
+	    ON c.user_id = m.user_id
+	    ]]>
+	    <where>
+        	1=1
+        	<include refid="comSearch"></include>
+        </where>
 	    <![CDATA[
-	    SELECT 
-	        post_id, title, 
-	        TO_CHAR(created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
-	        comment_count, view_count, user_id, user_name,
-	        0 AS isFavorite  
-	    FROM (
-	        SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-	            c.post_id, c.title, c.created_at, c.comment_count, c.view_count, c.user_id, m.user_name,
-	            ROW_NUMBER() OVER (ORDER BY c.post_id DESC) AS rnum
-	        FROM community c
-	        JOIN member m ON c.user_id = m.user_id
-	        ]]>
-	        <where>
-	        	1=1
-	        	<include refid="comSearch"></include>
-	        </where>
-	    ) 
-	    <![CDATA[ 
-	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
-	    AND rnum <= #{pageNum} * #{amount}
+	    ORDER BY post_id DESC
+	    OFFSET (#{pageNum} -1) * #{amount} ROWS
+	    FETCH NEXT #{amount} ROWS ONLY
 	    ]]>
 	</select>
 

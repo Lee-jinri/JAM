@@ -38,17 +38,31 @@
     top: 3rem;
 }
 
+.boardReplyCnt{
+	font-size: 10px;
+    color: #746eff;
+}
+
+.boardHits, .boardDate{
+    font-size: 13px;
+    color: #8b8b8b;
+}
+.boardLink:hover {
+	background-color: #f5f5f5;	
+	cursor: pointer;
+}
+
+
 
 </style>
 <script type="text/javascript">
-	$(function(){
+const boardState = {
+		keyword: "",
+		pageNum: 1
 		
-		getBoards().then(() => {
-			toggleUserMenu(); 
-        })
-        .catch(error => {
-            console.error('Error while executing community boards:', error);
-        });
+}
+	$(function(){
+		getBoard();
 		
 		$(document).on("click", ".boardLink", function (e) {
 		    e.preventDefault();
@@ -58,56 +72,52 @@
 		    }
 		});
 
-		
 		$("#searchBtn").click(function(){
-			let search = $("#search").val();
 			let keyword = $("#keyword").val();
 			
-			if(search == "all") keyword = "";
-			else{
-				if(keyword.replace(/\s/g, "") == ""){
-					alert("검색어를 입력하세요.");
-					$("#keyword").focus();
-					return;
-				} 
-			}
-			location.href = '/community/boards?search='+search+'&keyword='+keyword+'&pageNum='+'1';
+			if(keyword.replace(/\s/g, "") == ""){
+				alert("검색어를 입력하세요.");
+				$("#keyword").focus();
+				return;
+			} 
+			boardState.keyword = keyword;
+			boardState.pageNum = 1;
+			
+			getBoard();
 		})
 			
 		$("#comWriteBtn").click(function () {
-			fetch("/api/member/auth/check").then((res) => {
-				if (res.status === 401) {
-					if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
-						location.href = "/member/login";
-					} else {
-						location.href = "/community/boards";
-					}
+			if(window.MY_ID == null){
+				if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+					location.href = "/member/login";
 				} else {
-					location.href = "/community/board/write";
+					location.href = "/community/boards";
 				}
-			})
+			}else {
+				location.href = "/community/board/write";
+			}
 		})
 	})
 	
-	function getBoards(){
-		return new Promise((resolve, reject) => {
-			let params = new URLSearchParams(window.location.search);
-		    let pageNum = params.get("pageNum") || "1";
-		    let search = params.get("search") || "all";
-		    let keyword = params.get("keyword") || "";
-		    
-		    fetch('/api/community/boards?pageNum='+pageNum+'&search='+search+'&keyword='+keyword)
-			.then(response=>{
-				if(response.ok) return response.json();
-			}).then(data=>{
-				renderList(data);
-				resolve();
-			})
-			.catch(error => {
-                console.error('Error:', error);
-                reject(error);
-            });
+	function getBoard(){
+	    let pageNum = boardState.pageNum || "1";
+	    let keyword = boardState.keyword || "";
+	    
+		let queryString = new URLSearchParams(boardState).toString();
+		let url = "/api/community/boards?" + queryString;
+		
+	    fetch(url)
+		.then(response=>{
+			if (!response.ok) {
+				throw new Error("서버 통신 실패");
+			}
+			return response.json();
+		}).then(data=>{
+			renderList(data);
 		})
+		.catch(error => {
+        	console.error('Error:', error);
+        });
 	}
 	
 	function renderList(data){
@@ -120,15 +130,14 @@
             let $clone = $template.clone().removeAttr("id").show();
             
             $clone.find(".userName").text(board.user_name);
-            $clone.find(".userName").attr("data-userId", board.user_id);
-            $clone.find(".boardDate").text(board.com_date);
-            $clone.find(".boardTitle").text(board.com_title);
-            $clone.find(".boardHits").text("👀" +board.com_hits);
-            $clone.find(".boardReplyCnt").text(board.com_reply_cnt);
-            $clone.find(".boardLink").attr("data-location", "/community/board/" + board.com_no);
+            $clone.find(".boardDate").text(timeAgo(board.created_at));
+            $clone.find(".boardTitle").text(board.title);
+            $clone.find(".boardHits").text("조회 " +board.view_count);
+            $clone.find(".boardReplyCnt").text(board.comment_count);
+            $clone.find(".boardLink").attr("data-location", "/community/board/" + board.post_id);
 
             let $favoriteSpan = $clone.find(".favoriteSpan");
-            $favoriteSpan.attr("data-board-no", board.com_no);
+            $favoriteSpan.attr("data-board-no", board.post_id);
     		$favoriteSpan.attr("data-board-type", "community");
     		
     		let $icon = $favoriteSpan.find("i"); 
@@ -139,7 +148,6 @@
         });
         
         loadPagination(data.pageMaker);
-        
 	}
 	
 	function loadPagination(pageMaker) {
@@ -155,17 +163,12 @@
 	        );
 	    }
 
-	    // 클릭 이벤트 추가 (페이지 이동)
 	    $("#pagination a").click(function (e) {
 	        e.preventDefault();
 	        let pageNum = $(this).data("page");
-	        let params = new URLSearchParams(window.location.search);
-		    let search = params.get("search") || "all";
-		    let keyword = params.get("keyword") || "";
-		    
-		    let url = "/community/boards?pageNum="+pageNum+"&search="+search+"&keyword="+keyword;
-	        
-			window.location.href = url;
+
+	        boardState.pageNum = pageNum;
+		    getBoard();
 	    });
 	}
 
@@ -175,55 +178,38 @@
 </head>
 <body class="wrap">
 	<div class="community my-top-15 my-bottom-15">
-		<div class="text-center my-top-7">
-			<p class="title font-color-blue">COMMUNITY</p>
-		</div>
-		<div class="content">
-			<div class="search-div flex justify-center items-center border border-radius-43px">
+		<div class="my-top-7 my-bottom-7 flex justify-between items-center">
+			<p class="bttitle">COMMUNITY</p>
+			<div class="search-div flex justify-center items-center border border-radius-15px">
 				<div class="search-bar-wrapper item-center flex justify-space-around">
 					
-					<% String searchParam = request.getParameter("search");
-					    if (searchParam == null || searchParam.isEmpty()) {
-					        searchParam = "all";
-					    }%> 
-					   
-					<select id="search" name="search" class="search border-none">
-						<option value="all" ${searchParam == 'all' ? 'selected' : ''}>전체</option>
-					    <option value="com_title" ${param.search == 'com_title' ? 'selected' : ''}>제목</option>
-					    <option value="com_content" ${param.search == 'com_content' ? 'selected' : ''}>내용</option>
-					    <option value="user_name" ${param.search == 'user_name' ? 'selected' : ''}>작성자</option>
-					</select>
-					
-					<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
-					value="${not empty param.keyword ? param.keyword : ''}" />
+					<input type="text" name="keyword" id="keyword" class="search search-input"/>
 					
 					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
 				</div>
 			</div>
-			<div class="justify-end flex py-4">
-				<div class="write_btn write_btn_border write_border flex items-center border-radius-7px mr-2">
+			<div class="flex">
+				<div class="write_btn write_btn_border write_border flex items-center border-radius-7px">
 					<button type="button" id="comWriteBtn" class="write_btn_font border-none bColor_fff ">작성하기</button>
 				</div>
 			</div>
-			
-			
-			
+		</div>
+		<div class="content">
 			<div>
-			    <ul id="boardList">
-			        <li id="boardTemplate" class="border-bottom">
-			            <div class="pd-2rem flex items-center" >
+			    <ul style="display:none;">
+			        <li id="boardTemplate" class="border-bottom" >
+			            <div class="boardLink cursor-pointer pd-2rem flex items-center " >
 			                
-			                <!-- 왼쪽: 즐겨찾기 -->
 			                <div class="flex items-center justify-center ml-2 mr-2" style="width: 3rem;">
 			                    <span class="favoriteSpan">
 			                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
 			                    </span>
 			                </div>
 			
-			                <!-- 중앙: 닉네임 (윗줄) + 제목 (아랫줄) -->
-			                <div class="title-container boardLink flex-1 flex items-center cursor-pointer">
-			                    <div>
-			                        <span class="font-weight-bold font-size-5 boardTitle"></span>
+			                <div class="title-container flex-1 flex items-center cursor-pointer">
+			                    <div class="flex items-center">
+			                        <span class="font-size-5 boardTitle"></span>
+			                        <span class="ml-05 boardReplyCnt"></span>
 			                    </div>
 			                </div>
 							<div class="userName-div my-bottom-2 flex">
@@ -237,18 +223,16 @@
 			                    </div>
 			                    <div class="flex items-center justify-end my-top-2">
 			                        <span class="ml-05 boardHits"></span>
-			                        <span class="ml-05"><i class="fa-regular fa-comment-dots"></i></span>
-			                        <span class="ml-05 boardReplyCnt"></span>
 			                    </div>
-			                    
 			                </div>
 			
 			            </div>
 			        </li>
 			    </ul>
+			    
+			    <ul id="boardList">
+				</ul>
 			</div>
-			
-			
 			
 			<div>
 				<!-- 페이징 영역 -->
