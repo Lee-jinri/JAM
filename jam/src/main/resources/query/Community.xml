@@ -69,6 +69,23 @@
 		</where>
 	</select>	
 	
+	<!-- 인기글 -->
+	<select id="getPopularBoard" parameterType="community" resultType="community">
+		<![CDATA[
+		SELECT 
+			c.post_id, 
+			c.title,
+			m.user_name, 
+			c.comment_count,
+			(c.view_count * 1 + c.comment_count * 5) AS popularity_score
+		FROM community c
+		JOIN member m ON c.user_id = m.user_id
+		WHERE c.created_at >= SYSDATE - 14
+		ORDER BY popularity_score DESC
+		FETCH FIRST 15 ROWS ONLY
+		]]>
+	</select>
+	
 	<!-- 커뮤니티 조회수 증가  -->
 	<update id="incrementReadCnt" parameterType="Long">
 		UPDATE community SET view_count = view_count + 1 where post_id = #{post_id}

@@ -11,6 +11,9 @@ public interface CommunityService {
 	
 	// 커뮤니티 페이징
 	public int listCnt(CommunityVO com_vo);
+
+	// 인기글
+	public List<CommunityVO> getPopularBoard(CommunityVO community);
 	
 	// 커뮤니티 조회수 증가
 	public void incrementReadCnt(Long com_no);

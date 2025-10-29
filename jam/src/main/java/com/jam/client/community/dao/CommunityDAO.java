@@ -41,4 +41,6 @@ public interface CommunityDAO {
 	// 특정 회원의 커뮤니티 글 개수 
 	public int getUserPostCnt(CommunityVO com_vo);
 	
+	// 인기글
+	public List<CommunityVO> getPopularBoard(CommunityVO community);
 }

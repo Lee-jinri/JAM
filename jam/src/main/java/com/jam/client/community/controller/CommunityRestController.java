@@ -79,6 +79,34 @@ public class CommunityRestController {
 		
 	}
 	
+	/**
+	 * 커뮤니티 인기글 조회 API
+	 * 조회수, 댓글수를 기준으로 상위 인기 게시글(15개)을 반환합니다.
+	 *
+	 * @param request  사용자 인증 정보(userId) 추출용 HttpServletRequest
+	 * @return popularList: 인기 게시글 목록
+	 */
+	@GetMapping(value = "/board/popular")
+	public ResponseEntity<Map<String, Object>> getPopularBoard(HttpServletRequest request) {
+		try {
+			String user_id = (String) request.getAttribute("userId");
+
+			CommunityVO community = new CommunityVO();
+			if (user_id != null) community.setUser_id(user_id);
+
+			List<CommunityVO> popularList = comService.getPopularBoard(community);
+
+			Map<String, Object> result = new HashMap<>();
+			result.put("popularList", popularList);
+
+			return ResponseEntity.ok(result);
+		} catch (Exception e) {
+			log.error("Error fetching popular board: "+ e.getMessage());
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.body(Collections.singletonMap("error", "Failed to fetch popular boards"));
+		}
+	}
+	
 	/********************************
 	 * 커뮤니티 글을 조회하는 메서드입니다.
 	 *

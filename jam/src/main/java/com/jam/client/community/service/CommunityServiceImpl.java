@@ -89,4 +89,9 @@ public class CommunityServiceImpl implements CommunityService {
 		 int count = memberService.nameCheck(user_name);
 		 return count != 0 ? true : false;
 	}
+
+	@Override
+	public List<CommunityVO> getPopularBoard(CommunityVO community) {
+		return comDao.getPopularBoard(community);
+	}
 }
