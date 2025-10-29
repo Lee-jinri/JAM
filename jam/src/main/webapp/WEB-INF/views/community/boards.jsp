@@ -47,12 +47,36 @@
     font-size: 13px;
     color: #8b8b8b;
 }
-.boardLink:hover {
+.boardLink:hover, .popular-item:hover {
 	background-color: #f5f5f5;	
 	cursor: pointer;
 }
+.bttitle{
+	border-bottom: 1px solid #e3e3e3;
+	padding: 15px;
+}
+.popular-item {
+	border-bottom: 1px solid #e3e3e3;
+	padding: 6px 15px;
+    line-height: 18px;	
+}
+.popular-title{
+	color: #828fc1;
+    font-weight: 600;
+}
+.arrow-btn {
+	border: none;
+	background: none;
+	cursor: pointer;
+	padding: 10px;
+	color: #8b8b8b;
+}
 
-
+.arrow-btn:hover {
+	color: #333;
+	background-color: #f5f5f5;
+	border-radius: 5px;
+}
 
 </style>
 <script type="text/javascript">
@@ -63,6 +87,7 @@ const boardState = {
 }
 	$(function(){
 		getBoard();
+		getPopularBoards();
 		
 		$(document).on("click", ".boardLink", function (e) {
 		    e.preventDefault();
@@ -97,7 +122,35 @@ const boardState = {
 				location.href = "/community/board/write";
 			}
 		})
+		
+		
+		$("#prevPopular").click(function(){
+		    if (popularState.pageNum > 1) {
+		        popularState.pageNum--;
+		        renderPopularList();
+		    }else{
+		    	 popularState.pageNum = popularState.maxPage;
+		    	 renderPopularList();
+		    }
+		});
+	
+		$("#nextPopular").click(function(){
+			if (popularState.pageNum < popularState.maxPage) {
+		        popularState.pageNum++;
+		        renderPopularList();
+		    }else{
+		    	 popularState.pageNum = 1;
+		    	 renderPopularList();
+		    }
+		})
+		
+		$(document).on("click", ".popular-item", function(){
+		    var postId = $(this).data("post-id");
+		    location.href = "/community/board/" + postId;
+		});
 	})
+	
+	
 	
 	function getBoard(){
 	    let pageNum = boardState.pageNum || "1";
@@ -150,6 +203,45 @@ const boardState = {
         loadPagination(data.pageMaker);
 	}
 	
+	const popularState = {
+	    all: [],     
+	    pageNum: 1,
+	    pageSize: 5, 
+	    maxPage: 3 
+	};
+
+	function getPopularBoards(){
+		fetch('/api/community/board/popular')
+		.then(response=>{
+			if(!response.ok) throw new Error('getPopularBoards Error')
+			return response.json();
+		}).then(data=>{
+			popularState.all = data.popularList || [];
+			popularState.maxPage = Math.ceil(popularState.all.length / popularState.pageSize) || 1;
+			popularState.pageNum = 1;
+			renderPopularList();
+		}).catch(error => {
+        	console.error('Error:', error);
+        });
+	}
+	
+	function renderPopularList() {
+		const startIdx = (popularState.pageNum - 1) * popularState.pageSize;
+	    const endIdx = startIdx + popularState.pageSize;
+	    const slice = popularState.all.slice(startIdx, endIdx);
+
+	    const $popularList = $("#popularList");
+	    $popularList.empty();
+
+	    slice.forEach(function(p){
+	        const $item = $('<li class="popular-item cursor-pointer flex" data-post-id="' + p.post_id + '">' +
+								'<span class="popular-title">' + p.title + '</span>' +
+								'<span class="boardReplyCnt ml-05">' + p.comment_count + '</span>' + 
+							'</li>');
+	        $popularList.append($item);
+	    });
+	}
+	
 	function loadPagination(pageMaker) {
 	    const $pagination = $("#pagination");
 	    $pagination.empty(); // 기존 페이지 버튼 초기화
@@ -194,6 +286,20 @@ const boardState = {
 				</div>
 			</div>
 		</div>
+		
+		<div class="popular-section my-top-7 my-bottom-7">
+			<p class="bttitle">HOT 🔥</p>
+			<ul id="popularList"></ul>
+			<div class="popular-pagination text-center my-top-5">
+				<button id="prevPopular" class="arrow-btn">
+					<i class="fa-solid fa-arrow-left fa-sm"></i>
+				</button>
+				<button id="nextPopular" class="arrow-btn">
+					<i class="fa-solid fa-arrow-right fa-sm"></i>
+				</button>
+			</div>
+		</div>
+		
 		<div class="content">
 			<div>
 			    <ul style="display:none;">
