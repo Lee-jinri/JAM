@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Controller;
@@ -30,12 +29,11 @@ import lombok.extern.log4j.Log4j;
 public class CommunityController {
 	
 	/*************************
-	 * 
+	 * @return 커뮤니티 글 리스트 페이지
 	 */
-	
-	@GetMapping("/boards")
+	@GetMapping("/board")
 	public String communityBoards() {
-		return "community/boards";
+		return "community/board";
 	}
 	
 	/**************************************************
@@ -43,18 +41,18 @@ public class CommunityController {
 	 * @param com_no 조회할 커뮤니티의 글 번호
 	 * @return 커뮤니티 상세 페이지
 	 **************************************************/
-	@GetMapping("/board/{com_no}")
+	@GetMapping("/post/{com_no}")
 	public String communityDetail(@PathVariable("com_no") Long com_no, Model model) {
 		model.addAttribute("com_no", com_no);
 		
-	    return "community/board";
+	    return "community/post";
 	}
 	
 	
 	/***************************************
 	 * @return 커뮤니티 글 작성 페이지
 	 ***************************************/
-	@GetMapping("/board/write")
+	@GetMapping("/post/write")
 	public String writeView() throws Exception{
 				
 		return "community/write";
@@ -65,7 +63,7 @@ public class CommunityController {
 	 * @param com_no 수정할 커뮤니티의 글 번호
 	 * @return 커뮤니티 글 수정 페이지
 	 *********************************/
-	@GetMapping("/board/edit/{com_no}")
+	@GetMapping("/post/edit/{com_no}")
 	public String updateView(@PathVariable("com_no") Long com_no, Model model) throws Exception{
 
 		model.addAttribute("com_no", com_no);
@@ -111,13 +109,9 @@ public class CommunityController {
 	 * @return 특정 회원의 커뮤니티 글 페이지 
 	 * @throws Exception 
 	 *********************************/
-	@GetMapping(value="/comPosts")
+	@GetMapping(value="/user/posts")
 	public String viewPosts() throws Exception {
 		
-		return "community/comPosts";
+		return "community/userPosts";
 	}
-	
-	
-	
-	
 }

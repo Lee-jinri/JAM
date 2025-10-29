@@ -15,7 +15,7 @@
 		</if>
 	</sql>
 	
-	<select id="getBoards" parameterType="community" resultType="community">
+	<select id="getBoard" parameterType="community" resultType="community">
 		<![CDATA[
 		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
 	        	c.comment_count, c.view_count, m.user_id, m.user_name, 0 AS isFavorite  
@@ -35,7 +35,7 @@
 	</select>
 
 	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회 -->
-	<select id="getBoardsWithFavorite" parameterType="community" resultType="community">
+	<select id="getBoardWithFavorite" parameterType="community" resultType="community">
 		<![CDATA[
 		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
 	        	c.comment_count, c.view_count, m.user_id, m.user_name,
@@ -92,7 +92,7 @@
 	</update>
 	
 	<!-- 커뮤니티 상세 페이지 -->
-	<select id="getBoardDetail" resultType="community">
+	<select id="getPost" resultType="community">
 		SELECT c.post_id, c.title, c.content, c.view_count, to_char(c.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, m.user_name, c.user_id 
 		FROM community c
 		LEFT JOIN Member m 
@@ -101,7 +101,7 @@
 	</select>
 	
 	<!-- 커뮤니티 글 작성 -->
-	<insert id="writeBoard" parameterType="community">
+	<insert id="writePost" parameterType="community">
 		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
         	select com_seq.nextval from dual
     	</selectKey>
@@ -110,14 +110,14 @@
 	</insert>
 	
 	<!-- 커뮤니티 수정 할 글 불러오기 -->
-	<select id="getBoardById" parameterType="community"  resultType="community">
+	<select id="getPostById" parameterType="community"  resultType="community">
 		SELECT title, content, imageFileName, user_id
 		FROM community
 		WHERE post_id = #{post_id} 
 	</select>
 	
 	<!-- 커뮤니티 글 수정 -->
-	<update id="editBoard" parameterType="community">
+	<update id="editPost" parameterType="community">
 		UPDATE community SET
 		title = #{title},
 		content = #{content},
@@ -129,7 +129,7 @@
 	</update>
 	
 	<!-- 커뮤니티 글 삭제 -->
-	<delete id="boardDelete" parameterType="community">
+	<delete id="deletePost" parameterType="community">
 		DELETE FROM community WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</delete>
 	
@@ -141,7 +141,7 @@
 	</update>
 	
 	<!-- 특정 회원의 커뮤니티 글 조회 --> 
-	<select id="getPosts" resultType="community" parameterType="community">
+	<select id="getUserPosts" resultType="community" parameterType="community">
 		<![CDATA[
 		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, view_count
 		FROM (

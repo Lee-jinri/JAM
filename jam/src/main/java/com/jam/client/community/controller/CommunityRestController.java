@@ -47,7 +47,7 @@ public class CommunityRestController {
 	 * @param keyword	검색 키워드 (없을 경우 전체 조회)
 	 * @return communityList(커뮤니티 글 목록), pageMaker(페이징 정보)
 	 */
-	@GetMapping(value = "boards")
+	@GetMapping(value = "board")
 	public ResponseEntity<Map<String, Object>> getBoards(
 			HttpServletRequest request,
 			@RequestParam (defaultValue = "1")int pageNum,
@@ -63,7 +63,7 @@ public class CommunityRestController {
 			
 			Map<String, Object> result = new HashMap<>();
 
-			List<CommunityVO> communityList = comService.getBoards(community);
+			List<CommunityVO> communityList = comService.getBoard(community);
 			result.put("communityList", communityList);
 			
 			int total = comService.listCnt(community);
@@ -76,7 +76,6 @@ public class CommunityRestController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
 		}
-		
 	}
 	
 	/**
@@ -114,20 +113,20 @@ public class CommunityRestController {
 	 * @return ResponseEntity<CommunityVO> - 조회된 커뮤니티 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 *************************************/
-	@GetMapping(value = "/board/{com_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("com_no") Long com_no, HttpServletRequest request) throws Exception{
+	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		
-		if (com_no == null) { 
-			log.error("com_no is required.");
+		if (post_id == null) { 
+			log.error("post_id is required.");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
 		try {
 	        // 조회수 증가
-			comService.incrementReadCnt(com_no);
+			comService.incrementReadCnt(post_id);
 			
 			// 상세 페이지 조회
-			CommunityVO detail = comService.getBoardDetail(com_no);
+			CommunityVO detail = comService.getPost(post_id);
 	       
 			Map<String, Object> response = new HashMap<>();
 			response.put("detail", detail);
@@ -156,19 +155,19 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
-	@PostMapping("/board")
-	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO com_vo, HttpSession session) throws Exception{
+	@PostMapping("/post")
+	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO community, HttpSession session) throws Exception{
 		
-		if (com_vo == null) {
-	        log.error("Request body (com_vo) is missing.");
+		if (community == null) {
+	        log.error("Request body (community) is missing.");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body (com_vo) is missing.");
 	    }
 
-	    if (com_vo.getTitle() == null || com_vo.getTitle().trim().isEmpty()) {
+	    if (community.getTitle() == null || community.getTitle().trim().isEmpty()) {
 	        log.error("Title (com_title) cannot be null or empty.");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Title (com_title) cannot be null or empty.");
 	    }
-	    if (com_vo.getContent() == null || com_vo.getContent().trim().isEmpty()) {
+	    if (community.getContent() == null || community.getContent().trim().isEmpty()) {
 	        log.error("Content (com_content) cannot be null or empty.");
 	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Content (com_content) cannot be null or empty.");
 	    }
@@ -182,12 +181,12 @@ public class CommunityRestController {
 				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated.");
 			}
 			
-			com_vo.setUser_id(userId);
-			com_vo.setUser_name(userName);
+			community.setUser_id(userId);
+			community.setUser_name(userName);
 			
-			comService.writeBoard(com_vo);
+			comService.writePost(community);
 			
-			String com_no = com_vo.getPost_id().toString();
+			String com_no = community.getPost_id().toString();
 			
 			return new ResponseEntity<>(com_no,HttpStatus.OK);
 		} catch (NullPointerException e) {
@@ -200,33 +199,6 @@ public class CommunityRestController {
 	        log.error("커뮤니티 글 작성 데이터 저장 중 오류: ", e);
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage() != null ? e.getMessage() : "Unknown error occurred.");
 	    }
-	}
-	
-	
-	
-	/*******************************************
-	 * 커뮤니티의 수정할 글 정보(제목, 내용, 사진 파일 이름, 글쓴이 id)를 불러오는 메서드 입니다.
-	 * 
-	 * @param Long com_no 수정을 위해 불러올 글 번호
-	 * @return ResponseEntity<CommunityVO> - 조회된 커뮤니티 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
-	 *******************************************/
-	@GetMapping(value = "/board/edit/{com_no}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<CommunityVO> getBoardById(@PathVariable Long com_no, HttpServletRequest request) {
-		if (com_no == null) { 
-			log.error("com_no is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		}
-		try {
-			CommunityVO board = comService.getBoardById(com_no);
-			
-			board.setPost_id(com_no);
-			    
-			return ResponseEntity.ok(board);
-		}catch (Exception e) {
-			log.error("커뮤니티 수정 글 불러오는 중 오류 발생 : " + e.getMessage());
-				
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
 	}
 	
 	/***********************************
@@ -261,7 +233,7 @@ public class CommunityRestController {
 		}
 		
 		try {
-			comService.editBoard(com_vo, user_id);
+			comService.editPost(com_vo, user_id);
 			String com_no = com_vo.getPost_id().toString();
 			
 			return new ResponseEntity<>(com_no, HttpStatus.OK);
@@ -284,12 +256,12 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@DeleteMapping("/board")
-	public ResponseEntity<String> boardDelete(@RequestParam("com_no") Long com_no, HttpServletRequest request) throws Exception{
+	@DeleteMapping("/post/{post_id}")
+	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		
-		if (com_no == null) { 
-			log.error("com_no is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("com_no is required");
+		if (post_id == null) { 
+			log.error("post_id is required");
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("post_id is required");
 		}
 		
 		String user_id = (String)request.getAttribute("userId");
@@ -299,7 +271,7 @@ public class CommunityRestController {
 		}
 		
 		try {
-			comService.boardDelete(com_no, user_id);
+			comService.deletePost(post_id, user_id);
 			
 			return new ResponseEntity<>(HttpStatus.OK);
 		} catch (Exception e) {
@@ -350,7 +322,7 @@ public class CommunityRestController {
 	        
 	        Map<String, Object> result = new HashMap<>();
 
-	        List<CommunityVO> posts = comService.getPosts(com_vo);
+	        List<CommunityVO> posts = comService.getUserPosts(com_vo);
 	        result.put("posts", posts);
 
 	        int total = comService.getUserPostCnt(com_vo);

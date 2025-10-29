@@ -321,13 +321,13 @@ function logout(loginType){
 		
 				<!-- 가운데: 네비게이션 메뉴 -->
 				<nav id="headerNav" class="nav-menu items-center">
-					<a href="/community/boards"
+					<a href="/community/board"
 						class="header-board-a font-color-blue font-weight-bold padding-10">커뮤니티</a>
 					<a href="/roomRental/boards"
 						class="header-board-a font-color-blue font-weight-bold padding-10">연습실</a>
 					<a href="/fleaMarket/board"
 						class="header-board-a font-color-blue font-weight-bold padding-10">중고악기</a>
-					<a href="<c:url value='/jobs/boards'/>" target="_blank" rel="noopener noreferrer"
+					<a href="<c:url value='/jobs/board'/>" target="_blank" rel="noopener noreferrer"
 						class="header-board-a font-weight-bold padding-10" style="color: #0B7285;">
 							Jobs
 							<i class="fa-solid fa-arrow-up-right-from-square" style="color: #969696;font-size: 13px;"></i>

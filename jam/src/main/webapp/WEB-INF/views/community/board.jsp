@@ -6,149 +6,347 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM - 커뮤니티</title>
-
 <script src="/resources/include/dist/js/userToggle.js"></script>
+<script src="/resources/include/dist/js/favorite.js"></script>
 
-<script type="text/javascript">
-$(function(){
-			
-	let com_no = $("#com_no").val();
-	let authorUserName;
-			
-	getBoard(com_no).then(() => {
-		toggleUserMenu(); // mainBoards 실행 후 getUserInfo 실행
-    })
-    .catch(error => {
-        console.error('Error while executing mainBoards:', error);
-    });
-	
-			
-	// 수정 버튼 클릭
-	$(document).on("click", "#comUpdateBtn", function() {
-		if(com_no == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-		else $(location).attr('href', '/community/board/edit/'+com_no);
-	});
-			
-	// 삭제 버튼 클릭
-	$(document).on("click", "#comDeleteBtn", function() {
-		if(confirm("정말 삭제하시겠습니까?")){
-			fetch('/api/community/board?com_no='+$("#com_no").val(), {
-				method: 'DELETE'
-			})
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
-				}
-				alert("삭제가 완료 되었습니다.");
-				$(location).attr('href', '/community/boards');
-			})
-			.catch(error => {
-				alert('게시글 삭제를 완료할 수 없습니다. 잠시 후 다시 시도해주세요.');
-				console.error('Error : ' , error);
-			});
-		}
-	});
-			
-})
+<style>
 
-function getBoard(com_no){
-	return new Promise((resolve, reject) => {
-		if(com_no == "" || com_no == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
-		else{
-			fetch('/api/community/board/' + com_no)
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
-				}
-				return response.json();
-			})
-			.then(data => {
-				const detail = data.detail;
-			    authorUserName = detail.user_name;
-			        
-			    $("#com_title").html(detail.com_title);
-				$("#user_name").html(detail.user_name);
-				$("#user_name").attr("data-userid", detail.user_id);
-				$("#com_date").html(detail.com_date);
-				$("#com_hits").html(detail.com_hits);
-				$("#com_content").html(detail.com_content);
-				        
-				currentUserIsAuthor(data.isAuthor);
-				
-				resolve();
-			})
-			.catch(error => {
-	            console.error('Error:', error);
-	            reject(error); // 에러가 발생하면 reject 호출
-	        });
-		}
-	})
+.title-container {
+	flex-grow: 1;
+    min-width: 250px;
+    max-width: 680px;
+    margin-left: 7rem;
 }
 
-// 현재 로그인한 사용자와 글쓴이가 같은지 비교하는 함수
-function currentUserIsAuthor(isAuthor){
-	if (isAuthor) { // 글쓴이와 사용자가 같으면 수정, 삭제 버튼 추가
+.userName-div{
+	max-width: 150px;
+    flex: 1;
+    justify-content: center;
+}
+
+.date-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;  /* 오른쪽 정렬 */
+    flex-shrink: 0; /* 자동 크기 축소 방지 */
+    min-width: 120px; /* 너무 넓지 않게 조절 */
+    max-width: 170px; /* 필요 이상으로 커지지 않게 제한 */
+}
+
+.user_toggle {
+    left: -6rem;
+    top: 3rem;
+}
+
+.boardReplyCnt{
+	font-size: 10px;
+    color: #746eff;
+}
+
+.boardHits, .boardDate{
+    font-size: 13px;
+    color: #8b8b8b;
+}
+.boardLink:hover, .popular-item:hover {
+	background-color: #f5f5f5;	
+	cursor: pointer;
+}
+.bttitle{
+	border-bottom: 1px solid #e3e3e3;
+	padding: 15px;
+}
+.popular-item {
+	border-bottom: 1px solid #e3e3e3;
+	padding: 6px 15px;
+    line-height: 18px;	
+}
+.popular-title{
+	color: #828fc1;
+    font-weight: 600;
+}
+.arrow-btn {
+	border: none;
+	background: none;
+	cursor: pointer;
+	padding: 10px;
+	color: #8b8b8b;
+}
+
+.arrow-btn:hover {
+	color: #333;
+	background-color: #f5f5f5;
+	border-radius: 5px;
+}
+
+</style>
+<script type="text/javascript">
+const boardState = {
+		keyword: "",
+		pageNum: 1
 		
-		var btnDiv = document.getElementById("btn_div");
+}
+	$(function(){
+		getBoard();
+		getPopularBoard();
 		
-		// 수정 버튼 생성		        
-		var updateButton = document.createElement("button");
-							        
-		updateButton.type = "button";
-		updateButton.id = "comUpdateBtn";
-		updateButton.textContent = "수정"; // 버튼 텍스트 설정
-		
-		// 삭제 버튼 생성
-		var deleteButton = document.createElement("button");
-		deleteButton.type = "button";
-		deleteButton.id = "comDeleteBtn";
-		deleteButton.textContent = "삭제"; // 버튼 텍스트 설정
+		$(document).on("click", ".boardLink", function (e) {
+		    e.preventDefault();
+		    var location = $(this).attr("data-location");
+		    if (location) {
+		        window.location.href = location;
+		    }
+		});
+
+		$("#searchBtn").click(function(){
+			let keyword = $("#keyword").val();
 			
-		btnDiv.appendChild(updateButton);
-		btnDiv.appendChild(deleteButton);
+			if(keyword.replace(/\s/g, "") == ""){
+				alert("검색어를 입력하세요.");
+				$("#keyword").focus();
+				return;
+			} 
+			boardState.keyword = keyword;
+			boardState.pageNum = 1;
+			
+			getBoard();
+		})
+			
+		$("#comWriteBtn").click(function () {
+			if(window.MY_ID == null){
+				if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+					location.href = "/member/login";
+				} else {
+					location.href = "/community/boards";
+				}
+			}else {
+				location.href = "/community/board/write";
+			}
+		})
 		
+		
+		$("#prevPopular").click(function(){
+		    if (popularState.pageNum > 1) {
+		        popularState.pageNum--;
+		        renderPopularList();
+		    }else{
+		    	 popularState.pageNum = popularState.maxPage;
+		    	 renderPopularList();
+		    }
+		});
+	
+		$("#nextPopular").click(function(){
+			if (popularState.pageNum < popularState.maxPage) {
+		        popularState.pageNum++;
+		        renderPopularList();
+		    }else{
+		    	 popularState.pageNum = 1;
+		    	 renderPopularList();
+		    }
+		})
+		
+		$(document).on("click", ".popular-item", function(){
+		    var postId = $(this).data("post-id");
+		    location.href = "/community/board/" + postId;
+		});
+	})
+	
+	
+	
+	function getBoard(){
+	    let pageNum = boardState.pageNum || "1";
+	    let keyword = boardState.keyword || "";
+	    
+		let queryString = new URLSearchParams(boardState).toString();
+		let url = "/api/community/board?" + queryString;
+		
+	    fetch(url)
+		.then(response=>{
+			if (!response.ok) {
+				throw new Error("서버 통신 실패");
+			}
+			return response.json();
+		}).then(data=>{
+			renderList(data);
+		})
+		.catch(error => {
+        	console.error('Error:', error);
+        });
 	}
-				
-} 
-		
+	
+	function renderList(data){
+		let $template = $("#boardTemplate");
+        let $boardList = $("#boardList");
+        
+        $boardList.empty(); 
+
+        data.communityList.forEach(board => {
+            let $clone = $template.clone().removeAttr("id").show();
+            
+            $clone.find(".userName").text(board.user_name);
+            $clone.find(".boardDate").text(timeAgo(board.created_at));
+            $clone.find(".boardTitle").text(board.title);
+            $clone.find(".boardHits").text("조회 " +board.view_count);
+            $clone.find(".boardReplyCnt").text(board.comment_count);
+            $clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
+
+            let $favoriteSpan = $clone.find(".favoriteSpan");
+            $favoriteSpan.attr("data-board-no", board.post_id);
+    		$favoriteSpan.attr("data-board-type", "community");
+    		
+    		let $icon = $favoriteSpan.find("i"); 
+    		board.favorite ? $icon.addClass("fa-solid")
+    					   : $icon.addClass("fa-regular");
+    		
+            $boardList.append($clone);
+        });
+        
+        loadPagination(data.pageMaker);
+	}
+	
+	const popularState = {
+	    all: [],     
+	    pageNum: 1,
+	    pageSize: 5, 
+	    maxPage: 3 
+	};
+
+	function getPopularBoard(){
+		fetch('/api/community/board/popular')
+		.then(response=>{
+			if(!response.ok) throw new Error('getPopularBoard Error')
+			return response.json();
+		}).then(data=>{
+			popularState.all = data.popularList || [];
+			popularState.maxPage = Math.ceil(popularState.all.length / popularState.pageSize) || 1;
+			popularState.pageNum = 1;
+			renderPopularList();
+		}).catch(error => {
+        	console.error('Error:', error);
+        });
+	}
+	
+	function renderPopularList() {
+		const startIdx = (popularState.pageNum - 1) * popularState.pageSize;
+	    const endIdx = startIdx + popularState.pageSize;
+	    const slice = popularState.all.slice(startIdx, endIdx);
+
+	    const $popularList = $("#popularList");
+	    $popularList.empty();
+
+	    slice.forEach(function(p){
+	        const $item = $('<li class="popular-item cursor-pointer flex" data-post-id="' + p.post_id + '">' +
+								'<span class="popular-title">' + p.title + '</span>' +
+								'<span class="boardReplyCnt ml-05">' + p.comment_count + '</span>' + 
+							'</li>');
+	        $popularList.append($item);
+	    });
+	}
+	
+	function loadPagination(pageMaker) {
+	    const $pagination = $("#pagination");
+	    $pagination.empty(); // 기존 페이지 버튼 초기화
+
+	    // 페이지 번호 버튼
+	    for (let num = pageMaker.startPage; num <= pageMaker.endPage; num++) {
+	        $pagination.append(
+	            '<li class="paginate_button">' +
+	                '<a href="#" data-page="' + num + '" class="font-weight-bold ' + (pageMaker.cvo.pageNum === num ? 'selected_btn' : 'default_btn') + '">' + num + '</a>' +
+	            '</li>'
+	        );
+	    }
+
+	    $("#pagination a").click(function (e) {
+	        e.preventDefault();
+	        let pageNum = $(this).data("page");
+
+	        boardState.pageNum = pageNum;
+		    getBoard();
+	    });
+	}
+
+
+	
 </script>
 </head>
 <body class="wrap">
-	<div class=" my-top-15 my-bottom-15">
-		<input type="hidden" id="com_no" name="com_no" value="${com_no }" />
+	<div class="community my-top-15 my-bottom-15">
+		<div class="my-top-7 my-bottom-7 flex justify-between items-center">
+			<p class="bttitle">COMMUNITY</p>
+			<div class="search-div flex justify-center items-center border border-radius-15px">
+				<div class="search-bar-wrapper item-center flex justify-space-around">
+					
+					<input type="text" name="keyword" id="keyword" class="search search-input"/>
+					
+					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
+				</div>
+			</div>
+			<div class="flex">
+				<div class="write_btn write_btn_border write_border flex items-center border-radius-7px">
+					<button type="button" id="comWriteBtn" class="write_btn_font border-none bColor_fff ">작성하기</button>
+				</div>
+			</div>
+		</div>
 		
-		<div class="board-detail-container">
-			<div class="board-header">
-			    <p id="com_title" class="com_title board-title"></p>
-			    <div class="board-info">
-					<span id="user_name" class="userName boardUserName"></span>  
-					<div class="userNameToggle"></div> 
-			      	<span class="divider">|</span>
-			       	<span id="com_date"></span>
-			        <span class="divider">|</span>
-			        <span class="com-hits board-hits">
-			            <span id="com_hits"></span>
-			        </span>
-			    </div>
+		<div class="popular-section my-top-7 my-bottom-7">
+			<p class="bttitle">HOT 🔥</p>
+			<ul id="popularList"></ul>
+			<div class="popular-pagination text-center my-top-5">
+				<button id="prevPopular" class="arrow-btn">
+					<i class="fa-solid fa-arrow-left fa-sm"></i>
+				</button>
+				<button id="nextPopular" class="arrow-btn">
+					<i class="fa-solid fa-arrow-right fa-sm"></i>
+				</button>
+			</div>
+		</div>
+		
+		<div class="content">
+			<div>
+			    <ul style="display:none;">
+			        <li id="boardTemplate" class="border-bottom" >
+			            <div class="boardLink cursor-pointer pd-2rem flex items-center " >
+			                
+			                <div class="flex items-center justify-center ml-2 mr-2" style="width: 3rem;">
+			                    <span class="favoriteSpan">
+			                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
+			                    </span>
+			                </div>
+			
+			                <div class="title-container flex-1 flex items-center cursor-pointer">
+			                    <div class="flex items-center">
+			                        <span class="font-size-5 boardTitle"></span>
+			                        <span class="ml-05 boardReplyCnt"></span>
+			                    </div>
+			                </div>
+							<div class="userName-div my-bottom-2 flex">
+			                    <span class="userName"></span>
+			                    <div class="userNameToggle"></div>
+			                </div>
+			                
+			                <div class="date-container flex-1 text-right">
+			                    <div class="my-bottom-2">
+			                        <span class="boardDate"></span>
+			                    </div>
+			                    <div class="flex items-center justify-end my-top-2">
+			                        <span class="ml-05 boardHits"></span>
+			                    </div>
+			                </div>
+			
+			            </div>
+			        </li>
+			    </ul>
+			    
+			    <ul id="boardList">
+				</ul>
 			</div>
 			
-			
-			<!-- 본문 영역 -->
-			<div class="com-content board-content">
-			    <p id="com_content"></p>
+			<div>
+				<!-- 페이징 영역 -->
+				<div class="text-center">
+				    <ul id="pagination" class="pagination pagination_border"></ul>
+				</div>
 			</div>
-			
-			<!-- 버튼 영역 -->
-			<div class="board-buttons">
-			    <div id="btn-div" class="author-buttons"></div>
-			    <a href="/community/boards" class="board-btn">목록</a>
-			</div>
-			
-			<!-- 댓글 -->
-			<div class="com-reply">
-				<jsp:include page="reply.jsp" />
-			</div>
-		</div>	
+		</div>
 	</div>
 </body>
 </html>

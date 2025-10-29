@@ -7,7 +7,6 @@ import org.springframework.stereotype.Service;
 
 import com.jam.client.community.dao.CommunityDAO;
 import com.jam.client.community.vo.CommunityVO;
-import com.jam.client.member.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -16,15 +15,14 @@ import lombok.RequiredArgsConstructor;
 public class CommunityServiceImpl implements CommunityService {
 	
 	private final CommunityDAO comDao;
-	private final MemberService memberService;
 	
 	@Override
-	public List<CommunityVO>getBoards(CommunityVO com_vo){
+	public List<CommunityVO>getBoard(CommunityVO com_vo){
 		
 		List<CommunityVO> list = new ArrayList<>();
 		
-		if(com_vo.getUser_id() == null) list = comDao.getBoards(com_vo);
-		else list = comDao.getBoardsWithFavorite(com_vo);
+		if(com_vo.getUser_id() == null) list = comDao.getBoard(com_vo);
+		else list = comDao.getBoardWithFavorite(com_vo);
 		
 		return list;
 	}
@@ -40,56 +38,45 @@ public class CommunityServiceImpl implements CommunityService {
 	}
 	
 	@Override
-	public CommunityVO getBoardDetail(Long com_no) {
+	public CommunityVO getPost(Long com_no) {
 		
-		return comDao.getBoardDetail(com_no);
+		return comDao.getPost(com_no);
 	}
 
 	@Override
-	public int writeBoard(CommunityVO com_vo) {
+	public int writePost(CommunityVO com_vo) {
 		
-		return comDao.writeBoard(com_vo);
+		return comDao.writePost(com_vo);
 	}
 	
 	@Override
-	public CommunityVO getBoardById(Long com_no) {
+	public CommunityVO getPostById(Long com_no) {
 		
-		return comDao.getBoardById(com_no);
+		return comDao.getPostById(com_no);
 	}
 
 	@Override
-	public int editBoard(CommunityVO com_vo, String user_id) {
+	public int editPost(CommunityVO com_vo, String user_id) {
 		
-		return comDao.editBoard(com_vo, user_id);
+		return comDao.editPost(com_vo, user_id);
 	}
 
 	@Override
-	public int boardDelete(Long com_no, String user_id) {
+	public int deletePost(Long com_no, String user_id) {
 		
-		return comDao.boardDelete(com_no, user_id);
+		return comDao.deletePost(com_no, user_id);
 	}
 
 	@Override
-	public List<CommunityVO> getPosts(CommunityVO com_vo){
-		return comDao.getPosts(com_vo);
+	public List<CommunityVO> getUserPosts(CommunityVO com_vo){
+		return comDao.getUserPosts(com_vo);
 	}
 
 	@Override
 	public int getUserPostCnt(CommunityVO com_vo) {
 		return comDao.getUserPostCnt(com_vo);
 	}
-
-	@Override
-	public String getUserId(String user_name) {
-		return memberService.getUserId(user_name);
-	}
-
-	@Override
-	public boolean isValidUserName(String user_name) throws Exception {
-		 int count = memberService.nameCheck(user_name);
-		 return count != 0 ? true : false;
-	}
-
+	
 	@Override
 	public List<CommunityVO> getPopularBoard(CommunityVO community) {
 		return comDao.getPopularBoard(community);
