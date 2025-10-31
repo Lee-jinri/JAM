@@ -1,6 +1,7 @@
 package com.jam.client.member.controller;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,8 @@ public class MemberController {
 		String uri = request.getHeader("Referer");
 
 		if (uri != null && !uri.contains("/login")) {
-			request.getSession().setAttribute("prevPage", uri);
+			HttpSession session = request.getSession(true);
+			session.setAttribute("prevPage", uri);
 		}
 
 		return "member/join";
@@ -42,7 +44,8 @@ public class MemberController {
 		String uri = request.getHeader("Referer");
 
 		if (uri != null && !uri.contains("/login")) {
-			request.getSession().setAttribute("prevPage", uri);
+			HttpSession session = request.getSession(true);
+			session.setAttribute("prevPage", uri);
 		}
 	}
 
