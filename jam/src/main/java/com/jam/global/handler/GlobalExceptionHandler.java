@@ -2,6 +2,7 @@ package com.jam.global.handler;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -29,13 +30,18 @@ import lombok.extern.log4j.Log4j;
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(BadRequestException.class)
-    public ResponseEntity<Map<String, String>> handleBadRequest(BadRequestException ex) {
+    public ResponseEntity<Map<String, Object>> handleBadRequest(BadRequestException ex, HttpServletRequest req) {
 		log.warn("400 BAD_REQUEST: " + ex.getMessage());
-        return ResponseEntity
-            .status(HttpStatus.BAD_REQUEST)
-            .body(Map.of("error", ex.getMessage()));
+		
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.BAD_REQUEST.value());
+		body.put("error", HttpStatus.BAD_REQUEST.getReasonPhrase());
+		body.put("detail", ex.getMessage());
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 	
+	// FIXME: 에러페이지/리다이렉트 처리 분리 필요 (fetch에서 리다이렉트X)
 	@ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
 	public void handleAuth(AuthenticationException ex, HttpServletRequest request, HttpServletResponse response) throws IOException {
 		log.warn("401 UNAUTHORIZED: " + ex.getMessage());
@@ -64,41 +70,63 @@ public class GlobalExceptionHandler {
 	}
 
 	@ExceptionHandler(NotFoundException.class)
-	public ResponseEntity<Map<String, String>> handleNotFound(NotFoundException ex) {
+	public ResponseEntity<Map<String, Object>> handleNotFound(NotFoundException ex, HttpServletRequest req) {
 	    log.warn("404 NOT_FOUND: " + ex.getMessage());
-		return ResponseEntity
-			.status(HttpStatus.NOT_FOUND)
-			.body(Map.of("error", ex.getMessage()));
+		
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.NOT_FOUND.value());
+		body.put("error", HttpStatus.NOT_FOUND.getReasonPhrase());
+		body.put("detail", ex.getMessage());
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
 	}
 	
 	@ExceptionHandler(ConflictException.class)
-    public ResponseEntity<Map<String, String>> handleConflict(ConflictException ex) {
+    public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex, HttpServletRequest req) {
 	    log.warn("409 CONFLICT: " + ex.getMessage());
-		return ResponseEntity
-            .status(HttpStatus.CONFLICT)
-            .body(Map.of("error", ex.getMessage()));
+
+	    Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.CONFLICT.value());
+		body.put("error", HttpStatus.CONFLICT.getReasonPhrase());
+		body.put("detail", ex.getMessage());
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.CONFLICT).body(body);
     }
 	
 	@ExceptionHandler(SQLException.class)
-	public ResponseEntity<Map<String, Object>> handleSqlError(SQLException ex) {
+	public ResponseEntity<Map<String, Object>> handleSqlError(SQLException ex, HttpServletRequest req) {
 	    log.error("SQL Error: " + ex.getMessage());
-	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	            .body(Map.of("error", "데이터베이스 오류가 발생했습니다."));
+	    
+	    Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+		body.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+		body.put("detail", "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
 	}
 
 	@ExceptionHandler(DataAccessException.class)
-	public ResponseEntity<Map<String, Object>> handleDataAccess(DataAccessException ex) {
+	public ResponseEntity<Map<String, Object>> handleDataAccess(DataAccessException ex, HttpServletRequest req) {
 	    log.error("DataAccessException: " + ex.getMessage());
-	    return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	            .body(Map.of("error", "DB 접근 중 문제가 발생했습니다."));
+		
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+		body.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+		body.put("detail", "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
 	}
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, String>> handleAny(Exception ex) {
-	    log.error("500 INTERNAL_SERVER_ERROR: " + ex.getMessage());
-    	return ResponseEntity
-            .status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(Map.of("error", "서버 오류가 발생했습니다."));
+    public ResponseEntity<Map<String, Object>> handleAny(Exception ex, HttpServletRequest req) {
+    	log.warn("500 INTERNAL_SERVER_ERROR: " + ex.getMessage());
+		
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.INTERNAL_SERVER_ERROR.value());
+		body.put("error", HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase());
+		body.put("detail", "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
     }
     
     private void clearAuthAndRedirect(HttpServletRequest request,
