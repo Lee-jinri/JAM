@@ -75,30 +75,30 @@
 				    method: 'GET',
 				})
 				.then(response => {
-				    if (response.ok) {
-				        // 성공 처리
-				        id_check = true;
-				        document.getElementById('id_check1').style.display = "inline-block";
-				        document.getElementById('id_check2').style.display = "none";
-				        document.getElementById('id_hint1').style.display = "inline-block";
-				        document.getElementById('id_hint2').style.display = "none";
-				    } else if (response.status === 409) {
-				        // 중복 ID 에러 처리
-				        id_check = false;
-				        document.getElementById('id_check1').style.display = "none";
-				        document.getElementById('id_check2').style.display = "inline-block";
-				        document.getElementById('id_hint1').style.display = "none";
-				        document.getElementById('id_hint2').style.display = "inline-block";
-				        document.getElementById('id_hint2').style.color = "red";
-				    } else {
-				    	return response.text().then(errMessage => {
-			            	throw new Error('Error: ${response.status}, Message: ${errMessage}');
-			        	});
-				    }
+
+					if (!response.ok) {
+						return response.json().then(err => {
+							throw new Error(err.detail || "오류가 발생했습니다.");
+						});
+					}
+					return response;
+				})
+				.then(() =>{
+					// 성공 처리
+					id_check = true;
+			        document.getElementById('id_check1').style.display = "inline-block";
+			        document.getElementById('id_check2').style.display = "none";
+			        document.getElementById('id_hint1').style.display = "inline-block";
+			        document.getElementById('id_hint2').style.display = "none";
 				})
 				.catch(error => {
-				    console.error("Error:", error);
-				    alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					id_check = false;
+			        document.getElementById('id_check1').style.display = "none";
+			        document.getElementById('id_check2').style.display = "inline-block";
+			        document.getElementById('id_hint1').style.display = "none";
+			        document.getElementById('id_hint2').style.display = "inline-block";
+			        document.getElementById('id_hint2').style.color = "red";
+			    	document.getElementById('id_hint2').textContent = error.message;
 				});
 			}
 	   	});
@@ -121,6 +121,14 @@
 		
 		/******************* 닉네임 *********************/
 		$("#user_name").on("blur", function(){
+			//FIXME: 이모지 막을 것
+			/* 
+			let emojiRegex = /[\p{Emoji}]/u;
+			if (emojiRegex.test(nickname)) {
+				alert("닉네임에 이모지는 사용할 수 없습니다.");
+			}
+			*/
+			
 			// 닉네임 유효성 체크
 			if(!name_legExp.test($("#user_name").val())){
 				$("#name_check2").css("display","inline-block");
@@ -129,34 +137,35 @@
 				// 닉네임 중복 확인
 				var user_name = $("#user_name").val();
 				
-				fetch('/api/member/userName/check?userName='+user_name, {
-			        method: 'GET',
-			    })
-			    .then(response => {
-			    	if(response.ok){
-			    		name_check = true;
-						$('#name_check1').css("display","inline-block");
-						$("#name_check2").css("display","none");
-						$("#name_hint1").css("display","inline-block");
-						$("#name_hint2").css("display","none");	
-			    	}else if (response.status === 409) {
-			        	name_check = false;
-						$('#name_check1').css("display","none");
-						$("#name_check2").css("display","inline-block");
-						$("#name_hint1").css("display","none");
-						$("#name_hint2").css("display","inline-block");
-						$("#name_hint2").css("color","red");
-			        } else {
-				    	return response.text().then(errMessage => {
-			            	throw new Error('Error: ${response.status}, Message: ${errMessage}');
-			        	});
-				    }
+				fetch('/api/member/userName/check?userName=' + encodeURIComponent(user_name), {
+					method: 'GET',
+				})
+				.then(response => {
+					if (!response.ok) {
+						return response.json().then(err => {
+							throw new Error(err.detail || "오류가 발생했습니다.");
+						});
+					}
+					return response;
+				})
+				.then(() => {
+					name_check = true;
+					$("#name_check1").css("display", "inline-block");
+					$("#name_check2").css("display", "none");
+					$("#name_hint1").css("display", "inline-block");
+					$("#name_hint2").css("display", "none");
 				})
 				.catch(error => {
-				    console.error("Error:", error);
-				    alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					console.warn("닉네임 확인 오류:", error.message);
+					name_check = false;
+					$("#name_check1").css("display", "none");
+					$("#name_check2").css("display", "inline-block");
+					$("#name_hint1").css("display", "none");
+					$("#name_hint2")
+						.css("display", "inline-block")
+						.css("color", "red")
+						.text(error.message);
 				});
-			    
 			}
 		});
 		
@@ -170,35 +179,35 @@
 			}else{
 				// 핸드폰 번호 중복 확인
 				var phone = $("#phone").val();
-				
-				fetch('/api/member/phone/check?phone='+phone,{
+				fetch('/api/member/phone/check?phone=' + encodeURIComponent(phone), {
 					method: 'GET',
 				})
 				.then(response => {
-					if(response.ok){
-						phone_check = true;
-						$('#phone_check1').css("display","inline-block");
-						$("#phone_check2").css("display","none");
-						$("#phone_hint1").css("display","inline-block");
-						$("#phone_hint2").css("display","none");	
-					}else if(response.status === 409){
-						phone_check = false;
-						$('#phone_check1').css("display","none");
-						$("#phone_check2").css("display","inline-block");
-						$("#phone_hint1").css("display","none");
-						$("#phone_hint2").css("display","inline-block");
-						$("#phone_hint2").css("color","red");
-					} else {
-				    	return response.text().then(errMessage => {
-			            	throw new Error('Error: ${response.status}, Message: ${errMessage}');
-			        	});
-				    }
+					if (!response.ok) {
+						return response.json().then(err => {
+							throw new Error(err.detail || "오류가 발생했습니다.");
+						});
+					}
+					return response;
+				})
+				.then(() => {
+					phone_check = true;
+					$("#phone_check1").css("display", "inline-block");
+					$("#phone_check2").css("display", "none");
+					$("#phone_hint1").css("display", "inline-block");
+					$("#phone_hint2").css("display", "none");
 				})
 				.catch(error => {
-				    console.error("Error:", error);
-				    alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					console.warn("전화번호 확인 오류:", error.message);
+					phone_check = false;
+					$("#phone_check1").css("display", "none");
+					$("#phone_check2").css("display", "inline-block");
+					$("#phone_hint1").css("display", "none");
+					$("#phone_hint2")
+						.css("display", "inline-block")
+						.css("color", "red")
+						.text(error.message);
 				});
-				 
 			}
 		});
 		
@@ -211,35 +220,35 @@
 			}else{
 				// 이메일 중복 확인
 				var email = $("#email").val();
-				
-				fetch('/api/member/email/check?email='+email,{
+				fetch('/api/member/email/check?email=' + encodeURIComponent(email), {
 					method: 'GET',
 				})
-				.then(response =>{
-					if(response.ok){
-						email_check = true;
-						$('#email_check1').css("display","inline-block");
-						$("#email_check2").css("display","none");
-						$("#email_hint1").css("display","inline-block");
-						$("#email_hint2").css("display","none");
-					}else if(response.status === 409){
-						email_check = false;
-						$('#email_check1').css("display","none");
-						$("#email_check2").css("display","inline-block");
-						$("#email_hint1").css("display","none");
-						$("#email_hint2").css("display","inline-block");
-						$("#email_hint2").css("color","red");
-			        }else {
-				    	return response.text().then(errMessage => {
-			            	throw new Error('Error: ${response.status}, Message: ${errMessage}');
-			        	});
-				    }
+				.then(response => {
+					if (!response.ok) {
+						return response.json().then(err => {
+							throw new Error(err.detail || "오류가 발생했습니다.");
+						});
+					}
+					return response;
+				})
+				.then(() => {
+					email_check = true;
+					$("#email_check1").css("display", "inline-block");
+					$("#email_check2").css("display", "none");
+					$("#email_hint1").css("display", "inline-block");
+					$("#email_hint2").css("display", "none");
 				})
 				.catch(error => {
-				    console.error("Error:", error);
-				    alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+					console.warn("이메일 확인 오류:", error.message);
+					email_check = false;
+					$("#email_check1").css("display", "none");
+					$("#email_check2").css("display", "inline-block");
+					$("#email_hint1").css("display", "none");
+					$("#email_hint2")
+						.css("display", "inline-block")
+						.css("color", "red")
+						.text(error.message);
 				});
-				 
 			}
 		});
 		

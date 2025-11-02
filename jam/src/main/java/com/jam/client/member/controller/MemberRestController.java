@@ -27,9 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
+import com.jam.global.exception.BadRequestException;
+import com.jam.global.exception.ConflictException;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 import com.jam.global.util.AuthClearUtil;
+import com.jam.global.util.HtmlSanitizer;
 
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -42,9 +45,7 @@ import lombok.extern.log4j.Log4j;
 public class MemberRestController {
 
 	private final MemberService memberService;
-
 	private final PasswordEncoder encoder;
-	
 	private final JwtService jwtService;
 	
 	/**
@@ -161,132 +162,115 @@ public class MemberRestController {
 	 * 사용자가 입력한 아이디의 중복을 확인합니다.
 	 * 
 	 * @param userId 사용자가 입력한 아이디
-	 * @return HTTP 응답 상태 코드와 중복 여부를 나타내는 메시지
-	 *         - 200 OK: 아이디 사용 가능
-	 *         - 400 BAD REQUEST: 입력된 아이디가 null이거나 형식이 올바르지 않음
-	 *         - 409 CONFLICT: 아이디가 이미 사용 중
-	 *         - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
-	 * @throws Exception 서버 처리 중 발생한 예외
+	 * @return 200 OK: 아이디 사용 가능
+	 * @throws BadRequestException 아이디가 비어있거나 형식이 올바르지 않은 경우
+	 * @throws ConflictException 이미 사용 중인 아이디인 경우
+	 * 
+	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value = "/userId/check")
 	public ResponseEntity<String> idChk(@RequestParam String userId) throws Exception {
-		if(userId == null || userId == "") return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User ID is null.");
-
-		String idLegExp =  "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
-		if (!userId.matches(idLegExp)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_USER_ID.");
-		
-		try {
-			int result = memberService.idCheck(userId);
-
-			if(result != 0 )return ResponseEntity.status(HttpStatus.CONFLICT).body("The User ID is already in use.");
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-				
-		}catch(Exception e) {
-			log.error(e.getMessage());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred." + e.getMessage());
+		if (userId == null || userId.isBlank()) {
+			throw new BadRequestException("아이디를 입력하세요.");
 		}
+		
+		String idLegExp =  "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
+		if (!userId.matches(idLegExp)) throw new BadRequestException("아이디는 8~20자 이내로 영문, 숫자를 혼용하여 입력해 주세요");
+		
+		if(HtmlSanitizer.hasHtmlTag(userId)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		
+		int result = memberService.idCheck(userId);
+		if(result != 0 )throw new ConflictException("이미 사용중인 아이디 입니다.");
+
+		return ResponseEntity.ok().build();
 	}
 
 	/**
 	 * 사용자가 입력한 닉네임의 중복을 확인합니다.
 	 * 
 	 * @param 사용자가 입력한 닉네임
-	 * @return HTTP 응답 상태 코드와 중복 여부를 나타내는 메시지
-	 *         - 200 OK: 닉네임 사용 가능
-	 *         - 400 BAD REQUEST: 입력된 닉네임이 null이거나 형식이 올바르지 않음
-	 *         - 409 CONFLICT: 닉네임이 이미 사용 중
-	 *         - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
-	 * @throws Exception 서버 처리 중 발생한 예외
+	 * @return 200 OK: 닉네임 사용 가능
+	 * @throws BadRequestException 닉네임이 비어있거나 형식이 올바르지 않은 경우
+	 * @throws ConflictException 이미 사용 중인 닉네임인 경우
+	 * 
+	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value="/userName/check")
 	public ResponseEntity<String> nameChk(@RequestParam String userName) throws Exception {
-		
-		if(userName == null || userName == "") return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("User name is null.");
-		
-		String nameLegExp = "^.{3,10}$";
-
-		if (!userName.matches(nameLegExp)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_USERNAME.");
-		
-		try {
-			int result = memberService.nameCheck(userName);
-
-			if(result != 0 )return ResponseEntity.status(HttpStatus.CONFLICT).body("The User name is already in use.");
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred." + e.getMessage());
+		if (userName == null || userName.trim().isEmpty()) {
+			throw new BadRequestException("닉네임을 입력하세요.");
 		}
-		
+
+		String nameLegExp = "^.{3,10}$";
+		if (!userName.matches(nameLegExp)) {
+			throw new BadRequestException("닉네임은 3~10자 이내로 입력해주세요.");
+		}
+
+		int result = memberService.nameCheck(userName);
+		if (result != 0) {
+			throw new ConflictException("이미 사용 중인 닉네임입니다.");
+		}
+
+		return ResponseEntity.ok().build();
 	}
 	
 	/**
-	 * 사용자가 입력한 핸드폰 번호의 중복을 확인합니다.
+	 * 사용자가 입력한 전화번호의 중복을 확인합니다.
+	 *
+	 * @param phone 사용자가 입력한 전화번호
+	 * @return 200 OK: 전화번호 사용 가능
+	 * @throws BadRequestException 전화번호가 비어있거나 형식이 올바르지 않은 경우
+	 * @throws ConflictException 이미 사용 중인 전화번호인 경우
 	 * 
-	 * @param 사용자가 입력한 핸드폰 번호
-	 * @return HTTP 응답 상태 코드와 중복 여부를 나타내는 메시지
-	 *         - 200 OK: 핸드폰 번호 사용 가능
-	 *         - 400 BAD REQUEST: 입력된 핸드폰 번호가 null이거나 형식이 올바르지 않음
-	 *         - 409 CONFLICT: 핸드폰 번호가 이미 사용 중
-	 *         - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
-	 * @throws Exception 서버 처리 중 발생한 예외
+	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value = "/phone/check")
 	public ResponseEntity<String> phoneChk(@RequestParam String phone) throws Exception {
-
-		if(phone == null || phone == "") return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Phone is null.");
+		if (phone == null || phone.trim().isEmpty()) {
+			throw new BadRequestException("전화번호를 입력하세요.");
+		}
 
 		String phoneLegExp = "^01([016789])([0-9]{3,4})([0-9]{4})$";
-		if (!phone.matches(phoneLegExp)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PHONE.");
-		
-		try {
-			int result = memberService.phoneCheck(phone);
-		
-			if(result != 0)return ResponseEntity.status(HttpStatus.CONFLICT).body("The phone number is already in use.");
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-			
-		}catch(Exception e) {
-			log.error(e.getMessage());
-			
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred." + e.getMessage());
+		if (!phone.matches(phoneLegExp)) {
+			throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
 		}
-		
+
+		int result = memberService.phoneCheck(phone);
+		if (result != 0) {
+			throw new ConflictException("이미 사용 중인 전화번호입니다.");
+		}
+
+		return ResponseEntity.ok().build();
 	}
 
 	/**
 	 * 사용자가 입력한 이메일의 중복을 확인합니다.
 	 * 
-	 * @param 사용자가 입력한 이메일
-	 * @return HTTP 응답 상태 코드와 중복 여부를 나타내는 메시지
-	 *         - 200 OK: 이메일 사용 가능
-	 *         - 400 BAD REQUEST: 입력된 이메일이 null이거나 형식이 올바르지 않음
-	 *         - 409 CONFLICT: 이메일이 이미 사용 중
-	 *         - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
-	 * @throws Exception 서버 처리 중 발생한 예외
+	 * @param email 사용자가 입력한 이메일
+	 * @return 200 OK: 이메일 사용 가능
+	 * @throws BadRequestException 이메일이 비어있거나 형식이 올바르지 않은 경우
+	 * @throws ConflictException 이미 사용 중인 이메일인 경우
+	 * 
+	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value = "/email/check")
 	public ResponseEntity<String> emailChk(@RequestParam String email) throws Exception {
 
-		if(email == null || email == "") return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("email is null.");
-		
-		String emailLegExp = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\\.[a-zA-Z]{2,3}$";
-		
-		if (!email.matches(emailLegExp)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid email.");
-		
-		try {
-			int result = memberService.emailCheck(email);
-			
-			if(result != 0 )return ResponseEntity.status(HttpStatus.CONFLICT).body("The email is already in use.");
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-			
-		}catch(Exception e) {
-			log.error(e.getMessage());
-			
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+		if (email == null || email.trim().isEmpty()) {
+			throw new BadRequestException("이메일을 입력하세요.");
 		}
+
+		String emailLegExp = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\\.[a-zA-Z]{2,3}$";
+		if (!email.matches(emailLegExp)) {
+			throw new BadRequestException("올바른 이메일 형식이 아닙니다.");
+		}
+
+		int result = memberService.emailCheck(email);
+		if (result != 0) {
+			throw new ConflictException("이미 사용 중인 이메일입니다.");
+		}
+
+		return ResponseEntity.ok().build();
 	}
 	
 
