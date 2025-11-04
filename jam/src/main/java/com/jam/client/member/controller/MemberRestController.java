@@ -29,10 +29,12 @@ import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ConflictException;
+import com.jam.global.exception.NotFoundException;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 import com.jam.global.util.AuthClearUtil;
 import com.jam.global.util.HtmlSanitizer;
+import com.jam.global.util.ValidationUtils;
 
 import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
@@ -57,24 +59,9 @@ public class MemberRestController {
 	 */
 	@PostMapping(value = "/join", produces = "application/json")
 	public ResponseEntity<String> join(@RequestBody MemberVO member , Model model, HttpServletRequest request) throws Exception {
-
-		String user_id = member.getUser_id();
 		
-		String user_name = member.getUser_name();
+		ValidationUtils.validateUserInfo(member);
 		
-		// 영문자, 숫자 포함 8~20자
-		String idLegExp = "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
-		// 영문자, 한글, 숫자 2~11자
-		String nameLegExp = "^[a-zA-Z가-힣0-9]{2,11}$";
-		
-		if (!user_id.matches(idLegExp)) {
-		    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_USER_ID");
-		}
-
-		if (!user_name.matches(nameLegExp)) {
-		    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_USERNAME");
-		}
-
 		String rawPw = member.getUser_pw(); // 인코딩 전 비밀번호
 		String encodePw = encoder.encode(rawPw); // 비밀번호 인코딩
 		
@@ -88,12 +75,9 @@ public class MemberRestController {
 			return ResponseEntity.ok().header("prev-page", prevPage).body(null);
 			
 		}catch(Exception e) {
-			
 			return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
 		}
-
 	}
-	
 	
 	@GetMapping(value="/loginType")
 	public ResponseEntity<String> getLoginType(HttpServletRequest request, HttpServletResponse response) {
@@ -102,8 +86,6 @@ public class MemberRestController {
     	
     	return ResponseEntity.ok(loginType);
 	}
-	
-	
 	
 	/**
 	 * JWT 토큰 검증 후 JWT 토큰에 저장된 사용자의 아이디와 닉네임, 권한 정보를 반환합니다.
@@ -174,10 +156,8 @@ public class MemberRestController {
 			throw new BadRequestException("아이디를 입력하세요.");
 		}
 		
-		String idLegExp =  "^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$";
-		if (!userId.matches(idLegExp)) throw new BadRequestException("아이디는 8~20자 이내로 영문, 숫자를 혼용하여 입력해 주세요");
-		
 		if(HtmlSanitizer.hasHtmlTag(userId)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		if(!ValidationUtils.validateUserId(userId)) throw new BadRequestException("아이디는 8~20자 이내로 영문, 숫자를 혼용하여 입력해 주세요");
 		
 		int result = memberService.idCheck(userId);
 		if(result != 0 )throw new ConflictException("이미 사용중인 아이디 입니다.");
@@ -201,10 +181,8 @@ public class MemberRestController {
 			throw new BadRequestException("닉네임을 입력하세요.");
 		}
 
-		String nameLegExp = "^.{3,10}$";
-		if (!userName.matches(nameLegExp)) {
-			throw new BadRequestException("닉네임은 3~10자 이내로 입력해주세요.");
-		}
+		if(HtmlSanitizer.hasHtmlTag(userName)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		if(!ValidationUtils.validateNickname(userName)) throw new BadRequestException("닉네임은 3~10자 이내로 입력해주세요.");
 
 		int result = memberService.nameCheck(userName);
 		if (result != 0) {
@@ -230,10 +208,8 @@ public class MemberRestController {
 			throw new BadRequestException("전화번호를 입력하세요.");
 		}
 
-		String phoneLegExp = "^01([016789])([0-9]{3,4})([0-9]{4})$";
-		if (!phone.matches(phoneLegExp)) {
-			throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
-		}
+		if(HtmlSanitizer.hasHtmlTag(phone)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		if(!ValidationUtils.validatePhone(phone)) throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
 
 		int result = memberService.phoneCheck(phone);
 		if (result != 0) {
@@ -260,10 +236,8 @@ public class MemberRestController {
 			throw new BadRequestException("이메일을 입력하세요.");
 		}
 
-		String emailLegExp = "^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\\.[a-zA-Z]{2,3}$";
-		if (!email.matches(emailLegExp)) {
-			throw new BadRequestException("올바른 이메일 형식이 아닙니다.");
-		}
+		if(HtmlSanitizer.hasHtmlTag(email)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		if(!ValidationUtils.validateEmail(email)) throw new BadRequestException("올바른 이메일 형식이 아닙니다.");
 
 		int result = memberService.emailCheck(email);
 		if (result != 0) {
@@ -273,7 +247,6 @@ public class MemberRestController {
 		return ResponseEntity.ok().build();
 	}
 	
-
 	/**
 	 * 이메일과 전화번호를 이용하여 사용자의 아이디를 찾습니다.
 	 * 
@@ -282,41 +255,63 @@ public class MemberRestController {
 	 * 
 	 * @return HTTP 응답 상태코드와 사용자의 아이디
 	 **/
-	@GetMapping(value = "/findId")
-	public ResponseEntity<String> findId(@RequestParam("email") String email, @RequestParam("phone") String phone) throws Exception {
+	@PostMapping(value = "/findId")
+	public ResponseEntity<String> findId(@RequestBody MemberVO req) throws Exception {
+		
+		String email = req.getEmail();
+		String phone = req.getPhone();
+		
+		if(email == null || email.trim().isEmpty()) throw new BadRequestException("이메일을 입력하세요.");
+		if(phone == null || phone.trim().isEmpty()) throw new BadRequestException("전화번호를 입력하세요.");
+		
+		if (!ValidationUtils.validateEmail(email)) throw new BadRequestException("올바른 이메일 형식이 아닙니다.");
+		if (!ValidationUtils.validatePhone(phone)) throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
 
 		String userId = memberService.FindId(email, phone);
 
 		if (userId != null && !userId.isEmpty()) {
-	        return ResponseEntity.ok(userId);
+	        return ResponseEntity.ok(maskId(userId));
 	    }
-
-	    return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User ID not found.");
+		throw new NotFoundException("회원정보를 찾을 수 없습니다.");
 	}
-
+	
+	// 아이디 마스킹 
+	public String maskId(String s) {
+		if (s == null || s.isEmpty()) return "";
+		
+		int n = s.length();
+		
+		if(n == 1) return s;
+		if(n == 2) return s.substring(0, 1) + "*";
+		if(n == 3) return s.substring(0, 1) + "*" + s.substring(2);
+		if(4 <= n && n <= 7) return s.substring(0, 1) + "**" + s.substring(3);
+		
+		return s.substring(0, 3) + "*".repeat(n-5) + s.substring(n-2);
+	}
+	
 	/**
 	 * 사용자 정보를 확인 후 임시 비밀번호 발급합니다.
 	 * 
 	 * @param member 사용자의 아이디와 이메일, 닉네임을 포함한 객체
 	 * @return HTTP 응답 상태코드
 	 */
-	@GetMapping("/findPw")
+	@PostMapping("/findPw")
 	public ResponseEntity<String> findPw(@RequestBody MemberVO member) throws Exception {
+		// TODO: 현재는 임시비밀번호 발급 방식 사용 중
+		// 비밀번호 재설정 링크 방식으로 개선 예정
 
 		String user_id = member.getUser_id();
 		String email = member.getEmail();
 		String phone = member.getPhone();
 		
-		if (user_id == null || user_id.isEmpty()) {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user id is required.");
-	    }
-	    if (email == null || email.isEmpty()) {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("email is required.");
-	    }
-	    if (phone == null || phone.isEmpty()) {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("phone is required.");
-	    }
-		
+		if (user_id == null || user_id.isEmpty()) throw new BadRequestException("아이디를 입력하세요.");
+	    if (email == null || email.isEmpty()) throw new BadRequestException("이메일을 입력하세요.");
+	    if (phone == null || phone.isEmpty()) throw new BadRequestException("전화번호를 입력하세요.");
+
+	    
+		if (!ValidationUtils.validateEmail(email)) throw new BadRequestException("올바른 이메일 형식이 아닙니다.");
+		if (!ValidationUtils.validatePhone(phone)) throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
+
 		try {
 			// 입력한 정보와 일치하는 사용자가 있는지 확인
 			int user = memberService.FindPw(user_id, email, phone);
@@ -359,11 +354,15 @@ public class MemberRestController {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		
-		if (member.getUser_name() == null) {
-			log.error("userName is required.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
+		String userName = member.getUser_name();
 		
+		if (userName == null || userName.trim().isEmpty()) {
+			throw new BadRequestException("닉네임을 입력하세요.");
+		}
+
+		if(HtmlSanitizer.hasHtmlTag(userName)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		if(!ValidationUtils.validateNickname(userName)) throw new BadRequestException("닉네임은 3~10자 이내로 입력해주세요.");
+
 	    try {        	
         	Map<String, Object> data = resolveAuthenticatedUser(request, response);
         	
@@ -415,14 +414,19 @@ public class MemberRestController {
 	public ResponseEntity<Void> updatePhone(HttpServletRequest request, @RequestBody MemberVO member) throws Exception {
 		Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
 		if(verifyStatus == null || !verifyStatus) {
-			log.error("");
+			log.error("not verified.");
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
 		}
 		
-		if(member.getPhone() == null || member.getPhone().equals("")) {
-			log.error("phone is required.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+		String phone = member.getPhone();
+		
+		if (phone == null || phone.trim().isEmpty()) {
+			throw new BadRequestException("전화번호를 입력하세요.");
 		}
+
+		if(HtmlSanitizer.hasHtmlTag(phone)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		if(!ValidationUtils.validatePhone(phone)) throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
+
 		
 		String userId = (String)request.getAttribute("userId");
 		if(userId == null) {
@@ -499,25 +503,24 @@ public class MemberRestController {
 		DB에서 비밀번호 변경 완료
 		RefreshToken 삭제 (DB에서 해당 유저 토큰 전부 제거)
 		SecurityContextHolder.clearContext()
-		request.getSession().invalidate()
+		request.getSession(false).invalidate()
 		쿠키 삭제 (Authorization, RefreshToken)
 		로그인 페이지로 리다이렉트
 		*/
 		
-		if(member.getUser_pw() == null) {
-			log.error("user password is required.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");
-		}
+		String password = member.getUser_pw();
 		
+		if(password == null || password.isEmpty()) throw new BadRequestException("비밀번호를 입력하세요.");
+		if(!ValidationUtils.validatePassword(password)) throw new BadRequestException("잘못된 비밀번호 입니다.");
+			
 		try {
 			HttpSession session = request.getSession();
-			
 			Boolean verifyStatus = (Boolean) session.getAttribute("verifyStatus");
 			
 			if (verifyStatus == null || !verifyStatus) {
 	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("not verified.");
 	        }
-
+			
 	        String userId = (String) request.getAttribute("userId");
 	        if (userId == null) {
 	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user Id is missing.");
@@ -525,7 +528,7 @@ public class MemberRestController {
 	        
 			member.setUser_id(userId);
 			
-			String encodePw = encoder.encode(member.getUser_pw()); // 비밀번호 인코딩
+			String encodePw = encoder.encode(password); // 비밀번호 인코딩
 
 			memberService.updatePw(member.getUser_id(), encodePw);
 			
