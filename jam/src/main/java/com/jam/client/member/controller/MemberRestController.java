@@ -668,7 +668,7 @@ public class MemberRestController {
                     	if(naverAccessToken != null)
                 			memberService.naverDeleteAccount(naverAccessToken);
                 			
-                    	if(cookies != null)	deleteCookie(cookies, response, "kakaoAccessToken");
+                    	if(cookies != null)	deleteCookie(cookies, response, "naverAccessToken");
                 		break;
                 }
             } catch (Exception e) {
