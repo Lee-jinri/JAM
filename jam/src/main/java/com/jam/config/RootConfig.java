@@ -35,6 +35,12 @@ public class RootConfig {
 
     @Value("${db.password}")
     private String dbPassword;
+
+    @Value("${spring.mail.username}")
+    private String mailUsername;
+    
+    @Value("${spring.mail.password}")
+    private String mailPassword;
     
 	@Bean
 	public DataSource dataSource() {
@@ -83,17 +89,17 @@ public class RootConfig {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         mailSender.setHost("smtp.naver.com");
         mailSender.setPort(465);
-        
-        mailSender.setUsername("ar971004");
-        mailSender.setPassword("V18ZLH3EM4M4");
+        mailSender.setUsername(mailUsername);
+        mailSender.setPassword(mailPassword);
 
         Properties properties = new Properties();
         properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.smtps.checkserveridentity", "true");
-        properties.put("mail.smtps.ssl.trust", "*");
+        properties.put("mail.smtp.ssl.enable", "true");
+        properties.put("mail.smtp.ssl.trust", "smtp.naver.com");
         properties.put("mail.debug", "true");
-        properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+        properties.put("mail.smtp.connectiontimeout", "5000");
+        properties.put("mail.smtp.timeout", "5000");
+        
         mailSender.setJavaMailProperties(properties);
 
         return mailSender;

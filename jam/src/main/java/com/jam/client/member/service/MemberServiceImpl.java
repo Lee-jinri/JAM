@@ -198,10 +198,12 @@ public class MemberServiceImpl implements MemberService {
 	    }
 	}
 	
-
+    @Value("${spring.mail.username}")
+    private String mailUsername;
+    
 	// 메일 전송
 	private void sendEmail(String email, String tempPw) throws MessagingException {
-	    String setFrom = "ar971004@naver.com";
+	    String setFrom = mailUsername;
 	    String title = "JAM 임시 비밀번호 입니다.";
 	
 	    String content = "JAM에서 발송된 메일입니다.<br/>임시 비밀번호를 이용하여 사이트에 접속하셔서 비밀번호를 변경하세요.<br/>";
