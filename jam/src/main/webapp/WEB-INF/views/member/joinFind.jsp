@@ -7,14 +7,15 @@
 <title>JAM - 아이디/비밀번호 찾기</title>
 
 	<script>
+
+		const emailRegex = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+		const phoneRegex = /^01[016-9]\d{7,8}$/;
+		
 		$(function(){
 			$("#find_id_btn").click(function(){
 				
 				var email = $("#id_email").val();
 				var phone = $("#id_phone").val();
-				
-				const emailRegex = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
-				const phoneRegex = /^01[016-9]\d{7,8}$/;
 				
 				if(email.replace(/\s/g, "") == ""){
 					alert("이메일을 입력하세요.");
@@ -88,6 +89,17 @@
 					alert("핸드폰 번호를 입력하세요.");
 					$("#pw_phone").focus();
 					return false;
+				}
+				
+
+				if(!emailRegex.test(email)){
+					alert("올바른 이메일 형식이 아닙니다.");
+					return;
+				}
+				
+				if(!phoneRegex.test(phone)){
+					alert("전화번호 형식이 올바르지 않습니다.");
+					return;
 				}
 				
 				fetch('/api/member/password/temp', {
