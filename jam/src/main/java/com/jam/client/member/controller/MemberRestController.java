@@ -255,7 +255,7 @@ public class MemberRestController {
 	 * 
 	 * @return HTTP 응답 상태코드와 사용자의 아이디
 	 **/
-	@PostMapping(value = "/findId")
+	@PostMapping(value = "/id/find")
 	public ResponseEntity<String> findId(@RequestBody MemberVO req) throws Exception {
 		
 		String email = req.getEmail();

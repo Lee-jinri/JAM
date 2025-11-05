@@ -8,12 +8,13 @@
 
 	<script>
 		$(function(){
-			if(window.MY_ID) location.href = "/";
-			
 			$("#find_id_btn").click(function(){
 				
 				var email = $("#id_email").val();
 				var phone = $("#id_phone").val();
+				
+				const emailRegex = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+				const phoneRegex = /^01[016-9]\d{7,8}$/;
 				
 				if(email.replace(/\s/g, "") == ""){
 					alert("이메일을 입력하세요.");
@@ -27,18 +28,25 @@
 					return false;
 				}
 				
-				fetch('/api/member/findId?email='+email+'&phone='+phone, {
-			        method: "GET",
-			        headers: {
-			            "Content-Type": "application/json"
-			        }
-			    })
+				if(!emailRegex.test(email)){
+					alert("올바른 이메일 형식이 아닙니다.");
+					return;
+				}
+				
+				if(!phoneRegex.test(phone)){
+					alert("전화번호 형식이 올바르지 않습니다.");
+					return;
+				}
+				
+				fetch('/api/member/id/find', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					credentials: 'same-origin',
+					body: JSON.stringify({ email, phone })
+				})
 			    .then(response => {
 			        if (!response.ok) {
-			            return response.text().then(errorText => {
-			                console.log("message: " + errorText);
-			                alert("지금은 요청하신 작업을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
-			            });
+			        	throw new Error("회원정보를 찾을 수 없습니다.");
 			        }
 			        return response.text();
 			    })
@@ -53,11 +61,9 @@
 			            alert("회원정보를 찾을 수 없습니다.");
 			        }
 			    })
-			    .catch(error => {
-			        console.error("Error: ", error);
-			        alert("지금은 요청하신 작업을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
-			    });
-				
+			    .catch(err=>{
+			    	alert(err.message || '잠시 후 다시 시도해 주세요.');
+				});
 			})
 			
 			$("#find_pw_btn").click(function(){
