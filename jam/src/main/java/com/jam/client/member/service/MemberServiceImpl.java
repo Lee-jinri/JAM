@@ -39,6 +39,7 @@ import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
+import com.jam.global.exception.MailSendFailureException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -159,43 +160,40 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.myRoomListCnt(room_vo);
 	}
 
-
-	
-	
-	
 	// 아이디 찾기
 	@Override
 	public String FindId(String email, String phone) {
 		return memberDao.findId(email, phone);
 	}
 
-	// 비밀번호 찾기
+	// 비밀번호 찾기 (사용자 정보 확인 후 임시 비밀번호 변경, 사용자 이메일로 전송)
 	@Override
-	public int FindPw(String user_id, String email, String phone) {
-		
-		return memberDao.findPw(user_id, email, phone);
-	}
-	
-	@Override
-	public ResponseEntity<String> updatePwAndSendEmail(String user_id, String email) {
-	    String tempPw = getTempPassword();
+	@Transactional(rollbackFor = Exception.class)
+	public void updatePwAndSendEmail(String user_id, String email, String phone) {
+
+		int count = memberDao.countByUserIdEmailPhone(user_id, email, phone);
+		if (count == 0) {
+			return;
+		} 
+	    String tempPw = generateTempPassword();
 	    String user_pw = encoder.encode(tempPw);
 
+        // 임시 비밀번호로 비밀번호 변경
+        memberDao.updatePw(user_id, user_pw);
+        
+        int updated = memberDao.updatePw(user_id, user_pw);
+        if (updated != 1) {
+        	throw new IllegalStateException("비밀번호 변경에 실패했습니다.");
+        }
+        
 	    try {
 	        // 이메일 전송
 	        sendEmail(email, tempPw);
 
-	        // 임시 비밀번호로 비밀번호 변경
-	        memberDao.updatePw(user_id, user_pw);
-
-	        return new ResponseEntity<>("Password updated successfully.", HttpStatus.OK);
 	    } catch (MessagingException e) {
-	        log.error("Failed to send email.", e);
-	        return new ResponseEntity<>("Failed to send email.", HttpStatus.INTERNAL_SERVER_ERROR);
-	    } catch (Exception e) {
-	        log.error("Failed to update password.", e);
-	        return new ResponseEntity<>("Failed to update password.", HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+	        log.error("메일 전송 실패.", e);
+	    	throw new MailSendFailureException("메일 전송에 실패했습니다. 잠시 후 다시 시도해주세요.");
+	    } 
 	}
 	
     @Value("${spring.mail.username}")
@@ -224,7 +222,7 @@ public class MemberServiceImpl implements MemberService {
 
 	
 	//임시 비밀번호 발급
-    public String getTempPassword(){
+    public String generateTempPassword(){
     	char[] charSet = new char[] {
                 '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
                 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',

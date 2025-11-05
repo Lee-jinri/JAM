@@ -6,7 +6,6 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletResponse;
 
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 
 import com.jam.client.community.vo.CommunityVO;
@@ -48,11 +47,8 @@ public interface MemberService {
 	// 아이디 찾기
 	public String FindId(String email, String phone);
 
-	// 비밀번호 찾기
-	public int FindPw(String user_id, String email, String phone);
-
 	// 임시 비밀번호로 변경
-	public ResponseEntity<String> updatePwAndSendEmail(String user_id, String email);
+	public void updatePwAndSendEmail(String user_id, String email, String phone);
 
 	// 소셜 로그인 정보 저장
 	public MemberVO socialLoginOrRegister(Map<String, Object> userInfo, String provider);

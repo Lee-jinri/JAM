@@ -48,8 +48,8 @@ public interface MemberDAO {
 	// 아이디 찾기
 	String findId(@Param("email") String email, @Param("phone") String phone);
 
-	// 비밀번호 찾기
-	int findPw(@Param("user_id") String user_id, @Param("email") String email, @Param("phone") String phone);
+	// 아이디와 이메일로 존재하는 사용자인지 확인 (비밀번호 변경 전 사용)
+	int countByUserIdEmailPhone(@Param("user_id") String user_id, @Param("email") String email, @Param("phone") String phone);
 	
 	// 비밀번호 변경
 	int updatePw(@Param("user_id") String user_id, @Param("user_pw") String user_pw);

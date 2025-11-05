@@ -84,8 +84,8 @@
 					return false;
 				}
 				
-				fetch('/api/member/findPw', {
-					method: 'GET',
+				fetch('/api/member/password/temp', {
+					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json'
 					},
@@ -96,13 +96,10 @@
 					}),
 				})
 				.then(response => {
-					if (response.status === 400) alert("회원 정보를 찾을 수 없습니다.");
-					else if (!response.ok) throw new Error('Network response was not ok');
-					else{
-						alert("메일로 임시 비밀번호를 발송했습니다. 로그인 후 비밀번호를 변경하세요.");
-						let login = confirm("로그인 페이지로 이동하시겠습니까?");
-						if(login) location.href = "/member/login";
-					}
+					alert("메일로 임시 비밀번호를 발송했습니다. 로그인 후 비밀번호를 변경하세요.");
+					
+					let login = confirm("로그인 페이지로 이동하시겠습니까?");
+					if(login) location.href = "/member/login";
 				})
 				.catch(error => {
 					alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');

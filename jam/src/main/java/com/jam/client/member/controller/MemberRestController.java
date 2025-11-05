@@ -292,11 +292,11 @@ public class MemberRestController {
 	/**
 	 * 사용자 정보를 확인 후 임시 비밀번호 발급합니다.
 	 * 
-	 * @param member 사용자의 아이디와 이메일, 닉네임을 포함한 객체
+	 * @param member 사용자의 아이디와 이메일, 전화번호를 포함한 객체
 	 * @return HTTP 응답 상태코드
 	 */
-	@PostMapping("/findPw")
-	public ResponseEntity<String> findPw(@RequestBody MemberVO member) throws Exception {
+	@PostMapping("/password/temp")
+	public ResponseEntity<String> issueTempPassword(@RequestBody MemberVO member) throws Exception {
 		// TODO: 현재는 임시비밀번호 발급 방식 사용 중
 		// 비밀번호 재설정 링크 방식으로 개선 예정
 
@@ -308,35 +308,13 @@ public class MemberRestController {
 	    if (email == null || email.isEmpty()) throw new BadRequestException("이메일을 입력하세요.");
 	    if (phone == null || phone.isEmpty()) throw new BadRequestException("전화번호를 입력하세요.");
 
-	    
-		if (!ValidationUtils.validateEmail(email)) throw new BadRequestException("올바른 이메일 형식이 아닙니다.");
-		if (!ValidationUtils.validatePhone(phone)) throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
-
-		try {
-			// 입력한 정보와 일치하는 사용자가 있는지 확인
-			int user = memberService.FindPw(user_id, email, phone);
-
-			if (user == 1) {
-
-				// 임시 비밀번호 메일로 전송, 임시 비밀번호로 변경
-				ResponseEntity<String> response = memberService.updatePwAndSendEmail(user_id, email);
-
-	            if (response.getStatusCode() == HttpStatus.OK) {
-	            	log.info("Password update and email sent successfully.");
-	                return new ResponseEntity<>(HttpStatus.OK);
-	            } else {
-	                return new ResponseEntity<>(response.getBody(), response.getStatusCode());
-	            }
-	            
-			} else {
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid user information.");
-			}
-		}catch(Exception e) {
-			
-			log.error(e.getMessage());
-			
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-		}
+		if (!ValidationUtils.validateEmail(email) || HtmlSanitizer.hasHtmlTag(email)) throw new BadRequestException("올바른 이메일 형식이 아닙니다.");
+		if (!ValidationUtils.validatePhone(phone) || HtmlSanitizer.hasHtmlTag(phone)) throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
+		
+		// 임시 비밀번호로 변경, 임시 비밀번호 메일로 전송
+		memberService.updatePwAndSendEmail(user_id, email, phone);
+		
+		return ResponseEntity.ok().build();
 	}
 
 	/**

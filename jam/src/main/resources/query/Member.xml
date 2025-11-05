@@ -118,8 +118,8 @@
   		AND phone = #{phone}
   	</select>
   	
-  	<!-- 비밀번호 찾기 -->
-	<select id="findPw" parameterType="String" resultType="int">
+  	<!-- 아이디와 이메일로 존재하는 사용자인지 확인 (비밀번호 변경 전 사용) -->
+	<select id="countByUserIdEmailPhone" resultType="int">
 		SELECT count(*)
 		FROM member
 		WHERE user_id = #{user_id} 
