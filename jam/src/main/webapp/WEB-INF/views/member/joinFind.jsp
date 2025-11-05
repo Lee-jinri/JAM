@@ -5,138 +5,229 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM - 아이디/비밀번호 찾기</title>
+<style>
+.find-title-div{
+    margin: 0 auto;
+    width: 867px;
+    margin-bottom: 22px;
+}
+.find-title{
+    display: inline;
+    font-size: 22px;
+    font-weight: bold;
+    line-height: 24px;
+    letter-spacing: -.2px;
+    color: #2e2e2e;
+}
+.find-sub-title{
+	font-size: 18px;
+    font-weight: 500;
+    text-align: center;
+    margin-bottom: 30px;
+}
 
-	<script>
+.find_id input,
+.find_pw input {
+	width: 260px;
+	max-width: 100%;
+	height: 44px;
+	padding: 0 14px;
+	border-radius: 14px;
+	border: 1.5px solid #d8d8e1;
+	background: #fdfdff;
+	font-size: 15px;
+	transition: all .18s ease;
+	outline: none;
+}
 
-		const emailRegex = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
-		const phoneRegex = /^01[016-9]\d{7,8}$/;
-		
-		$(function(){
-			$("#find_id_btn").click(function(){
-				
-				var email = $("#id_email").val();
-				var phone = $("#id_phone").val();
-				
-				if(email.replace(/\s/g, "") == ""){
-					alert("이메일을 입력하세요.");
-					$("#id_email").focus();
-					return false;
-				}
-				
-				if(phone.replace(/\s/g,"") == ""){
-					alert("핸드폰 번호를 입력하세요.");
-					$("#id_phone").focus();
-					return false;
-				}
-				
-				if(!emailRegex.test(email)){
-					alert("올바른 이메일 형식이 아닙니다.");
-					return;
-				}
-				
-				if(!phoneRegex.test(phone)){
-					alert("전화번호 형식이 올바르지 않습니다.");
-					return;
-				}
-				
-				fetch('/api/member/id/find', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					credentials: 'same-origin',
-					body: JSON.stringify({ email, phone })
-				})
-			    .then(response => {
-			        if (!response.ok) {
-			        	throw new Error("회원정보를 찾을 수 없습니다.");
-			        }
-			        return response.text();
-			    })
-			    .then(result => {
-			        if (result) {
-			            alert('회원님의 아이디는 ' + result + '입니다.');
-			            const login = confirm("로그인 페이지로 이동하시겠습니까?");
-			            if (login) {
-			                location.href = "/member/login";
-			            }
-			        } else {
-			            alert("회원정보를 찾을 수 없습니다.");
-			        }
-			    })
-			    .catch(err=>{
-			    	alert(err.message || '잠시 후 다시 시도해 주세요.');
-				});
-			})
+.find_id input:focus,
+.find_pw input:focus {
+	border-color: #b8bdea;
+	background: #ffffff;
+	box-shadow: 0 0 0 4px rgba(184,189,234,0.35);
+}
+
+.find_id input::placeholder,
+.find_pw input::placeholder {
+	color: #b8b8c4;
+	font-size: 14px;
+}
+
+.find_id input:hover,
+.find_pw input:hover {
+	border-color: #c8cbe6;
+}
+
+.findID_div button,
+.findPw_div button {
+	min-width: 150px;
+	height: 46px;
+	border-radius: 14px;
+	border: none;
+	background: #bfc8ea;
+	color: #1f2233;
+	font-weight: 600;
+	letter-spacing: -0.2px;
+	cursor: pointer;
+	box-shadow: 0 4px 10px rgba(191,200,234,0.45);
+	transition: all .18s ease;
+}
+
+.findID_div button:hover,
+.findPw_div button:hover {
+	background: #9fa9da;
+	box-shadow: 0 8px 20px rgba(191,200,234,0.55);
+	transform: translateY(-1px);
+}
+
+.findID_div button:active,
+.findPw_div button:active {
+	transform: translateY(1px);
+	box-shadow: 0 3px 8px rgba(191,200,234,0.25);
+}
+
+.width_80px span,
+.find_span {
+	font-weight: 600;
+	color: #6b6f82;
+}
+footer{
+	margin-top:0;
+}
+</style>
+<script>
+	const emailRegex = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
+	const phoneRegex = /^01[016-9]\d{7,8}$/;
+	
+	$(function(){
+		$("#find_id_btn").click(function(){
 			
-			$("#find_pw_btn").click(function(){
-				
-				var user_id = $("#pw_id").val();
-				var email = $("#pw_email").val();
-				var phone = $("#pw_phone").val();
-				
-				if(user_id.replace(/\s/g, "") == ""){
-					alert("아이디를 입력하세요.");
-					$("#pw_id").focus();
-					return false;
-				}
-				
-				if(email.replace(/\s/g, "") == ""){
-					alert("이메일을 입력하세요.");
-					$("#pw_email").focus();
-					return false;
-				}
-				
-				if(phone.replace(/\s/g,"") == ""){
-					alert("핸드폰 번호를 입력하세요.");
-					$("#pw_phone").focus();
-					return false;
-				}
-				
+			var email = $("#id_email").val();
+			var phone = $("#id_phone").val();
+			
+			if(email.replace(/\s/g, "") == ""){
+				alert("이메일을 입력하세요.");
+				$("#id_email").focus();
+				return false;
+			}
+			
+			if(phone.replace(/\s/g,"") == ""){
+				alert("핸드폰 번호를 입력하세요.");
+				$("#id_phone").focus();
+				return false;
+			}
+			
+			if(!emailRegex.test(email)){
+				alert("올바른 이메일 형식이 아닙니다.");
+				$("#id_email").focus();
+				return;
+			}
+			
+			if(!phoneRegex.test(phone)){
+				alert("전화번호 형식이 올바르지 않습니다.");
+				$("#id_phone").focus();
+				return;
+			}
+			
+			fetch('/api/member/id/find', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				credentials: 'same-origin',
+				body: JSON.stringify({ email, phone })
+			})
+		    .then(response => {
+		        if (!response.ok) {
+		        	throw new Error("회원정보를 찾을 수 없습니다.");
+		        }
+		        return response.text();
+		    })
+		    .then(result => {
+		        if (result) {
+		            alert('회원님의 아이디는 ' + result + '입니다.');
+		            const login = confirm("로그인 페이지로 이동하시겠습니까?");
+		            if (login) {
+		                location.href = "/member/login";
+		            }
+		        } else {
+		            alert("회원정보를 찾을 수 없습니다.");
+		        }
+		    })
+		    .catch(err=>{
+		    	alert(err.message || '잠시 후 다시 시도해 주세요.');
+			});
+		})
+		
+		$("#find_pw_btn").click(function(){
+			
+			var user_id = $("#pw_id").val();
+			var email = $("#pw_email").val();
+			var phone = $("#pw_phone").val();
+			
+			if(user_id.replace(/\s/g, "") == ""){
+				alert("아이디를 입력하세요.");
+				$("#pw_id").focus();
+				return false;
+			}
+			
+			if(email.replace(/\s/g, "") == ""){
+				alert("이메일을 입력하세요.");
+				$("#pw_email").focus();
+				return false;
+			}
+			
+			if(phone.replace(/\s/g,"") == ""){
+				alert("핸드폰 번호를 입력하세요.");
+				$("#pw_phone").focus();
+				return false;
+			}
+			
 
-				if(!emailRegex.test(email)){
-					alert("올바른 이메일 형식이 아닙니다.");
-					return;
-				}
+			if(!emailRegex.test(email)){
+				alert("올바른 이메일 형식이 아닙니다.");
+				$("#pw_email").focus();
+				return;
+			}
+			
+			if(!phoneRegex.test(phone)){
+				alert("전화번호 형식이 올바르지 않습니다.");
+				$("#pw_phone").focus();
+				return;
+			}
+			
+			fetch('/api/member/password/temp', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({
+					user_id: user_id,
+					email: email,
+					phone: phone
+				}),
+			})
+			.then(response => {
+				alert("메일로 임시 비밀번호를 발송했습니다. 로그인 후 비밀번호를 변경하세요.");
 				
-				if(!phoneRegex.test(phone)){
-					alert("전화번호 형식이 올바르지 않습니다.");
-					return;
-				}
-				
-				fetch('/api/member/password/temp', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						user_id: user_id,
-						email: email,
-						phone: phone
-					}),
-				})
-				.then(response => {
-					alert("메일로 임시 비밀번호를 발송했습니다. 로그인 후 비밀번호를 변경하세요.");
-					
-					let login = confirm("로그인 페이지로 이동하시겠습니까?");
-					if(login) location.href = "/member/login";
-				})
-				.catch(error => {
-					alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-					console.error('Error:', error);
-				})
+				let login = confirm("로그인 페이지로 이동하시겠습니까?");
+				if(login) location.href = "/member/login";
+			})
+			.catch(error => {
+				alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+				console.error('Error:', error);
 			})
 		})
-	</script>
+	})
+</script>
 </head>
 <body class="wrap">
-	<div class="my-top-15 my-bottom-15 rem-20">
+	<div class="my-top-15 my-bottom-15">
 		<div class="contents">
-			<div class="info_title">
-				<p class="">아이디 / 비밀번호 찾기</p>
+			<div class="find-title-div">
+				<h2 class="find-title">아이디 / 비밀번호 찾기</h2>
 			</div>
 			<div class="justify-space-around flex">
-				
 				<div class="find_id my-7">
-					<p class="find_title">아이디 찾기</p>
+					<p class="find-sub-title">아이디 찾기</p>
 					<div>
 						<div>
 							<div class="inline-block width_80px my-4">
@@ -151,17 +242,18 @@
 								<span>핸드폰 번호</span>
 							</div>
 							<div class="inline-block">
-								<input type="number" id="id_phone" name="phone" placeholder="'-'없이 입력">
+								<input type="text" id="id_phone" name="phone" placeholder="'-'없이 입력" maxlength="11" 
+									oninput="this.value = this.value.replace(/[^0-9]/g, '');">
 							</div>
 						</div>	
 					</div>
-					<div class="findID_div my-4">
-						<button type="button" id="find_id_btn" class="border-none">아이디 찾기</button>
+					<div class="findID_div my-top-75">
+						<button type="button" id="find_id_btn" class="find-btn border-none">아이디 찾기</button>
 					</div>
 				</div>
 				
 				<div class="find_pw my-7">
-					<p class="find_title">비밀번호 찾기</p>
+					<p class="find-sub-title">비밀번호 찾기</p>
 					<div>
 						<div class="inline-block width_80px my-4">
 							<span class="find_span">아이디</span>
@@ -183,11 +275,12 @@
 							<span class="find_span">핸드폰 번호</span>
 						</div>
 						<div class="inline-block">
-							<input type="text" id="pw_phone" name="phone" placeholder="'-'없이 입력">
+							<input type="text" id="pw_phone" name="phone" placeholder="'-'없이 입력" maxlength="11" 
+								oninput="this.value = this.value.replace(/[^0-9]/g, '');">
 						</div>
 					</div>	
-					<div class="findPw_div my-4">
-						<button type="button" id="find_pw_btn" class="border-none">비밀번호 찾기</button>
+					<div class="findPw_div my-top-75">
+						<button type="button" id="find_pw_btn" class="find-btn border-none">비밀번호 찾기</button>
 					</div>
 						
 				</div>
