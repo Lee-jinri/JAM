@@ -11,8 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -41,32 +39,28 @@ public class GlobalExceptionHandler {
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(body);
     }
 	
-	// FIXME: 에러페이지/리다이렉트 처리 분리 필요 (fetch에서 리다이렉트X)
-	@ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
-	public void handleAuth(AuthenticationException ex, HttpServletRequest request, HttpServletResponse response) throws IOException {
-		log.warn("401 UNAUTHORIZED: " + ex.getMessage());
-		
-		clearAuthAndRedirect(request, response, "/common/unauthorized");
-	}
-
 	@ExceptionHandler(UnauthorizedException.class)
-	public void handleUnauthrized(UnauthorizedException ex, HttpServletRequest request, HttpServletResponse response) throws IOException {
+	public ResponseEntity<Map<String, Object>> handleUnauthrized(UnauthorizedException ex, HttpServletRequest req) throws IOException {
 		log.warn("401 UNAUTHORIZED: " + ex.getMessage());
 
-		clearAuthAndRedirect(request, response, "/common/unauthorized");
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.UNAUTHORIZED.value());
+		body.put("error", HttpStatus.UNAUTHORIZED.getReasonPhrase());
+		body.put("detail", ex.getMessage());
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
 	}
-	
-	@ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
-	public void handleDenied(AccessDeniedException ex, HttpServletResponse response) throws IOException {
-		log.warn("403 FORBIDDEN: " + ex.getMessage());
-	    response.sendRedirect("/common/accessDenied");
-	}
-	
 	
 	@ExceptionHandler(ForbiddenException.class)
-	public void handleForbidden(ForbiddenException ex, HttpServletResponse response) throws IOException {
+	public ResponseEntity<Map<String, Object>> handleForbidden(ForbiddenException ex, HttpServletRequest req) throws IOException {
 		log.warn("403 FORBIDDEN: "+ ex.getMessage());
-		response.sendRedirect("/common/accessDenied");
+		
+		Map<String, Object> body = new LinkedHashMap<>();
+		body.put("status", HttpStatus.FORBIDDEN.value());
+		body.put("error", HttpStatus.FORBIDDEN.getReasonPhrase());
+		body.put("detail", ex.getMessage());
+		body.put("path", req.getRequestURI());
+		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
 	}
 
 	@ExceptionHandler(NotFoundException.class)

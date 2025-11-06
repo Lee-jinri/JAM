@@ -12,7 +12,6 @@ import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -385,7 +384,6 @@ public class JobRestController {
 	 * @return 지원서 상세 정보 (category, app, files 등 포함)
 	 */
 	@GetMapping("/applications/{applicationId}")
-	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Map<String, Object>> getApplication(@PathVariable Long applicationId, HttpServletRequest request){
 		String userId = (String) request.getAttribute("userId");
 		if(userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
@@ -404,7 +402,6 @@ public class JobRestController {
 	 * @return apps(지원한 공고 목록), pageMaker(페이징 정보)
 	 */
 	@GetMapping("/my/applications")
-	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Map<String, Object>> getMyApplications(ApplicationVO app, HttpServletRequest request){
 		String userId = (String) request.getAttribute("userId");
 		if(userId == null) throw new UnauthorizedException("인증되지 않은 사용자입니다."); 
@@ -498,7 +495,6 @@ public class JobRestController {
 	 * @return favorites(스크랩한 글 목록), pageMaker(페이징 정보)
 	 */
 	@GetMapping("/my/favorites")
-	@PreAuthorize("isAuthenticated()")
 	public ResponseEntity<Map<String, Object>> getMyFavorites(JobVO job, HttpServletRequest request){
 		String userId = (String) request.getAttribute("userId");
 		if(userId == null) throw new UnauthorizedException("로그인이 만료 되었습니다."); 

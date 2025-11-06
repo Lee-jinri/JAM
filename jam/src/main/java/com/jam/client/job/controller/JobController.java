@@ -1,6 +1,5 @@
 package com.jam.client.job.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -51,7 +50,6 @@ public class JobController {
 	/***************************************
 	 * @return 구인구직 글 작성 페이지
 	 ***************************************/
-	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/post/write")
 	public String writeView() throws Exception{
 		
@@ -63,7 +61,6 @@ public class JobController {
 	 * @param job_no 수정할 구인구직 글 번호
 	 * @return 구인구직 글 수정 페이지
 	 *********************************/
-	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/post/update/{post_id}")
 	public String updateView(@PathVariable Long post_id, Model model){
 	
@@ -77,7 +74,6 @@ public class JobController {
 	 * @return 기업회원 전환 페이지
 	 *********************************/
 	@GetMapping(value="/toBusiness")
-	@PreAuthorize("isAuthenticated() and hasRole('USER')")
 	public String convertToBusinessPage() {
 		return "forward:/WEB-INF/views/jobs/toBusiness.jsp";
 	}
@@ -86,7 +82,6 @@ public class JobController {
 	 * @return 지원서 작성 폼
 	 *************************************/
 	@GetMapping(value="/applyForm/{postId}")
-	@PreAuthorize("isAuthenticated() and hasRole('USER')")
 	public String applyFormPage(@PathVariable("postId") String postId, @RequestParam String category, Model model) {
 		
 	    model.addAttribute("postId", postId);
@@ -99,7 +94,6 @@ public class JobController {
 	 * @return 작성한 기업 공고/ 멤버 모집 글
 	 *************************************/
 	@GetMapping(value="/postsManage/{mode}")
-	@PreAuthorize("isAuthenticated()")
 	public String postsManagePage(@PathVariable String mode, Model model) {
 		model.addAttribute("mode", mode);
 		return "jobs/postsManage";
@@ -111,7 +105,6 @@ public class JobController {
 	 * @return 지원서 상세 JSP
 	 *********************************/
 	@GetMapping(value="/applications/{applicationId}")
-	@PreAuthorize("isAuthenticated()")
 	public String viewApplication(@PathVariable Long applicationId, Model model) {
 		return "forward:/WEB-INF/views/jobs/application.jsp";
 	}
@@ -120,7 +113,6 @@ public class JobController {
 	 * @return 내가 지원한 공고/이력서
 	 **********************************/
 	@GetMapping(value="/my/applications")
-	@PreAuthorize("isAuthenticated() and hasRole('USER')")
 	public String applicationsPage() {
 		return "jobs/my/applications";
 	}
@@ -129,7 +121,6 @@ public class JobController {
 	 * @return 스크랩(즐겨찾기)
 	 **********************************/
 	@GetMapping(value="/my/favorites")
-	@PreAuthorize("isAuthenticated() and hasRole('USER')")
 	public String favoritesPage() {
 		return "jobs/my/favorites";
 	}
