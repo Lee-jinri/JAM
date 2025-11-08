@@ -29,14 +29,15 @@ import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ConflictException;
+import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.NotFoundException;
+import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 import com.jam.global.util.AuthClearUtil;
 import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValidationUtils;
 
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
@@ -615,62 +616,65 @@ public class MemberRestController {
 	 */
 	@DeleteMapping("/me")
     public ResponseEntity<Void> deleteAccount(HttpServletRequest request, HttpServletResponse response) {
-        try {
-        	// 1. 인증 플래그 확인
-        	Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
-        	if(verifyStatus == null || !verifyStatus) return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
-        	
-        	// 2. loginType 확인 (local, kakao, naver)
-        	Cookie[] cookies = request.getCookies();
-        	
-        	String loginType = jwtService.extractLoginType(request, response, cookies);
-        	
-        	if (loginType == null) log.error("loginType 확인 실패 : (무시하고 회원 탈퇴 진행):");
-        	
-        	// 3. 소셜 연결 끊기
-            try {
-                switch (loginType) {
-                    case "kakao":
-                    	String kakaoAccessToken = getCookieValue(cookies, "kakaoAccessToken");
-                    	
-                		if (kakaoAccessToken != null) {
-                	        memberService.kakaoDeleteAccount(kakaoAccessToken);
-                	    }
-                		
-                		if(cookies != null)	deleteCookie(cookies, response, "kakaoAccessToken");
-                		break;
-                		
-                    case "naver":
-                    	String naverAccessToken = getCookieValue(cookies, "naverAccessToken");
+		
+    	// 1. 인증 플래그 확인
+		HttpSession session = request.getSession(false);
+		Boolean verifyStatus = session != null ? (Boolean) session.getAttribute("verifyStatus") : null;
+    	if(verifyStatus == null || !verifyStatus) throw new ForbiddenException("인증 정보가 유효하지 않습니다.");
+    	
+    	// 2. loginType 확인 (local, kakao, naver)
+    	Cookie[] cookies = request.getCookies();
+    	
+    	String loginType = jwtService.extractLoginType(request, response, cookies);
+    	
+    	if (loginType != null) {
+    		// 3. 소셜 연결 끊기
+            switch (loginType) {
+                case "kakao":
+                	String kakaoAccessToken = getCookieValue(cookies, "kakaoAccessToken");
+                	
+            		if (kakaoAccessToken != null) {
+            	        memberService.kakaoDeleteAccount(kakaoAccessToken);
+            	    }
+            		
+            		if(cookies != null)	deleteCookie(cookies, response, "kakaoAccessToken");
+            		break;
+            		
+                case "naver":
+                	String naverAccessToken = getCookieValue(cookies, "naverAccessToken");
 
-                    	if(naverAccessToken != null)
-                			memberService.naverDeleteAccount(naverAccessToken);
-                			
-                    	if(cookies != null)	deleteCookie(cookies, response, "naverAccessToken");
-                		break;
-                }
-            } catch (Exception e) {
-                log.warn("소셜 연결 끊기 실패 (무시하고 회원 탈퇴 진행): " + e.getMessage());
+                	if(naverAccessToken != null)
+            			memberService.naverDeleteAccount(naverAccessToken);
+            			
+                	if(cookies != null)	deleteCookie(cookies, response, "naverAccessToken");
+            		break;
             }
-            
-            // 4. 로컬 회원 탈퇴 
-        	String userId = jwtService.extractUserId(request, response, cookies);
-        	
-        	if(userId == null) userId = (String) request.getSession().getAttribute("userId");
-            
+    	}
+    	
+        // 4. 로컬 회원 탈퇴 
+    	String userId = (String)request.getAttribute("userId");
+    	
+        if (userId == null) {
         	AuthClearUtil.clearAuth(request, response);
-        	
-            if (userId == null) {
-            	log.error("회원 탈퇴 오류: 사용자 아이디 없음.");
-    	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    	    }
-            
-            memberService.deleteAccount(userId);
-        	
-            return ResponseEntity.ok().build();
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        	log.error("회원 탈퇴 오류: 사용자 아이디 없음.");
+        	throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
+	    }
+        
+        // 5. 세션 userId 일관성 검증
+        String sessionUserId = (String) request.getSession().getAttribute("userId");
+        if (sessionUserId != null && !sessionUserId.equals(userId)) {
+        	AuthClearUtil.clearAuth(request, response);
+        	log.error("회원 탈퇴 오류: 토큰 정보와 세션 정보 불일치");
+        	throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인 후 시도해주세요.");
         }
+        
+        // 6. DB 삭제
+        memberService.deleteAccount(userId);
+        
+        // 6. 인증정보 삭제 (로그아웃 처리)
+    	AuthClearUtil.clearAuth(request, response);
+    	
+        return ResponseEntity.ok().build();
     }
 	
 	private String getCookieValue(Cookie[] cookies, String name) {
