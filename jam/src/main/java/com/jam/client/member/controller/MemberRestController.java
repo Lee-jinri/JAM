@@ -12,7 +12,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -67,17 +66,10 @@ public class MemberRestController {
 		String encodePw = encoder.encode(rawPw); // 비밀번호 인코딩
 		
 		member.setUser_pw(encodePw);
+		memberService.join(member);
+		String prevPage = (String) request.getSession().getAttribute("prevPage");
 
-		try {
-			memberService.join(member);
-			
-			String prevPage = (String) request.getSession().getAttribute("prevPage");
-
-			return ResponseEntity.ok().header("prev-page", prevPage).body(null);
-			
-		}catch(Exception e) {
-			return ResponseEntity.status(500).body("Internal Server Error: " + e.getMessage());
-		}
+		return ResponseEntity.ok().header("prev-page", prevPage).body(null);
 	}
 	
 	@GetMapping(value="/loginType")
@@ -96,33 +88,28 @@ public class MemberRestController {
 	@GetMapping(value = "/me/token", produces = MediaType.APPLICATION_JSON_VALUE)
 	@CrossOrigin
 	public ResponseEntity<MemberVO> getUserInfo(HttpServletResponse response, HttpServletRequest request) {
-		try {
-			MemberVO member = new MemberVO();
+		
+		MemberVO member = new MemberVO();
+		
+		if(response.getStatus() == 200) {
+			String userId = (String) request.getAttribute("userId");
+			String auth = (String) request.getAttribute("auth");
+			String userName = (String)request.getSession().getAttribute("userName");
 			
-			if(response.getStatus() == 200) {
-				String userId = (String) request.getAttribute("userId");
-				String auth = (String) request.getAttribute("auth");
-				String userName = (String)request.getSession().getAttribute("userName");
+			if(userId != null && userName != null && auth != null) {
 				
-				if(userId != null && userName != null && auth != null) {
-					
-					member.setUser_id(userId);
-					member.setRole(auth);
-					member.setUser_name(userName);
-					
-					return ResponseEntity.ok().body(member);
-				}
-			}else {
-				Cookie[] cookies = request.getCookies();
-				if(cookies != null) deleteJwtCookies(cookies, response);
+				member.setUser_id(userId);
+				member.setRole(auth);
+				member.setUser_name(userName);
+				
+				return ResponseEntity.ok().body(member);
 			}
-			
-			return ResponseEntity.ok().body(member);
-			
-		} catch (Exception e) {
-			log.error("사용자 정보를 가져올 수 없습니다. : " + e.getMessage());
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+		}else {
+			Cookie[] cookies = request.getCookies();
+			if(cookies != null) deleteJwtCookies(cookies, response);
 		}
+		
+		return ResponseEntity.ok().body(member);
 	}
 	
 	/**
@@ -137,7 +124,7 @@ public class MemberRestController {
 	public ResponseEntity<Void> checkAuthentication(HttpServletRequest request) {
 	    String userId = (String)request.getAttribute("userId");
 	    
-	    if(userId == null) return ResponseEntity.status(401).build();
+	    if(userId == null) throw new UnauthorizedException("인증되지 않은 사용자입니다.");
         return ResponseEntity.ok().build();
 	}
 	
@@ -317,7 +304,7 @@ public class MemberRestController {
 		
 		return ResponseEntity.ok().build();
 	}
-
+	
 	/**
 	 * 사용자의 닉네임을 변경합니다.
 	 * 
@@ -330,7 +317,7 @@ public class MemberRestController {
 		
 		if (verifyStatus == null || !verifyStatus) {
 			log.error("not verified.");
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+			throw new ForbiddenException("본인 확인이 필요합니다. 다시 비밀번호를 입력해주세요.");
 		}
 		
 		String userName = member.getUser_name();
@@ -338,49 +325,31 @@ public class MemberRestController {
 		if (userName == null || userName.trim().isEmpty()) {
 			throw new BadRequestException("닉네임을 입력하세요.");
 		}
-
-		if(HtmlSanitizer.hasHtmlTag(userName)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
-		if(!ValidationUtils.validateNickname(userName)) throw new BadRequestException("닉네임은 3~10자 이내로 입력해주세요.");
-
-	    try {        	
-        	Map<String, Object> data = resolveAuthenticatedUser(request, response);
-        	
-			if(data == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			
-        	MemberVO user = (MemberVO)data.get("user");
-        	
-        	if(user == null || user.isEmpty()) {
-    	    	log.error("Unauthorized user.");
-    	    	return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-    	    }
-        	
-        	boolean autoLogin = (boolean)data.get("autoLogin");
-        	String loginType = (String)data.get("loginType");
-        	
-        	// 변경할 닉네임 세팅
-        	user.setUser_name(member.getUser_name());
-        	
-        	Authentication authentication = memberService.updateUserNameAndTokens(user, autoLogin, loginType, response);
-	    	
-        	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
-			
-        	setJwtCookies(token, response, autoLogin);
-	    	
-	        return new ResponseEntity<>(HttpStatus.OK);
-	    } catch (JwtException e) {
-	        log.error("JWT 처리 중 오류 발생", e);
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-
-	    } catch (AuthenticationException e) {
-	        log.error("인증 객체 갱신 실패", e);
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    } catch (IllegalStateException e) {
-	    	log.error("닉네임 변경 로직 실패", e);
-	    	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	    } catch (Exception e) {
-	        log.error("닉네임 변경 처리 중 알 수 없는 오류 발생", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	    }
+		if (HtmlSanitizer.hasHtmlTag(userName)) {
+			throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		}
+		if (!ValidationUtils.validateNickname(userName)) {
+			throw new BadRequestException("닉네임은 3~10자 이내로 입력해주세요.");
+		}
+		
+    	Map<String, Object> data = resolveAuthenticatedUser(request, response);
+    	
+    	if (data == null || data.get("user") == null) {
+    		throw new UnauthorizedException("인증되지 않은 사용자입니다.");
+    	}
+    	
+    	MemberVO user = (MemberVO) data.get("user");
+    	boolean autoLogin = (boolean) data.get("autoLogin");
+    	String loginType = (String) data.get("loginType");
+    	
+    	// 변경할 닉네임 세팅
+    	user.setUser_name(member.getUser_name());
+    	
+    	Authentication authentication = memberService.updateUserNameAndTokens(user, autoLogin, loginType, response);
+    	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
+    	setJwtCookies(token, response, autoLogin);
+    	
+        return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
 	/**
@@ -394,7 +363,7 @@ public class MemberRestController {
 		Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
 		if(verifyStatus == null || !verifyStatus) {
 			log.error("not verified.");
-			return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+			throw new ForbiddenException("유효하지 않은 인증 정보 입니다.");
 		}
 		
 		String phone = member.getPhone();
@@ -410,7 +379,7 @@ public class MemberRestController {
 		String userId = (String)request.getAttribute("userId");
 		if(userId == null) {
 			log.error("UnAuthorized user.");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
 		}
 		
 		member.setUser_id(userId);
@@ -420,7 +389,7 @@ public class MemberRestController {
 		if(isUpdate) {
 			return ResponseEntity.ok().build();
 		}else {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+			throw new Exception("오류가 발생했습니다. 잠시 후 다시 시도하세요.");
 		}
 	}
 	
@@ -440,7 +409,7 @@ public class MemberRestController {
 	@PostMapping("/verify-password")
 	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpServletResponse response) throws Exception {
 
-		if(member.getUser_pw() == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("user password is required.");
+		if(member.getUser_pw() == null) throw new BadRequestException("변경할 비밀번호를 입력하세요.");
 		
 		String user_id = (String)request.getAttribute("userId");
 		
@@ -448,7 +417,7 @@ public class MemberRestController {
 			AuthClearUtil.clearAuth(request, response);
 			
 			log.error("VerifyPassword: userId is null.");
-			return ResponseEntity.status(440).body("Login required or token expired.");
+			throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
 		}
 		
 		member.setUser_id(user_id);
@@ -459,9 +428,12 @@ public class MemberRestController {
 		
 		// 비밀번호 일치여부 판단
 		if (encoder.matches(user_pw, encodePw)) { 
+			HttpSession session = request.getSession(false);
+			if (session == null) throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
+			session.setAttribute("verifyStatus", true);
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
-			return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+			throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
 		}
 	}
 	
@@ -490,94 +462,32 @@ public class MemberRestController {
 		String password = member.getUser_pw();
 		
 		if(password == null || password.isEmpty()) throw new BadRequestException("비밀번호를 입력하세요.");
-		if(!ValidationUtils.validatePassword(password)) throw new BadRequestException("잘못된 비밀번호 입니다.");
+		if(!ValidationUtils.validatePassword(password)) throw new BadRequestException("잘못된 비밀번호입니다.");
 			
-		try {
-			HttpSession session = request.getSession();
-			Boolean verifyStatus = (Boolean) session.getAttribute("verifyStatus");
-			
-			if (verifyStatus == null || !verifyStatus) {
-	            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("not verified.");
-	        }
-			
-	        String userId = (String) request.getAttribute("userId");
-	        if (userId == null) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("user Id is missing.");
-	        }
-	        
-			member.setUser_id(userId);
-			
-			String encodePw = encoder.encode(password); // 비밀번호 인코딩
+		HttpSession session = request.getSession();
+		Boolean verifyStatus = (Boolean) session.getAttribute("verifyStatus");
+		
+		if (verifyStatus == null || !verifyStatus) {
+			 throw new ForbiddenException("유효하지 않은 인증 정보입니다.");
+        }
+		
+        String userId = (String) request.getAttribute("userId");
+        if (userId == null) {
+        	throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
+        }
+        
+		member.setUser_id(userId);
+		
+		String encodePw = encoder.encode(password); // 비밀번호 인코딩
 
-			memberService.updatePw(member.getUser_id(), encodePw);
-			
-			// 민감한 정보 변경 후에는 검증 플래그 삭제
-			session.removeAttribute("verifyStatus");
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-				
-		}catch(Exception e) {
-			log.error("Error updating password", e);
-			
-			return new ResponseEntity<>("An unexpected error occurred.", HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		memberService.updatePw(member.getUser_id(), encodePw);
+		
+		// 민감한 정보 변경 후에는 검증 플래그 삭제
+		session.removeAttribute("verifyStatus");
+		
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
-	/**
-	 * 일반 회원을 기업 회원으로 전환합니다.
-	 * 
-	 * @param request  HttpServletRequest (userId attribute 포함)
-	 * @param response HttpServletResponse (JWT 쿠키 세팅/삭제에 사용)
-	 * @param member   요청 본문에 포함된 MemberVO (company_name 필수)
-	 * @return 성공 시 "기업회원 전환 성공" 메시지 반환,
-	 *         실패 시 상황에 맞는 HTTP 상태 코드와 에러 메시지 반환
-	 */
-	@PostMapping(value="/convertBusiness")
-	public ResponseEntity<String> convertBusiness(HttpServletRequest request, HttpServletResponse response, @RequestBody MemberVO member){
-		String userId = (String)request.getAttribute("userId");
-		
-		if (userId == null || userId.isEmpty()) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-		}
-		
-		String company_name = member.getCompany_name();
-		if (company_name == null || company_name.trim().isEmpty()) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회사명을 입력해주세요.");
-		}
-		
-		try {
-			Map<String, Object> data = resolveAuthenticatedUser(request, response);
-
-			if(data == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-			
-			MemberVO user = (MemberVO)data.get("user");
-			if(!user.getUser_id().equals(userId)) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("인증 정보가 유효하지 않습니다.");
-			}
-			
-			user.setCompany_name(company_name);	
-        	Authentication authentication = memberService.convertBusiness(userId, company_name, user);
-        	
-        	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, (boolean)data.get("autoLogin"), (String)data.get("loginType"));
-			
-        	setJwtCookies(token, response, (boolean)data.get("autoLogin"));
-
-    		return ResponseEntity.ok("기업회원 전환 성공");
-	    } catch (JwtException e) {
-	        log.error("JWT 처리 중 오류 발생", e);
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    } catch (AuthenticationException e) {
-	        log.error("인증 객체 갱신 실패", e);
-	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-	    } catch (IllegalStateException e) {
-	    	log.error("기업회원 전환 로직 실패", e);
-	    	return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	    } catch (Exception e) {
-	        log.error("기업회원 전환 처리 중 알 수 없는 오류 발생", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-	    }
-	}
-	
 	/**
 	 * 사용자의 주소를 변경합니다.
 	 * 
@@ -591,20 +501,15 @@ public class MemberRestController {
 	public ResponseEntity<String> updateAddress(@RequestBody MemberVO member, HttpServletRequest request) throws Exception {
 		
 		String address = member.getAddress();
-		if(address == null || address.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("address is required.");
+		if(address == null || address.isEmpty()) throw new BadRequestException("주소를 입력하세요.");
 		
-		try {
-    		String userId = (String) request.getAttribute("userId");
-        	
-    		member.setUser_id(userId);
-    		
-			memberService.updateAddress(member);
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-		}catch(Exception e) {
-			log.error(e.getMessage(),e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("An unexpected error occurred.");
-		}
+		String userId = (String) request.getAttribute("userId");
+    	
+		member.setUser_id(userId);
+		
+		memberService.updateAddress(member);
+		
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	/**
@@ -676,6 +581,51 @@ public class MemberRestController {
     	
         return ResponseEntity.ok().build();
     }
+
+	/**
+	 * 일반 회원을 기업 회원으로 전환합니다.
+	 * 
+	 * @param request  HttpServletRequest (userId attribute 포함)
+	 * @param response HttpServletResponse (JWT 쿠키 세팅/삭제에 사용)
+	 * @param member   요청 본문에 포함된 MemberVO (company_name 필수)
+	 * @return 성공 시 "기업회원 전환 성공" 메시지 반환,
+	 *         실패 시 상황에 맞는 HTTP 상태 코드와 에러 메시지 반환
+	 */
+	@PostMapping(value="/convertBusiness")
+	public ResponseEntity<String> convertBusiness(HttpServletRequest request, HttpServletResponse response, @RequestBody MemberVO member){
+		String userId = (String)request.getAttribute("userId");
+		
+		if (userId == null || userId.isEmpty()) {
+			throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		}
+		
+		String company_name = member.getCompany_name();
+		if (company_name == null || company_name.trim().isEmpty()) {
+			throw new BadRequestException("회사명을 입력하세요.");
+		}
+
+		if (HtmlSanitizer.hasHtmlTag(company_name)) {
+			throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
+		}
+		
+		Map<String, Object> data = resolveAuthenticatedUser(request, response);
+
+		if(data == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		
+		MemberVO user = (MemberVO)data.get("user");
+		if(!user.getUser_id().equals(userId)) {
+			throw new UnauthorizedException("인증 정보가 유효하지 않습니다.");
+		}
+		
+		user.setCompany_name(company_name);	
+    	Authentication authentication = memberService.convertBusiness(userId, company_name, user);
+    	
+    	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, (boolean)data.get("autoLogin"), (String)data.get("loginType"));
+		
+    	setJwtCookies(token, response, (boolean)data.get("autoLogin"));
+
+		return ResponseEntity.ok("기업회원 전환 성공");
+	}
 	
 	private String getCookieValue(Cookie[] cookies, String name) {
 	    if (cookies == null) return null;
