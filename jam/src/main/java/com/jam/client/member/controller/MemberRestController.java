@@ -661,7 +661,7 @@ public class MemberRestController {
 	    }
         
         // 5. 세션 userId 일관성 검증
-        String sessionUserId = (String) request.getSession().getAttribute("userId");
+        String sessionUserId = session != null ? (String) session.getAttribute("userId") : null;
         if (sessionUserId != null && !sessionUserId.equals(userId)) {
         	AuthClearUtil.clearAuth(request, response);
         	log.error("회원 탈퇴 오류: 토큰 정보와 세션 정보 불일치");
