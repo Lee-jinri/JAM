@@ -1,0 +1,360 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ page trimDirectiveWhitespaces="true" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%@ taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<script type="text/javascript" src="/resources/include/dist/js/common.js"></script>
+<script type="text/javascript" src="/resources/include/dist/js/jquery-3.7.1.min.js"></script>
+<style>
+#reviewList .panel {
+	padding: 12px 0;
+	border-bottom: 1px solid #e6e6e6;
+}
+
+.panel-title {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 6px;
+}
+
+.panel-title .name {
+	font-weight: 600;
+	color: #f18a41;
+}
+
+.panel-title .date {
+	margin-left: 8px;
+	color: #888;
+	font-size: 0.85rem;
+}
+
+.panel-title .panel-btn {
+	margin-left: auto;
+}
+
+.panel-title .panel-btn button,
+#commentUpdateBtn,
+#cancel {
+	padding: 4px 8px;
+	border: 1px solid #bbb;
+	background: #fff;
+	border-radius: 4px;
+	font-size: 0.8rem;
+	cursor: pointer;
+	margin-left: 4px;
+}
+.panel-title{
+	padding: 0 15px;
+}
+.panel-title .panel-btn button:hover,
+#commentUpdateBtn:hover,
+#cancel:hover {
+	border-color: #555;
+}
+
+.panel-body {
+	font-size: 0.95rem;
+	line-height: 1.5;
+	white-space: pre-wrap;
+	word-break: break-word;
+	padding: 5px 15px;
+}
+
+.comment-edit-textarea {
+	width: 100%;
+	padding: 8px;
+	font-size: 0.95rem;
+	line-height: 1.5;
+	box-sizing: border-box;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	resize: vertical;
+	margin-top: 6px;
+}
+@keyframes highlightFade {
+	from {
+		background: #fff7e0;
+	}
+	to {
+		background: transparent;
+	}
+}
+
+.comment.highlight {
+	animation: highlightFade 1.4s ease-out forwards;
+}
+
+</style>
+<script>
+$(function(){
+	listAll();
+	setCommentInput();
+	
+	// 댓글 등록
+	$("#insert").on("click", function(){
+		const postId = ${postId};
+		const content = $("#comment_content").val().trim();
+		
+		if(!postId){
+			alert("시스템 오류입니다. 잠시 후 다시 시도하세요.");
+			return;
+		}
+		if(!content){
+			alert("댓글을 입력하세요.");
+			return;
+		}
+
+		const body = {
+			content: content
+		};
+		
+		fetch("/community/posts/" + postId + "/comments",{
+			method: "POST",
+			headers: {"Content-Type": "application/json"},
+			body: JSON.stringify(body)
+		})
+		.then(res=>{
+			if(!res.ok){
+				throw new Error("댓글 작성 중 오류가 발생했습니다.");
+			}
+			$("#comment_content").val("");
+			listAll();
+			
+			setTimeout(() => {
+				const $newComment = $("#reviewList .comment").first();
+				if($newComment.length){
+					$newComment.addClass("highlight");
+				}
+			}, 100);
+			
+		})
+		.catch(err=>{
+			alert(err.message);
+		})
+	});
+	
+	
+	// 수정 버튼 클릭
+	$(document).on("click","button[data-btn='upBtn']",function(){
+		const panel = $(this).closest(".panel");
+		showUpdateForm(panel);
+	});
+	
+	// 수정 취소 버튼 클릭
+	$(document).on("click","#cancel",function(){
+		$("button[data-btn='upBtn']").prop("disabled", false);
+		listAll();
+	})
+	
+	
+	function showUpdateForm(panel){
+		$("button[data-btn='upBtn']").prop("disabled", true);
+		
+		const content = panel.find(".panel-body").html().replace(/<br\s*\/?>/gi, "\n");
+		const commentId = panel.attr("data-num"); 
+
+		panel.find(".panel-body").html(
+			'<textarea class="comment-edit-textarea" rows="3">' + content + '</textarea>'
+		);
+
+		panel.find(".panel-btn").html(
+			'<button id="commentUpdateBtn" data-comment-id="' + commentId + '">등록</button>' +
+			'<button id="cancel">취소</button>'
+		);
+	}
+	
+	// 댓글 수정 
+	$(document).on("click","#commentUpdateBtn",function(){
+		let commentId = $(this).attr("data-comment-id");
+		let panel_heading = $(this).closest(".panel-heading");
+		let content = panel_heading.find('.comment-edit-textarea').val()?.trim();
+		
+		if(!commentId){
+			alert('일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+			return;
+		}
+
+		if(!content || content.replace(/\s/g, '') === ''){
+			alert('댓글 내용을 입력해주세요.');
+			return;
+		}
+		
+		const data = {
+			'content': content
+		}
+		fetch('/community/comments/' + commentId,{
+		    method: 'PUT',
+		    headers: {
+		        'Content-Type': 'application/json'
+		    },
+		    body: JSON.stringify(data)
+		}).then(response => {
+		    if (!response.ok) {
+		    	return response.text().then(text => {
+		            throw new Error(text || '수정을 실패했습니다.');
+		        });
+		    }
+			$("button[data-btn='upBtn']").prop("disabled", false);
+		    listAll();
+		}).catch(error => {
+		    alert(error.message);
+		});
+	});
+	
+	// 댓글 삭제 버튼 클릭
+	$(document).on("click","button[data-btn='delBtn']",function(){
+		const panel = $(this).closest(".panel");
+		const commentId = panel.attr("data-num"); 
+
+		if(!confirm("정말 삭제하시겠습니까?")) return;
+		
+		if(!commentId){
+			alert('일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+			return;
+		}
+		
+		fetch('/community/comments/' + commentId,{
+			method: 'DELETE'
+		}).then(res => {
+		    if (!res.ok) {
+		    	return res.text().then(text => {
+		            throw new Error(text || '일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+		        });
+		    }
+		    listAll();
+		}).catch(error => {
+		    alert(error.message);
+		});
+	});
+})
+	
+function listAll() {
+	const postId = ${postId};
+	if(!postId){
+		alert("시스템 오류입니다. 잠시 후 다시 시도하세요.");
+		return;
+	}
+	fetch('/community/posts/'+postId+'/comments')
+	.then(res =>{
+		if(!res.ok){
+			console.log(res.status);
+			throw new Error('데이터를 불러오는데 실패했습니다. 잠시후 다시 시도하세요.');
+		}
+		return res.json();
+	})
+	.then(list => {
+		renderComments(list);
+	})
+	.catch(err=>{
+		alert(err.message);
+	})
+
+}
+
+function renderComments(list){
+	$("#reviewList .comment").remove();
+
+	let $div = $('#reviewList');
+	$div.find('.panel').not('#item-template').remove();
+
+	list.forEach(data =>{
+		let $element = $('#item-template').clone().removeAttr('id');
+		
+		$element.addClass("comment");
+		$element.attr('data-num', data.comment_id);
+		$element.find('.panel-heading > .panel-title > .name').html(data.user_name);
+		$element.find('.panel-heading > .panel-title > .date').html(timeAgo(data.created_at));
+
+		$element.attr("tabindex", "-1");
+		
+		var content = (data.content || '').replace(/(\r\n|\n|\r)/g, '<br/>');
+		$element.find('.panel-body').html(content);
+
+		// 댓글 작성자와 사용자 아이디가 일치하면 댓글 수정 삭제 버튼 
+		if(data.author){
+			$element.find('.panel-heading > .panel-title > .panel-btn').html( 
+					"<button type='button' class='delBtn' data-btn='delBtn' >삭제</button>"
+					+ "<button type='button' class='upBtn' data-btn='upBtn'>수정</button>" );
+		}
+		
+		$div.append($element);
+	})
+	
+}
+
+function setCommentInput(){
+	const userId = window.MY_ID;
+	if(userId == null){
+		// textarea를 readonly로 변경
+           const textarea = document.getElementById('comment_content');
+           textarea.disabled = true;
+        
+           // 로그인 메세지 생성
+           const replyLogin = document.getElementById("comment_login");
+        const span1 = document.createElement("span");
+           span1.textContent = "댓글을 작성하려면 ";
+           
+        const loginLink = document.createElement("a");
+           loginLink.href = "/member/login";
+           loginLink.textContent = "로그인";
+           
+           const span2 = document.createElement("span");
+           span2.textContent = "이 필요합니다.";
+        replyLogin.appendChild(span1);
+           replyLogin.appendChild(loginLink);
+           replyLogin.appendChild(span2);
+           
+           document.getElementById("insert").disabled = true;
+	}else
+		$("#comment_name").text(window.MY_NAME + " 님");
+}
+</script>
+</head>
+<body class="wrap">
+	<div>
+		<!-- 댓글 작성부 -->
+		<div class="commentContainer">
+		    <input type="hidden" id="postId" value="${postId }">
+		
+		    <div class="comment_div">
+		        <!-- 로그인 정보 -->
+		        <div id="comment_login" class="comment_login"></div>
+		
+		        <!-- 닉네임 -->
+		        <div id="comment_userName">
+		            <span id="comment_name"></span>
+		        </div>
+		
+		        <!-- 댓글 입력창 -->
+		        <div class="comment-input-container">
+		            <textarea id="comment_content" name="content" class="comment_content form-control" rows="3"></textarea>
+		        </div>
+		
+		        <!-- 등록 버튼 -->
+		        <button type="button" id="insert" class="comment-insert-btn">등록</button>
+		    </div>
+		</div>
+		
+				
+		<%-- 댓글 리스트 --%>
+		<div id="reviewList">
+			<div id="item-template" class="panel">
+				<div class="panel-heading">
+					<div class="panel-title">
+						<span class="cursor-pointer name"></span>
+						<span class="date"></span>
+						<div class="panel-btn"></div>
+					</div>	
+					<div class="panel-body"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
