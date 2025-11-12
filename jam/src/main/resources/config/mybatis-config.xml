@@ -13,7 +13,7 @@
 		
 		<typeAlias type="com.jam.client.community.vo.CommunityVO" alias="community"/>
 		
-		<typeAlias type="com.jam.client.comReply.vo.ComReplyVO" alias="comReply"/>
+		<typeAlias type="com.jam.client.comComment.vo.CommentVO" alias="comComment"/>
 		
 		<typeAlias type="com.jam.client.fleaMarket.vo.FleaMarketVO" alias="flea"/>
 		
