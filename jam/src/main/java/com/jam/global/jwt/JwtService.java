@@ -34,7 +34,7 @@ public class JwtService {
 	 * - AccessToken이 유효하면 사용자 정보를 바로 추출합니다.
 	 * - AccessToken이 만료되었고, RefreshToken이 존재하며 autoLogin=true인 경우
 	 *   → 토큰을 재발급하고 사용자 정보를 추출합니다.
-	 * - 모든 토큰이 없거나 유효하지 않으면 401 응답을 설정합니다.
+	 * - 토큰이 유효하지 않으면 401 응답을 설정합니다.
 	 * 
 	 * @param cookies    요청에 포함된 쿠키 배열
 	 * @param request    HttpServletRequest (세션 접근용)
@@ -46,10 +46,6 @@ public class JwtService {
 		
 		try {
 			String accessToken = extractToken(cookies, "Authorization");
-			if(accessToken == null) {
-				AuthClearUtil.clearAuth(request, response);
-				return null;
-			}
 			
 			TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
 			
@@ -76,7 +72,6 @@ public class JwtService {
 						log.warn("[JWT] 자동로그인 실패: refreshToken 없음.");
 						
 						AuthClearUtil.clearAuth(request, response);
-						response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 						return null;
 					}
 	
@@ -90,7 +85,6 @@ public class JwtService {
 					log.warn("[JWT] 자동로그인 실패: 자동로그인 설정되지 않음.");
 					
 					AuthClearUtil.clearAuth(request, response);
-					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 					return null;
 				case INVALID:
 					log.warn("[JWT] 유효하지 않은 토큰");
@@ -125,22 +119,24 @@ public class JwtService {
 	}
 	
 	private MemberVO processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
+		log.info("processRefreshToken 진입");
 		
 		// 1. RefreshToken으로 사용자 정보 가져옴.
-		MemberVO userInfo = memberService.getUserInfo(refreshToken);
-    	
-		if (userInfo == null) {
+		String userId = memberService.findUserIdByRefreshToken(refreshToken);
+		
+		if (userId == null || userId.isEmpty()) {
 		    log.error("[JWT] refreshToken으로 사용자 정보 조회 실패");
 		    return new MemberVO();
 		}
+		
+		MemberVO userInfo = memberService.findByUserInfo(userId);
 
-    	String userId = userInfo.getUser_id();
     	String loginType = jwtTokenProvider.extractLoginType(refreshToken);
 
     	// 2. SecurityContext에 Authentication 설정
     	Authentication authentication = new UsernamePasswordAuthenticationToken(
     			userInfo, null,  userInfo.getAuthorities());
-
+    	
         SecurityContextHolder.getContext().setAuthentication(authentication);
     	
         // 3. 새로운 토큰 갱신

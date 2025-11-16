@@ -86,7 +86,7 @@ public interface MemberService {
 	// refresh 토큰 가져오기
 	public String getRefreshToken(String user_id);
 
-	public MemberVO getUserInfo(String refreshToken);
+	public String findUserIdByRefreshToken(String refreshToken);
 	
 	MemberVO getUserProfile(String user_id);
 
@@ -102,6 +102,7 @@ public interface MemberService {
 			HttpServletResponse response);
 
 	public Authentication convertBusiness(String userId, String company_name, MemberVO user);
-	
-	
+
+	public MemberVO findByUserInfo(String userId);
+
 }

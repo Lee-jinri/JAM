@@ -1,11 +1,5 @@
 package com.jam.global.security;
 
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -34,7 +28,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 	        throw new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다. 입력한 ID: " + username);
 	    }
 		
-		log.info(user);
 		return user;
 	}
 }

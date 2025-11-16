@@ -43,15 +43,6 @@
   		WHERE email = #{email}
   	</select>
   	
-  	<!-- 사용자 정보 확인 
-  	<select id="findByUserInfo" resultType="member">
-  		SELECT user_id, user_pw, user_name, address, phone, email
-  		FROM member
-  		WHERE user_id = #{user_id}
-  	</select>-->
-  	
-  	
-	
   	<resultMap id="userWithRolesMap" type="member">
 		<id property="user_id" column="user_id"/>
 		<result property="user_name" column="user_name"/>
@@ -72,8 +63,12 @@
 	    WHERE user_id = #{user_id} 
 	</select>
 	
-  	
-  	
+	<!-- refresh token으로 회원 아이디 조회 -->
+	<select id="findUserIdByRefreshToken" parameterType="string" resultType="string">
+	    SELECT user_id
+	    FROM member
+	    WHERE refreshToken = #{refreshToken}
+	</select>
   	
   	<!-- 회원 닉네임 가져오기 -->
   	<select id="getUserName" resultType="String">
@@ -183,12 +178,6 @@
 		VALUES (#{user_id}, #{user_name}, #{email},'MEMBER', 1)
 	</insert>
 	
-	<!-- refresh token으로 회원 아이디, 닉네임, 권한 조회 -->
-	<select id="getUserInfo" parameterType="String" resultType="member">
-		SELECT user_id, user_name, role, company_name
-		FROM member
-		WHERE refreshToken = #{refreshToken}
-	</select>
 	
 	<!-- 사용자 프로필 조회 -->
 	<select id="getUserProfile" parameterType="String" resultType="member">

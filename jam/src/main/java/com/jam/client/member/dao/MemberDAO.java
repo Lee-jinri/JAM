@@ -93,7 +93,8 @@ public interface MemberDAO {
 	// refresh 토큰 가져오기
 	String getRefreshToken(String user_id);
 
-	MemberVO getUserInfo(String refreshToken);
+	// refresh token으로 회원 아이디 조회
+	String findUserIdByRefreshToken(String refreshToken);
 	
 	// 사용자 프로필 가져오기
 	MemberVO getUserProfile(String user_id);

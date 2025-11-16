@@ -27,11 +27,12 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		
 		MemberVO userInfo = jwtService.getUserInfo(request.getCookies(), request, response);
+
+		log.info(userInfo);
 		
 		if (userInfo == null) {
 			return true; 
 		}
-		log.info(userInfo);
 		setRequestAttributes(request, userInfo);
 		return true;
 	}

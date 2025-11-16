@@ -1,26 +1,13 @@
 package com.jam.client.member.dao;
 
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.ibatis.annotations.Param;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.jam.client.community.dao.ComMapperTest;
-import com.jam.client.community.vo.CommunityVO;
-import com.jam.client.fleaMarket.vo.FleaMarketVO;
-import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.vo.MemberVO;
-import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
@@ -200,18 +187,18 @@ public class MemberMapperTest {
 		
 		log.info(memberDao.updateUserName(member));
 	}
+	*/
 	
 	@Test
-	public void testGetUserInfo() {
-		String refreshToken = "eyJhbGciOiJIUzI1NiJ9.eyJhdXRvTG9naW4iOmZhbHNlLCJqdGkiOiI2OWYyYTNiMS1mYzUwLTQ0ZTAtOTQ1YS1iNDdiOGY0MzIyNzQiLCJleHAiOjE3Mzc1OTI2Mjl9.FzOpO2xzc9Txt-kve1iFB87Uj6mLLhU2FznNZf-HmYc";
-		MemberVO member = memberDao.getUserInfo(refreshToken);
+	public void testFindUserByRefreshToken() {
+		String refreshToken = "eyJhbGciOiJIUzI1NiJ9.eyJhdXRvTG9naW4iOnRydWUsImxvZ2luVHlwZSI6ImxvY2FsIiwianRpIjoiYzU3YjkzYTQtNjQ5NC00M2U0LWE2N2UtNTBiYzczMmMwNzJkIiwiZXhwIjoxNzY1ODg4OTQ5fQ.aLet5BAStvIyc3es_2uZwLkgtZzGWeWiY3b0r1E55JE";
+		String userId = memberDao.findUserIdByRefreshToken(refreshToken);
+		MemberVO member = memberDao.findByUserInfo(userId);
 		
+		log.info(member.toString());
 		log.info(member.getUser_id());
 		log.info(member.getUser_name());
-		log.info(member.getRole());
-				
-				
-	}*/
-	
+		log.info(member.getAuthorities());
+	}
 	
 }

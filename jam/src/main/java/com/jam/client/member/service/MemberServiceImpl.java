@@ -17,7 +17,6 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -356,12 +355,6 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.getRefreshToken(user_id);
 	}
 
-	@Override
-	public MemberVO getUserInfo(String refreshToken) {
-		
-		return memberDao.getUserInfo(refreshToken);
-	}
-
 	
 	/**
 	 * TODO: 현재는 닉네임만 반환하지만, 추후 프로필 이미지 등 확장 예정
@@ -518,5 +511,15 @@ public class MemberServiceImpl implements MemberService {
 		Authentication authentication = authenticateUser(user);
 		
 		return authentication;
+	}
+
+	@Override
+	public String findUserIdByRefreshToken(String refreshToken) {
+		return memberDao.findUserIdByRefreshToken(refreshToken);
+	}
+
+	@Override
+	public MemberVO findByUserInfo(String userId) {
+		return memberDao.findByUserInfo(userId);
 	}
 }
