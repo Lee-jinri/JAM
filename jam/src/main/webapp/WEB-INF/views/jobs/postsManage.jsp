@@ -211,7 +211,7 @@ const BOARD_CONFIG = {
 		showPay: false
 	}
 };
-//ff
+
 $(function(){
 	getPostings();
 	
@@ -370,9 +370,14 @@ $(function(){
 			if (res.ok) {
 				alert("공고가 마감되었습니다.");
 				location.reload();
-			}else {
-				alert("오류가 발생했습니다. 잠시 후 다시 시도하세요.");
 			}
+	    	return res.json().then(err => {
+	            throw err;
+	        });
+		})
+		.catch(err => {
+			if (handleApiError(err, "/jobs/board")) return;
+	    	alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
 		});
 	})
 	
@@ -408,11 +413,16 @@ $(function(){
 			if (res.ok) {
 				alert("삭제가 완료되었습니다.");
 				location.reload();
-			}else if(res.status === 409){
-				alert("지원자가 있어 삭제할 수 없습니다. 공고를 마감 처리하세요.");
-			}else {
-				alert("오류가 발생했습니다. 잠시 후 다시 시도하세요.");
 			}
+
+	    	return res.json().then(err => {
+	            throw err;
+	        });
+		})
+		.catch(err => {
+			if (handleApiError(err, "/jobs/board")) return;
+		    alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+			location.reload();
 		});
 	})
 })
@@ -423,10 +433,20 @@ function getPostings(){
 	
 	fetch(url)
 	.then(res =>{
-		if(res.ok) return res.json();
+		if (res.ok) {
+			return res.json();
+		}
+    	return res.json().then(err => {
+            throw err;
+        });
 	}).then(data =>{
+		if(!data) return;
+		
 		const mode = "${mode}" || "company";
 		renderPostings(data, mode);
+	}).catch(err =>{
+		if (handleApiError(err, "/jobs/board")) return;
+	    alert(err.detail || '일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
 	})
 }
 
@@ -471,10 +491,16 @@ function getCandidates(postId, $rowLi){
 	fetch('/api/jobs/candidates?' + qs.toString())
 	.then(res => {
 		if(res.ok) return res.json();
+    	return res.json().then(err => {
+            throw err;
+        });
 	})
 	.then(data =>{
 		renderApplications(data, $rowLi);
 	})
+	.catch(err => {
+	    alert(err.detail || '일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+	});
 }
 
 function renderUserPostings(data){

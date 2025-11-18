@@ -137,6 +137,12 @@ async function getFavorites(){
 		let url = "/api/jobs/my/favorites?" + queryString;
 		
 		const res = await fetch(url);
+		
+		if (!res.ok) {
+			const data = await res.json().catch(() => null);
+			let msg = data?.detail || data?.error || "오류가 발생했습니다. 잠시 후 다시 시도하세요.";
+			throw data ? { ...data } : { detail: msg };
+		}
 		let data = await res.json();
 		
 		const items = data.favorites;
@@ -154,8 +160,9 @@ async function getFavorites(){
 		
 		loadPagination(data.pageMaker);
 	}catch(e){
-		console.log(e);
-		$('#apps-tbody').html('<tr><td colspan="7" class="empty">불러오기에 실패했어요. 잠시 후 다시 시도해주세요.</td></tr>');
+		if (handleApiError(e, "/jobs/board")) return;
+		const msg = e?.detail || '불러오기에 실패했어요. 잠시 후 다시 시도해주세요.';
+		$('#apps-tbody').html('<tr><td colspan="7" class="empty">' + msg + '</td></tr>');
 	}
 }
 

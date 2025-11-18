@@ -385,11 +385,12 @@
 				return false;
 			}
 			
-			if(category == '0'){
-				if(pay_category != '3' && pay == null){
+			if(category === '0'){
+				if(pay_category === '3'){
+					pay = 0;
+				}else if(pay_category !== '3' && pay == null){
 					alert("급여를 입력하세요.");
 					$("#pay").focus();
-					$("#write").prop("disabled", false); 
 					return false;
 				}
 			}
@@ -434,13 +435,14 @@
 			    },
 			    body: JSON.stringify(data)
 			})
-			.then(response => {
-			    if (!response.ok) {
-			    	return response.text().then(text => {
-			            throw new Error(text || '공고 등록에 실패했습니다.');
-			        });
+			.then(res => {
+				if (res.ok) {
+			        return res.text(); 
 			    }
-			    return response.text();
+
+		    	return res.json().then(err => {
+		            throw err;
+		        });
 			})
 			.then(body => {
 			    alert("등록이 완료되었습니다.");
@@ -449,8 +451,9 @@
 			        $(location).attr('href', '/jobs/post/' + body);
 			    }
 			})
-			.catch(error => {
-			    alert(error.message);
+			.catch(err => {
+				if (handleApiError(err, "/jobs/board")) return;
+			    alert(err.detail || '공고 등록에 실패했습니다.');
 			    $("#write").prop("disabled", false); 
 			});
 		});

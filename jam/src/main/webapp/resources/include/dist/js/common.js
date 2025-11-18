@@ -75,3 +75,40 @@ function timeAgo(dateString) {
 	return dateStr.replace(/\.$/, '');
 }
 
+function handleApiError(err, fallbackUrl = "/") {
+	const isPopup = window.opener != null;
+
+	// 401
+	if (err?.loginRequired) {
+		if (isPopup) {
+			// 팝업 -> 부모 페이지 로그인 페이지로 이동 + 팝업 닫기
+			if(window.opener && !window.opener.closed){
+				if (confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하겠습니까?")) {
+					window.opener.location.href = "/member/login";
+				} 
+				window.close();
+			}
+			else {
+				window.close();
+			}
+		} else {
+			// 일반 페이지
+			if (confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하겠습니까?")) {
+				location.href = "/member/login";
+			} else {
+				location.href = fallbackUrl;
+			}
+		}
+		return true;
+	}
+	
+	// 403
+	if (err?.forbidden) {
+		alert("접근 권한이 없습니다.");
+		if (isPopup) window.close();
+		else location.href = fallbackUrl;
+		return true;
+	}
+	return false;
+}
+

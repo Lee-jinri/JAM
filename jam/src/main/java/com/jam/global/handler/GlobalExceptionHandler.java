@@ -48,6 +48,7 @@ public class GlobalExceptionHandler {
 		body.put("error", HttpStatus.UNAUTHORIZED.getReasonPhrase());
 		body.put("detail", ex.getMessage());
 		body.put("path", req.getRequestURI());
+		body.put("loginRequired", true);
 		return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(body);
 	}
 	
@@ -60,6 +61,7 @@ public class GlobalExceptionHandler {
 		body.put("error", HttpStatus.FORBIDDEN.getReasonPhrase());
 		body.put("detail", ex.getMessage());
 		body.put("path", req.getRequestURI());
+		body.put("forbidden", true);
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
 	}
 
@@ -121,13 +123,5 @@ public class GlobalExceptionHandler {
 		body.put("detail", "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 		body.put("path", req.getRequestURI());
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-    }
-    
-    private void clearAuthAndRedirect(HttpServletRequest request,
-                                      HttpServletResponse response,
-                                      String redirectPath) throws IOException {
-    	AuthClearUtil.clearAuth(request, response);
-
-        response.sendRedirect(redirectPath);
     }
 }

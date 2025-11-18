@@ -143,25 +143,29 @@ $(function(){
 		if(postId == "" || postId == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
 		else{
 			fetch('/api/jobs/post/' + postId)
-	        .then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
+	        .then(res => {
+				if (!res.ok) {
+					return res.json().then(err => {
+			      		throw new Error(err.detail || "요청 처리 중 오류가 발생했습니다.");
+			      	})
 				}
-				return response.json();
+				return res.json();
 			})
-	        .then(data => {
-	        	$("#title").html(data.title);
+	        .then(result => {
+				const data = result.post;
 				
-	        	$("#created_at").html(timeAgo(data.created_at));
-	        	$("#view_count").html(data.view_count);
+	        	$("#title").text(data.title);
+				
+	        	$("#created_at").text(timeAgo(data.created_at));
+	        	$("#view_count").text(data.view_count);
 	        	
-	        	$("#post-content").html(data.content);
+	        	$("#post-content").text(data.content);
 		        	
-	        	$("#post-city").html(data.city);
-	        	$("#post-gu").html(data.gu);
-	        	$("#post-dong").html(data.dong);
+	        	$("#post-city").text(data.city);
+	        	$("#post-gu").text(data.gu);
+	        	$("#post-dong").text(data.dong);
 		        	
-	        	$("#position").html(data.position);
+	        	$("#position").text(data.position);
 	        	
 	        	$(".favoriteSpan").attr("data-board-no", data.post_id);
 	        	$(".favoriteSpan").attr("data-board-type", "job");
@@ -179,20 +183,20 @@ $(function(){
 
 	        		let pay_category = payCategoryMap[data.pay_category];
 
-	        		$("#pay_category").html(pay_category);
-	        		$("#pay").html(data.pay_category < 3 ? formatNumberKo(data.pay) + "원" : "협의 후 결정");
+	        		$("#pay_category").text(pay_category);
+	        		$("#pay").text(data.pay_category < 3 ? formatNumberKo(data.pay) + "원" : "협의 후 결정");
 
-		        	$("#company-name").html(data.company_name);
+		        	$("#company-name").text(data.company_name);
 	        	}else {
 					$(".pay-div").css("display", "none");
-					$(".userName").html(data.user_name + "님");
+					$(".userName").text(data.user_name + "님");
 	        	}
 	        	
 	        	$("#apply").attr("data-category", data.category);
 	        	
 	        	if(data.status == 1){
 	        		$("#status").css("display","block");
-	        		$("#status").html("구인 완료된 글 입니다.");
+	        		$("#status").text("구인 완료된 글 입니다.");
 	        		$(".post-actions").remove();
 	        	}
 	        	
@@ -201,7 +205,9 @@ $(function(){
 	        	}
 
 	        })
-	        .catch(error => console.error('Error:', error));
+	    	.catch(err => {
+	    	 	alert(err.message);
+	    	});
 		}
 	}
 	
@@ -238,7 +244,6 @@ function timeAgo(dateString) {
 
 function formatNumberKo(pay) {
 	const num = Number(String(pay).replace(/[^\d]/g, ''));
-	console.log(num.toLocaleString('ko-KR'));
 	return num ? num.toLocaleString('ko-KR') : '';
 }
 </script>
@@ -249,7 +254,7 @@ function formatNumberKo(pay) {
 		
 		<div class="board-detail-container">
 		    <!-- 제목 & 작성자 정보 -->
-		    <div class="board-header">
+		    <div class="post-header">
 		        <p id="title" class="post-title"></p>
 		        <div class="post-info">
 		        	<i class="fa-solid fa-clock" style="font-size: 16px;"></i>
@@ -298,7 +303,7 @@ function formatNumberKo(pay) {
 		    <div class="job-status" id="status" style="display: none;"></div>
 		
 		    <!-- 본문 영역 -->
-		    <div class="board-content">
+		    <div class="content-div">
 		        <p id="post-content"></p>
 		    </div>
 		
@@ -309,7 +314,6 @@ function formatNumberKo(pay) {
 		    		<button id="apply">지원하기</button>
 	    			<span class="favoriteSpan">
 	    				<i class="favorite fa-star"></i>
-						<!-- <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>-->
 					</span>
 		    	</div>
 		    	</sec:authorize>

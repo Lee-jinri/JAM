@@ -108,8 +108,13 @@
 			let url = "/api/jobs/my/applications?" + queryString;
 			
 			const res = await fetch(url);
+			if (!res.ok) {
+				const data = await res.json().catch(() => null);
+				let msg = data?.detail || data?.error || '불러오기에 실패했어요.';
+				throw data ? { ...data } : { detail: msg };
+			}
 			let data = await res.json();
-			
+
 			const items = data.apps;
 			
 			if(!items || items.length === 0){
@@ -138,9 +143,11 @@
 			$('#apps-tbody').html(rows);
 
 			loadPagination(data.pageMaker);
-		}catch(e){
-			console.log(e);
-			$('#apps-tbody').html('<tr><td colspan="7" class="empty">불러오기에 실패했어요. 잠시 후 다시 시도해주세요.</td></tr>');
+		}catch(err){
+			if (handleApiError(err, "/jobs/board")) return;
+
+			const msg = err?.detail || '불러오기에 실패했어요. 잠시 후 다시 시도해주세요.';
+			$('#apps-tbody').html('<tr><td colspan="7" class="empty">' + msg + '</td></tr>');
 		}
 	}
 	
@@ -164,11 +171,16 @@
 			if(!confirm('지원을 취소하겠습니까?')) return;
 			try{
 				let res = await fetch('/api/jobs/applications/' + id + '/withdraw', {method:'DELETE'});
-				if(!res.ok) throw new Error();
+				if (!res.ok) {
+					const data = await res.json().catch(() => null);
+					let msg = data?.detail || data?.error || '지원 취소 중 오류가 발생했습니다.';
+					throw data ? { ...data } : { detail: msg };
+				}
 				alert('지원 취소가 완료 되었습니다.');
 				loadApps();
-			}catch(_){
-				alert('지원 취소 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+			}catch(err){
+				if (handleApiError(err, "/jobs/board")) return;
+			    alert(err?.detail || '지원 취소 중 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
 			}
 		}
 		

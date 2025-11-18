@@ -551,7 +551,6 @@ $(function(){
 	    getBoard();
 	});
 
-
 	$("#search-btn").click(function(){
 	    boardState.category = $("#typeSwitch").is(":checked") ? "1" : "0";
 	    boardState.positions= getSelectedPositions(); 
@@ -630,7 +629,13 @@ function getBoard() {
 	let url = "/api/jobs/board?" + queryString;
 
 	fetch(url)
-	.then(res => res.json())
+	.then(res => {
+		if (!res.ok) {
+	    	return res.json().then(err => {
+	      		throw new Error(err.detail || "요청 처리 중 오류가 발생했습니다.");
+	      	})
+	    }
+		return res.json()})
 	.then(data => {
 		if (boardState.category === "0") {
 			companyRecruit(data);
@@ -640,6 +645,9 @@ function getBoard() {
 			setMemberStyle();
 		}
 		loadPagination(data.pageMaker);
+	}) 
+	.catch(err => {
+	 	alert(err.message);
 	});
 }
 

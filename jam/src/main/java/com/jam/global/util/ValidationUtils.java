@@ -4,6 +4,7 @@ import java.util.regex.Pattern;
 
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.exception.BadRequestException;
+import com.jam.global.exception.UnauthorizedException;
 
 public class ValidationUtils {
 	private ValidationUtils() { };
@@ -85,5 +86,19 @@ public class ValidationUtils {
 	public static boolean validateEmail(String email) {
 		if (email == null) throw new BadRequestException("이메일을 입력하세요.");
 		return EMAIL_PATTERN.matcher(email).matches();
+	}
+	
+	public static String requireLogin(String userId) {
+	    if (userId == null || userId.isBlank()) {
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+	    }
+	    return userId;
+	}
+
+	public static Long requireValidId(Long id) {
+	    if (id == null || id <= 0) {
+	        throw new BadRequestException("잘못된 요청입니다.");
+	    }
+	    return id;
 	}
 }

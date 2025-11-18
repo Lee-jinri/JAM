@@ -155,13 +155,14 @@
 			    },
 			    body: JSON.stringify(data)
 			})
-			.then(response => {
-			    if (!response.ok) {
-			    	return response.text().then(text => {
-			            throw new Error(text || '수정에 실패했습니다.');
-			        });
+			.then(res => {
+				if (res.ok) {
+			        return res.text(); 
 			    }
-			    return response.text();
+
+		    	return res.json().then(err => {
+		            throw err;
+		        });
 			})
 			.then(body => {
 			    alert("수정이 완료되었습니다.");
@@ -170,8 +171,9 @@
 			        $(location).attr('href', '/jobs/post/' + body);
 			    }
 			})
-			.catch(error => {
-			    alert(error.message);
+			.catch(err => {
+				if (handleApiError(err, "/jobs/board")) return;
+			    alert(err.detail || '수정을 실패했습니다.');
 			});
 		})
 	})

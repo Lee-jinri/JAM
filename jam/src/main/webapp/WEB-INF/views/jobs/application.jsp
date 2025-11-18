@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <title></title>
 <script type="text/javascript" src="/resources/include/dist/js/jquery-3.7.1.min.js"></script>
-
+<script src="/resources/include/dist/js/common.js"></script>
 <style>
 	:root{
 		--bg:#f5f7fa; --card:#ffffff; --text:#1e1e1e; --muted:#6c757d;
@@ -70,16 +70,13 @@ async function getApplication(){
 
 	try {
 		const res = await fetch('/api/jobs/applications/' + appId, {credentials:'same-origin'});
-		if(!res.ok){
-			let msg = "오류가 발생했습니다. 잠시 후 다시 시도하세요.";
-			try {
-				const data = await res.json();
-				if (data && data.error) msg = data.error;
-			} catch (_) {  }
-			alert(msg);
-			window.close();
-			return;
+		
+		if (!res.ok) {
+			const data = await res.json().catch(() => null);
+			let msg = data?.detail || data?.error || "오류가 발생했습니다. 잠시 후 다시 시도하세요.";
+			throw data ? { ...data } : { detail: msg };
 		}
+		
 		const data = await res.json();
 		if(!data || !data.app){
 			alert("오류가 발생했습니다. 잠시 후 다시 시도하세요.");
@@ -110,9 +107,9 @@ async function getApplication(){
 				$(".file-row").append($clone);
 			})
 		}
-	} catch (e){
-		console.error(e);
-		alert("오류가 발생했습니다. 잠시 후 다시 시도하세요.");
+	} catch (err){	
+		if (handleApiError(err, "/jobs/board")) return;
+    	alert(err?.detail || "오류가 발생했습니다. 잠시 후 다시 시도하세요.");
 		window.close();
 	}
 }

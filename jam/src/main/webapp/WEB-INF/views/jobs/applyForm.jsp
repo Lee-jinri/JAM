@@ -7,7 +7,7 @@
 <title></title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <script type="text/javascript" src="/resources/include/dist/js/jquery-3.7.1.min.js"></script>
-	
+<script src="/resources/include/dist/js/common.js"></script>
 <style>
 	:root{
 		--bg:#f5f7fa; --card:#ffffff; --text:#1e1e1e; --muted:#6c757d;
@@ -305,29 +305,25 @@ $(function() {
 			.then(res => { 
 				if (!res.ok) {
 					let serverMsg = '업로드/저장 중 오류가 발생했습니다.';
+					const ct = res.headers.get('content-type') || '';
 					
-					if (res.status !== 204) {
-						const ct = res.headers.get('content-type') || '';
-						if (ct.includes('application/json')) {
-							return res.json().then(data => {
-								if (data && typeof data.error === 'string') {
-									serverMsg = data.error;
-								}
-								throw new Error(serverMsg);
-							});
-						} else {
-							return res.text().then(text => {
-								if (text) serverMsg = text;
-								throw new Error(serverMsg);
-							});
-						}
-					}
-					
-					if (res.status === 400) serverMsg = serverMsg || '잘못된 요청입니다.';
-					if (res.status === 404) serverMsg = serverMsg || '해당 공고를 찾을 수 없습니다.';
-					if (res.status === 409) serverMsg = serverMsg || '이미 해당 공고에 지원했습니다.';
+					if (res.status === 400) serverMsg = '잘못된 요청입니다.';
+					if (res.status === 404) serverMsg = '해당 공고를 찾을 수 없습니다.';
+					if (res.status === 409) serverMsg = '이미 해당 공고에 지원했습니다.';
 
-					throw new Error(serverMsg);
+					if (ct.includes('application/json')) {
+						return res.json().then(data => {
+							if (data && typeof data.error === 'string') {
+								serverMsg = data.error;
+							}
+							throw { detail: serverMsg, ...data };
+						});
+					} else {
+						return res.text().then(text => {
+							if (text) serverMsg = text;
+							throw { detail: serverMsg };
+						});
+					}
 				}
 			})
 			.then(() => {
@@ -337,8 +333,10 @@ $(function() {
 				window.close();
 			})
 			.catch(err => {
-				const msg = err && err.message ? err.message : '업로드/저장 중 오류가 발생했습니다.';
-				
+				if (handleApiError(err)) return;
+
+				const msg = err?.detail || '업로드/저장 중 오류가 발생했습니다.';
+
 				const el = document.getElementById('fileMsg');
 				if (el && el.isConnected) {
 					el.textContent = msg;
@@ -359,7 +357,72 @@ $(function() {
 			fileMsg.style.display = 'block';
 			return;
 		}
+		
+		Promise.all(files.map(uploadOne))
+		.then(results => {
+			const payload = {
+				post_id: postId,
+				title: title,
+				content: content,
+				file_assets: results.map(m => ({
+					file_key:  m.key,
+					file_name: m.name,
+					file_type: m.type,
+					file_size: Number(m.size)
+				}))
+			};
+			return fetch('/api/jobs/applications', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload)
+			});
+		})
+		.then(res => {
+			if (!res.ok) {
+				let serverMsg = '업로드/저장 중 오류가 발생했습니다.';
+				const ct = res.headers.get('content-type') || '';
 
+				if (res.status === 400) serverMsg = '잘못된 요청입니다.';
+				if (res.status === 404) serverMsg = '해당 공고를 찾을 수 없습니다.';
+				if (res.status === 409) serverMsg = '이미 해당 공고에 지원했습니다.';
+
+				if (ct.includes('application/json')) {
+					return res.json().then(data => {
+						if (data && typeof data.error === 'string') {
+							serverMsg = data.error;
+						}
+						throw { detail: serverMsg, ...data };
+					});
+				} else {
+					return res.text().then(text => {
+						if (text) serverMsg = text;
+						throw { detail: serverMsg };
+					});
+				}
+				throw { detail: serverMsg };
+			}
+
+			submitBtn.disabled = false;
+			submitBtn.textContent = '제출';
+			alert("지원이 완료되었습니다.");
+			window.close();
+		})
+		.catch(err => {
+			if (handleApiError(err)) return;
+
+			const msg = err?.detail || '업로드/저장 중 오류가 발생했습니다.';
+
+			const el = document.getElementById('fileMsg');
+			if (el && el.isConnected) {
+				el.textContent = msg;
+				el.style.display = 'block';
+			} else {
+				alert(msg);
+			}
+			submitBtn.disabled = false;
+			submitBtn.textContent = '제출';
+		});
+		
 		function uploadOne(file) {
 			if (file.size > MAX) {
 				return Promise.reject(
@@ -400,73 +463,6 @@ $(function() {
 				});
 			})
 		}
-		
-		
-		Promise.all(files.map(uploadOne))
-		.then(results => {
-			const payload = {
-				post_id: postId,
-				title: title,
-				content: content,
-				file_assets: results.map(m => ({
-					file_key:  m.key,
-					file_name: m.name,
-					file_type: m.type,
-					file_size: Number(m.size)
-				}))
-			};
-			return fetch('/api/jobs/applications', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload)
-			});
-		})
-		.then(res => {
-			if (!res.ok) {
-				let serverMsg = '업로드/저장 중 오류가 발생했습니다.';
-				
-				if (res.status !== 204) {
-					const ct = res.headers.get('content-type') || '';
-					if (ct.includes('application/json')) {
-						return res.json().then(data => {
-							if (data && typeof data.error === 'string') {
-								serverMsg = data.error;
-							}
-							throw new Error(serverMsg);
-						});
-					} else {
-						return res.text().then(text => {
-							if (text) serverMsg = text;
-							throw new Error(serverMsg);
-						});
-					}
-				}
-				
-				if (res.status === 400) serverMsg = serverMsg || '잘못된 요청입니다.';
-				if (res.status === 404) serverMsg = serverMsg || '해당 공고를 찾을 수 없습니다.';
-				if (res.status === 409) serverMsg = serverMsg || '이미 해당 공고에 지원했습니다.';
-
-				throw new Error(serverMsg);
-			}
-			
-			submitBtn.disabled = false;
-			submitBtn.textContent = '제출';
-			alert("지원이 완료되었습니다.");
-			window.close();
-		})
-		.catch(err => {
-			const msg = err && err.message ? err.message : '업로드/저장 중 오류가 발생했습니다.';
-			
-			const el = document.getElementById('fileMsg');
-			if (el && el.isConnected) {
-				el.textContent = msg;
-				el.style.display = 'block';
-			} else {
-				alert(msg);
-			}
-			submitBtn.disabled = false;
-			submitBtn.textContent = '제출';
-		});
 	});
 </script>
 </body>

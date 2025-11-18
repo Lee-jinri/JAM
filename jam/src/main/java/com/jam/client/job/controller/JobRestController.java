@@ -26,14 +26,17 @@ import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
+import com.jam.global.exception.BadRequestException;
+import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.UnauthorizedException;
+import com.jam.global.util.ValidationUtils;
 import com.jam.global.util.ValueUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
-@RequestMapping("/api/jobs/")
+@RequestMapping("/api/jobs")
 @RequiredArgsConstructor
 @Log4j
 public class JobRestController {
@@ -48,32 +51,27 @@ public class JobRestController {
 	 * @param request	HttpServletRequest, userId 추출용
 	 * @return			jobList(채용공고 목록), pageMaker(페이징 정보)
 	 */
-	@GetMapping(value = "board")
+	@GetMapping(value = "/board")
 	public ResponseEntity<Map<String, Object>> getBoard(JobVO jobs, HttpServletRequest request){
-		try {
-			if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
-			
-			String user_id = (String)request.getAttribute("userId");
-			jobs.setUser_id(user_id); 
-			
-			String kw = jobs.getKeyword();
-			jobs.setKeyword(ValueUtils.sanitizeForLike(kw));
-			
-			Map<String, Object> result = new HashMap<>();
 
-			List<JobVO> jobList = jobService.getBoard(jobs);
-			result.put("jobList", jobList);
-			
-			int total = jobService.listCnt(jobs);
-			PageDTO pageMaker = new PageDTO(jobs, total);
-	        result.put("pageMaker", pageMaker);
+		if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
+		
+		String user_id = (String)request.getAttribute("userId");
+		jobs.setUser_id(user_id); 
+		
+		String kw = jobs.getKeyword();
+		jobs.setKeyword(ValueUtils.sanitizeForLike(kw));
+		
+		Map<String, Object> result = new HashMap<>();
 
-	        return ResponseEntity.ok(result);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
-		}
+		List<JobVO> jobList = jobService.getBoard(jobs);
+		result.put("jobList", jobList);
+		
+		int total = jobService.listCnt(jobs);
+		PageDTO pageMaker = new PageDTO(jobs, total);
+        result.put("pageMaker", pageMaker);
+
+        return ResponseEntity.ok(result);
 	}
 	
 	
@@ -86,32 +84,25 @@ public class JobRestController {
 	 ************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> getPost(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
-		if (post_id == null) { 
-			log.error("post_id is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		}
+
+		post_id = ValidationUtils.requireValidId(post_id);
 		
 		// 조회수 증가
 		jobService.incrementReadCnt(post_id);
 					
-		try {
-			Map<String, Object> result = new HashMap<>();
-			
-			JobVO post = jobService.getPost(post_id);
-			post.setPosition(getTranslatedPosition(post.getPosition()));
-			result.put("post", post);
-			
-			String userId = (String)request.getAttribute("userId");
-			Boolean isAuthor = false;
-			
-			if(userId != null && userId.equals(post.getUser_id())) isAuthor = true;
-			result.put("isAuthor", isAuthor);
-			
-			return ResponseEntity.ok(result);
-	    } catch (Exception e) {
-	    	log.error("Error fetching job detail for post_id: "+ post_id + e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-	    }
+		Map<String, Object> result = new HashMap<>();
+		
+		JobVO post = jobService.getPost(post_id);
+		post.setPosition(getTranslatedPosition(post.getPosition()));
+		result.put("post", post);
+		
+		String userId = (String)request.getAttribute("userId");
+		Boolean isAuthor = false;
+		
+		if(userId != null && userId.equals(post.getUser_id())) isAuthor = true;
+		result.put("isAuthor", isAuthor);
+		
+		return ResponseEntity.ok(result);
 	}
 	
 	public String getTranslatedPosition(String position) {
@@ -133,7 +124,9 @@ public class JobRestController {
 	
 	/******************************
 	 * 구인 글을 작성하는 메서드 입니다.
-	 * @param JobVO jobs 작성자 id와 닉네임, 제목과 내용, 카테고리, 급여 지불 방법, 급여
+	 * 
+	 * @param request  사용자 인증 정보(userId) 추출용 HttpServletRequest
+	 * @param JobVO jobs 제목과 내용, 카테고리, 급여 지불 방법, 급여
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
@@ -141,32 +134,24 @@ public class JobRestController {
 	public ResponseEntity<String> writePost(@RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
 		
 		if (jobs == null) {
-	        log.error("jobVO is null");
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("jobVO is null.");
+	        log.error("JOBS writePost jobVO is null");
+	        throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요.");
 	    }
 
 	    // 유효성 검사
 	    String validationError = validateJobVO(jobs);
 	    if (validationError != null) {
-	        log.error(validationError);
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
+	        throw new BadRequestException(validationError);
 	    }
 
 	    // 기본값 및 사용자 정보 세팅
 	    preprocessJobVO(jobs, request);
 		
-		try {
-			jobService.writePost(jobs);
-			
-			String post_id = jobs.getPost_id().toString();
-			
-			return new ResponseEntity<>(post_id,HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("구인 글 작성 데이터 저장 중 오류 : " + e);
-			
-			String responseBody = e.getMessage();
-			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		jobService.writePost(jobs);
+		
+		String post_id = jobs.getPost_id().toString();
+		
+		return new ResponseEntity<>(post_id,HttpStatus.OK);
 	}
 	
 	private String validateJobVO(JobVO jobs) {
@@ -193,9 +178,11 @@ public class JobRestController {
 	}
 
 	private void preprocessJobVO(JobVO jobs, HttpServletRequest request) {
-		jobs.setUser_id((String) request.getAttribute("userId"));
-		jobs.setUser_name((String) request.getAttribute("userName"));
-
+		String userId = (String) request.getAttribute("userId");
+		if(userId == null || userId.isEmpty()) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		
+		jobs.setUser_id(userId);
+		
 	    // gu, dong 기본값 처리
 		jobs.setGu(ValueUtils.guNullToAll(jobs.getGu()));
 		jobs.setDong(ValueUtils.emptyToNull(jobs.getDong()));
@@ -211,36 +198,28 @@ public class JobRestController {
 	 ***********************************/
 	@PutMapping("/post/{postId}")
 	public ResponseEntity<String> editPost(@PathVariable Long postId, @RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
-		if (postId == null || postId <= 0) {
-			throw new IllegalArgumentException("유효하지 않은 게시글 ID입니다.");
+		
+		if (jobs == null) {
+	        log.error("JOBS editPost: 요청 본문이 비어 있습니다. (Jobs 데이터 누락)"); 
+		    throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요.");
 		}
 
-		if (jobs == null) {
-	        log.error("요청 본문이 비어 있습니다. (Jobs 데이터 누락)"); 
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("서버가 요청 데이터를 처리할 수 없습니다. 요청 형식을 확인해주세요.");
-	    }
-
+		postId = ValidationUtils.requireValidId(postId);
 		jobs.setPost_id(postId);
 	    // 유효성 검사
 	    String validationError = validateJobVO(jobs);
 	    if (validationError != null) {
 	        log.error(validationError);
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(validationError);
+	        throw new BadRequestException(validationError);
 	    }
 	    
 	    // 기본값 및 사용자 정보 세팅
 	    preprocessJobVO(jobs, request);
-	    try {
-			jobService.editPost(jobs);
-			String post_id = jobs.getPost_id().toString();
-			
-			return new ResponseEntity<>(post_id, HttpStatus.OK);
-		} catch(Exception e) {
-			log.error("Jobs editBoard 데이터 수정 중 오류 : " + e.getMessage());
-			String responseBody = "시스템 오류가 발생했습니다. 잠시 후 다시 시도하세요.";
-			
-			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+    
+		jobService.editPost(jobs);
+		String post_id = jobs.getPost_id().toString();
+		
+		return new ResponseEntity<>(post_id, HttpStatus.OK);
 	}
 	
 
@@ -252,21 +231,13 @@ public class JobRestController {
 	 **********************************/
 	@DeleteMapping("/post/{postId}")
 	public ResponseEntity<Void> deletePost(@PathVariable Long postId, HttpServletRequest request) {
-
-		String user_id = (String)request.getAttribute("userId");
-		if(user_id == null) {
-			log.error("Unauthorized request: 사용자 아이디가 없습니다.");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
 		
-		if (postId == null) { 
-			log.error("Missing required parameter: postId in deletePost()");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
-	
-		jobService.deletePost(postId, user_id);
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
+		postId = ValidationUtils.requireValidId(postId);
 		
-		return new ResponseEntity<>(HttpStatus.OK);
+		jobService.deletePost(postId, userId);
+		
+		return ResponseEntity.ok().build();
 	}
 	
 	/**
@@ -281,20 +252,13 @@ public class JobRestController {
 	 */
 	@PatchMapping("/post/{postId}")
 	public ResponseEntity<Void> closeJob(@PathVariable Long postId, HttpServletRequest request) {
-		String user_id = (String)request.getAttribute("userId");
-		if(user_id == null) {
-			log.error("Unauthorized request: 사용자 아이디가 없습니다.");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
+
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
+		postId = ValidationUtils.requireValidId(postId);
 		
-		if (postId == null) { 
-			log.error("Missing required parameter: postId in closeJob()");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
-		}
-	
-		jobService.closePost(postId, user_id);
-		
-		return ResponseEntity.noContent().build();
+		jobService.closePost(postId, userId);
+
+		return ResponseEntity.ok().build();
 	}
 
 	/**
@@ -310,12 +274,12 @@ public class JobRestController {
 	public ResponseEntity<String> createApplication(
 			@Valid @RequestBody ApplicationVO app,
 			HttpServletRequest request){
-		
-		app.setUser_id((String)request.getAttribute("userId"));
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
+		app.setUser_id(userId);
 		
 		jobService.createApplication(app);
-		
-		return ResponseEntity.ok(null);
+
+		return ResponseEntity.ok().build();
 	}
 	
 	/**
@@ -328,39 +292,31 @@ public class JobRestController {
 	 */
 	@GetMapping("/my/posts")
 	public ResponseEntity<Map<String, Object>> getPostings(JobVO jobs, HttpServletRequest request){		
-		try {
-			String userId = (String)request.getAttribute("userId");
-			if(userId == null ||userId.isEmpty()) throw new UnauthorizedException("인증되지 않은 사용자 입니다.");
-			jobs.setUser_id(userId); 
-			
-			if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
+		
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
+		jobs.setUser_id(userId); 
+		
+		if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
 
-			Map<String, Object> result = new HashMap<>();
-			List<JobVO> postings = new ArrayList<>();
-			
-			@SuppressWarnings("unchecked")
-			List<String> roles = (List<String>) request.getAttribute("roles");
-			
-			if (roles.contains("ROLE_USER")) {
-				postings = jobService.getMyRecruitPosts(jobs);
-			}else if (roles.contains("ROLE_COMPANY")) {
-				postings = jobService.getMyJobPosts(jobs);
-			}
-			
-			result.put("postings", postings);
-			
-			int total = jobService.getMyPostCnt(jobs);
-			PageDTO pageMaker = new PageDTO(jobs, total);
-	        result.put("pageMaker", pageMaker);
-
-	        return ResponseEntity.ok(result);
-		}catch(UnauthorizedException e) {
-			throw e;
-		}catch(Exception e) {
-			log.error(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
+		Map<String, Object> result = new HashMap<>();
+		List<JobVO> postings = new ArrayList<>();
+		
+		@SuppressWarnings("unchecked")
+		List<String> roles = (List<String>) request.getAttribute("roles");
+		
+		if (roles.contains("ROLE_USER")) {
+			postings = jobService.getMyRecruitPosts(jobs);
+		}else if (roles.contains("ROLE_COMPANY")) {
+			postings = jobService.getMyJobPosts(jobs);
 		}
+		
+		result.put("postings", postings);
+		
+		int total = jobService.getMyPostCnt(jobs);
+		PageDTO pageMaker = new PageDTO(jobs, total);
+        result.put("pageMaker", pageMaker);
+
+        return ResponseEntity.ok(result);
 	}
 	
 	/**
@@ -385,9 +341,9 @@ public class JobRestController {
 	 */
 	@GetMapping("/applications/{applicationId}")
 	public ResponseEntity<Map<String, Object>> getApplication(@PathVariable Long applicationId, HttpServletRequest request){
-		String userId = (String) request.getAttribute("userId");
-		if(userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-		if(applicationId == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
+		applicationId = ValidationUtils.requireValidId(applicationId);
 		
 		Map<String, Object> result = jobService.getApplication(applicationId, userId);
 		return ResponseEntity.ok(result);
@@ -403,34 +359,28 @@ public class JobRestController {
 	 */
 	@GetMapping("/my/applications")
 	public ResponseEntity<Map<String, Object>> getMyApplications(ApplicationVO app, HttpServletRequest request){
-		String userId = (String) request.getAttribute("userId");
-		if(userId == null) throw new UnauthorizedException("인증되지 않은 사용자입니다."); 
 
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
 		app.setUser_id(userId);
 		app.setKeyword(ValueUtils.sanitizeForLike(app.getKeyword()));
 		
-		try {
-			Map<String, Object> result = new HashMap<>(); 
-			
-			List<Map<String, Object>> raw  = jobService.getMyApplications(app);
-			
-			List<Map<String,Object>> apps = raw.stream().map(row -> {
-				Map<String,Object> m = new HashMap<>();
-				row.forEach((k,v) -> m.put(k.toLowerCase(), v)); 
-				return m;
-			}).toList();
-			
-			result.put("apps", apps);
-					
-			int total = jobService.getMyApplicationsCnt(app);
-			PageDTO pageMaker = new PageDTO(app, total);
-	        result.put("pageMaker", pageMaker);
+		Map<String, Object> result = new HashMap<>(); 
+		
+		List<Map<String, Object>> raw  = jobService.getMyApplications(app);
+		
+		List<Map<String,Object>> apps = raw.stream().map(row -> {
+			Map<String,Object> m = new HashMap<>();
+			row.forEach((k,v) -> m.put(k.toLowerCase(), v)); 
+			return m;
+		}).toList();
+		
+		result.put("apps", apps);
+				
+		int total = jobService.getMyApplicationsCnt(app);
+		PageDTO pageMaker = new PageDTO(app, total);
+        result.put("pageMaker", pageMaker);
 
-	        return ResponseEntity.ok(result);
-		}catch(Exception e) {
-			log.error("getMyApplications:" + e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+        return ResponseEntity.ok(result);
 	}
 
 	/**
@@ -442,9 +392,10 @@ public class JobRestController {
 	 */
 	@DeleteMapping("/applications/{applicationId}/withdraw")
 	public ResponseEntity<Void>  withdrawApplication(@PathVariable Long applicationId, HttpServletRequest request){
-		String userId = (String) request.getAttribute("userId");
-		if(userId == null) throw new UnauthorizedException("로그인이 만료 되었습니다."); 
 
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
+		applicationId = ValidationUtils.requireValidId(applicationId);
+		
 		jobService.withdrawApplication(applicationId, userId);
 		
 		return ResponseEntity.ok().build();
@@ -460,31 +411,23 @@ public class JobRestController {
 	 */
 	@GetMapping("/candidates")
 	public ResponseEntity<Map<String, Object>> getcandidates(ApplicationVO application, HttpServletRequest request){		
-		try {
-			Long postId = application.getPost_id();
-			if(postId == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-			
-			String userId = (String)request.getAttribute("userId");
-			if(userId == null ||userId.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-			
-			String writer = jobService.findCompanyIdByPostId(postId);
-			if (writer == null || !writer.equals(userId)) return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
-			
-			Map<String, Object> result = new HashMap<>();
-			
-			List<ApplicationVO> apps = jobService.getApplicationsByPostId(postId);
-			result.put("apps", apps);
-			
-			int total = jobService.applicationsListCnt(application);
-			PageDTO pageMaker = new PageDTO(application, total);
-			result.put("pageMaker", pageMaker);
-			
-	        return ResponseEntity.ok(result);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(null);
-		}
+
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
+		Long postId = ValidationUtils.requireValidId(application.getPost_id());
+		
+		String writer = jobService.findCompanyIdByPostId(postId);
+		if (writer == null || !writer.equals(userId)) throw new ForbiddenException("해당 정보를 조회할 권한이 없습니다.");
+		
+		Map<String, Object> result = new HashMap<>();
+		
+		List<ApplicationVO> apps = jobService.getApplicationsByPostId(postId);
+		result.put("apps", apps);
+		
+		int total = jobService.applicationsListCnt(application);
+		PageDTO pageMaker = new PageDTO(application, total);
+		result.put("pageMaker", pageMaker);
+		
+        return ResponseEntity.ok(result);
 	}
 	
 	/**
@@ -496,34 +439,27 @@ public class JobRestController {
 	 */
 	@GetMapping("/my/favorites")
 	public ResponseEntity<Map<String, Object>> getMyFavorites(JobVO job, HttpServletRequest request){
-		String userId = (String) request.getAttribute("userId");
-		if(userId == null) throw new UnauthorizedException("로그인이 만료 되었습니다."); 
 
+		String userId = ValidationUtils.requireLogin((String) request.getAttribute("userId"));
 		job.setUser_id(userId);
 		job.setKeyword(ValueUtils.sanitizeForLike(job.getKeyword()));
 		
-		try {
-			Map<String, Object> result = new HashMap<>(); 
-			
-			List<Map<String, Object>> raw  = jobService.getMyFavorites(job);
-			
-			List<Map<String,Object>> favorites = raw.stream().map(row -> {
-				Map<String,Object> m = new HashMap<>();
-				row.forEach((k,v) -> m.put(k.toLowerCase(), v)); 
-				return m;
-			}).toList();
-			
-			result.put("favorites", favorites);
-			
-			int total = jobService.getMyFavoritesCnt(job);
-			PageDTO pageMaker = new PageDTO(job, total);
-	        result.put("pageMaker", pageMaker);
+		Map<String, Object> result = new HashMap<>(); 
+		
+		List<Map<String, Object>> raw  = jobService.getMyFavorites(job);
+		
+		List<Map<String,Object>> favorites = raw.stream().map(row -> {
+			Map<String,Object> m = new HashMap<>();
+			row.forEach((k,v) -> m.put(k.toLowerCase(), v)); 
+			return m;
+		}).toList();
+		
+		result.put("favorites", favorites);
+		
+		int total = jobService.getMyFavoritesCnt(job);
+		PageDTO pageMaker = new PageDTO(job, total);
+        result.put("pageMaker", pageMaker);
 
-			log.info(result);
-	        return ResponseEntity.ok(result);
-		}catch(Exception e) {
-			log.error("getMyFavorites:" + e);
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-		}
+        return ResponseEntity.ok(result);
 	}
 }
