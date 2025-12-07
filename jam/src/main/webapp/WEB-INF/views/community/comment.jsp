@@ -120,8 +120,10 @@ $(function(){
 			body: JSON.stringify(body)
 		})
 		.then(res=>{
-			if(!res.ok){
-				throw new Error("댓글 작성 중 오류가 발생했습니다.");
+			if (!res.ok) {
+				return res.json().then(err => {
+			        throw err;
+			    });
 			}
 			$("#comment_content").val("");
 			listAll();
@@ -134,11 +136,11 @@ $(function(){
 			}, 100);
 			
 		})
-		.catch(err=>{
-			alert(err.message);
-		})
+		.catch(err => {
+			if (handleApiError(err)) return;
+			alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+		});
 	});
-	
 	
 	// 수정 버튼 클릭
 	$(document).on("click","button[data-btn='upBtn']",function(){
@@ -195,15 +197,16 @@ $(function(){
 		    },
 		    body: JSON.stringify(data)
 		}).then(response => {
-		    if (!response.ok) {
-		    	return response.text().then(text => {
-		            throw new Error(text || '수정을 실패했습니다.');
-		        });
-		    }
+			if (!response.ok) {
+				return response.json().then(err => {
+			        throw err;
+			    });
+			}
 			$("button[data-btn='upBtn']").prop("disabled", false);
 		    listAll();
-		}).catch(error => {
-		    alert(error.message);
+		}).catch(err => {
+			if (handleApiError(err)) return;
+			alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
 		});
 	});
 	
@@ -222,14 +225,15 @@ $(function(){
 		fetch('/community/comments/' + commentId,{
 			method: 'DELETE'
 		}).then(res => {
-		    if (!res.ok) {
-		    	return res.text().then(text => {
-		            throw new Error(text || '일시적인 오류가 발생했습니다. 잠시 후 다시 시도하세요.');
-		        });
-		    }
+			if (!res.ok) {
+				return res.json().then(err => {
+			        throw err;
+			    });
+			}
 		    listAll();
-		}).catch(error => {
-		    alert(error.message);
+		}).catch(err => {
+			if (handleApiError(err)) return;
+			alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
 		});
 	});
 })
@@ -242,19 +246,20 @@ function listAll() {
 	}
 	fetch('/community/posts/'+postId+'/comments')
 	.then(res =>{
-		if(!res.ok){
-			console.log(res.status);
-			throw new Error('데이터를 불러오는데 실패했습니다. 잠시후 다시 시도하세요.');
+		if (!res.ok) {
+			return res.json().then(err => {
+		        throw err;
+		    });
 		}
 		return res.json();
 	})
 	.then(list => {
 		renderComments(list);
 	})
-	.catch(err=>{
-		alert(err.message);
-	})
-
+	.catch(err => {
+		if (handleApiError(err)) return;
+		alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+	});
 }
 
 function renderComments(list){
@@ -292,25 +297,25 @@ function setCommentInput(){
 	const userId = window.MY_ID;
 	if(userId == null){
 		// textarea를 readonly로 변경
-           const textarea = document.getElementById('comment_content');
-           textarea.disabled = true;
-        
-           // 로그인 메세지 생성
-           const replyLogin = document.getElementById("comment_login");
+        const textarea = document.getElementById('comment_content');
+        textarea.disabled = true;
+     
+        // 로그인 메세지 생성
+        const replyLogin = document.getElementById("comment_login");
         const span1 = document.createElement("span");
-           span1.textContent = "댓글을 작성하려면 ";
+		span1.textContent = "댓글을 작성하려면 ";
            
         const loginLink = document.createElement("a");
-           loginLink.href = "/member/login";
-           loginLink.textContent = "로그인";
+        loginLink.href = "/member/login";
+        loginLink.textContent = "로그인";
            
-           const span2 = document.createElement("span");
-           span2.textContent = "이 필요합니다.";
+        const span2 = document.createElement("span");
+        span2.textContent = "이 필요합니다.";
         replyLogin.appendChild(span1);
-           replyLogin.appendChild(loginLink);
-           replyLogin.appendChild(span2);
-           
-           document.getElementById("insert").disabled = true;
+        replyLogin.appendChild(loginLink);
+        replyLogin.appendChild(span2);
+        
+        document.getElementById("insert").disabled = true;
 	}else
 		$("#comment_name").text(window.MY_NAME + " 님");
 }
