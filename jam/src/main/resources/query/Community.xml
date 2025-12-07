@@ -4,14 +4,13 @@
 	
 	<!-- 커뮤니티 검색 -->
 	<sql id="comSearch">
-		<if test="search=='title'">
-			<![CDATA[c.title LIKE '%' || #{keyword} || '%']]>
-		</if>
-		<if test="search=='content'">
-			<![CDATA[c.content LIKE '%' || #{keyword} || '%']]>
-		</if>
-		<if test="search=='user_name'">
-			<![CDATA[m.user_name LIKE '%' || #{keyword} || '%']]>
+		<if test="keyword != null and keyword != ''">
+			<![CDATA[
+			AND (
+				LOWER(c.title) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
+        		OR LOWER(c.content) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
+			)
+			]]>
 		</if>
 	</sql>
 	
@@ -70,7 +69,7 @@
 	</select>	
 	
 	<!-- 인기글 -->
-	<select id="getPopularBoard" parameterType="community" resultType="community">
+	<select id="getPopularBoard" resultType="community">
 		<![CDATA[
 		SELECT 
 			c.post_id, 
@@ -93,7 +92,7 @@
 	
 	<!-- 커뮤니티 상세 페이지 -->
 	<select id="getPost" resultType="community">
-		SELECT c.post_id, c.title, c.content, c.view_count, to_char(c.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, m.user_name, c.user_id 
+		SELECT c.post_id, c.title, c.content, c.view_count, to_char(c.created_at,'YYYY"년" MM"월" DD"일" HH24:MI') as created_at, m.user_name, c.user_id 
 		FROM community c
 		LEFT JOIN Member m 
 		ON c.user_id = m.user_id
@@ -105,13 +104,13 @@
 		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
         	select com_seq.nextval from dual
     	</selectKey>
-		INSERT INTO community(post_id, user_id, title, content, view_count, comment_count, imageFileName)
-		VALUES(#{post_id},#{user_id}, #{title}, #{content}, 0 ,0, #{imageFileName, jdbcType = VARCHAR})
+		INSERT INTO community(post_id, user_id, title, content, view_count, comment_count)
+		VALUES(#{post_id},#{user_id}, #{title}, #{content}, 0 ,0)
 	</insert>
 	
 	<!-- 커뮤니티 수정 할 글 불러오기 -->
 	<select id="getPostById" parameterType="community"  resultType="community">
-		SELECT title, content, imageFileName, user_id
+		SELECT post_id, title, content, imageFileName
 		FROM community
 		WHERE post_id = #{post_id} 
 	</select>
@@ -122,9 +121,6 @@
 		title = #{title},
 		content = #{content},
 		created_at = sysdate
-		<if test="imageFileName != ''">
-			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
-		</if>
 		WHERE post_id = #{post_id} AND user_id = #{user_id}
 	</update>
 	
@@ -134,7 +130,7 @@
 	</delete>
 	
 	<!-- 댓글 개수 증감 -->
-	<update id="updateReplyCnt">
+	<update id="updateCommentCnt">
 		update community
 		set comment_count = comment_count + #{amount}
 		where post_id = #{post_id} 

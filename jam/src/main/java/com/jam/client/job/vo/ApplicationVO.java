@@ -29,7 +29,7 @@ public class ApplicationVO extends CommonVO{
 	
 	@Size(max = 800)
 	private String content;
-	private Timestamp created_at;
+	private String created_at;
 	
 	@NotEmpty @Valid
 	private List<FileAssetVO> file_assets;

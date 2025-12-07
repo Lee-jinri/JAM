@@ -1,6 +1,7 @@
 package com.jam.client.community.service;
 
 import java.util.List;
+import java.util.Map;
 
 import com.jam.client.community.vo.CommunityVO;
 
@@ -22,20 +23,16 @@ public interface CommunityService {
 	public CommunityVO getPost(Long com_no);
 
 	// 커뮤니티 글 작성
-	public int writePost(CommunityVO com_vo);
-	
-	// 커뮤니티 수정할 글 정보 불러오기
-	public CommunityVO getPostById(Long com_no);
+	public Long writePost(CommunityVO com_vo);
+
+	// 수정할 글 + 이미지 파일 조회
+	public Map<String, Object> getPostForEdit(Long post_id);
 	
 	// 커뮤니티 글 수정
-	public int editPost(CommunityVO com_vo, String user_id);
+	public int editPost(CommunityVO com_vo);
 	
 	// 커뮤니티 글 삭제
-	public int deletePost(Long com_no, String user_id);	
+	public void deletePost(Long com_no, String user_id);	
 
-	// 특정 회원의 커뮤니티 글
-	public List<CommunityVO> getUserPosts(CommunityVO com_vo);
 
-	// 특정 회원의 커뮤니티 글 개수
-	public int getUserPostCnt(CommunityVO com_vo);
 }

@@ -68,10 +68,10 @@ public class FleaMarketController {
 	 * @param flea_no 수정할 중고악기 글 번호
 	 * @return 중고악기 글 수정 페이지
 	 ******************************/
-	@GetMapping("/board/edit/{flea_no}")
-	public String updateView(@PathVariable("flea_no") Long flea_no, Model model) throws Exception{
+	@GetMapping("/post/edit/{postId}")
+	public String updateView(@PathVariable("postId") Long postId, Model model) throws Exception{
 	
-		model.addAttribute("flea_no",flea_no);
+		model.addAttribute("postId", postId);
 		
 		return "fleaMarket/update";
 	}
@@ -81,7 +81,7 @@ public class FleaMarketController {
 	public String viewMyPage(@RequestParam(value = "view", required = false, defaultValue = "store") String view,
 	                         Model model) {
 		model.addAttribute("view", view);
-		return "fleaMarket/my";
+		return "fleaMarket/myPosts";
 	}
 	
 }

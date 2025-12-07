@@ -27,7 +27,8 @@ public class FileService {
 	private final S3Service s3Service;
 	
 	@Transactional(propagation = Propagation.MANDATORY, rollbackFor = Exception.class)
-	public void insertFiles(List<FileAssetVO> files, Long application_id) {
+	public void insertFiles(List<FileAssetVO> files, Long postId) {
+		log.info("files : " +files);
 		for (FileAssetVO f : files) {
 			String safe = fileUtils.sanitizeFilename(f.getFile_name());
 			String ct = fileUtils.normalizeContentType(f.getFile_type(), safe);

@@ -138,8 +138,7 @@
 	<!-- 중고거래 수정할 글 정보 조회 -->
 	<select id="getPostForEdit" parameterType="flea"
 		resultType="flea">
-		SELECT post_id, title, content, price, category_id,
-		sales_status
+		SELECT post_id, title, content, price, category_id, sales_status
 		FROM fleaMarket
 		WHERE post_id = #{post_id}
 	</select>
@@ -152,10 +151,8 @@
 		created_at = sysdate,
 		sales_status = #{sales_status},
 		category_id = #{category_id},
-		price = #{price}
-		<if test="imageFileName != ''">
-			,imageFileName = #{imageFileName, jdbcType = VARCHAR}
-		</if>
+		price = #{price},
+		thumbnail = #{thumbnail}
 		where post_id = #{post_id}
 	</update>
 
@@ -229,10 +226,9 @@
 	</select>
 
 	<select id="getImages" resultType="imageFile">
-		SELECT image_name
+		SELECT image_no, image_name
 		FROM imageFile
 		WHERE post_id = #{post_id} AND post_type = 'flea'
 	</select>
-
 
 </mapper>

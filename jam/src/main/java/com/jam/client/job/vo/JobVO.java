@@ -18,8 +18,8 @@ public class JobVO extends CommonVO {
 	private int status;   // 0:구인중 1:구인 완료
 		
 	private String created_at; 
-	private Integer hits;
-	private Integer pay_category; // 0:시급 1:월급 
+	private Integer view_count;
+	private Integer pay_category; // 0:건당 1:시급 2:월급
 	private Integer pay;
 	private String position;
 	private List<String> positions;

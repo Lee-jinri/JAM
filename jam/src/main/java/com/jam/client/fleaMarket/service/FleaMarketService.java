@@ -16,22 +16,22 @@ public interface FleaMarketService {
 	int listCnt(FleaMarketVO flea_vo);
 	
 	// 중고거래 조회수 증가
-	void incrementReadCnt(Long flea_no);
+	void incrementReadCnt(Long post_id);
 
 	// 중고거래 상세페이지 조회
-	FleaMarketVO getPostDetail(Long flea_no);
+	FleaMarketVO getPostDetail(Long post_id);
 
 	// 중고거래 글 작성
 	long writePost(FleaMarketVO flea_vo, List<MultipartFile> images);
 
 	// 중고거래 수정할 글 정보 불러오기
-	FleaMarketVO getPostForEdit(Long flea_no);
+	FleaMarketVO getPostForEdit(Long post_id);
 
 	// 중고거래  글 수정
 	int editPost(FleaMarketVO flea_vo);
 
 	// 중고거래 글 삭제
-	int deletePost(Long flea_no, String user_id);
+	void deletePost(Long post_id, String user_id);
 
 	List<FleaMarketVO> getMyStore(FleaMarketVO flea_vo);
 
@@ -44,5 +44,4 @@ public interface FleaMarketService {
 	List<FleaMarketVO> getFavorites(FleaMarketVO flea);
 
 	List<ImageFileVO> getImages(Long post_id);
-	
 }

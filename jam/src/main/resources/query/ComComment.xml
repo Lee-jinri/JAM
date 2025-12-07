@@ -7,8 +7,7 @@
 			c.comment_id, c.content, c.user_id, m.user_name,
 			to_char(c.created_at,'YYYY.MM.DD HH24:MI') as created_at, 
 			CASE
-		        WHEN #{user_id, jdbcType=VARCHAR} IS NOT NULL
-		        AND c.user_id = #{user_id, jdbcType=VARCHAR}
+		        WHEN c.user_id = #{user_id}
 		        THEN 1 ELSE 0
 		    END AS author
 		FROM com_comment c

@@ -20,7 +20,7 @@ public class CommonVO {
 	
 	private int favorite_id;
 	private boolean isFavorite;  // 즐겨찾기 여부
-	private int board_no;
+	
 	private String board_type; // community, roomRental, job, fleaMarket
 	
 	public CommonVO() {

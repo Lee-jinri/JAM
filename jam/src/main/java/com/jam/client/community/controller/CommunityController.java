@@ -18,6 +18,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.google.gson.JsonObject;
+import com.jam.client.community.service.CommunityService;
+import com.jam.client.community.vo.CommunityVO;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -27,6 +29,8 @@ import lombok.extern.log4j.Log4j;
 @AllArgsConstructor
 @Log4j
 public class CommunityController {
+	
+	private final CommunityService comService;
 	
 	/*************************
 	 * @return 커뮤니티 글 리스트 페이지
@@ -41,9 +45,9 @@ public class CommunityController {
 	 * @param com_no 조회할 커뮤니티의 글 번호
 	 * @return 커뮤니티 상세 페이지
 	 **************************************************/
-	@GetMapping("/post/{com_no}")
-	public String communityDetail(@PathVariable("com_no") Long com_no, Model model) {
-		model.addAttribute("com_no", com_no);
+	@GetMapping("/post/{postId}")
+	public String communityDetail(@PathVariable("postId") Long postId, Model model) {
+		model.addAttribute("postId", postId);
 		
 	    return "community/post";
 	}
@@ -63,10 +67,9 @@ public class CommunityController {
 	 * @param com_no 수정할 커뮤니티의 글 번호
 	 * @return 커뮤니티 글 수정 페이지
 	 *********************************/
-	@GetMapping("/post/edit/{com_no}")
-	public String updateView(@PathVariable("com_no") Long com_no, Model model) throws Exception{
-
-		model.addAttribute("com_no", com_no);
+	@GetMapping("/post/edit/{postId}")
+	public String updateView(@PathVariable("postId") Long postId, Model model) throws Exception{
+		model.addAttribute("postId", postId);
 		return "community/update";
 	}
 	
@@ -106,12 +109,12 @@ public class CommunityController {
 	}
 	
 	/*********************************
-	 * @return 특정 회원의 커뮤니티 글 페이지 
+	 * @return 작성한 커뮤니티 글 페이지 
 	 * @throws Exception 
 	 *********************************/
-	@GetMapping(value="/user/posts")
+	@GetMapping(value="/my")
 	public String viewPosts() throws Exception {
 		
-		return "community/userPosts";
+		return "community/myPosts";
 	}
 }

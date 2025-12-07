@@ -14,7 +14,6 @@ import org.springframework.validation.annotation.Validated;
 import com.jam.client.job.dao.JobDAO;
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
-import com.jam.file.service.FileService;
 import com.jam.file.vo.FileAssetVO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ConflictException;
@@ -32,7 +31,6 @@ import lombok.extern.log4j.Log4j;
 public class JobServiceImpl implements JobService {
 
 	private final JobDAO jobDao;
-	private final FileService fileService;
 	private final FileReferenceService fileRefService;	
 	
 	@Override
@@ -149,7 +147,7 @@ public class JobServiceImpl implements JobService {
 				}
 				
 				try {
-					fileService.insertFiles(app.getFile_assets(), app.getApplication_id());
+					fileRefService.insertFiles(app.getFile_assets(), app.getApplication_id());
 				} catch (Exception e) {
 					log.error("createApplication 실패: 파일 연결 중 오류. application_id=" + app.getApplication_id() +
 								"error=" +  e.getMessage());

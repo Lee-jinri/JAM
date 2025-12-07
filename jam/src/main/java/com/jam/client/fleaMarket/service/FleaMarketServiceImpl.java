@@ -42,15 +42,15 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	}
 
 	@Override
-	public void incrementReadCnt(Long flea_no) {
+	public void incrementReadCnt(Long post_id) {
 		
-		fleaDao.incrementReadCnt(flea_no);
+		fleaDao.incrementReadCnt(post_id);
 	}
 
 	@Override
-	public FleaMarketVO getPostDetail(Long flea_no) {
+	public FleaMarketVO getPostDetail(Long post_id) {
 		
-		FleaMarketVO detail = fleaDao.getPostDetail(flea_no);
+		FleaMarketVO detail = fleaDao.getPostDetail(post_id);
 		
 		return detail;
 	}
@@ -59,9 +59,9 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	@Transactional
 	public long writePost(FleaMarketVO flea_vo, List<MultipartFile> images) {
 		
-		long post_no = fleaDao.getNextPostId();
+		long post_id = fleaDao.getNextPostId();
 		
-		flea_vo.setPost_id(post_no);
+		flea_vo.setPost_id(post_id);
 		String thumbnail = null;
 		
 		for (int i = 0; i < images.size(); i++) {
@@ -76,7 +76,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
             
             ImageFileVO imageVO = new ImageFileVO();
             
-            imageVO.setPost_id((long) post_no);
+            imageVO.setPost_id((long) post_id);
             imageVO.setImage_name(savedFileName);
             imageVO.setPost_type("flea");
             
@@ -86,13 +86,13 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 		flea_vo.setThumbnail(thumbnail);
 		fleaDao.writePost(flea_vo);
 		
-		return post_no;
+		return post_id;
 	}
 
 	@Override
-	public FleaMarketVO getPostForEdit(Long flea_no) {
+	public FleaMarketVO getPostForEdit(Long post_id) {
 		
-		FleaMarketVO updateData =  fleaDao.getPostForEdit(flea_no);
+		FleaMarketVO updateData =  fleaDao.getPostForEdit(post_id);
 		
 		return updateData;
 	}
@@ -140,6 +140,4 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	public List<ImageFileVO> getImages(Long post_id) {
 		return fleaDao.getImages(post_id);
 	}
-	
-
 }

@@ -1,7 +1,6 @@
 package com.jam.global.util;
 
 import java.io.File;
-import java.util.Set;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -11,16 +10,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileUtils {
 
 	private final String uploadDir = "C:/upload"; 
-
-	private static final Set<String> ALLOWED_EXTS = Set.of("pdf","doc","docx","hwp");
-	private static final Set<String> ALLOWED_MIME = Set.of(
-	    "application/pdf",
-	    "application/msword",
-	    "application/vnd.openxmlformats-officedocument.wordprocessingml.document", 
-	    "application/x-hwp", "application/haansofthwp" 
-	);
 	
-	private static final long MAX_SIZE_BYTES = 20L * 1024 * 1024; // 20MB
+	private static final long MB = 1024L * 1024L;
+	private static final long APP_MAX_SIZE = 20L * MB;   // 20MB
+	private static final long IMG_MAX_SIZE = 5L * MB;    // 5MB
 
     public String saveToLocal(MultipartFile file, String postType) {
         try {
@@ -79,54 +72,52 @@ public class FileUtils {
 	    return f;
 	}
 	
+    // 확장자, mime, 카테고리 모두 일치하는지 확인
+    public void validateFileType(String filename, String contentType, FileCategory category) {
+    	String ext = extOf(filename);
+    	FileType type = FileType.fromExt(ext);
+    	String normalized = contentType.split(";")[0].trim().toLowerCase();
+    	
+    	if (type == null) {
+            throw new IllegalArgumentException("허용되지 않은 확장자입니다: " + ext);
+        }
 
-	public void validateFilename(String filename) {
-	    String ext = extOf(filename);
-	    
-	    if (!ALLOWED_EXTS.contains(ext)) {
-	        throw new IllegalArgumentException("허용되지 않은 확장자입니다: " + ext);
-	    }
-	    
-	    // 이중 확장자 방지 (.pdf.exe)
-	    String lower = filename.toLowerCase();
-	    int firstDot = lower.indexOf('.');
-	    int lastDot  = lower.lastIndexOf('.');
-	    if (firstDot != -1 && firstDot != lastDot) {
-	        // 필요 시 더 강하게 막고 싶으면 여기서도 거절
-	    }
-	}
+        if (!type.mime.equals(normalized)) {
+            throw new IllegalArgumentException("확장자와 MIME 유형이 일치하지 않습니다: " + ext + " / " + contentType);
+        }
 
-	public String normalizeContentType(String contentType, String filename) {
-		
-	    if (contentType == null || contentType.isBlank()) {
-	        switch (extOf(filename)) {
-	            case "pdf":  return "application/pdf";
-	            case "doc":  return "application/msword"; 
-	            case "docx": return "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
-	            case "hwp":  return "application/x-hwp";
-	        }
-	        return "application/octet-stream";
-	    }
-	    
-	    String ct = contentType.toLowerCase();
-	    
-	    if (!ALLOWED_MIME.contains(ct)) {
-	        return normalizeContentType("", filename);
-	    }
-	    
-	    return ct;
-	}
-	
-	
+        if (type.category != category) {
+            throw new IllegalArgumentException("잘못된 카테고리 업로드입니다: " + category);
+        }
+    }
+    
+    // 확장자 추출
 	public String extOf(String filename) {
 	    int i = filename.lastIndexOf('.');
 	    return (i >= 0 && i < filename.length()-1) ? filename.substring(i+1).toLowerCase() : "";
 	}
 	
-	public void validateFileSize(Long fileSize) {
-		if (fileSize > MAX_SIZE_BYTES) {
-			throw new IllegalArgumentException(
-				"허용된 최대 크기(" + (MAX_SIZE_BYTES / (1024 * 1024)) + "MB)을 초과했습니다.");
-		}
+	// 파일명 사이즈 확인
+	public void validateFileSize(Long fileSize, FileCategory category) {
+		switch (category) {
+	        case POST_IMAGE:
+	            if (fileSize > IMG_MAX_SIZE) // 5MB
+	            	throw new IllegalArgumentException("허용된 최대 크기 " + readableMB(IMG_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
+	            break;
+	
+	        case APPLICATION:
+	            if (fileSize > APP_MAX_SIZE) // 20MB
+	                throw new IllegalArgumentException("허용된 최대 크기 " + readableMB(APP_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
+	            break;
+	
+	        default:
+	            // 기본은 20MB 제한
+	            if (fileSize > APP_MAX_SIZE)
+	            	throw new IllegalArgumentException("허용된 최대 크기 " + readableMB(APP_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
+	    }
+	}
+	
+	private static String readableMB(long bytes) {
+	    return String.format("%.1fMB", bytes / 1024.0 / 1024.0);
 	}
 }

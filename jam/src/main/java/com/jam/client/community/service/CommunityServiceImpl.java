@@ -33,12 +33,12 @@ public class CommunityServiceImpl implements CommunityService {
 	}
 	
 	@Override
-	public void incrementReadCnt(Long com_no) {
-		comDao.incrementReadCnt(com_no);
+	public void incrementReadCnt(Long post_id) {
+		comDao.incrementReadCnt(post_id);
 	}
 	
 	@Override
-	public CommunityVO getPost(Long com_no) {
+	public CommunityVO getPost(Long post_id) {
 		
 		return comDao.getPost(com_no);
 	}
@@ -54,7 +54,7 @@ public class CommunityServiceImpl implements CommunityService {
 		
 		return comDao.getPostById(com_no);
 	}
-
+	
 	@Override
 	public int editPost(CommunityVO com_vo, String user_id) {
 		
@@ -76,7 +76,7 @@ public class CommunityServiceImpl implements CommunityService {
 	public int getUserPostCnt(CommunityVO com_vo) {
 		return comDao.getUserPostCnt(com_vo);
 	}
-	
+
 	@Override
 	public List<CommunityVO> getPopularBoard(CommunityVO community) {
 		return comDao.getPopularBoard(community);
