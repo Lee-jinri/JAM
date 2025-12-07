@@ -1,0 +1,350 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>JAM - 커뮤니티</title>
+<script src="/resources/include/dist/js/userToggle.js"></script>
+<script src="/resources/include/dist/js/favorite.js"></script>
+<style>
+.btn-write {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 10px 18px;
+	border: none;
+	border-radius: 8px;
+	background-color: #f2eadd; 
+	color: #666;
+	font-weight: 600;
+	font-size: 15px;
+	cursor: pointer;
+	box-shadow: 0 2px 6px rgba(123, 134, 170, 0.15);
+	transition: all 0.25s ease;
+}
+
+.btn-write:hover {
+	background-color: #E9DFC8;   
+	transform: translateY(-2px);
+	box-shadow: 0 4px 8px rgba(123, 134, 170, 0.25);
+}
+
+.btn-write:active {
+	transform: translateY(0);
+	box-shadow: 0 2px 4px rgba(123, 134, 170, 0.2);
+}
+
+
+.hot-box {
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+.hot-paper {
+	background-image: url('/resources/include/images/check-paper.png');
+	background-size: 380px; 
+	background-repeat: repeat;
+	padding: 20px 20px; 
+	border-radius: 18px;
+}
+
+.page-header-text {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+  margin: 20px 0 10px 10px;
+}
+
+</style>
+<script type="text/javascript">
+const boardState = {
+		keyword: "",
+		pageNum: 1
+		
+}
+$(function(){
+	getBoard();
+	getPopularBoard();
+	
+	$(document).on("click", ".boardLink", function (e) {
+	    e.preventDefault();
+	    var location = $(this).attr("data-location");
+	    if (location) {
+	        window.location.href = location;
+	    }
+	});
+	
+	$("#keyword").on("keydown", function(event) {
+		if (event.key === "Enter") {
+			event.preventDefault();
+			$("#searchBtn").click();
+		}
+	}); 
+	
+	$("#searchBtn").click(function(){
+		let keyword = $("#keyword").val();
+		console.log(keyword);
+		if(keyword.replace(/\s/g, "") == ""){
+			alert("검색어를 입력하세요.");
+			$("#keyword").focus();
+			return;
+		} 
+		boardState.keyword = keyword;
+		boardState.pageNum = 1;
+		
+		getBoard();
+	})
+		
+	$("#comWriteBtn").click(function () {
+		if(window.MY_ID == null){
+			if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+				location.href = "/member/login";
+			} else {
+				location.href = "/community/board";
+			}
+		}else {
+			location.href = "/community/post/write";
+		}
+	})
+	
+	
+	$("#prevPopular").click(function(){
+	    if (popularState.pageNum > 1) {
+	        popularState.pageNum--;
+	        renderPopularList();
+	    }else{
+	    	 popularState.pageNum = popularState.maxPage;
+	    	 renderPopularList();
+	    }
+	});
+
+	$("#nextPopular").click(function(){
+		if (popularState.pageNum < popularState.maxPage) {
+	        popularState.pageNum++;
+	        renderPopularList();
+	    }else{
+	    	 popularState.pageNum = 1;
+	    	 renderPopularList();
+	    }
+	})
+	
+	$(document).on("click", ".popular-item", function(){
+	    var postId = $(this).data("post-id");
+	    location.href = "/community/post/" + postId;
+	});
+})
+
+function getBoard(){
+    let pageNum = boardState.pageNum || "1";
+    let keyword = boardState.keyword || "";
+    
+	let queryString = new URLSearchParams(boardState).toString();
+	let url = "/api/community/board?" + queryString;
+	
+    fetch(url)
+	.then(response=>{
+		if (!response.ok) {
+			return res.json().then(err => {
+		        throw err;
+		    });
+		}
+		return response.json();
+	}).then(data=>{
+		renderList(data);
+	})
+	.catch(err => {
+		if (handleApiError(err)) return;
+		alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+	});
+}
+
+function renderList(data){
+	let $template = $("#boardTemplate");
+       let $boardList = $("#boardList");
+       
+       $boardList.empty(); 
+
+       data.communityList.forEach(board => {
+           let $clone = $template.clone().removeAttr("id").show();
+           
+           $clone.find(".userName").text(board.user_name);
+           $clone.find(".boardDate").text(timeAgo(board.created_at));
+           $clone.find(".boardTitle").text(board.title);
+           $clone.find(".boardHits").text("조회 " +board.view_count);
+           $clone.find(".boardReplyCnt").text(board.comment_count);
+           $clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
+
+           let $favoriteSpan = $clone.find(".favoriteSpan");
+           $favoriteSpan.attr("data-board-no", board.post_id);
+   		$favoriteSpan.attr("data-board-type", "community");
+   		
+   		let $icon = $favoriteSpan.find("i"); 
+   		board.favorite ? $icon.addClass("fa-solid")
+   					   : $icon.addClass("fa-regular");
+   		
+           $boardList.append($clone);
+       });
+       
+       loadPagination(data.pageMaker);
+}
+
+const popularState = {
+    all: [],     
+    pageNum: 1,
+    pageSize: 5, 
+    maxPage: 3 
+};
+
+function getPopularBoard(){
+	fetch('/api/community/board/popular')
+	.then(res=>{
+		if (!res.ok) {
+			return res.json().then(err => {
+		        throw err;
+		    });
+		}
+		return res.json();
+	}).then(data=>{
+		popularState.all = data.popularList || [];
+		popularState.maxPage = Math.ceil(popularState.all.length / popularState.pageSize) || 1;
+		popularState.pageNum = 1;
+		renderPopularList();
+	}).catch(err => {
+		if (handleApiError(err)) return;
+		alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+	});
+}
+
+function renderPopularList() {
+	const startIdx = (popularState.pageNum - 1) * popularState.pageSize;
+    const endIdx = startIdx + popularState.pageSize;
+    const slice = popularState.all.slice(startIdx, endIdx);
+
+    const $popularList = $("#popularList");
+    $popularList.empty();
+
+    slice.forEach(function(p){
+        const $item = $('<li class="popular-item cursor-pointer flex border-bottom" data-post-id="' + p.post_id + '">' +
+							'<span class="hot-post-title">' + p.title + '</span>' +
+							'<span class="hot-comment-count ml-05">' + p.comment_count + '</span>' + 
+						'</li>');
+        
+        $popularList.append($item);
+    });
+}
+
+function loadPagination(pageMaker) {
+    const $pagination = $("#pagination");
+    $pagination.empty(); // 기존 페이지 버튼 초기화
+
+    // 페이지 번호 버튼
+    for (let num = pageMaker.startPage; num <= pageMaker.endPage; num++) {
+        $pagination.append(
+            '<li class="paginate_button">' +
+                '<a href="#" data-page="' + num + '" class="font-weight-bold ' + (pageMaker.cvo.pageNum === num ? 'selected_btn' : 'default_btn') + '">' + num + '</a>' +
+            '</li>'
+        );
+    }
+
+    $("#pagination a").click(function (e) {
+        e.preventDefault();
+        let pageNum = $(this).data("page");
+
+        boardState.pageNum = pageNum;
+	    getBoard();
+    });
+}
+</script>
+</head>
+<body class="wrap">
+	<div class="community my-bottom-15 my-top-8">
+		<div class=" flex  items-center">
+			<div class="page-header">
+				<h1 class="page-header-text"><a href="/community/board"  class="page-header-text"style="color:#666">COMMUNITY</a></h1>
+			</div>
+		</div>
+		<div class="flex justify-between items-center" >
+			<div class="flex items-center">
+				<div class="neo-wrap flex items-center">
+					<input type="text" name="keyword" id="keyword" class="neo-input" placeholder="제목 / 내용 검색">
+					<button id="searchBtn" class="search-btn border-none background-none">
+					    <img src="/resources/include/images/bubble-search.svg" class="search-icon">
+					</button>
+				</div>
+			</div>
+			<button id="comWriteBtn" class="rainbow-btn">
+				<i class="fa-solid fa-pencil"></i> 새 글
+			</button>
+		</div>
+		
+		<div class="popular-section my-top-8 my-bottom-8">
+			
+			<div class="hot-paper">
+		
+				<div class="hot-box">
+					<div class="hot-label">HOT 🔥</div>
+					
+					<ul id="popularList"></ul>
+					<div class="popular-pagination text-center my-top-5">
+						<button id="prevPopular" class="arrow-btn">
+							<i class="fa-solid fa-arrow-left fa-sm"></i>
+						</button>
+						<button id="nextPopular" class="arrow-btn">
+							<i class="fa-solid fa-arrow-right fa-sm"></i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		
+		<div class="content">
+			<div>
+			    <ul style="display:none;">
+			        <li id="boardTemplate" class="border-bottom" >
+			            <div class="boardLink cursor-pointer pd-2rem flex items-center " >
+			                
+			                <div class="flex items-center justify-center " style="width: 3rem;">
+			                    <span class="favoriteSpan">
+			                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
+			                    </span>
+			                </div>
+			
+			                <div class="title-container flex-1 flex items-center cursor-pointer">
+			                    <div class="flex items-center">
+			                        <span class="font-size-5 boardTitle"></span>
+			                        <span class="ml-05 boardReplyCnt"></span>
+			                    </div>
+			                </div>
+							<div class="userName-div my-bottom-2 flex">
+			                    <span class="userName"></span>
+			                    <div class="userNameToggle"></div>
+			                </div>
+			                
+			                <div class="date-container flex-1 text-right">
+			                    <div class="my-bottom-2">
+			                        <span class="boardDate"></span>
+			                    </div>
+			                    <div class="flex items-center justify-end my-top-2">
+			                        <span class="ml-05 boardHits"></span>
+			                    </div>
+			                </div>
+			
+			            </div>
+			        </li>
+			    </ul>
+			    
+			    <ul id="boardList">
+				</ul>
+			</div>
+			
+			<div>
+				<!-- 페이징 영역 -->
+				<div class="text-center my-top-8">
+				    <ul id="pagination" class="pagination pagination_border"></ul>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
