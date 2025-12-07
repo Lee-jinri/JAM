@@ -24,17 +24,15 @@ jobs:
         run: mvn -B clean package -Dmaven.test.skip=true
 
       - name: Copy WAR to EC2
-        uses: appleboy/scp-action@v0.1.5
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: 54.180.152.155
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY_JAM }}
           source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
           target: "/opt/tomcat/tomcat9/webapps/ROOT.war"
-          strip_components: 0
           overwrite: true
-          tar_tmp_path: ""
-          tar_exec: ""
+          tar: false
 
       - name: Restart Tomcat on EC2
         uses: appleboy/ssh-action@v0.1.10
