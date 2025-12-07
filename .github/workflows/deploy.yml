@@ -1,0 +1,42 @@
+name: JAM Auto Deploy to EC2
+
+on:
+  push:
+    branches: [ "main" ] 
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+
+      - name: Build WAR with Maven
+        run: mvn -B clean package -DskipTests
+
+      - name: Copy WAR to EC2
+        uses: appleboy/scp-action@v0.1.5
+        with:
+          host: 54.180.152.155
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY_JAM }}
+          source: "target/client-1.0.0-BUILD-SNAPSHOT.war"
+          target: "/opt/tomcat/tomcat9/webapps/ROOT.war"
+
+      - name: Restart Tomcat on EC2
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: 54.180.152.155
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY_JAM }}
+          script: |
+            sudo /opt/tomcat/tomcat9/bin/shutdown.sh || true
+            sleep 3
+            sudo /opt/tomcat/tomcat9/bin/startup.sh
