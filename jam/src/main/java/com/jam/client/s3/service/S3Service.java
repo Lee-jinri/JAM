@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.UriUtils;
 
+import com.jam.file.vo.FileCategory;
 import com.jam.global.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
@@ -39,14 +40,15 @@ public class S3Service {
 	@Value("${cloud.aws.s3.bucket}")
 	private String bucket;
 
-	public Map<String, String> presignUpload(String filename, String contentType) {
+	public Map<String, String> presignUpload(String filename, String contentType, Long fileSize, FileCategory category) {
 		String safe = fileUtils.sanitizeFilename(filename);
-		String ct = fileUtils.normalizeContentType(contentType, safe);
-		fileUtils.validateFilename(safe);
-		
-	    Map<String,String> res = generatePresignedUploadUrl(safe, ct);
+
+    	fileUtils.validateFileType(safe, contentType, category);
+    	fileUtils.validateFileSize(fileSize, category);
+
+	    Map<String,String> res = generatePresignedUploadUrl(safe, contentType, category);
 	    
-	    res.put("contentType", ct); 
+	    res.put("contentType", contentType); 
 	    res.put("filename", safe);
 	    
 	    return res;
@@ -61,8 +63,8 @@ public class S3Service {
 	 *         - url : 클라이언트가 해당 URL로 PUT 요청을 보내 업로드할 수 있는 presigned URL
 	 *         - key : 업로드된 객체가 S3에 저장될 경로(Key)
 	 */
-	public Map<String, String> generatePresignedUploadUrl(String filename, String contentType) {
-		String key = buildKey(filename);
+	public Map<String, String> generatePresignedUploadUrl(String filename, String contentType, FileCategory type) {
+		String key = buildKey(type, filename);
 		
 		var req = PutObjectRequest.builder()
 			.bucket(bucket)
@@ -112,11 +114,10 @@ public class S3Service {
 	    return presigned.url().toString();
 	}
 
-	private String buildKey(String filename) {
-		LocalDate today = LocalDate.now();
-		String uuid = UUID.randomUUID().toString().replace("-", "");
-		return String.format("applications/%s/%s/%s",
-			today, uuid, filename);
+	public String buildKey(FileCategory category, String filename) {
+	    LocalDate today = LocalDate.now();
+	    String uuid = UUID.randomUUID().toString().replace("-", "");
+	    return String.format("%s/%s/%s/%s", category.prefix(), today, uuid, filename);
 	}
 	
 	/**
@@ -141,6 +142,20 @@ public class S3Service {
 				log.warn("S3 파일 삭제 실패: key=" + key + ", err=" + e.getMessage());
 			}
 		}
+	}
+
+	public String generatePresignedViewUrl(String file_key) {
+		GetObjectRequest getReq = GetObjectRequest.builder()
+		        .bucket(bucket)
+		        .key(file_key)
+		        .build();
+		
+		GetObjectPresignRequest presignRequest = GetObjectPresignRequest.builder()
+				.signatureDuration(Duration.ofHours(24)) 
+				.getObjectRequest(getReq)
+				.build();
+
+		return presigner.presignGetObject(presignRequest).url().toString();
 	}
 
 }

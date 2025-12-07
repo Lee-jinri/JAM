@@ -35,4 +35,8 @@ public class ApplicationVO extends CommonVO{
 	private List<FileAssetVO> file_assets;
 	
 	private String company_id;
+	
+	private int category; 
+	
+	private Integer job_status;
 }

@@ -29,4 +29,6 @@ public class JobVO extends CommonVO {
 	
 	private String company_name;
 	private boolean isAuthor;
+	
+	private int applyCount;
 }

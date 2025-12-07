@@ -23,6 +23,8 @@ public class CommonVO {
 	
 	private String board_type; // community, roomRental, job, fleaMarket
 	
+	private String period;
+	
 	public CommonVO() {
 		this(1, 10);
 	}

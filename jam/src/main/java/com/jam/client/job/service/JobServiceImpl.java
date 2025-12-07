@@ -15,6 +15,7 @@ import com.jam.client.job.dao.JobDAO;
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.file.vo.FileAssetVO;
+import com.jam.file.vo.FileCategory;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ConflictException;
 import com.jam.global.exception.ForbiddenException;
@@ -215,7 +216,7 @@ public class JobServiceImpl implements JobService {
 		case 0: 
 			FileAssetVO param = new FileAssetVO();
 			param.setPost_id(applicationId);
-			param.setPost_type("APPLICATION");
+			param.setPost_type(FileCategory.APPLICATION.name());
 			
 			List<FileAssetVO> files = fileRefService.getFilesByPost(param);
 					
@@ -314,7 +315,7 @@ public class JobServiceImpl implements JobService {
 			FileAssetVO param = new FileAssetVO();
 			
 			param.setPost_id(applicationId);
-			param.setPost_type("APPLICATION");
+			param.setPost_type(FileCategory.APPLICATION.name());
 			
 			fileRefService.deleteFiles(param);
 		}
