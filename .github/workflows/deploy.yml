@@ -23,6 +23,9 @@ jobs:
         working-directory: ./jam
         run: mvn -B clean package -Dmaven.test.skip=true
 
+      - name: Check WAR exists
+        run: ls -lh jam/target
+
       - name: Copy WAR to EC2
         uses: appleboy/scp-action@v0.1.7
         with:
