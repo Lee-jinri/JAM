@@ -17,10 +17,9 @@ public class ValidationUtils {
 	private static final Pattern PASSWORD_PATTERN = Pattern.compile("^(?=.*[a-zA-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$");
 	
 	// NICKNAME_PATTERN
-	// - 허용 문자: 모든 언어의 문자, 숫자, 언더바(_)
-	// - 특수문자나 공백은 허용하지 않음
+	// - 허용 문자: 한글 (가~힣), 영문 대/소문자, 숫자 0~9, _
 	// - 길이: 3~10자
-	private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[\\p{L}\\p{N}_]{3,10}$");
+	private static final Pattern NICKNAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z0-9_]{3,10}$");
 	
 	// PHONE_PATTERN
 	// - 반드시 '01'로 시작하고, 두 번째 숫자는 0/1/6/7/8/9 중 하나

@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jam.client.comComment.dao.CommentDAO;
 import com.jam.client.comComment.vo.CommentVO;
 import com.jam.client.community.dao.CommunityDAO;
+import com.jam.file.service.FileService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,6 +35,7 @@ public class CommentServiceImpl implements CommentService {
    
 		// 댓글 개수 증가
 		comDao.updateCommentCnt(c.getPost_id(), COMMENT_ADD);
+		
 		return commentDao.insertComment(c);
 	}
 

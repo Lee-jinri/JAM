@@ -43,6 +43,7 @@ public class CommentController {
 	@GetMapping(value = "/posts/{postId}/comments", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<CommentVO> commentList(@PathVariable("postId") Long postId, HttpServletRequest request){
 		String userId = (String) request.getAttribute("userId");
+		if(userId == null) userId = "";
 		List<CommentVO> comment = commentService.commentList(postId, userId);
 		return comment;
 	}

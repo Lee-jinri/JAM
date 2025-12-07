@@ -18,6 +18,7 @@ import java.util.*;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -30,9 +31,9 @@ public class AdminController {
 	private final JwtService jwtService;
 
 	@GetMapping("/admin")
-	public String doAdmin(HttpServletRequest request) {
+	public String doAdmin(HttpServletRequest request, HttpServletResponse response) {
 		Cookie[] cookies = request.getCookies();
-		List<String> roles = jwtService.extractUserRole(request, cookies);
+		List<String> roles = jwtService.extractUserRole(request, response, cookies);
 		
 		if (!roles.contains("ROLE_ADMIN")) {
 		    return "redirect:/";

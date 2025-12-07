@@ -37,12 +37,12 @@ public class MainController {
 	@GetMapping(value = "/boards", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> home() {
 		
-        List<RoomRentalVO> roomList = mainService.roomList();
+        //List<RoomRentalVO> roomList = mainService.roomList();
         List<FleaMarketVO> fleaList = mainService.fleaList();
         List<CommunityVO> comList = mainService.comList();
 
         Map<String, Object> response = new HashMap<>();
-        response.put("roomList", roomList);
+        //response.put("roomList", roomList);
         response.put("fleaList", fleaList);
         response.put("comList", comList);
         

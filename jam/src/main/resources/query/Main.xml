@@ -6,11 +6,14 @@
 	<select id="fleaList" resultType="flea">
 		SELECT *
 		FROM (
-			SELECT f.post_id, f.title, to_char(f.created_at, 'YYYY/MM/DD HH24:MI') as created_at, f.comment_count, f.view_count, m.user_id,  m.user_name
+			SELECT 
+				f.post_id, f.title, to_char(f.created_at, 'YYYY/MM/DD HH24:MI') as created_at, 
+				f.comment_count, f.view_count, m.user_id,  m.user_name, f.thumbnail
 			FROM fleaMarket f
 			LEFT JOIN Member m ON f.user_id = m.user_id
-			ORDER BY f.created_at DESC
-		) WHERE  <![CDATA[ROWNUM <= 5 ]]>
+			WHERE f.sales_status = 0
+			ORDER BY f.post_id DESC
+		) WHERE  <![CDATA[ROWNUM <= 16 ]]>
 	</select>
 
 	<!-- 합주실 글 리스트 -->
@@ -21,19 +24,17 @@
 			FROM roomRental r
 			LEFT JOIN Member m ON r.user_id = m.user_id
 			ORDER BY r.roomRental_date DESC
-			) WHERE  <![CDATA[ROWNUM <= 5 ]]> 
+			) WHERE  <![CDATA[ROWNUM <= 15 ]]> 
 	</select>
 
 	<!-- 커뮤니티 글 리스트 -->
 	<select id="comList" resultType="community">
 		SELECT *
 		FROM (
-			SELECT c.com_no, c.com_title, to_char(c.com_date, 'YYYY/MM/DD HH24:MI') as com_date, c.com_reply_cnt, c.com_hits, m.user_id,  m.user_name
+			SELECT c.post_id, c.title, to_char(c.created_at, 'YYYY/MM/DD HH24:MI') as created_at, c.comment_count, c.view_count, m.user_id,  m.user_name
 			FROM community c
 			LEFT JOIN Member m ON c.user_id = m.user_id
-			ORDER BY c.com_date DESC 
-		) WHERE <![CDATA[ROWNUM <= 5 ]]> 
+			ORDER BY c.post_id DESC 
+		) WHERE <![CDATA[ROWNUM <= 15 ]]> 
 	</select>
-	
-
 </mapper>
