@@ -35,7 +35,6 @@ jobs:
           source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
           target: "/home/ec2-user/client.war"
           overwrite: true
-          tar: false
 
       - name: Deploy & Restart Tomcat
         uses: appleboy/ssh-action@v0.1.10
