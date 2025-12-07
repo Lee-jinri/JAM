@@ -1,6 +1,7 @@
 package com.jam.file.vo;
 
 import java.sql.Timestamp;
+import java.util.List;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -20,6 +21,8 @@ public class FileAssetVO {
 	@NotBlank @Size(max=500)
 	private String file_key;
 	
+	private List<String> file_keys;
+	
 	@NotBlank @Size(max=255)
 	private String file_name;
 	
@@ -29,4 +32,6 @@ public class FileAssetVO {
 	@NotNull @Positive
 	private Long file_size;
 	private Timestamp created_at;
+	
+	private FileCategory file_category;
 }

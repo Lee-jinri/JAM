@@ -28,4 +28,8 @@
 		FROM file_asset
 		WHERE file_id = #{file_id}
 	</select>
+	
+	<delete id="deleteFilesByKeys" parameterType="String">
+		DELETE FROM file_asset WHERE file_key = #{key}
+	</delete>
 </mapper>

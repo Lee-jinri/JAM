@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jam.client.s3.service.S3Service;
 import com.jam.file.dao.FileAssetDAO;
 import com.jam.file.vo.FileAssetVO;
+import com.jam.file.vo.FileCategory;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.util.FileUtils;
 
@@ -31,14 +32,13 @@ public class FileService {
 		log.info("files : " +files);
 		for (FileAssetVO f : files) {
 			String safe = fileUtils.sanitizeFilename(f.getFile_name());
-			String ct = fileUtils.normalizeContentType(f.getFile_type(), safe);
-			fileUtils.validateFilename(safe);
-			fileUtils.validateFileSize(f.getFile_size());
+
+	    	fileUtils.validateFileType(safe, f.getFile_type(), f.getFile_category());
+			fileUtils.validateFileSize(f.getFile_size(), f.getFile_category());
 			
 			f.setFile_name(safe);
-			f.setFile_type(ct);
-			f.setPost_type("APPLICATION");
-			f.setPost_id(application_id);
+			f.setPost_id(postId);
+			f.setPost_type(f.getFile_category().toString());
 
 			batchSqlSessionTemplate.insert(
 				"com.jam.file.dao.FileAssetDAO.insertFileAsset", f);
@@ -63,13 +63,21 @@ public class FileService {
 	public void deleteFiles(FileAssetVO param) {
 		List<FileAssetVO> files = fileDao.getFilesByPost(param);
 		
-		if (files == null || files.isEmpty()) {
-			throw new NotFoundException("삭제할 파일이 존재하지 않습니다.");
+		FileCategory type = FileCategory.valueOf(param.getPost_type());
+		boolean noFiles = (files == null || files.isEmpty());
+
+		if (type == FileCategory.APPLICATION) {
+		    if (noFiles) throw new NotFoundException("삭제할 파일이 존재하지 않습니다.");
+		}
+
+		if (type == FileCategory.POST_IMAGE) {
+		    if (noFiles) return;
 		}
 		
 		fileDao.deleteFiles(files);
 
 		List<String> fileKeys = files.stream().map(FileAssetVO::getFile_key).toList();
+		
 		try {
 			s3Service.deleteObjects(fileKeys);
 		} catch (Exception e) {
@@ -77,5 +85,18 @@ public class FileService {
 		}
 	}
 
-	
+	public void deleteFilesByKeys(List<String> keys) {
+		if (keys == null || keys.isEmpty()) return;
+		
+		for (String key : keys) {
+			batchSqlSessionTemplate.delete(
+					"com.jam.file.dao.FileAssetDAO.deleteFilesByKeys", key);
+		}
+		
+		try {
+			s3Service.deleteObjects(keys);
+		} catch (Exception e) {
+			log.warn("S3 파일 삭제 실패: fileKeys =" + keys  + " e=" + e.getMessage());
+		}
+	}
 }

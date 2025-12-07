@@ -5,5 +5,15 @@
 	    INSERT INTO imageFile (image_no, image_name, post_id, post_type, created_at)
 	    VALUES (image_seq.NEXTVAL, #{image_name}, #{post_id}, #{post_type}, SYSDATE)
 	</insert>
-
+	
+	<select id="findNameById" parameterType="Long" resultType="String">
+		SELECT image_name
+		FROM imageFile
+		WHERE image_no = #{image_no}
+	</select>
+	
+	<delete id="deleteImage" parameterType="Long">
+		DELETE FROM imageFile
+		WHERE image_no = #{image_no} 
+	</delete>
 </mapper>
