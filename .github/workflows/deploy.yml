@@ -19,6 +19,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Build WAR with Maven
+        working-directory: ./jam
         run: mvn -B clean package -DskipTests
 
       - name: Copy WAR to EC2
@@ -27,8 +28,8 @@ jobs:
           host: 54.180.152.155
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY_JAM }}
-          source: "target/client-1.0.0-BUILD-SNAPSHOT.war"
-          target: "/opt/tomcat/tomcat9/webapps/ROOT.war"
+          source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
+          target: "/opt/tomcat/tomcat9/webapps/"
 
       - name: Restart Tomcat on EC2
         uses: appleboy/ssh-action@v0.1.10
