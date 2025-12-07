@@ -30,7 +30,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY_JAM }}
           source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
-          target: "/opt/tomcat/tomcat9/webapps/"
+          target: "/opt/tomcat/tomcat9/webapps/ROOT.war"
 
       - name: Restart Tomcat on EC2
         uses: appleboy/ssh-action@v0.1.10
