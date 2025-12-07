@@ -1,6 +1,7 @@
 name: JAM Auto Deploy to EC2
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "main" ] 
 
