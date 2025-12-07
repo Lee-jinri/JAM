@@ -55,7 +55,7 @@ jobs:
             fi
 
             # 3. ROOT.war로 이름 변경
-            sudo mv /home/ec2-user/client-1.0.0-BUILD-SNAPSHOT.war \
+            sudo mv /home/ec2-user/client.war \
                     /opt/tomcat/tomcat9/webapps/ROOT.war
 
             sudo chown ec2-user:ec2-user /opt/tomcat/tomcat9/webapps/ROOT.war
