@@ -30,17 +30,43 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY_JAM }}
           source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
-          target: "/opt/tomcat/tomcat9/webapps/ROOT.war"
+          target: "/opt/tomcat/tomcat9/webapps/"
           overwrite: true
           tar: false
 
-      - name: Restart Tomcat on EC2
+      - name: Deploy & Restart Tomcat
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: 54.180.152.155
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY_JAM }}
           script: |
+            # 1. 기존 배포 완전 삭제
+            sudo rm -rf /opt/tomcat/tomcat9/webapps/ROOT.war
+            sudo rm -rf /opt/tomcat/tomcat9/webapps/ROOT
+
+            # 2. 새로 올라온 war 파일 있는지 확인 (가끔 scp 실패함)
+            if [ ! -f "/opt/tomcat/tomcat9/webapps/client-1.0.0-BUILD-SNAPSHOT.war" ]; then
+              echo "WAR 파일이 복사되지 않았습니다. 배포 중단"
+              exit 1
+            fi
+
+            # 3. ROOT.war로 이름 변경
+            sudo mv /opt/tomcat/tomcat9/webapps/client-1.0.0-BUILD-SNAPSHOT.war \
+                    /opt/tomcat/tomcat9/webapps/ROOT.war
+
+            # 4. 소유자 맞춰주기 (tomcat이 안 읽으면 404 남)
+            sudo chown ec2-user:ec2-user /opt/tomcat/tomcat9/webapps/ROOT.war
+
+            # 5. Tomcat 완전히 종료
             sudo /opt/tomcat/tomcat9/bin/shutdown.sh || true
             sleep 3
+            # 강제 종료
+            sudo pkill -f "tomcat" || true
+            sleep 5
+            
+            # 재시작
             sudo /opt/tomcat/tomcat9/bin/startup.sh
+
+            # 6. 배포 성공 여부 간단히 확인 (로그에 남음)
+            echo "JAM 배포 완료! $(date)"
