@@ -1,15 +1,12 @@
 package com.jam.client.community.controller;
 
 
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 
-import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -26,12 +23,15 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.client.community.service.CommunityService;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.common.vo.PageDTO;
+import com.jam.global.exception.BadRequestException;
+import com.jam.global.exception.NotFoundException;
+import com.jam.global.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
 
 @RestController
-@RequestMapping("/api/community/")
+@RequestMapping("/api/community")
 @RequiredArgsConstructor
 @Log4j
 public class CommunityRestController {
@@ -53,29 +53,26 @@ public class CommunityRestController {
 			@RequestParam (defaultValue = "1")int pageNum,
 			@RequestParam(required=false) String keyword){
 			
-		try {
-			CommunityVO community = new CommunityVO();
-			community.setPageNum(pageNum);
-			if(!keyword.isEmpty()) community.setKeyword(keyword);
-			
-			String user_id = (String)request.getAttribute("userId");
-			if(user_id != null) community.setUser_id(user_id);
-			
-			Map<String, Object> result = new HashMap<>();
-
-			List<CommunityVO> communityList = comService.getBoard(community);
-			result.put("communityList", communityList);
-			
-			int total = comService.listCnt(community);
-			PageDTO pageMaker = new PageDTO(community, total);
-	        result.put("pageMaker", pageMaker);
-
-	        return ResponseEntity.ok(result);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
+		CommunityVO community = new CommunityVO();
+		community.setPageNum(pageNum);
+		
+		if (keyword != null && !keyword.trim().isEmpty()) {
+		    community.setKeyword(keyword);
 		}
+		
+		String user_id = (String)request.getAttribute("userId");
+		if(user_id != null) community.setUser_id(user_id);
+		
+		Map<String, Object> result = new HashMap<>();
+
+		List<CommunityVO> communityList = comService.getBoard(community);
+		result.put("communityList", communityList);
+		
+		int total = comService.listCnt(community);
+		PageDTO pageMaker = new PageDTO(community, total);
+        result.put("pageMaker", pageMaker);
+
+        return ResponseEntity.ok(result);
 	}
 	
 	/**
@@ -86,24 +83,14 @@ public class CommunityRestController {
 	 * @return popularList: 인기 게시글 목록
 	 */
 	@GetMapping(value = "/board/popular")
-	public ResponseEntity<Map<String, Object>> getPopularBoard(HttpServletRequest request) {
-		try {
-			String user_id = (String) request.getAttribute("userId");
+	public ResponseEntity<Map<String, Object>> getPopularBoard() {
 
-			CommunityVO community = new CommunityVO();
-			if (user_id != null) community.setUser_id(user_id);
+		List<CommunityVO> popularList = comService.getPopularBoard();
 
-			List<CommunityVO> popularList = comService.getPopularBoard(community);
+		Map<String, Object> result = new HashMap<>();
+		result.put("popularList", popularList);
 
-			Map<String, Object> result = new HashMap<>();
-			result.put("popularList", popularList);
-
-			return ResponseEntity.ok(result);
-		} catch (Exception e) {
-			log.error("Error fetching popular board: "+ e.getMessage());
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-					.body(Collections.singletonMap("error", "Failed to fetch popular boards"));
-		}
+		return ResponseEntity.ok(result);
 	}
 	
 	/********************************
@@ -114,226 +101,194 @@ public class CommunityRestController {
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 *************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
+	public ResponseEntity<Map<String, Object>> getBoardDetail(
+			@PathVariable("post_id") Long post_id, 
+			HttpServletRequest request) {
 		
-		if (post_id == null) { 
-			log.error("post_id is required.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+		
+		// 상세 페이지 조회
+		CommunityVO detail = comService.getPost(post_id);
+		
+		if (detail == null) {
+		    throw new NotFoundException("존재하지 않는 게시글입니다.");
+		}
+
+        // 조회수 증가
+		comService.incrementReadCnt(post_id);
+	
+		Map<String, Object> response = new HashMap<>();
+		response.put("detail", detail);
+		
+		String userId = (String)request.getAttribute("userId");
+		
+		boolean isAuthor = false;
+		
+        if (userId != null && userId.equals(detail.getUser_id())) {
+            isAuthor = true;
+        }
+        
+        response.put("isAuthor", isAuthor);
+		
+        return new ResponseEntity<>(response, HttpStatus.OK);
+	}
+
+	@GetMapping(value = "/posts/{post_id}/edit-data", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Object>> getEditData(
+			@PathVariable("post_id") Long post_id, 
+			HttpServletRequest request) {
+		
+		Map<String, Object> data = comService.getPostForEdit(post_id);
+		
+		if (data.get("post") == null) {
+		    throw new NotFoundException("존재하지 않는 게시글입니다.");
 		}
 		
-		try {
-	        // 조회수 증가
-			comService.incrementReadCnt(post_id);
-			
-			// 상세 페이지 조회
-			CommunityVO detail = comService.getPost(post_id);
-	       
-			Map<String, Object> response = new HashMap<>();
-			response.put("detail", detail);
-			
-			String userId = (String)request.getAttribute("userId");
-			
-			boolean isAuthor = false;
-			
-	        if (userId != null && userId.equals(detail.getUser_id())) {
-	            isAuthor = true;
-	        }
-	        
-	        response.put("isAuthor", isAuthor);
-			
-	        return new ResponseEntity<>(response, HttpStatus.OK);
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
+        return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 	
 	// fleaMarket, job, roomRental도 오류 메시지 이렇게 바꾸삼 ㅠ ....
 	// 그리고 이건 사용자 아이디, 닉네임도 추가한거임!!
 	/******************************
 	 * 커뮤니티 글을 작성하는 메서드 입니다.
-	 * @param CommunityVO com_vo 커뮤니티 글 번호, 작성자 id와 닉네임, 제목과 내용 
+	 * 
+	 * @param request  사용자 인증 정보(userId) 추출용 HttpServletRequest
+	 * @param CommunityVO com_vo 제목과 내용 
 	 * @return HTTP 상태 코드
-	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
+	 * 			성공 시 HttpStatus.OK와 작성된 글 번호를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
 	@PostMapping("/post")
-	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO community, HttpSession session) throws Exception{
+	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO community, HttpServletRequest request) throws Exception{
 		
 		if (community == null) {
 	        log.error("Request body (community) is missing.");
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Request body (com_vo) is missing.");
+	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
 	    }
 
 	    if (community.getTitle() == null || community.getTitle().trim().isEmpty()) {
-	        log.error("Title (com_title) cannot be null or empty.");
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Title (com_title) cannot be null or empty.");
+	        log.error("Title cannot be null or empty.");
+	        throw new BadRequestException("제목을 입력하세요.");
 	    }
 	    if (community.getContent() == null || community.getContent().trim().isEmpty()) {
-	        log.error("Content (com_content) cannot be null or empty.");
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Content (com_content) cannot be null or empty.");
+	        log.error("Content cannot be null or empty.");
+	        throw new BadRequestException("내용을 입력하세요.");
 	    }
+	    
+	    String userId = (String)request.getAttribute("userId");
 		
-		try {
-			String userId = (String)session.getAttribute("userId");
-			String userName = (String)session.getAttribute("userName");
-			
-			if(userId == null || userName == null) {
-				log.error("User is not Authenticated.");
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated.");
-			}
-			
-			community.setUser_id(userId);
-			community.setUser_name(userName);
-			
-			comService.writePost(community);
-			
-			String com_no = community.getPost_id().toString();
-			
-			return new ResponseEntity<>(com_no,HttpStatus.OK);
-		} catch (NullPointerException e) {
-	        log.error("NullPointerException 발생: ", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("NullPointerException occurred.");
-	    } catch (DataAccessException e) { // DB 관련 예외 처리
-	        log.error("Database 오류 발생: ", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Database error occurred.");
-	    } catch (Exception e) {
-	        log.error("커뮤니티 글 작성 데이터 저장 중 오류: ", e);
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage() != null ? e.getMessage() : "Unknown error occurred.");
-	    }
+		if(userId == null) {
+			log.error("Community writeBoard User is not Authenticated.");
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		}
+		community.setUser_id(userId);
+		
+		String post_id = comService.writePost(community).toString();
+		
+		return new ResponseEntity<>(post_id, HttpStatus.OK);
 	}
 	
 	/***********************************
 	 * 커뮤니티 글을 수정하는 메서드 입니다.
-	 * @param CommunityVO com_vo 수정할 글 번호, 제목과 내용
+	 * 
+	 * @param CommunityVO community 수정할 글 번호, 제목과 내용
+	 * @param request  사용자 인증 정보(userId) 추출용 HttpServletRequest
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK와 글 번호를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
-	@PutMapping("/board")
-	public ResponseEntity<String> editBoard(@RequestBody CommunityVO com_vo, HttpServletRequest request) throws Exception{
+	@PutMapping("/post")
+	public ResponseEntity<String> editBoard(@RequestBody CommunityVO community, HttpServletRequest request) throws Exception{
 		
-		if (com_vo == null) { 
-			log.error("com_vo is null.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("com_vo is null.");
+		if (community == null) { 
+	        log.error("Request body (community) is missing.");
+	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
 		}
-		String com_title = com_vo.getTitle();
-		String com_content = com_vo.getContent();
+		String title = community.getTitle();
+		String content = community.getContent();
 		
-		if (com_title == null) {
-			log.error("com_title is null.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("com_title is null.");
+		if (title == null || title.trim().isEmpty()) {
+			log.error("community editBoard title is null.");
+	        throw new BadRequestException("제목을 입력하세요.");
 		}
-		if (com_content == null) {
-			log.error("com_content is null.");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("com_content is null.");
+		if (content == null || content.trim().isEmpty()) {
+			log.error("community editBoard content is null.");
+	        throw new BadRequestException("내용을 입력하세요.");
 		}
 		
 		String user_id = (String)request.getAttribute("userId");
-		if(user_id.isEmpty() || user_id.equals("")) {
-			log.error("Not Authenticated.");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated.");
-		}
-		
-		try {
-			comService.editPost(com_vo, user_id);
-			String com_no = com_vo.getPost_id().toString();
-			
-			return new ResponseEntity<>(com_no, HttpStatus.OK);
-		} catch(Exception e) {
-			log.error("커뮤니티 editBoard 데이터 수정 중 오류 : " + e.getMessage());
-			String responseBody = e.getMessage();
-			
-			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-		
-	}
-	
 
-	// 이거 수정해야됨 
-	// 삭제하는 사람이 본인인지 확인하는거 db에 where user_id = #{user_id} 추가하는 걸로 바꿔ㅕㅆ음\
-	// 다른 테이블도 이렇게 해야됨! 
+		if(user_id == null || user_id.isEmpty()) {
+			log.error("Community writeBoard User is not Authenticated.");
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		}
+		
+		community.setUser_id(user_id);
+		
+		comService.editPost(community);
+		String post_id = community.getPost_id().toString();
+		
+		return new ResponseEntity<>(post_id, HttpStatus.OK);
+	}
+
 	/**********************************
 	 * 커뮤니티 글을 삭제하는 메서드 입니다.
 	 * @param Long com_no 삭제할 글 번호
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@DeleteMapping("/post/{post_id}")
-	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id, HttpServletRequest request) throws Exception{
-		
-		if (post_id == null) { 
-			log.error("post_id is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("post_id is required");
-		}
+	@DeleteMapping("/post/{postId}")
+	public ResponseEntity<Void> postDelete(@PathVariable("postId") Long postId, HttpServletRequest request) throws Exception{
 		
 		String user_id = (String)request.getAttribute("userId");
-		if(user_id.isEmpty() || user_id.equals("")) {
-			log.error("Not Authenticated.");
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not Authenticated.");
+		if(user_id == null || user_id.isEmpty()) {
+			log.error("Community postDelete User is not Authenticated.");
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
 		}
 		
-		try {
-			comService.deletePost(post_id, user_id);
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("커뮤니티 delete 데이터 삭제 중 오류 : " + e.getMessage());
-			
-			String responseBody = "커뮤니티 delete 데이터 삭제 중 오류 : " + e.getMessage();
-			
-			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		comService.deletePost(postId, user_id);
+		
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
-	@GetMapping("/posts")
-	public ResponseEntity<Map<String, Object>> posts(
-			/*@RequestParam Map<String, String> params,*/
-			@RequestParam String type,
-			@RequestParam(required=false) String userId, 
+	@GetMapping("/my/posts")
+	public ResponseEntity<Map<String, Object>> getMyPosts(
 			@RequestParam(defaultValue = "1") int pageNum,
-			@RequestParam(required=false) String search,
 			@RequestParam(required=false) String keyword,
-			HttpServletRequest request) throws Exception {
+			HttpServletRequest request){
 			
-		CommunityVO com_vo = new CommunityVO();
+		CommunityVO community = new CommunityVO();
 		
-		log.info(keyword);
-		
-	    if (!type.equals("my") && !type.equals("other")) {
-	        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                .body(Collections.singletonMap("error", "Invalid type parameter"));
-	    }
+        String userId = (String) request.getAttribute("userId");
+        if (userId == null || userId.isEmpty()) {
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+        }
+        
+        community.setUser_id(userId);
+        community.setPageNum(pageNum);
+        
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            community.setKeyword(keyword);
+        }
+        
+        Map<String, Object> result = new HashMap<>();
 
-	    if ("my".equals(type)) {
-	        String loggedInUserId = (String) request.getAttribute("userId");
-	        if (loggedInUserId == null) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-	                    .body(Collections.singletonMap("error", "User not authenticated"));
-	        }
-	        com_vo.setUser_id(loggedInUserId);
-	    }else if ("other".equals(type)) {
-	        if (com_vo.getUser_id() == null) {
-	            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-	                    .body(Collections.singletonMap("error", "Missing userId parameter for type=other"));
-	        }
-	        com_vo.setUser_id(userId);
-	    }
+        List<CommunityVO> posts = comService.getMyPosts(community);
+        result.put("posts", posts);
 
-	    try {
-	        com_vo.setPageNum(pageNum);
-	        
-	        Map<String, Object> result = new HashMap<>();
+        int total = comService.getMyPostsCnt(community);
+        PageDTO pageMaker = new PageDTO(community, total);
+        result.put("pageMaker", pageMaker);
 
-	        List<CommunityVO> posts = comService.getUserPosts(com_vo);
-	        result.put("posts", posts);
+        return ResponseEntity.ok(result);
+	}
+	
+	@DeleteMapping("/posts/my")
+	public ResponseEntity<Void> deletePosts(@RequestBody List<Long> postIds, HttpServletRequest request) {
+	    String userId = (String)request.getAttribute("userId");
+	    if (userId == null || userId.isEmpty()) {
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+        }
+	    
+	    comService.deleteMyPosts(userId, postIds);
 
-	        int total = comService.getUserPostCnt(com_vo);
-	        PageDTO pageMaker = new PageDTO(com_vo, total);
-	        result.put("pageMaker", pageMaker);
-
-	        return ResponseEntity.ok(result);
-	    } catch (Exception e) {
-	        e.printStackTrace();
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
-	    }
+	    return ResponseEntity.ok().build();
 	}
 }

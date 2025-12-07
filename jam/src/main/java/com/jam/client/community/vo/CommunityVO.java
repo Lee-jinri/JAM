@@ -1,7 +1,10 @@
 package com.jam.client.community.vo;
 
 
+import java.util.List;
+
 import com.jam.common.vo.CommonVO;
+import com.jam.file.vo.FileAssetVO;
 
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -22,5 +25,8 @@ public class CommunityVO extends CommonVO{
 	private String user_id;			
 	private String user_name;		
 	
-	private String imageFileName;	// 사진 파일
+	private Integer popularity_score; // 인기글 점수
+
+	private List<FileAssetVO> file_assets;
+	private List<String> deleted_keys;
 }  

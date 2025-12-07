@@ -36,6 +36,14 @@ public interface CommunityDAO {
 	public void updateCommentCnt(@Param("post_id") Long post_id, @Param("amount") int amount);
 	
 	// 인기글
-	public List<CommunityVO> getPopularBoard(CommunityVO community);
+	public List<CommunityVO> getPopularBoard();
 	
+	// 작성한 커뮤니티 글 조회
+	public List<CommunityVO> getMyPosts(CommunityVO com_vo);
+	
+	// 작성한 커뮤니티 글 개수 
+	public int getMyPostsCnt(CommunityVO com_vo);
+	
+	// 작성한 커뮤니티 글 삭제
+	public void deleteMyPosts(@Param("user_id") String userId, @Param("postIds") List<Long> postIds);
 }

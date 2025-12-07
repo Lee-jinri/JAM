@@ -136,26 +136,28 @@
 		where post_id = #{post_id} 
 	</update>
 	
-	<!-- 특정 회원의 커뮤니티 글 조회 --> 
-	<select id="getUserPosts" resultType="community" parameterType="community">
+	<!-- 작성한 커뮤니티 글 조회 --> 
+	<select id="getMyPosts" resultType="community" parameterType="community">
 		<![CDATA[
-		SELECT post_id, title, to_char(created_at,'YYYY/MM/DD') as created_at, view_count
-		FROM (
-				SELECT /*+ INDEX_DESC(COMMUNITY SYS_C0023848) */
-					rownum as rnum, post_id, title, created_at, view_count
-				FROM community c
-				where ]]> 
-				<trim prefix="(" suffix=") AND" prefixOverrides="AND">
-					<include refid="comSearch"></include> 
-				</trim>
-			<![CDATA[ rownum <= #{pageNum} * #{amount} AND user_id  = #{user_id} 
-				) communityList
-			WHERE rnum > (#{pageNum} - 1) * #{amount}
-			]]>
+		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+	        	c.comment_count, c.view_count, m.user_name
+	    FROM community c
+	    JOIN member m 
+	    ON c.user_id = m.user_id
+	    ]]>
+	    <where>
+        	c.user_id  = #{user_id}
+        	<include refid="comSearch"></include>
+        </where>
+	    <![CDATA[
+	    ORDER BY c.post_id DESC
+	    OFFSET (#{pageNum} -1) * #{amount} ROWS
+	    FETCH NEXT #{amount} ROWS ONLY
+	    ]]>
 	</select>
 	
-	<!-- 특정 회원의 커뮤니티 레코드 수 조회 -->
-	<select id="getUserPostCnt" parameterType="community" resultType="int">
+	<!-- 작성한 커뮤니티 레코드 수 조회 -->
+	<select id="getMyPostsCnt" parameterType="community" resultType="int">
 	    SELECT count(*)
 	    FROM community c
 	    WHERE user_id = #{user_id}
@@ -164,5 +166,13 @@
 	    </trim>
 	</select>
 	
+	<delete id="deleteMyPosts">
+		DELETE FROM community
+		WHERE user_id = #{user_id}
+		AND post_id IN
+		<foreach collection="postIds" item="postId" open="(" separator="," close=")">
+			#{postId}
+		</foreach>
+	</delete>
 	
 </mapper>

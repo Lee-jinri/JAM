@@ -14,7 +14,7 @@ public interface CommunityService {
 	public int listCnt(CommunityVO com_vo);
 
 	// 인기글
-	public List<CommunityVO> getPopularBoard(CommunityVO community);
+	public List<CommunityVO> getPopularBoard();
 	
 	// 커뮤니티 조회수 증가
 	public void incrementReadCnt(Long com_no);
@@ -34,5 +34,13 @@ public interface CommunityService {
 	// 커뮤니티 글 삭제
 	public void deletePost(Long com_no, String user_id);	
 
+	// 작성한 커뮤니티 글
+	public List<CommunityVO> getMyPosts(CommunityVO com_vo);
+
+	// 작성한 커뮤니티 글 개수
+	public int getMyPostsCnt(CommunityVO com_vo);
+
+	// 작성한 글 삭제
+	public void deleteMyPosts(String userId, List<Long> postIds);
 
 }
