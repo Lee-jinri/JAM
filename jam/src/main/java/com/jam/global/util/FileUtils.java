@@ -6,6 +6,9 @@ import java.util.UUID;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.jam.file.vo.FileCategory;
+import com.jam.file.vo.FileType;
+
 @Component
 public class FileUtils {
 
@@ -40,7 +43,28 @@ public class FileUtils {
         }
     }
     
+    public void deleteToLocal(String fileName, String postType) {
+		if (fileName == null || fileName.isBlank()) {
+			return;
+		}
 
+		try {
+			File dir = new File(uploadDir, postType);
+			File filePath = new File(dir, fileName);
+			
+			if (filePath.exists()) {
+				boolean deleted = filePath.delete();
+				if (!deleted) {
+					// 삭제 실패해도 예외 던지지 않음
+					System.err.println("파일 삭제 실패: " + fileName);
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("파일 삭제 중 오류 발생: " + fileName);
+		}
+	}
+    
+    // 파일 이름 길이 조정
     public String sanitizeFilename(String filename) {
 	    if (filename == null) throw new IllegalArgumentException("filename required");
 	    String f = filename.trim();
