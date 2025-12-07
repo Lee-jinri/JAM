@@ -10,7 +10,6 @@ import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletRequestWrapper;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.http.HttpStatus;
@@ -18,12 +17,10 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +29,9 @@ import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.file.vo.ImageFileVO;
+import com.jam.global.exception.BadRequestException;
+import com.jam.global.exception.NotFoundException;
+import com.jam.global.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j;
@@ -86,9 +86,8 @@ public class FleaMarketRestController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
-		try {
 			Map<String, Object> result = new HashMap<>();
-			
+
 	        // 조회수 증가
 			fleaService.incrementReadCnt(post_id);
 			
@@ -102,9 +101,6 @@ public class FleaMarketRestController {
 			result.put("images", images);
 			
 	        return new ResponseEntity<>(result, HttpStatus.OK);
-	    } catch (Exception e) {
-	        return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-	    }
 	}
 	
 	
@@ -123,7 +119,7 @@ public class FleaMarketRestController {
 		        @RequestParam("category_id") int categoryId,
 		        @RequestParam("images") List<MultipartFile> images,
 		        HttpServletRequest request
-			) throws Exception{
+			){
 		
 		if(request.getAttribute("userId") == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
@@ -137,7 +133,6 @@ public class FleaMarketRestController {
 		    return ResponseEntity.badRequest().body("설명을 입력하세요.");
 		}
 
-		
 		FleaMarketVO flea_vo = new FleaMarketVO();
 		
 		flea_vo.setTitle(title);
@@ -146,16 +141,9 @@ public class FleaMarketRestController {
 		flea_vo.setCategory_id(categoryId);
 		flea_vo.setUser_id((String)request.getAttribute("userId"));
 		
-		try {
-			long postId = fleaService.writePost(flea_vo, images);
-			
-			return new ResponseEntity<>(Long.toString(postId), HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("중고악기 작성 데이터 저장 중 오류: " + e.getMessage());
-			
-			String responseBody = "시스템 오류입니다. 잠시 후 다시 시도해주세요.";
-			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		long postId = fleaService.writePost(flea_vo, images);
+		
+		return new ResponseEntity<>(Long.toString(postId), HttpStatus.OK);
 	}
 	
 
@@ -164,27 +152,26 @@ public class FleaMarketRestController {
 	 * @param post_id 수정을 위해 불러올 글 번호
 	 * @return ResponseEntity<FleaMarketVO> - 조회된 중고악기 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
 	 *******************************************/
-	@GetMapping(value = "/post/edit/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<FleaMarketVO> getBoardById(@PathVariable Long post_id) {
-		if (post_id == null) { 
-			log.error("post_id is required");
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-		}else {
-			try {
-				FleaMarketVO board = fleaService.getPostForEdit(post_id);
-			    board.setPost_id(post_id);
-			    
-				return ResponseEntity.ok(board);
-			}catch (Exception e) {
-				log.error("중고악기 수정 글 불러오던 중 오류 : " + e.getMessage());
-				
-				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-			}
+	@GetMapping(value = "/posts/{post_id}/edit-data", produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<Map<String, Object>> getEditData(
+			@PathVariable("post_id") Long post_id, 
+			HttpServletRequest request) {
+
+		Map<String, Object> result = new HashMap<>();
+
+		FleaMarketVO post = fleaService.getPostForEdit(post_id);
+
+		if (post == null) {
+		    throw new NotFoundException("존재하지 않는 게시글입니다.");
 		}
+		// 이미지 파일
+		List<ImageFileVO> images = fleaService.getImages(post_id);
 		
+		result.put("post", post);
+		result.put("images", images);
+		
+        return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
 	
 
 	/***********************************
@@ -194,45 +181,51 @@ public class FleaMarketRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 * @return 성공 시 수정한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 수정 페이지
 	 ***********************************/
-	@PutMapping("/post")
-	public ResponseEntity<String> editBoard(@RequestBody FleaMarketVO flea_vo) throws Exception{
-		String errorMsg;
-		if (flea_vo == null) { 
-			log.error("flea_vo is null");
-			errorMsg = "flea_vo is null.";
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
+	@PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+	public ResponseEntity<String> editBoard(
+			@RequestParam("postId") Long postId,
+			@RequestParam("title") String title,
+			@RequestParam("content") String content,
+			@RequestParam("price") int price,
+			@RequestParam("category_id") int categoryId,
+			@RequestParam(value = "thumbnailId", required = false) Long thumbnailId, 
+	        @RequestParam(value = "thumbnailName", required = false) String thumbnailName,
+			@RequestParam(value = "newImages", required = false) List<MultipartFile> images,
+			@RequestParam(value = "deletedImages", required = false) List<Long> deletedImages,
+	        HttpServletRequest request) {
+		
+		if(request.getAttribute("userId") == null) {
+			throw new UnauthorizedException("로그인이 필요한 서비스 입니다.");
 		}
 		
-		// 유효성 검사
-		String title = flea_vo.getTitle();
-		String content = flea_vo.getContent();
+		if (postId == null) {
+			throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요.");
+		}
+		
+		if (title == null || title.trim().isEmpty()) {
+			throw new BadRequestException("제목을 입력하세요.");
+		}
+		
+		if (content == null || content.trim().isEmpty()) {
+			throw new BadRequestException("설명을 입력하세요.");
+		}
+		
+	    if (thumbnailId == null && thumbnailName == null) {
+	        throw new RuntimeException("썸네일이 설정되지 않았습니다.");
+	    }
 
-		if (title == null) {
-			log.error("flea_title is null.");
-			errorMsg = "flea_title is null.";
-		    
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
-		}
-		if (content == null) {
-			log.error("flea_content is null.");
-			errorMsg = "flea_content is null.";
-			
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(errorMsg);
-		}
+		FleaMarketVO flea_vo = new FleaMarketVO();
+
+		flea_vo.setPost_id(postId);
+		flea_vo.setTitle(title);
+		flea_vo.setContent(content);
+		flea_vo.setPrice(price);
+		flea_vo.setCategory_id(categoryId);
+		flea_vo.setUser_id((String)request.getAttribute("userId"));
 		
-		try {
-			fleaService.editPost(flea_vo);
-			String post_id = flea_vo.getPost_id().toString();
-			
-			return new ResponseEntity<>(post_id, HttpStatus.OK);
-		} catch(Exception e) {
-			log.error("중고악기 editBoard 데이터 수정 중 오류 : " + e.getMessage());
-			String responseBody = e.getMessage();
-			
-			return new ResponseEntity<>(responseBody, HttpStatus.INTERNAL_SERVER_ERROR);
-		}
+		fleaService.editPost(flea_vo, images, deletedImages, thumbnailId, thumbnailName);
 		
+		return new ResponseEntity<>(postId.toString(), HttpStatus.OK);	
 	}
 	
 	/**********************************
@@ -241,32 +234,22 @@ public class FleaMarketRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
-	@DeleteMapping("/post")
-	public ResponseEntity<String> boardDelete(@RequestParam("post_id") Long post_id, HttpServletRequest request) throws Exception{
+	@DeleteMapping("/post/{post_id}")
+	public ResponseEntity<String> boardDelete(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		
 		if (post_id == null) { 
-			log.error("flea_no is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("postId is required");
+			log.error("post_id is required");
+			throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요");
 		}
 		
-		try {
-			String userId = (String)request.getAttribute("userId");
-			
-			if(userId == null) {
-				log.error("Unauthorized.");
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-			}
-			
-			fleaService.deletePost(post_id, userId);
-			
-			return new ResponseEntity<>(HttpStatus.OK);
-		} catch (Exception e) {
-			log.error("중고악기 delete 데이터 삭제 중 오류 : " + e.getMessage());
-			
-			String resopnseBody = "중고악기 delete 데이터 삭제 중 오류 : " + e.getMessage();
-			
-			return new ResponseEntity<>(resopnseBody, HttpStatus.INTERNAL_SERVER_ERROR);
+		String userId = (String)request.getAttribute("userId");
+		if(userId == null) {
+			throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
 		}
+		
+		fleaService.deletePost(post_id, userId);
+		
+		return new ResponseEntity<>(HttpStatus.OK);
 	}
 	
 	/********************************
@@ -281,7 +264,8 @@ public class FleaMarketRestController {
 		Map<String, Object> response = new HashMap<>();
 				
 		// 내부경로로 저장
-		String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
+		String contextRoot = request.getServletContext().getRealPath("/");
+		//String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
 		String fileRoot = contextRoot+"resources/fileupload/";
 		
 		String originalFileName = multipartFile.getOriginalFilename();	//오리지날 파일명
@@ -326,7 +310,6 @@ public class FleaMarketRestController {
 			List<FleaMarketVO> myStoreList = fleaService.getMyStore(flea);
 			
 			result.put("fleaMarketList", myStoreList);
-			result.put("userName", request.getSession().getAttribute("userName"));
 			
 			int total = fleaService.getMyStoreCnt(flea);
 			

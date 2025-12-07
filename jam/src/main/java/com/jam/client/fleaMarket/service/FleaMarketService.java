@@ -28,7 +28,7 @@ public interface FleaMarketService {
 	FleaMarketVO getPostForEdit(Long post_id);
 
 	// 중고거래  글 수정
-	int editPost(FleaMarketVO flea_vo);
+	void editPost(FleaMarketVO flea_vo, List<MultipartFile> images, List<Long> deletedImages, Long thumbnailId, String thumbnailName);
 
 	// 중고거래 글 삭제
 	void deletePost(Long post_id, String user_id);
