@@ -31,9 +31,10 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY_JAM }}
           source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
           target: "/opt/tomcat/tomcat9/webapps/ROOT.war"
-          overwrite: true
           strip_components: 0
-          tar: false
+          overwrite: true
+          tar_tmp_path: ""
+          tar_exec: ""
 
       - name: Restart Tomcat on EC2
         uses: appleboy/ssh-action@v0.1.10
