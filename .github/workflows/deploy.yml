@@ -33,7 +33,7 @@ jobs:
           username: ec2-user
           key: ${{ secrets.EC2_SSH_KEY_JAM }}
           source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
-          target: "/home/ec2-user/"
+          target: "/home/ec2-user/client.war"
           overwrite: true
           tar: false
 
@@ -48,8 +48,8 @@ jobs:
             sudo rm -rf /opt/tomcat/tomcat9/webapps/ROOT.war
             sudo rm -rf /opt/tomcat/tomcat9/webapps/ROOT
 
-            # 2. 새로 올라온 war 파일 있는지 확인 (가끔 scp 실패함)
-            if [ ! -f "/home/ec2-user/client-1.0.0-BUILD-SNAPSHOT.war" ]; then
+            # 2. 새로 올라온 war 파일 있는지 확인
+            if [ ! -f "/home/ec2-user/client.war" ]; then
               echo "WAR 파일이 복사되지 않았습니다. 배포 중단"
               exit 1
             fi
@@ -70,5 +70,5 @@ jobs:
             # 재시작
             sudo /opt/tomcat/tomcat9/bin/startup.sh
 
-            # 6. 배포 성공 여부 간단히 확인 (로그에 남음)
+            # 6. 배포 성공 여부 확인
             echo "JAM 배포 완료! $(date)"
