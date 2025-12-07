@@ -33,6 +33,7 @@ jobs:
           target: "/opt/tomcat/tomcat9/webapps/ROOT.war"
           overwrite: true
           strip_components: 0
+          tar: false
 
       - name: Restart Tomcat on EC2
         uses: appleboy/ssh-action@v0.1.10
