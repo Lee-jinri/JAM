@@ -37,7 +37,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ec2-user
         key: ${{ secrets.EC2_KEY }}
-        source: "/home/runner/work/JAM/JAM/jam/target/jam.war"
+        source: "jam/target/jam.war"
         target: "/home/ec2-user/tomcat/webapps/"
         overwrite: true
 
@@ -50,4 +50,5 @@ jobs:
         script: |
           pkill -f tomcat || true
           mv /home/ec2-user/tomcat/webapps/jam.war /home/ec2-user/tomcat/webapps/ROOT.war
+          cd /home/ec2-user/tomcat
           /home/ec2-user/tomcat/bin/startup.sh
