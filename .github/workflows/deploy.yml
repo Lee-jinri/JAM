@@ -29,8 +29,8 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ec2-user
         key: ${{ secrets.EC2_KEY }}
-        source: "jam/target/*.war"
-        target: "/home/ec2-user/tomcat/webapps/"
+        source: "./jam/target/*.war"
+        target: "/home/ec2-user/tomcat/webapps/jam.war"
         overwrite: true
 
     - name: Restart Tomcat on EC2
