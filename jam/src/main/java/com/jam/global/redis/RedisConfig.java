@@ -24,7 +24,8 @@ import io.lettuce.core.resource.DefaultClientResources;
 
 @Configuration
 @EnableRedisRepositories
-@PropertySource("classpath:application.properties")
+//@PropertySource("classpath:application.properties")
+@PropertySource("file:/home/ec2-user/config/application.properties")
 public class RedisConfig implements DisposableBean {
 
 	/* redis 설정*/

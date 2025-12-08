@@ -31,7 +31,8 @@ import lombok.extern.log4j.Log4j;
 
 @Component
 @Log4j
-@PropertySource("classpath:application.properties")
+//@PropertySource("classpath:application.properties")
+@PropertySource("file:/home/ec2-user/config/application.properties")
 public class JwtTokenProvider {
 	
 	private final Key key;
