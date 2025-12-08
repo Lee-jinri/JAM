@@ -453,6 +453,7 @@
 	
 	
 	<build>
+		<finalName>jam</finalName>
 		<plugins>
 			<plugin>
 				<artifactId>maven-eclipse-plugin</artifactId>
