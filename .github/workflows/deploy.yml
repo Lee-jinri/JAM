@@ -37,8 +37,8 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ec2-user
         key: ${{ secrets.EC2_KEY }}
-        source: "/home/runner/work/JAM/JAM/jam/target/*.war"
-        target: "/home/ec2-user/tomcat/webapps/"
+        source: "/home/runner/work/JAM/JAM/jam/target/jam.war"
+        target: "/home/ec2-user/tomcat/webapps/ROOT.war"
         overwrite: true
 
     - name: Restart Tomcat on EC2
@@ -49,6 +49,4 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
         script: |
           pkill -f tomcat || true
-          rm -f /home/ec2-user/tomcat/webapps/ROOT.war
-          mv /home/ec2-user/tomcat/webapps/*.war /home/ec2-user/tomcat/webapps/ROOT.war
           /home/ec2-user/tomcat/bin/startup.sh
