@@ -24,12 +24,12 @@ jobs:
       working-directory: ./jam
 
     - name: List WAR files
-      run: ls -lh /home/runner/work/${{ github.repository }}/jam/target
+      run: ls -lh /home/runner/work/JAM/JAM/jam/target
 
     - name: Debug WAR path
       run: |
-        echo "[DEBUG] Searching war files..."
-        find /home/runner/work -name "*.war" -type f
+        echo "SEARCHING:"
+        find /home/runner/work/JAM/JAM -name "*.war" -type f
 
     - name: Copy WAR file to EC2
       uses: appleboy/scp-action@v0.1.7
@@ -37,7 +37,7 @@ jobs:
         host: ${{ secrets.EC2_HOST }}
         username: ec2-user
         key: ${{ secrets.EC2_KEY }}
-        source: "/home/runner/work/${{ github.repository }}/jam/target/*.war"
+        source: "/home/runner/work/JAM/JAM/jam/target/*.war"
         target: "/home/ec2-user/tomcat/webapps/"
         overwrite: true
 
