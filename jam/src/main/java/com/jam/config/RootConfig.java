@@ -14,6 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.jdbc.datasource.DataSourceTransactionManager;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
@@ -30,6 +31,13 @@ import com.zaxxer.hikari.HikariDataSource;
 //@PropertySource("classpath:application.properties")
 @PropertySource("file:/home/ec2-user/config/application.properties")
 public class RootConfig {
+	
+	@Bean
+	public static PropertySourcesPlaceholderConfigurer properties() {
+		PropertySourcesPlaceholderConfigurer p = new PropertySourcesPlaceholderConfigurer();
+        p.setIgnoreUnresolvablePlaceholders(true);
+	    return p;
+	}
 	
 	@Value("${db.username}")
     private String dbUsername;
