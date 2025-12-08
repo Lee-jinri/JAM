@@ -27,7 +27,11 @@ import com.zaxxer.hikari.HikariDataSource;
 	"com.jam.**.dao",
 	"com.jam.global.mapper"
 })
-@PropertySource("classpath:application.properties")
+//@PropertySource("classpath:application.properties")
+@PropertySource(value = {
+		"classpath:application.properties",          // 로컬 개발용
+		"file:/home/ec2-user/config/application.properties" // EC2용
+	}, ignoreResourceNotFound = true)
 public class RootConfig {
 	
 	@Value("${db.username}")
