@@ -23,6 +23,9 @@ jobs:
       run: mvn -B package -Dmaven.test.skip=true
       working-directory: ./jam
 
+    - name: List WAR files
+      run: ls -lh ./jam/target
+  
     - name: Copy WAR file to EC2
       uses: appleboy/scp-action@v0.1.7
       with:
