@@ -1,73 +1,43 @@
-name: JAM Auto Deploy to EC2
+name: Deploy to EC2
 
 on:
-  workflow_dispatch:
   push:
-    branches: [ "main" ] 
+    branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout source code
-        uses: actions/checkout@v3
+    - name: Checkout source
+      uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'corretto'
+        java-version: '17'
 
-      - name: Build WAR with Maven
-        working-directory: ./jam
-        run: mvn -B clean package -Dmaven.test.skip=true
+    - name: Build with Maven
+      run: mvn -B package -DskipTests
 
-      - name: Check WAR exists
-        run: ls -lh jam/target
+    - name: Copy WAR file to EC2
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_KEY }}
+        source: "target/*.war"
+        target: "/home/ec2-user/tomcat/webapps/"
+        overwrite: true
 
-      - name: Copy WAR to EC2
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: 54.180.152.155
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY_JAM }}
-          source: "jam/target/client-1.0.0-BUILD-SNAPSHOT.war"
-          target: "/home/ec2-user"
-          overwrite: true
-
-      - name: Deploy & Restart Tomcat
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: 54.180.152.155
-          username: ec2-user
-          key: ${{ secrets.EC2_SSH_KEY_JAM }}
-          script: |
-            # 1. 기존 배포 완전 삭제
-            sudo rm -rf /opt/tomcat/tomcat9/webapps/ROOT.war
-            sudo rm -rf /opt/tomcat/tomcat9/webapps/ROOT
-
-            # 2. 새로 올라온 war 파일 있는지 확인
-            if [ ! -f "/home/ec2-user/client-1.0.0-BUILD-SNAPSHOT.war" ]; then
-              echo "WAR 파일이 복사되지 않았습니다. 배포 중단"
-              exit 1
-            fi
-
-            # 3. ROOT.war로 이름 변경
-            sudo mv /home/ec2-user/client-1.0.0-BUILD-SNAPSHOT.war \
-                    /opt/tomcat/tomcat9/webapps/ROOT.war
-
-            sudo chown ec2-user:ec2-user /opt/tomcat/tomcat9/webapps/ROOT.war
-
-            # 5. Tomcat 완전히 종료
-            sudo /opt/tomcat/tomcat9/bin/shutdown.sh || true
-            sleep 3
-            # 강제 종료
-            sudo pkill -f "tomcat" || true
-            sleep 5
-            
-            # 재시작
-            sudo /opt/tomcat/tomcat9/bin/startup.sh
-
-            # 6. 배포 성공 여부 확인
-            echo "JAM 배포 완료! $(date)"
+    - name: Restart Tomcat on EC2
+      uses: appleboy/ssh-action@v0.1.7
+      with:
+        host: ${{ secrets.EC2_HOST }}
+        username: ec2-user
+        key: ${{ secrets.EC2_KEY }}
+        script: |
+          pkill -f tomcat || true
+          /home/ec2-user/tomcat/bin/startup.sh
