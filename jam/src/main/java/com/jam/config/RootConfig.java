@@ -39,6 +39,9 @@ public class RootConfig {
 	    return p;
 	}
 	
+	@Value("${db.url}")
+	private String dbUrl;
+	
 	@Value("${db.username}")
     private String dbUsername;
 
@@ -55,8 +58,7 @@ public class RootConfig {
 	public DataSource dataSource() {
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
-		hikariConfig.setJdbcUrl("jdbc:log4jdbc:oracle:thin:@localhost:1521/xepdb1");
-		
+		hikariConfig.setJdbcUrl(dbUrl);
 		hikariConfig.setUsername(dbUsername);
 		hikariConfig.setPassword(dbPassword);
 		
