@@ -7,7 +7,6 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -31,8 +30,6 @@ import lombok.extern.log4j.Log4j;
 
 @Component
 @Log4j
-//@PropertySource("classpath:application.properties")
-@PropertySource("file:/home/ec2-user/config/application.properties")
 public class JwtTokenProvider {
 	
 	private final Key key;
