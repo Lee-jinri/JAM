@@ -99,8 +99,8 @@ jobs:
           sleep 3
 
           # 2. 남아있는 톰캣 프로세스만 강제 종료
-          sudo pkill -9 -f '/usr/bin/java .* /home/ec2-user/tomcat' || true
-          sleep 2
+          #sudo pkill -9 -f '/usr/bin/java .* /home/ec2-user/tomcat' || true
+          #sleep 2
           
           #pkill -f 'org.apache.catalina.startup.Bootstrap' || true
           #sleep 5
