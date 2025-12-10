@@ -93,11 +93,18 @@ jobs:
         username: ec2-user
         key: ${{ secrets.EC2_KEY }}
         script: |
+          export CATALINA_HOME=/home/ec2-user/tomcat 
           echo "기존 Tomcat 종료 중..."
-          pkill -f tomcat || true
-          sleep 3
-    
+          
+          $CATALINA_HOME/bin/shutdown.sh || true 
+          pkill -f 'org.apache.catalina.startup.Bootstrap' || true
+          sleep 5
+          
+          sudo chown -R ec2-user:ec2-user /home/ec2-user/tomcat
+          
           echo "Tomcat 재시작..."
-          /home/ec2-user/tomcat/bin/startup.sh
-    
-          echo "배포 완료"
+          nohup /home/ec2-user/tomcat/bin/startup.sh > /home/ec2-user/tomcat/logs/nohup.out 2>&1 &
+
+          echo "배포 완료. 5초 후 로그 확인 시작..."
+          sleep 5
+          /usr/bin/tail -n 10 /home/ec2-user/tomcat/logs/catalina.out
