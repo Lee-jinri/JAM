@@ -93,16 +93,16 @@ jobs:
         username: ec2-user
         key: ${{ secrets.EC2_KEY }}
         script: |
-          echo $JAVA_HOME
-          which java || echo "java 없음"
-          java -version || echo "java 실행 실패"
+          #echo $JAVA_HOME
+          #which java || echo "java 없음"
+          #java -version || echo "java 실행 실패"
 
-          echo $PATH | tr ':' '\n' | head -n 20
-          ls -l /usr/bin/java
+          #echo $PATH | tr ':' '\n' | head -n 20
+          #ls -l /usr/bin/java
 
-          readlink -f /usr/bin/java || echo "readlink 실패"
-          HEADLESS=true /home/ec2-user/tomcat/bin/setclasspath.sh >/dev/null 2>&1 || true
-          echo $JAVA_HOME
+          #readlink -f /usr/bin/java || echo "readlink 실패"
+          #HEADLESS=true /home/ec2-user/tomcat/bin/setclasspath.sh >/dev/null 2>&1 || true
+          #echo $JAVA_HOME
           
           echo "기존 Tomcat 종료 중..."
           pkill -f 'org.apache.catalina.startup.Bootstrap' || true
