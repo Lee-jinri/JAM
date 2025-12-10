@@ -102,7 +102,10 @@ jobs:
           sudo chown -R ec2-user:ec2-user /home/ec2-user/tomcat
           
           echo "Tomcat 재시작..."
-          nohup /home/ec2-user/tomcat/bin/startup.sh > /home/ec2-user/tomcat/logs/nohup.out 2>&1 &
+          # 디버깅용
+          nohup /home/ec2-user/tomcat/bin/catalina.sh run > /home/ec2-user/tomcat/logs/catalina.out 2>&1 &
+
+          # nohup /home/ec2-user/tomcat/bin/startup.sh > /home/ec2-user/tomcat/logs/nohup.out 2>&1 &
 
           echo "배포 완료. 5초 후 로그 확인 시작..."
           sleep 5
