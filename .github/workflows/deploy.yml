@@ -94,16 +94,8 @@ jobs:
         key: ${{ secrets.EC2_KEY }}
         script: |          
           echo "기존 Tomcat 종료 중..."
-          # 1. 포트 기반 종료 (항상 가장 먼저)
           sudo fuser -k 8080/tcp || true
           sleep 3
-
-          # 2. 남아있는 톰캣 프로세스만 강제 종료
-          #sudo pkill -9 -f '/usr/bin/java .* /home/ec2-user/tomcat' || true
-          #sleep 2
-          
-          #pkill -f 'org.apache.catalina.startup.Bootstrap' || true
-          #sleep 5
           
           echo "권한 복구..."
           sudo chown -R ec2-user:ec2-user /home/ec2-user/tomcat
