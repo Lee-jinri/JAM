@@ -104,22 +104,18 @@ jobs:
           #HEADLESS=true /home/ec2-user/tomcat/bin/setclasspath.sh >/dev/null 2>&1 || true
           #echo $JAVA_HOME
           
-          echo "기존 Tomcat 종료 중..."
-          pkill -f 'org.apache.catalina.startup.Bootstrap' || true
-          pkill -f '/home/ec2-user/tomcat' || true
-          sleep 5
+          #echo "기존 Tomcat 종료 중..."
+          #pkill -f 'org.apache.catalina.startup.Bootstrap' || true
+          #pkill -f '/home/ec2-user/tomcat' || true
+          #sleep 5
           
-          echo "권한 복구..."
-          sudo chown -R ec2-user:ec2-user /home/ec2-user/tomcat
+          #echo "권한 복구..."
+          #sudo chown -R ec2-user:ec2-user /home/ec2-user/tomcat
           
           #echo "Tomcat 재시작..."
           export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64 
           setsid /home/ec2-user/tomcat/bin/catalina.sh start > /home/ec2-user/tomcat/logs/catalina.out 2>&1 < /dev/null &
 
-          # 디버깅용
-          #nohup /home/ec2-user/tomcat/bin/catalina.sh run > /home/ec2-user/tomcat/logs/catalina.out 2>&1 &
-          #nohup /home/ec2-user/tomcat/bin/startup.sh > /home/ec2-user/tomcat/logs/nohup.out 2>&1 &
-
-          echo "배포 완료. 5초 후 로그 확인 시작..."
-          sleep 5
-          /usr/bin/tail -n 10 /home/ec2-user/tomcat/logs/catalina.out
+          #echo "배포 완료. 5초 후 로그 확인 시작..."
+          #sleep 5
+          #/usr/bin/tail -n 10 /home/ec2-user/tomcat/logs/catalina.out
