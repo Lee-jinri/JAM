@@ -34,7 +34,7 @@ header {
     align-items: center;
     justify-content: space-between; 
     max-width: 114rem;
-    padding: 0 20px;
+    padding: 0 55px;
     height: 42px;
 }
 
@@ -49,7 +49,7 @@ header {
 .nav-menu {
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 5px;
 }
 
 .account-container {
@@ -94,11 +94,36 @@ header {
     padding-top: 12px;
 }
 
+.header-board-a:hover {
+	color: #659aff; 
+	font-weight: 550;
+}
+
 .header-board-a {
     position: relative;
     transition: color 0.3s ease-in-out;
+    letter-spacing: 2px;
 }
 
+.header-board-a::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -4px;
+	width: 100%;
+	height: 8px;
+	border-radius: 6px;
+	background: linear-gradient(90deg, #ffc1e3, #c8d2ff, #b8fff2, #ffdfa6);
+	background-size: 300% 100%;
+	opacity: 0;
+	transition: opacity 0.6s ease, background-position 2.5s ease;
+}
+.header-board-a:hover::after {
+	opacity: 1;
+	background-position: 100% 0;
+}
+
+/*
 .header-board-a:hover{
 	color: #545051;
 }
@@ -106,7 +131,7 @@ header {
     content: "";
     position: absolute;
     left: 50%;
-    bottom: -3px; /* 글자 아래에 여백 살짝 */
+    bottom: -3px; 
     width: 0;
     height: 3px;
     background: #EAECEF;
@@ -117,7 +142,7 @@ header {
 	color: #545051;
     width: 100%;
     left: 0;
-}
+}*/
 
 #mobileMenu{
 	display: none;
@@ -125,6 +150,29 @@ header {
 #mobile-menu-btn{
 	border: none;
     background-color: #fff;
+}
+
+.neo-btn {
+	background: #ffffff;
+    border: none;
+    border-radius: 24px;
+    padding: 7px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 7px 7px 14px rgba(0, 0, 0, 0.08), -7px -7px 14px rgb(243 243 243 / 85%);
+    transition: all 0.15s ease;
+}
+.neo-btn:active {
+  	box-shadow:
+    inset 7px 7px 14px rgba(0,0,0,0.12),
+    inset -7px -7px 14px rgba(255,255,255,0.9);
+}
+.font-color-blue{
+    color: #88B3FC;
+}
+.font-color-orange{
+    color: #FDD77F;
 }
 /* 모바일 반응형 */
 @media screen and (max-width: 900px) {
@@ -199,8 +247,6 @@ header {
             
             $("#loggedOutDiv").css("display", "none");
             $("#loggedInDiv").css("display", "flex");
-            
-            $("#written").attr("data-userId", window.MY_ID);
         }
 		
 		// 로그아웃
@@ -238,9 +284,8 @@ header {
 			$(location).attr('href', '/mypage/account');
 		});
 		
-		$("#written").click(function(){
-			let user_id = $(this).attr("data-userId");
-			$(location).attr('href','/mypage/written?user_id='+user_id);
+		$("#myPosts").click(function(){
+			$(location).attr('href','/community/my');
 		})
 		
 		$("#myStore").click(function(){
@@ -251,16 +296,10 @@ header {
 			$(location).attr('href','/mypage/favorite')
 		})
 		
-		$("#msg").click(function(){
-			$(location).attr('href','/message/receiveMessage')
-			//getUserIDAndRedirect('/message/receiveMessage');
-		})
-		
 		$("#chat").click(function(){
 			sessionStorage.removeItem("chatRoomId");
 			location.href = '/chat';
 		})
-		
 		
 		$(".mypage_toggle").hide();
 		
@@ -315,20 +354,23 @@ function logout(loginType){
 				<div class="header-left">
 					<button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
 					<a href="/" class="flex"> <img class="nav-icon"
-						src="/resources/include/images/JAM_icon3.png" alt="JAM">
+						src="/resources/include/images/JAM-logo.png" alt="JAM">
 					</a>
+				</div>
+				<div>
+					<img src="/resources/include/images/JAM-icon.svg" style="width: 37px;">
 				</div>
 		
 				<!-- 가운데: 네비게이션 메뉴 -->
 				<nav id="headerNav" class="nav-menu items-center">
 					<a href="/community/board"
-						class="header-board-a font-color-blue font-weight-bold padding-10">커뮤니티</a>
+						class="header-board-a font-weight-bold padding-10 font-color-gray">커뮤니티</a>
 					<a href="/roomRental/boards"
-						class="header-board-a font-color-blue font-weight-bold padding-10">연습실</a>
+						class="header-board-a font-weight-bold padding-10 font-color-gray">연습실</a>
 					<a href="/fleaMarket/board"
-						class="header-board-a font-color-blue font-weight-bold padding-10">중고악기</a>
+						class="header-board-a font-weight-bold padding-10">중고악기</a>
 					<a href="<c:url value='/jobs/board'/>" target="_blank" rel="noopener noreferrer"
-						class="header-board-a font-weight-bold padding-10" style="color: #0B7285;">
+						class="header-board-a font-weight-bold padding-10 font-color-blue">
 							Jobs
 							<i class="fa-solid fa-arrow-up-right-from-square" style="color: #969696;font-size: 13px;"></i>
 					</a>
@@ -339,10 +381,10 @@ function logout(loginType){
 			<div id="loggedOutDiv" class="auth-buttons">
 				<div class="inline-block mr-1 logoutDiv text-alignC">
 					<a href="/member/login"
-						class="font-color-gray justify-right logoutA">로그인</a>
+						class="neo-btn ">로그인</a>
 				</div>
 				<div class="inline-block logoutDiv text-alignC">
-					<a href="/member/join" class="font-color-gray justify-right logoutA">회원가입</a>
+					<a href="/member/join" class="neo-btn font-color-blue">회원가입</a>
 				</div>
 				
 			</div>
@@ -357,34 +399,30 @@ function logout(loginType){
 				<div class="mypage_toggle absolute border border-radius-7px">
 					<ul>
 						<li id="account" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">계정
+							class="font-weight-bold  mypage_font border-none bColor_fff">계정
 								정보</span></li>
-						<li id="written" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">작성한 글</span>
+						<li id="myPosts" class="mypage_toggle_btn cursor-pointer"><span
+							class="font-weight-bold  mypage_font border-none bColor_fff">작성한 글</span>
 								</li>
 						<li id="myStore" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">내 상점</span>
+							class="font-weight-bold  mypage_font border-none bColor_fff">내 상점</span>
 								</li>
 						<li id="myFavorite" class="mypage_toggle_btn cursor-pointer">
 							<span
-							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">북마크</span>
-						</li>
-						<li id="msg" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">쪽지</span>
+							class="font-weight-bold  mypage_font border-none bColor_fff">북마크</span>
 						</li>
 						<li id="chat" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold font-color-blue mypage_font border-none bColor_fff">채팅</span>
+							class="font-weight-bold  mypage_font border-none bColor_fff">채팅</span>
 						</li>
 					</ul>
 				</div>
-	
 				<button type="button" id="logout"
-					class="logoutA mr-2 bColor_fff font-color-blue">로그아웃</button>
+					class="neo-btn">로그아웃</button>
 			</div>
 		</div>
 	</div>
 	<div id="mobileMenu" class="mobile-nav" >
-			<a href="/community/boards">커뮤니티</a>
+			<a href="/community/board">커뮤니티</a>
 			<a href="/roomRental/boards">연습실</a>
 			<a href="/fleaMarket/boards">중고악기</a>
 			<a href="/jobs/board">Jobs</a>
