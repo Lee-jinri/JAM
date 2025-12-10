@@ -13,6 +13,38 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
+    - name: Create application.properties
+      run: |
+        cat > jam/src/main/resources/application.properties << 'EOF'
+        server.servlet.encoding.force=true
+        server.servlet.encoding.force-response=true
+        server.servlet.encoding.charset=UTF-8
+
+        db.url=${{ secrets.DB_URL }}
+        db.username=${{ secrets.DB_USERNAME }}
+        db.password=${{ secrets.DB_PASSWORD }}
+
+        jwt.secret=${{ secrets.JWT_SECRET }}
+
+        spring.redis.host=${{ secrets.REDIS_HOST }}
+        spring.redis.port=${{ secrets.REDIS_PORT }}
+        spring.redis.database=0
+
+        spring.mail.username=${{ secrets.MAIL_USERNAME }}
+        spring.mail.password=${{ secrets.MAIL_PASSWORD }}
+
+        oauth.naver.clientId=${{ secrets.NAVER_CLIENT_ID }}
+        oauth.naver.naver_client_secret=${{ secrets.NAVER_CLIENT_SECRET }}
+        oauth.kakao.clientId=${{ secrets.KAKAO_CLIENT_ID }}
+
+        location.consumer_key=${{ secrets.LOCATION_CONSUMER_KEY }}
+        location.consumer_secret=${{ secrets.LOCATION_CONSUMER_SECRET }}
+        location.save.path=${{ secrets.LOCATION_SAVE_PATH }}
+
+        cloud.aws.s3.static=ap-northeast-2
+        cloud.aws.s3.bucket=jam-resume-bucket
+        EOF  
+
     - name: Set up JDK 17
       uses: actions/setup-java@v4
       with:
