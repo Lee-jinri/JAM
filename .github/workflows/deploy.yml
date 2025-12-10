@@ -106,7 +106,7 @@ jobs:
           
           echo "기존 Tomcat 종료 중..."
           pkill -f 'org.apache.catalina.startup.Bootstrap' || true
-          pkill -f 'tomcat' || true
+          pkill -f '/home/ec2-user/tomcat' || true
           sleep 5
           
           echo "권한 복구..."
