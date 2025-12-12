@@ -28,9 +28,7 @@ import com.zaxxer.hikari.HikariDataSource;
 	"com.jam.**.dao",
 	"com.jam.global.mapper"
 })
-@PropertySource("classpath:application.properties")  
-@PropertySource(value = "file:/home/ec2-user/config/application.properties",
-                ignoreResourceNotFound = true)
+@PropertySource("classpath:application.properties")
 public class RootConfig {
 	
 	@Bean
@@ -56,11 +54,7 @@ public class RootConfig {
     private String mailPassword;
     
 	@Bean
-	public DataSource dataSource() {
-		System.out.println("dbUrl = " + dbUrl);
-		System.out.println("dbUsername = " + dbUsername);
-		System.out.println("dbPassword = " + dbPassword);
-		
+	public DataSource dataSource() {		
 		HikariConfig hikariConfig = new HikariConfig();
 		hikariConfig.setDriverClassName("net.sf.log4jdbc.sql.jdbcapi.DriverSpy");
 		hikariConfig.setJdbcUrl(dbUrl);
