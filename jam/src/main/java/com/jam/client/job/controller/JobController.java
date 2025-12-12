@@ -11,12 +11,12 @@ import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.JobVO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/jobs")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class JobController {
 
 	private final JobService jobService;

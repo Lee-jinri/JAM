@@ -17,9 +17,9 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.JwtService;
 
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 @Component
 public class CustomWebSocketInterceptor implements HandshakeInterceptor {
 
@@ -54,7 +54,7 @@ public class CustomWebSocketInterceptor implements HandshakeInterceptor {
 		        attributes.put("auth", userInfo.getRoles());
 	        }
 	        
-	        log.info(userInfo);
+	        log.info("userinfo:" ,userInfo);
 	    }
 	    return true;
 	}
@@ -65,7 +65,4 @@ public class CustomWebSocketInterceptor implements HandshakeInterceptor {
 		// TODO Auto-generated method stub
 		
 	}
-
-	
-
 }

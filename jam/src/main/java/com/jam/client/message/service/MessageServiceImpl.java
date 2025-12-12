@@ -8,11 +8,11 @@ import com.jam.client.message.dao.MessageDAO;
 import com.jam.client.message.vo.MessageVO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class MessageServiceImpl implements MessageService {
 
 	private final MessageDAO messageDao;

@@ -19,9 +19,9 @@ import com.jam.client.chat.vo.ChatVO;
 import com.jam.global.util.JsonUtils;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 public class WebSocketHandler extends TextWebSocketHandler  {
 

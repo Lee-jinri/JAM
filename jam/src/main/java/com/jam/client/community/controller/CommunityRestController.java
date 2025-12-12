@@ -28,12 +28,12 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/community")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class CommunityRestController {
 
 	private final CommunityService comService;

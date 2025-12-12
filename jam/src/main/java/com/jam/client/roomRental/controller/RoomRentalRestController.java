@@ -25,12 +25,12 @@ import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/roomRental")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class RoomRentalRestController {
 	
 	private final RoomRentalService roomService;
@@ -54,7 +54,7 @@ public class RoomRentalRestController {
 
 	        return ResponseEntity.ok(result);
 		}catch(Exception e) {
-			log.error(e.getStackTrace());
+			log.error("roomRental getBoards error: ", e);
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
 		}
@@ -83,7 +83,6 @@ public class RoomRentalRestController {
 			// 상세 페이지 조회
 			RoomRentalVO detail = roomService.getBoardDetail(room_no);
 	       
-			log.info(detail.getStatus());
 			
 	        return new ResponseEntity<>(detail, HttpStatus.OK);
 	    } catch (Exception e) {

@@ -12,17 +12,17 @@ import com.jam.client.community.vo.CommunityVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class ComMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
 	private CommunityDAO communityDao;
 	
-	/* 전체 글 조회*/ 
+	/* 전체 글 조회 
 	@Test
 	public void testComList() {
 		CommunityVO com_vo = new CommunityVO();
@@ -34,8 +34,8 @@ public class ComMapperTest {
 		//log.info(communityDao.getBoards(com_vo));
 		
 		// 즐겨찾기 한 글 조회
-		log.info(communityDao.getBoardsWithFavorite(com_vo));
-	}
+		log.info(communityDao.getBoardWithFavorite(com_vo));
+	}*/
 	
 	
 	/* 상세 페이지 조회 

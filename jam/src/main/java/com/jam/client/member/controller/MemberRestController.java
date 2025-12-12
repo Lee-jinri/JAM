@@ -38,12 +38,12 @@ import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValidationUtils;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/member")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class MemberRestController {
 
 	private final MemberService memberService;

@@ -18,11 +18,11 @@ import com.jam.client.chat.service.ChatService;
 import com.jam.client.chat.vo.ChatVO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/chat")
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 public class ChatRestController {
 	// FIXME: 무한 스크롤 만들어야 함

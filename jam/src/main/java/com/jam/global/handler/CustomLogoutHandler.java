@@ -15,10 +15,10 @@ import com.jam.global.jwt.JwtTokenProvider;
 import com.jam.global.jwt.TokenInfo.TokenStatus;
 import com.jam.global.util.AuthClearUtil;
 
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Log4j
+@Slf4j
 public class CustomLogoutHandler implements LogoutHandler  {
 
 	private final JwtTokenProvider jwtTokenProvider;

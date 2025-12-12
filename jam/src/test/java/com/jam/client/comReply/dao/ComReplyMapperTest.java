@@ -12,23 +12,23 @@ import com.jam.client.comReply.vo.ComReplyVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class ComReplyMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
 	private ComReplyDAO comreplyDao;
 	
-	/* 커뮤니티 댓글 리스트 */
+	/* 커뮤니티 댓글 리스트 
 	@Test	
 	public void testComReplyList(){
 		
 		log.info("커뮤니티 댓글 조회");
 		log.info(comreplyDao.replyList(5L));	
-	}
+	}*/
 
 	/* 커뮤니티 댓글 입력
 	@Test

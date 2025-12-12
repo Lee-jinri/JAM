@@ -19,11 +19,11 @@ import com.jam.config.RootConfig;
 import com.jam.global.util.ValueUtils;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class JobMapperTest {
 	
 	@Setter(onMethod_=@Autowired)

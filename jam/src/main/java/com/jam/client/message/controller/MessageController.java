@@ -16,12 +16,12 @@ import com.jam.common.vo.PageDTO;
 import com.jam.client.message.service.MessageService;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/message")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class MessageController {
 	
 	private final MessageService messageService;

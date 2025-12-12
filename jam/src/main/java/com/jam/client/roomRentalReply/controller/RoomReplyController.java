@@ -25,12 +25,12 @@ import com.jam.client.roomRentalReply.service.RoomReplyService;
 import com.jam.client.roomRentalReply.vo.RoomReplyVO;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping(value="roomreplies")
 @AllArgsConstructor
-@Log4j
+@Slf4j
 public class RoomReplyController {
 
 	private RoomReplyService roomreplyService;

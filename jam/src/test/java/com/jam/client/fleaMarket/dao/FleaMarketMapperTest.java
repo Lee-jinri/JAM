@@ -10,16 +10,16 @@ import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class FleaMarketMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
 	private FleaMarketDAO fleaDao;
-	/* 전체 글 조회 */
+	/* 전체 글 조회 
 	@Test
 	public void testFleaList() {
 		FleaMarketVO flea_vo = new FleaMarketVO();
@@ -35,7 +35,7 @@ public class FleaMarketMapperTest {
 		// 즐겨찾기 한 글 조회
 		log.info(fleaDao.getBoardWithFavorite(flea_vo));
 	}
-	
+	*/
 	/* 상세 페이지 조회
 	@Test
 	public void testFleaDetail() {

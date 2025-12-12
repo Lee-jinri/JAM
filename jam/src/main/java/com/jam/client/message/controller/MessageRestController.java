@@ -14,12 +14,12 @@ import com.jam.client.message.vo.MessageVO;
 import com.jam.global.jwt.JwtTokenProvider;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/message")
 @RequiredArgsConstructor 
-@Log4j
+@Slf4j
 public class MessageRestController {
 	
 	private final MessageService messageService;

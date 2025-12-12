@@ -27,12 +27,12 @@ import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/roomRental")
 @RequiredArgsConstructor 
-@Log4j
+@Slf4j
 public class RoomRentalController {
 	
 	private final RoomRentalService roomService;

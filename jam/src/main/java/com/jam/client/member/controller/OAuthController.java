@@ -40,12 +40,12 @@ import com.jam.global.jwt.TokenInfo;
 
 import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/oauth")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class OAuthController {
 	
 	//TODO: 카카오/네이버 access token 발급 메서드 통합 예정

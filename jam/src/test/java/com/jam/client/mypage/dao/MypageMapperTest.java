@@ -5,16 +5,15 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-
 import com.jam.client.mypage.vo.MemberBoardVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class MypageMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
@@ -77,7 +76,7 @@ public class MypageMapperTest {
 		log.info(mypageDao.addFavorite("abcd1234", "job", 42L));
 	}*/
 	
-	/** 작성한 글 조회 */
+	/** 작성한 글 조회
 	
 	@Test
 	public void testGetWrittenCommunity() {
@@ -89,9 +88,9 @@ public class MypageMapperTest {
 		//written.setKeyword("1");
 		written.setBoard_type("community");
 		
-		log.info(mypageDao.getWrittenCommunity(written));
-		log.info(mypageDao.writtenListCnt(written));
-	}
+		log.info(mypageDao.getMyPostCommunity(written));
+		log.info(mypageDao.getMyPostCnt(written));
+	} */
 	/*
 	
 	@Test
@@ -143,10 +142,10 @@ public class MypageMapperTest {
 	}
 	*/
 	
-	/* 회원 정보*/
+	/* 회원 정보
 	@Test
 	public void testAccount() {
 		String user_id="abcd1234";
 		log.info(mypageDao.account(user_id));
-	}
+	}*/
 }

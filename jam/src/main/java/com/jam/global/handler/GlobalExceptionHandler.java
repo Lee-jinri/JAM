@@ -21,10 +21,10 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.util.AuthClearUtil;
 
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestControllerAdvice
-@Log4j
+@Slf4j
 public class GlobalExceptionHandler {
 
 	@ExceptionHandler(BadRequestException.class)

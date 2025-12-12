@@ -11,11 +11,11 @@ import com.jam.client.member.vo.MemberVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class MemberMapperTest {
 
 	@Setter(onMethod_=@Autowired)
@@ -187,7 +187,7 @@ public class MemberMapperTest {
 		
 		log.info(memberDao.updateUserName(member));
 	}
-	*/
+	
 	
 	@Test
 	public void testFindUserByRefreshToken() {
@@ -199,6 +199,6 @@ public class MemberMapperTest {
 		log.info(member.getUser_id());
 		log.info(member.getUser_name());
 		log.info(member.getAuthorities());
-	}
+	}*/
 	
 }

@@ -15,11 +15,11 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class FileService {
 	
 	private final FileUtils fileUtils;

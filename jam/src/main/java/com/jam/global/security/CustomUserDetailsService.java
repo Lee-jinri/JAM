@@ -9,11 +9,11 @@ import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class CustomUserDetailsService implements UserDetailsService {
 
 	private final MemberDAO memberDao;

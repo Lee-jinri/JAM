@@ -23,12 +23,12 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.service.FileReferenceService;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
 @Validated
-@Log4j
+@Slf4j
 public class JobServiceImpl implements JobService {
 
 	private final JobDAO jobDao;

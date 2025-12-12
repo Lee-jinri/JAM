@@ -1,42 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE log4j:configuration SYSTEM "http://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd">
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/">
-
+<configuration>
 
 	<!-- Appenders -->
-	<appender name="console" class="org.apache.log4j.ConsoleAppender">
-		<param name="Target" value="System.out" />
-		<layout class="org.apache.log4j.PatternLayout">
-			<param name="ConversionPattern" value="%-5p: %c - %m%n" />
-		</layout>
+	<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>%-5level [%thread] %logger - %msg%n</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="APPFILE" class="ch.qos.logback.core.FileAppender">
+		<file>/home/ec2-user/tomcat/logs/app.log</file>
+		<append>true</append>
+		<encoder>
+			<pattern>%-5level [%thread] %logger - %msg%n</pattern>
+		</encoder>
 	</appender>
 	
 	<!-- Application Loggers-->
-	<logger name="com.jam">
-		<level value="info" />
-	</logger>
-	
+	<logger name="com.jam" level="INFO" />
+	    
 	<!-- 3rdparty Loggers -->
-	<logger name="org.springframework.core">
-		<level value="info" />
+	<logger name="org.springframework.core" level="INFO" />
+	<logger name="org.springframework.beans" level="INFO" />
+	<logger name="org.springframework.context" level="INFO" />
+	<logger name="org.springframework.web" level="INFO" />
+
+	<logger name="jdbc.sqlonly" level="DEBUG" additivity="false">
+		<appender-ref ref="CONSOLE"/>
 	</logger>
 	
-	<logger name="org.springframework.beans">
-		<level value="info" />
+	<logger name="jdbc.sqltiming" level="DEBUG" additivity="false">
+		<appender-ref ref="CONSOLE"/>
 	</logger>
 	
-	<logger name="org.springframework.context">
-		<level value="info" />
-	</logger>
-
-	<logger name="org.springframework.web">
-		<level value="info" />
-	</logger>
-
+	<logger name="jdbc.connection" level="OFF" />
+	<logger name="jdbc.audit" level="OFF" />
+	<logger name="jdbc.resultset" level="OFF" />
+	<logger name="jdbc.resultsettable" level="OFF" />
+	
 	<!-- Root Logger -->
-	<root>
-		<priority value="warn" />
-		<appender-ref ref="console" />
+	<root level="INFO">
+		<appender-ref ref="CONSOLE" />
+		<appender-ref ref="APPFILE"/>
 	</root>
 	
-</log4j:configuration>
+</configuration>

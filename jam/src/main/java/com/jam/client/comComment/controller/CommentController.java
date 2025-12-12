@@ -21,12 +21,12 @@ import com.jam.client.comComment.vo.CommentVO;
 import com.jam.global.exception.UnauthorizedException;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping(value="/community")
 @AllArgsConstructor
-@Log4j
+@Slf4j
 public class CommentController {
 	
 	private CommentService commentService;

@@ -19,10 +19,10 @@ import com.jam.client.member.service.MemberService;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Component
-@Log4j
+@Slf4j
 public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 
 	private final MemberService memberService;

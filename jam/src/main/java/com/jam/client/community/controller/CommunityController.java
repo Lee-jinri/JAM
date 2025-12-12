@@ -22,12 +22,12 @@ import com.jam.client.community.service.CommunityService;
 import com.jam.client.community.vo.CommunityVO;
 
 import lombok.AllArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/community")
 @AllArgsConstructor
-@Log4j
+@Slf4j
 public class CommunityController {
 	
 	private final CommunityService comService;

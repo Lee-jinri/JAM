@@ -14,11 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.chat.vo.ChatVO;
 import com.jam.global.redis.RedisConfig;
 
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RedisConfig.class)
-@Log4j
+@Slf4j
 public class RedisTest {
 	
 	@Autowired
@@ -76,7 +76,7 @@ public class RedisTest {
 	 * 1. List<Object>로 데이터 가져오기 (range는 ChatVO로 변환 안댐)
 	 * 2. objectMapper로 형변환하기
 	 * 3. List<ChatVO>로 리턴~~
-	 **/
+	 *
 	@Test
 	public void getMessages() {
 		 // Redis에서 데이터 가져오기
@@ -96,7 +96,7 @@ public class RedisTest {
 	    for (ChatVO chat : messages) {
 	        log.info("ChatVO: "+ chat);
 	    }
-	} 
+	} */
 	/*
 	@Test
 	public void addParticipant() {

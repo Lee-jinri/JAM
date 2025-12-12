@@ -34,12 +34,12 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping("/api/fleaMarket/")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class FleaMarketRestController {
 
 	private final FleaMarketService fleaService;

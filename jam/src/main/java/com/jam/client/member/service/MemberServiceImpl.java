@@ -41,10 +41,10 @@ import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.jam.global.exception.MailSendFailureException;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 

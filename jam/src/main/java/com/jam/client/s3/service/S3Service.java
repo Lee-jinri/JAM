@@ -17,7 +17,7 @@ import com.jam.file.vo.FileCategory;
 import com.jam.global.util.FileUtils;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
@@ -30,7 +30,7 @@ import software.amazon.awssdk.services.s3.presigner.model.PutObjectPresignReques
 
 @Service
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class S3Service {
 	
 	private final FileUtils fileUtils;

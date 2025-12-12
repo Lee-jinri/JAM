@@ -10,9 +10,9 @@ import org.springframework.web.servlet.HandlerInterceptor;
 
 import com.jam.client.member.vo.MemberVO;
 
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
-@Log4j
+@Slf4j
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
 
@@ -27,8 +27,6 @@ public class JwtInterceptor implements HandlerInterceptor {
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		
 		MemberVO userInfo = jwtService.getUserInfo(request.getCookies(), request, response);
-
-		log.info(userInfo);
 		
 		if (userInfo == null) {
 			return true; 
@@ -42,6 +40,7 @@ public class JwtInterceptor implements HandlerInterceptor {
 		if(userInfo != null) {
 			request.setAttribute("userId", userInfo.getUser_id());
 			List<String> roles = userInfo.getRoles();
+			log.info("setRequestAttributes :" +roles);
 			request.setAttribute("roles", roles);
 		}
 	}

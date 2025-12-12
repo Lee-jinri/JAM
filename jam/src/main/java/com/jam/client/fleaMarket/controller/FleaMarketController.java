@@ -15,12 +15,12 @@ import com.jam.client.fleaMarket.vo.FleaMarketVO;
 import com.jam.common.vo.PageDTO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Controller
 @RequestMapping("/fleaMarket")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 
 public class FleaMarketController {
 	

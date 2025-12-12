@@ -18,10 +18,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.chat.vo.ChatVO;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
-@Log4j
+@Slf4j
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
     
@@ -173,7 +173,7 @@ public class ChatServiceImpl implements ChatService {
             
 			redisTemplate.opsForList().rightPush("chatRoomId:" + chatRoomId + ":messages", chat);
 		}catch(Exception e) {
-			log.error(e);
+			log.error("saveChat: ", e);
 		}
 	}
 	

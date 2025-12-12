@@ -7,29 +7,28 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.jam.client.community.dao.ComMapperTest;
 import com.jam.client.roomRental.vo.RoomRentalVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class RoomRentalMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
 	private RoomRentalDAO roomDao;
 	
-	/* 전체 글 조회 */ 
+	/* 전체 글 조회  
 	@Test
 	public void testRoomList() {
 		RoomRentalVO room_vo = new RoomRentalVO();
 	
 		log.info("글 조회");
 		log.info(roomDao.getBoards(room_vo));
-	} 
+	} */
 	
 	
 	/* 상세 페이지 조회

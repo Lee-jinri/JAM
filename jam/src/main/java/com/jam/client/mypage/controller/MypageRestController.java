@@ -29,12 +29,12 @@ import com.jam.common.vo.PageDTO;
 import com.jam.global.jwt.JwtService;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RestController
 @RequestMapping(value="/api/mypage")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class MypageRestController {
 	
     private final MypageService mypageService;
@@ -55,9 +55,7 @@ public class MypageRestController {
 	    List<MemberBoardVO> favoriteList = new ArrayList<>();
 	    
 	    MemberBoardVO favorite = new MemberBoardVO();
-	    
-	    log.info(pageNum);
-	    
+	    	    
 	    favorite.setUser_id(userId);
 	    favorite.setPageNum(pageNum);
 	    
@@ -89,8 +87,6 @@ public class MypageRestController {
 		
 		result.put("pageMaker", pageMaker);
 
-		log.info(result);
-		
 		return ResponseEntity.ok(result);
 	}
 

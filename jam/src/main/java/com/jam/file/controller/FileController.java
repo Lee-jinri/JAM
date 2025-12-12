@@ -23,11 +23,11 @@ import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.service.FileAccessService;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping("/api/files")
 @RequiredArgsConstructor
-@Log4j
+@Slf4j
 public class FileController {
 	private final S3Service s3Service;
 	private final FileService fileService;

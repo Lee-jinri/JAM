@@ -12,11 +12,11 @@ import com.jam.client.fleaComment.vo.FleaCommentVO;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
-import lombok.extern.log4j.Log4j;
+import lombok.extern.slf4j.Slf4j;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = RootConfig.class)
-@Log4j
+@Slf4j
 public class FleaCommentMapperTest {
 
 	@Setter(onMethod_=@Autowired)
