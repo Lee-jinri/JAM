@@ -77,27 +77,27 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 아이디 중복확인
 	@Override
-	public int idCheck(String userId) throws Exception {
+	public int idCheck(String userId){
 		
 		return memberDao.idCheck(userId);
 	}
 	
 	// 닉네임 중복확인
 	@Override
-	public int nameCheck(String user_name) throws Exception {
+	public int nameCheck(String user_name){
 		
 		return memberDao.nameCheck(user_name);
 	}
 
 	// 전화번호 중복확인
 	@Override
-	public int phoneCheck(String phone) throws Exception {
+	public int phoneCheck(String phone){
 		return memberDao.phoneCheck(phone);
 	}
 	
 	// 이메일 중복확인
 	@Override
-	public int emailCheck(String email) throws Exception{
+	public int emailCheck(String email){
 		return memberDao.emailCheck(email);
 	}
 	
