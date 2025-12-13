@@ -38,6 +38,7 @@ import com.jam.client.job.vo.JobVO;
 import com.jam.client.member.dao.MemberDAO;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.roomRental.vo.RoomRentalVO;
+import com.jam.global.exception.ConflictException;
 import com.jam.global.exception.MailSendFailureException;
 
 import lombok.RequiredArgsConstructor;
@@ -55,20 +56,23 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 회원가입
 	@Override
-	public int join(MemberVO member) throws Exception  {
-		
-		try {
-	        // Redis에 닉네임 저장
-	        String key = "users:name:" + member.getUser_id();
-	        stringRedisTemplate.opsForValue().set(key, member.getUser_name());
+	@Transactional(rollbackFor = Exception.class)
+	public void join(MemberVO member) {
 
-	        // DB에 회원 정보 저장
-	        return memberDao.memberJoin(member);
-	        
-	    } catch (Exception e) {
-	        log.error("회원가입 중 오류 발생: ", e);
-	        throw e;
-	    }
+        // 회원 정보 저장
+        memberDao.memberJoin(member);
+        
+        // 기본 권한 부여(ROLE_USER)
+        int roleResult = memberDao.assignDefaultRoleToMember(member.getUser_id());
+
+        if (roleResult != 1) {
+        	log.error("회원가입 중 기본 권한 부여 실패 (userId={})", member.getUser_id());;
+        	throw new ConflictException("회원가입 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+    	}
+        
+        // Redis에 닉네임 저장
+        String key = "users:name:" + member.getUser_id();
+        stringRedisTemplate.opsForValue().set(key, member.getUser_name());
 	}
 	
 	// 아이디 중복확인

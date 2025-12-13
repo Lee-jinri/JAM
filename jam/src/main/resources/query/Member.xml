@@ -4,15 +4,21 @@
 
 	<!-- 회원가입 -->
 	<insert id="memberJoin" parameterType="member">
-	INSERT INTO member (user_id, user_pw, user_name, phone, email, address)
-	VALUES (
-		#{user_id}, 
-		#{user_pw}, 
-		#{user_name}, 
-		#{phone}, 
-		#{email},
-		#{address}
-	)
+		INSERT INTO member (user_id, user_pw, user_name, phone, email, address)
+		VALUES (
+			#{user_id}, 
+			#{user_pw}, 
+			#{user_name}, 
+			#{phone}, 
+			#{email},
+			#{address}
+		)
+	</insert>
+	
+	<!-- 권한 저장: 기본 ROLE_USER -->
+	<insert id="assignDefaultRoleToMember" parameterType="String">
+		INSERT INTO member_role (user_id, role_code)
+		VALUES (#{userId}, 'ROLE_USER')
 	</insert>
 	
 	<!-- 아이디 중복검사 -->

@@ -15,6 +15,7 @@ public interface MemberDAO {
 	
 	// 회원가입
 	void memberJoin(MemberVO member);
+	int assignDefaultRoleToMember(String userId);
 	
 	// 아이디 중복확인
 	int idCheck(String userId);
