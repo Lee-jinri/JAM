@@ -17,19 +17,19 @@ import com.jam.client.roomRental.vo.RoomRentalVO;
 public interface MemberService {
 
 	// 회원가입
-	public int join(MemberVO member) throws Exception;
+	public void join(MemberVO member);
 
 	// 아이디 중복확인
-	public int idCheck(String userId) throws Exception;
+	public int idCheck(String userId);
 
 	// 닉네임 중복확인
-	public int nameCheck(String user_name) throws Exception;
+	public int nameCheck(String user_name);
 
 	// 전화번호 중복확인
-	public int phoneCheck(String phone) throws Exception;
+	public int phoneCheck(String phone);
 
 	// 이메일 중복확인
-	public int emailCheck(String email) throws Exception;
+	public int emailCheck(String email);
 
 
 	// 마이페이지
