@@ -198,9 +198,14 @@
 	    WHERE user_id = #{user_id}
 	</update>
 	
-	<insert id="insertRole" parameterType="map">
+	<insert id="insertCompanyRole" parameterType="map">
 	    INSERT INTO member_role (user_id, role_code)
-	    VALUES (#{user_id}, 'ROLE_COMPANY')
+		SELECT #{userId}, 'ROLE_COMPANY'
+		FROM dual
+		WHERE NOT EXISTS (
+			SELECT 1 FROM member_role
+			WHERE user_id = #{userId} AND role_code = 'ROLE_COMPANY'
+		)
 	</insert>
 	
 </mapper>

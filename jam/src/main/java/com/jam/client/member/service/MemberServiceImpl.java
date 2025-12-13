@@ -499,12 +499,7 @@ public class MemberServiceImpl implements MemberService {
 			);
 		
 		memberDao.updateCompanyName(param);
-		
-		try {
-		    memberDao.insertRole(param);
-		} catch (DuplicateKeyException e) {
-		    log.info("이미 존재하는 ROLE, 무시합니다.");
-		}
+		memberDao.insertCompanyRole(param);
 		
 		if (user.getRoles() == null) 
 			user.setRoles(new ArrayList<>());

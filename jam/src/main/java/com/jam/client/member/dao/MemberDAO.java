@@ -101,6 +101,6 @@ public interface MemberDAO {
 	MemberVO getUserProfile(String user_id);
 
 	void updateCompanyName(Map<String, String> param);
-
-	void insertRole(Map<String, String> param);
+	
+	void insertCompanyRole(Map<String, String> param);
 }
