@@ -207,7 +207,7 @@ function renderFavorite(favoriteList, boardType){
 	
 	favoriteList.forEach(favorite => {
         const $li = $("<li>").addClass("boardLink bookmark-item cursor-pointer")
-            .attr("data-location", "/" + boardType + "/board/" + favorite.board_no);
+            .attr("data-location", "/" + boardType + "/board/" + favorite.post_id);
 
         const $infoDiv = $("<div>").addClass("bookmark-info");
         const $titleSpan = $("<span>").addClass("bookmark-title").text(favorite.board_title);
@@ -216,7 +216,7 @@ function renderFavorite(favoriteList, boardType){
 
         const $iconDiv = $("<div>").addClass("flex items-center justify-center ml-2 mr-2").css("width", "3rem");
         const $iconSpan = $("<span>").addClass("favoriteSpan");
-        $iconSpan.attr("data-board-no", favorite.board_no);
+        $iconSpan.attr("data-post-id", favorite.post_id);
         $iconSpan.attr("data-board-type", boardType);
         
         const $icon = $("<i>").addClass("favorite fa-star fa-solid").css({ color: "#FFD43B", cursor: "pointer" });

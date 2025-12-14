@@ -176,7 +176,7 @@ function renderList(data){
            $clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
 
            let $favoriteSpan = $clone.find(".favoriteSpan");
-           $favoriteSpan.attr("data-board-no", board.post_id);
+           $favoriteSpan.attr("data-post-id", board.post_id);
    		$favoriteSpan.attr("data-board-type", "community");
    		
    		let $icon = $favoriteSpan.find("i"); 

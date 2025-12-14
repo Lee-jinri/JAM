@@ -699,7 +699,7 @@ function companyRecruit(data){
 		
 		if(!window.MY_AUTH || !window.MY_AUTH.includes('ROLE_COMPANY')){
 			let $favoriteSpan = $clone.find(".favoriteSpan");
-			$favoriteSpan.attr("data-board-no", board.post_id);
+			$favoriteSpan.attr("data-post-id", board.post_id);
 			$favoriteSpan.attr("data-board-type", "job");
 			
 			let $icon = $favoriteSpan.find("i"); 
@@ -760,7 +760,7 @@ function memberRecruit(data){
 		$boardDiv.removeClass("company-list-row").addClass("member-list-row");
 		
 		let $favoriteSpan = $clone.find(".favoriteSpan");
-		$favoriteSpan.attr("data-board-no", board.post_id);
+		$favoriteSpan.attr("data-post-id", board.post_id);
 		$favoriteSpan.attr("data-board-type", "job");
 		
 		let $icon = $favoriteSpan.find("i"); 

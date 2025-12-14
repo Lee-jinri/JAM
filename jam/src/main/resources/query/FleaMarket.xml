@@ -45,7 +45,7 @@
 			to_char(f.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at, 
 			f.category_id, f.price, f.thumbnail,
 			f.user_id, f.user_name,
-			CASE WHEN fav.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+			CASE WHEN fav.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
 				f.post_id, f.title, f.created_at, f.category_id, f.price, f.thumbnail, f.user_id, m.user_name,
@@ -70,7 +70,7 @@
 		<![CDATA[
 		) f
 		LEFT JOIN favorite fav  
-			ON f.post_id = fav.board_no  
+			ON f.post_id = fav.post_id  
 			AND fav.board_type = 'fleaMarket'  
 			AND fav.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -211,7 +211,7 @@
 				TO_CHAR(f.created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at, 
 				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
-			JOIN favorite fav ON f.post_id = fav.board_no
+			JOIN favorite fav ON f.post_id = fav.post_id
 			WHERE fav.user_id = #{user_id}
 			AND fav.board_type = 'fleaMarket'
 			]]>

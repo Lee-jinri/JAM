@@ -459,7 +459,7 @@ function renderList(data){
 		$clone.find(".boardLink").attr("data-location", "/roomRental/board/" + board.roomRental_no);
 		
 		let $favoriteSpan = $clone.find(".favoriteSpan");
-		$favoriteSpan.attr("data-board-no", board.roomRental_no);
+		$favoriteSpan.attr("data-post-id", board.roomRental_no);
 		$favoriteSpan.attr("data-board-type", "roomRental");
 		
 		let $icon = $favoriteSpan.find("i"); 

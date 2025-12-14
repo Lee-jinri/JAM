@@ -167,7 +167,7 @@ $(function(){
 		        	
 	        	$("#position").text(data.position);
 	        	
-	        	$(".favoriteSpan").attr("data-board-no", data.post_id);
+	        	$(".favoriteSpan").attr("data-post-id", data.post_id);
 	        	$(".favoriteSpan").attr("data-board-type", "job");
 	    		
 	    		let $icon = $(".favoriteSpan").find("i"); 

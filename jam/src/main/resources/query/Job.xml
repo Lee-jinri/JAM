@@ -73,7 +73,7 @@
 			to_char(j.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
 			j.pay_category, j.pay, 
 			j.city, j.gu, j.dong, j.position,
-			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+			CASE WHEN f.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 			SELECT /*+ INDEX_DESC(j IX_JOB_STATUS_CATEGORY_POSTID) */
 				j.post_id, j.title, j.created_at, 
@@ -91,7 +91,7 @@
 		<![CDATA[
 		) j 
 		LEFT JOIN favorite f  
-			ON j.post_id = f.board_no  
+			ON j.post_id = f.post_id  
 			AND f.board_type = 'job'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -399,7 +399,7 @@
 		WHERE EXISTS (
 			SELECT 1
 			FROM favorite f
-			WHERE f.board_no = j.post_id
+			WHERE f.post_id = j.post_id
 				AND f.board_type = 'job'
 				AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		)
@@ -440,7 +440,7 @@
 		WHERE EXISTS (
 			SELECT 1
 			FROM favorite f
-			WHERE f.board_no = j.post_id
+			WHERE f.post_id = j.post_id
 				AND f.board_type = 'job'
 				AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		)

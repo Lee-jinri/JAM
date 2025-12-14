@@ -71,7 +71,7 @@
 			status, price, 
 			roomRental_duration, r.user_id , user_name, 
 			city, gu, dong,
-			CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+			CASE WHEN f.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 		FROM (
 		    SELECT /*+ INDEX_DESC(roomRental SYS_C0025655) */
 				r.post_id, r.title, r.created_at, r.comment_count, r.price, r.roomRental_duration, r.view_count, r.status, r.user_id , m.user_name, r.city, r.gu, r.dong,
@@ -87,7 +87,7 @@
 		<![CDATA[
 		) r
 		LEFT JOIN favorite f  
-			ON r.post_id = f.board_no  
+			ON r.post_id = f.post_id  
 			AND f.board_type = 'roomRental'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 

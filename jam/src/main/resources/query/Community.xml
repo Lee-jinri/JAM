@@ -38,11 +38,11 @@
 		<![CDATA[
 		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
 	        	c.comment_count, c.view_count, m.user_id, m.user_name,
-	        	CASE WHEN f.board_no IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+	        	CASE WHEN f.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 	    FROM community c
 	    JOIN member m ON c.user_id = m.user_id
 	    LEFT JOIN favorite f  
-			ON c.post_id = f.board_no  
+			ON c.post_id = f.post_id  
 			AND f.board_type = 'community'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 	    ]]>

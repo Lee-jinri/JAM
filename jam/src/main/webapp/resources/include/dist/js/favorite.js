@@ -8,26 +8,25 @@ $(function(){
 	    
 	    let $favoriteSpan = $(this).closest(".favoriteSpan");
 	    
-	    let boardNo = $favoriteSpan.data("board-no"); // 게시글 번호 가져오기
+		let postId = $favoriteSpan.data("post-id"); // 게시글 번호 가져오기
 		let boardType = $favoriteSpan.data("board-type"); 
 		
 	    if (isFavorite) {
-	        removeFavorite(boardNo, boardType, $icon);
+	        removeFavorite(postId, boardType, $icon);
 	    } else {
-	        addFavorite(boardNo, boardType, $icon);
+	        addFavorite(postId, boardType, $icon);
 	    }
 	});
 })
 
 
-function removeFavorite(boardNo, boardType, $icon){
-	let url = '/api/mypage/favorite/'+boardNo + '?boardType=' + boardType;
+function removeFavorite(postId, boardType, $icon){
+	let url = '/api/mypage/favorite/'+postId + '?boardType=' + boardType;
 	
-	if(!boardNo || !boardType) {
+	if(!postId || !boardType) {
 		alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
 		return false;
 	}
-	
 	
 	fetch(url,{
 		method: "DELETE",
@@ -60,11 +59,11 @@ function removeFavorite(boardNo, boardType, $icon){
 	}); 
 }
 		
-function addFavorite(boardNo, boardType, $icon){
-	let url = '/api/mypage/favorite/'+boardNo + '?boardType=' + boardType;
+function addFavorite(postId, boardType, $icon){
+	let url = '/api/mypage/favorite/'+postId + '?boardType=' + boardType;
 	
 	console.log(url);
-	if(!boardNo || !boardType) {
+	if(!postId || !boardType) {
 		alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
 		return false;
 	}

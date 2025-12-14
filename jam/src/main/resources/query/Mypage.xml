@@ -12,7 +12,7 @@
 		WHERE EXISTS (
 			SELECT /*+ INDEX(f UNIQUE_FAVORITE) */ 1
 			FROM favorite f
-			WHERE f.board_no   = c.com_no
+			WHERE f.post_id   = c.post_id
 			  AND f.user_id    = #{user_id}
 			  AND f.board_type = 'community'
 		)
@@ -29,7 +29,7 @@
 		WHERE EXISTS (
 			SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */ 1
 			FROM favorite f
-			WHERE f.board_no = flea.post_id
+			WHERE f.post_id = flea.post_id
 			  AND f.user_id = #{user_id}
 			  AND f.board_type = 'fleaMarket'
 		)
@@ -48,7 +48,7 @@
 	        FROM roomRental r
 	        WHERE r.roomRental_no IN (
 	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
-	                board_no 
+	                post_id 
 	            FROM favorite 
 	            WHERE user_id = #{user_id} 
 	            AND board_type = 'roomRental'
@@ -64,8 +64,8 @@
 		<selectKey keyProperty="favorite_id" resultType="Long" order="BEFORE">
 		    SELECT favorite_seq.NEXTVAL FROM dual
 		</selectKey>
-		INSERT INTO favorite(favorite_id, user_id, board_type, board_no)
-		VALUES(#{favorite_id}, #{user_id}, #{board_type}, #{board_no} )
+		INSERT INTO favorite(favorite_id, user_id, board_type, post_id)
+		VALUES(#{favorite_id}, #{user_id}, #{board_type}, #{post_id} )
 	</insert>
 	
 	<delete id="deleteFavorite">
@@ -73,7 +73,7 @@
 		FROM favorite
 		WHERE user_id = #{user_id} 
 			AND board_type=#{board_type} 
-			AND board_no = #{board_no}
+			AND post_id = #{post_id}
 	</delete>
 
 	<select id="listCnt" parameterType="map" resultType="int">
