@@ -6,7 +6,7 @@ import lombok.Data;
 
 @Data
 public class ImageFileVO {
-	private Long image_no;
+	private Long image_id;
 	private String image_name;
 	private LocalDateTime created_at;
 	private Long post_id;

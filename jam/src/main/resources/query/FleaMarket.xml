@@ -226,7 +226,7 @@
 	</select>
 
 	<select id="getImages" resultType="imageFile">
-		SELECT image_no, image_name
+		SELECT image_id, image_name
 		FROM imageFile
 		WHERE post_id = #{post_id} AND post_type = 'flea'
 	</select>

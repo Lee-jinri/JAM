@@ -173,7 +173,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 		
 		for(ImageFileVO file: deleteFileNames) {
 			fileUtils.deleteToLocal(file.getImage_name(), "flea");
-			imageFileDao.deleteImage(file.getImage_no());
+			imageFileDao.deleteImage(file.getImage_id());
 		}
 	}
 
