@@ -129,7 +129,7 @@
 	<!-- 글 입력 -->
 	<insert id="writePost" parameterType="job">
 		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
-        	select job_seq.nextval from dual
+        	select seq_job.nextval from dual
     	</selectKey>
 		INSERT INTO job(post_id, user_id, title, content, category, status,  pay_category, pay, position, view_count, city, gu, dong)
 		VALUES(#{post_id},#{user_id}, #{title}, #{content}, #{category},0,  #{pay_category, jdbcType=INTEGER}, #{pay, jdbcType=INTEGER}, #{position}, 0, #{city}, #{gu, jdbcType = VARCHAR}, #{dong, jdbcType = VARCHAR})
@@ -241,7 +241,7 @@
 	<!-- 지원 -->
 	<insert id="createApplication">
 		<selectKey resultType="long" order="BEFORE" keyProperty="application_id">
-	        SELECT application_seq.NEXTVAL FROM dual
+	        SELECT seq_application.NEXTVAL FROM dual
 	    </selectKey>
 		INSERT INTO application
 			(application_id, user_id, post_id, title, content, created_at, company_id)

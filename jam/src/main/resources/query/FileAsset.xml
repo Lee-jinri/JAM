@@ -6,7 +6,7 @@
 		INSERT INTO file_asset
 			(file_id, post_id, post_type, file_key, file_name, file_type, file_size, created_at)
 		VALUES
-			(file_seq.NEXTVAL, #{post_id}, #{post_type}, #{file_key}, #{file_name}, #{file_type}, #{file_size}, sysdate)
+			(seq_file_asset.NEXTVAL, #{post_id}, #{post_type}, #{file_key}, #{file_name}, #{file_type}, #{file_size}, sysdate)
 	</insert>
 	
 	<select id="getFilesByPost" parameterType="file" resultType="file">

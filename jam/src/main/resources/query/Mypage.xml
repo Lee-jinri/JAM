@@ -62,7 +62,7 @@
 	
 	<insert id="addFavorite">
 		<selectKey keyProperty="favorite_id" resultType="Long" order="BEFORE">
-		    SELECT favorite_seq.NEXTVAL FROM dual
+		    SELECT seq_favorite.NEXTVAL FROM dual
 		</selectKey>
 		INSERT INTO favorite(favorite_id, user_id, board_type, post_id)
 		VALUES(#{favorite_id}, #{user_id}, #{board_type}, #{post_id} )

@@ -3,7 +3,7 @@
 
 	<insert id="insertImage" parameterType="imageFile">
 	    INSERT INTO imageFile (image_id, image_name, post_id, post_type, created_at)
-	    VALUES (image_seq.NEXTVAL, #{image_name}, #{post_id}, #{post_type}, SYSDATE)
+	    VALUES (seq_image_file.NEXTVAL, #{image_name}, #{post_id}, #{post_type}, SYSDATE)
 	</insert>
 	
 	<select id="findNameById" parameterType="Long" resultType="String">

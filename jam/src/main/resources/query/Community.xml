@@ -102,7 +102,7 @@
 	<!-- 커뮤니티 글 작성 -->
 	<insert id="writePost" parameterType="community">
 		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
-        	select com_seq.nextval from dual
+        	select seq_community.nextval from dual
     	</selectKey>
 		INSERT INTO community(post_id, user_id, title, content, view_count, comment_count)
 		VALUES(#{post_id},#{user_id}, #{title}, #{content}, 0 ,0)

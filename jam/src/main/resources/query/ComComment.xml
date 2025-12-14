@@ -19,7 +19,7 @@
 
 	<insert id="insertComment" parameterType="comComment">
 		<selectKey keyProperty="comment_id" resultType="Long" order="BEFORE">
-			select COM_COMMENT_SEQ.nextval from dual
+			select seq_com_comment.nextval from dual
 		</selectKey>
 			insert into com_comment(comment_id, post_id, content, created_at, user_id)
 			values(#{comment_id},#{post_id},#{content}, sysdate ,#{user_id})	

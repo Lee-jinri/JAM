@@ -121,7 +121,7 @@
 	</select>
 
 	<select id="getNextPostId" resultType="Long">
-		SELECT flea_seq.nextval
+		SELECT seq_fleaMarket.nextval
 		from dual
 	</select>
 
