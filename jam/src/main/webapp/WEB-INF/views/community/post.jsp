@@ -8,147 +8,212 @@
 <title>JAM - 커뮤니티</title>
 
 <script src="/resources/include/dist/js/userToggle.js"></script>
+<script src="/resources/include/dist/js/community/board.js"></script>
 <script type="text/javascript">
 $(function(){
 			
-	let com_no = $("#com_no").val();
+	let postId = $("#postId").val();
 	let authorUserName;
 			
-	getPost(com_no).then(() => {
-		toggleUserMenu(); // mainBoards 실행 후 getUserInfo 실행
-    })
-    .catch(error => {
-        console.error('Error while executing mainBoards:', error);
-    });
-	
+	getPost(postId);
+	getBoard();
+	getPopularBoard();
 			
 	// 수정 버튼 클릭
 	$(document).on("click", "#comUpdateBtn", function() {
-		if(com_no == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
-		else $(location).attr('href', '/community/post/'+com_no);
+		if(postId == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+		else $(location).attr('href', '/community/post/edit/'+postId);
 	});
 			
 	// 삭제 버튼 클릭
 	$(document).on("click", "#comDeleteBtn", function() {
-		if(com_no == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
+		if(postId == null) alert("오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 		if(confirm("정말 삭제하시겠습니까?")){
-			fetch('/api/community/post/' + com_no, {
+			fetch('/api/community/post/' + postId, {
 				method: 'DELETE'
 			})
 			.then(response => {
 				if (!response.ok) {
-					throw new Error('Network response was not ok');
+					return response.json().then(err => {
+				        throw err;
+				    });
 				}
+
 				alert("삭제가 완료 되었습니다.");
-				$(location).attr('href', '/community/boards');
+				$(location).attr('href', '/community/board');
 			})
-			.catch(error => {
-				alert('게시글 삭제를 완료할 수 없습니다. 잠시 후 다시 시도해주세요.');
-				console.error('Error : ' , error);
+			.catch(err => {
+				if (handleApiError(err)) return;
+				alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
 			});
 		}
 	});
-			
 })
 
-function getPost(com_no){
-	return new Promise((resolve, reject) => {
-		if(com_no == "" || com_no == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
-		else{
-			fetch('/api/community/board/' + com_no)
-			.then(response => {
-				if (!response.ok) {
-					throw new Error('Network response was not ok');
-				}
-				return response.json();
-			})
-			.then(data => {
-				const detail = data.detail;
-			    authorUserName = detail.user_name;
+function getPost(postId){
+	if(postId == "" || postId == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
+	else{
+		fetch('/api/community/post/' + postId)
+		.then(response => {
+			if (!response.ok) {
+				return response.json().then(err => {
+			        throw err;
+			    });
+			}
+			return response.json();
+		})
+		.then(data => {
+			const detail = data.detail;
+		    authorUserName = detail.user_name;
+		        
+		    $("#com_title").text(detail.title);
+			$("#user_name").text(detail.user_name);
+			$("#user_name").attr("data-userid", detail.user_id);
+			$("#created_at").text(detail.created_at);
+			$("#view_count").text("조회 " + detail.view_count);
+			$("#com_content").html(detail.content);
 			        
-			    $("#com_title").html(detail.com_title);
-				$("#user_name").html(detail.user_name);
-				$("#user_name").attr("data-userid", detail.user_id);
-				$("#com_date").html(detail.com_date);
-				$("#com_hits").html(detail.com_hits);
-				$("#com_content").html(detail.com_content);
-				        
-				currentUserIsAuthor(data.isAuthor);
-				
-				resolve();
-			})
-			.catch(error => {
-	            console.error('Error:', error);
-	            reject(error); // 에러가 발생하면 reject 호출
-	        });
-		}
-	})
+			currentUserIsAuthor(data.isAuthor);
+		})
+		.catch(err => {
+			if (handleApiError(err)) return;
+			alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+		});
+	}
 }
 
 // 현재 로그인한 사용자와 글쓴이가 같은지 비교하는 함수
 function currentUserIsAuthor(isAuthor){
-	if (isAuthor) { // 글쓴이와 사용자가 같으면 수정, 삭제 버튼 추가
-		
-		var btnDiv = document.getElementById("btn_div");
+	// 글쓴이와 사용자가 같으면 수정, 삭제 버튼 추가
+	if (isAuthor) { 
+		var btnDiv = document.getElementById("btn-div");
 		
 		// 수정 버튼 생성		        
 		var updateButton = document.createElement("button");
 							        
 		updateButton.type = "button";
 		updateButton.id = "comUpdateBtn";
+		updateButton.classList.add("action-btn");
 		updateButton.textContent = "수정"; // 버튼 텍스트 설정
 		
 		// 삭제 버튼 생성
 		var deleteButton = document.createElement("button");
 		deleteButton.type = "button";
 		deleteButton.id = "comDeleteBtn";
+		deleteButton.classList.add("action-btn");
 		deleteButton.textContent = "삭제"; // 버튼 텍스트 설정
 			
 		btnDiv.appendChild(updateButton);
 		btnDiv.appendChild(deleteButton);
-		
 	}
-				
 } 
 		
 </script>
 </head>
 <body class="wrap">
 	<div class=" my-top-15 my-bottom-15">
-		<input type="hidden" id="com_no" name="com_no" value="${com_no }" />
+		<input type="hidden" id="postId" name="postId" value="${postId }" />
 		
-		<div class="board-detail-container">
-			<div class="board-header">
-			    <p id="com_title" class="com_title board-title"></p>
-			    <div class="board-info">
-					<span id="user_name" class="userName boardUserName"></span>  
-					<div class="userNameToggle"></div> 
-			      	<span class="divider">|</span>
-			       	<span id="com_date"></span>
-			        <span class="divider">|</span>
-			        <span class="com-hits board-hits">
-			            <span id="com_hits"></span>
-			        </span>
-			    </div>
+		<div class="post-container">
+			<div class="post-header">
+			    <p id="com_title" class="com_title post-title"></p>
 			</div>
-			
+			<div class="post-info">
+				<div class="post-user-profile">
+					<i class="fa-solid fa-face-smile" style="font-size: 31px; color: #bbb;"></i>
+					<span id="user_name" class="userName font-size-14"></span>  
+					<div class="userNameToggle"></div>
+				</div>
+				<div class="post-meta">
+					<span id="created_at" class="font-size-14"></span>
+			        <span class="view_count post-view-count">
+			            <span id="view_count" class="font-size-14"></span>
+			        </span>	
+				</div> 
+		    </div>
 			
 			<!-- 본문 영역 -->
-			<div class="com-content board-content">
+			<div class="com-content content-div">
 			    <p id="com_content"></p>
 			</div>
 			
 			<!-- 버튼 영역 -->
-			<div class="board-buttons">
+			<div class="post-buttons">
 			    <div id="btn-div" class="author-buttons"></div>
-			    <a href="/community/boards" class="board-btn">목록</a>
+			    <a href="/community/board" class="board-btn">목록</a>
 			</div>
 			
 			<!-- 댓글 -->
 			<div class="com-reply">
-				<jsp:include page="reply.jsp" />
+				<jsp:include page="comment.jsp" />
 			</div>
 		</div>	
+		
+		<div class="board-section">
+			<div class="popular-section my-top-7 my-bottom-8">
+				<div class="hot-box">
+					<div class="hot-label">HOT 🔥</div>
+					
+					<ul id="popularList"></ul>
+					<div class="popular-pagination text-center my-top-5">
+					<button id="prevPopular" class="arrow-btn">
+						<i class="fa-solid fa-arrow-left fa-sm"></i>
+					</button>
+					<button id="nextPopular" class="arrow-btn">
+						<i class="fa-solid fa-arrow-right fa-sm"></i>
+					</button>
+					</div>
+				</div>
+			</div>
+			
+			<div class="content">
+				<div>
+				    <ul style="display:none;">
+				        <li id="boardTemplate" class="border-bottom" >
+				            <div class="boardLink cursor-pointer pd-2rem flex items-center " >
+				                
+				                <div class="flex items-center justify-center ml-2 mr-2" style="width: 3rem;">
+				                    <span class="favoriteSpan">
+				                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
+				                    </span>
+				                </div>
+				
+				                <div class="title-container flex-1 flex items-center cursor-pointer">
+				                    <div class="flex items-center">
+				                        <span class="font-size-5 boardTitle"></span>
+				                        <span class="ml-05 boardReplyCnt"></span>
+				                    </div>
+				                </div>
+								<div class="userName-div my-bottom-2 flex">
+				                    <span class="userName"></span>
+				                    <div class="userNameToggle"></div>
+				                </div>
+				                
+				                <div class="date-container flex-1 text-right">
+				                    <div class="my-bottom-2">
+				                        <span class="boardDate"></span>
+				                    </div>
+				                    <div class="flex items-center justify-end my-top-2">
+				                        <span class="ml-05 boardHits"></span>
+				                    </div>
+				                </div>
+				
+				            </div>
+				        </li>
+				    </ul>
+				    
+				    <ul id="boardList">
+					</ul>
+				</div>
+				
+				<div>
+					<!-- 페이징 영역 -->
+					<div class="text-center my-top-8">
+					    <ul id="pagination" class="pagination pagination_border"></ul>
+					</div>
+				</div>
+			</div>
+		</div>
 	</div>
 </body>
 </html>
