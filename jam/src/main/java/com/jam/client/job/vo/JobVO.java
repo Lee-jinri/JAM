@@ -1,5 +1,6 @@
 package com.jam.client.job.vo;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.jam.common.vo.CommonVO;
@@ -17,7 +18,7 @@ public class JobVO extends CommonVO {
 	private int category; // 0:기업 구인 1: 멤버 구인
 	private int status;   // 0:구인중 1:구인 완료
 		
-	private String created_at; 
+	private LocalDateTime created_at; 
 	private Integer view_count;
 	private Integer pay_category; // 0:건당 1:시급 2:월급
 	private Integer pay;

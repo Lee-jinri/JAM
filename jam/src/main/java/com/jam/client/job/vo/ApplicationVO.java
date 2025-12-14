@@ -1,5 +1,6 @@
 package com.jam.client.job.vo;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -29,7 +30,7 @@ public class ApplicationVO extends CommonVO{
 	
 	@Size(max = 800)
 	private String content;
-	private String created_at;
+	private LocalDateTime created_at;
 	
 	@NotEmpty @Valid
 	private List<FileAssetVO> file_assets;

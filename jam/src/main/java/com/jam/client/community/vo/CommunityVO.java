@@ -1,6 +1,7 @@
 package com.jam.client.community.vo;
 
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import com.jam.common.vo.CommonVO;
@@ -20,7 +21,7 @@ public class CommunityVO extends CommonVO{
 	
 	private int view_count;
 	private int comment_count;
-	private String created_at;
+	private LocalDateTime created_at;
 	
 	private String user_id;			
 	private String user_name;		
