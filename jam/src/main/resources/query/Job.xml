@@ -244,9 +244,9 @@
 	        SELECT seq_application.NEXTVAL FROM dual
 	    </selectKey>
 		INSERT INTO application
-			(application_id, user_id, post_id, title, content, created_at, company_id)
+			(application_id, user_id, post_id, title, content, created_at, company_user_id)
 		VALUES
-			(#{application_id}, #{user_id}, #{post_id}, #{title}, #{content}, sysdate, #{company_id})
+			(#{application_id}, #{user_id}, #{post_id}, #{title}, #{content}, sysdate, #{company_user_id})
 	</insert>
 	
 	<!-- 존재하는 공고인지 확인 -->
@@ -284,7 +284,7 @@
 	</select>
 	
 	<select id="findPostInfoByAppId" parameterType="Long" resultType="app">
-		SELECT j.post_id, j.user_id AS company_id, j.category, a.user_id 
+		SELECT j.post_id, j.user_id AS company_user_id, j.category, a.user_id 
 		FROM job j
 			JOIN application a
 			ON a.post_id = j.post_id

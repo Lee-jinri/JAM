@@ -122,7 +122,7 @@ public class JobServiceImpl implements JobService {
 			log.error("createApplication 실패: 공고에 user_id 없음. post_id="+ app.getPost_id());
 			throw new IllegalStateException("공고의 작성자 정보가 누락되었습니다.");
 		}
-		app.setCompany_id(info.getUser_id());
+		app.setCompany_user_id(info.getUser_id());
 		
 		if (app.getUser_id() != null && app.getUser_id().equals(info.getUser_id())) {
 			log.error("createApplication 실패: 본인이 등록한 공고에 지원. post_id="+ app.getPost_id());
@@ -202,7 +202,7 @@ public class JobServiceImpl implements JobService {
 			throw new IllegalStateException("공고의 작성자 정보가 누락되었습니다.");
 		}
 		
-		if(!info.getUser_id().equals(userId) && !info.getCompany_id().equals(userId)) {
+		if(!info.getUser_id().equals(userId) && !info.getCompany_user_id().equals(userId)) {
 			log.error("getApplication 실패: 공고 작성자 또는 지원자와 조회하는 사람의 아이디가 다름. post_id="+ info.getPost_id());
 			throw new ForbiddenException("지원서를 볼 권한이 없습니다.");
 		}

@@ -35,7 +35,7 @@ public class ApplicationVO extends CommonVO{
 	@NotEmpty @Valid
 	private List<FileAssetVO> file_assets;
 	
-	private String company_id;
+	private String company_user_id;
 	
 	private int category; 
 	

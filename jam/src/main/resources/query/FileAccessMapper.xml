@@ -11,7 +11,7 @@
 						SELECT 1
 						FROM application a
 						WHERE a.application_id = f.post_id
-							AND (a.user_id = #{user_id} OR a.company_id = #{user_id})
+							AND (a.user_id = #{user_id} OR a.company_user_id = #{user_id})
 					))
 					<!-- 
 					OR
