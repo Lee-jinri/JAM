@@ -112,3 +112,16 @@ function handleApiError(err, fallbackUrl = "/") {
 	return false;
 }
 
+// 이미지 리사이징 함수 (5MB 이하로 변환)
+async function optimizeImage(file) {
+	const options = {
+		maxSizeMB: 5,
+		maxWidthOrHeight: 2000,
+		useWebWorker: true
+	};
+
+	if (file.size <= 5 * 1024 * 1024) return file;
+
+	const compressed = await imageCompression(file, options);
+	return compressed;
+}
