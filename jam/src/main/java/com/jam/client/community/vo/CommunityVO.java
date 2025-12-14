@@ -4,6 +4,7 @@ package com.jam.client.community.vo;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jam.common.vo.CommonVO;
 import com.jam.file.vo.FileAssetVO;
 
@@ -21,6 +22,8 @@ public class CommunityVO extends CommonVO{
 	
 	private int view_count;
 	private int comment_count;
+	
+	@JsonFormat(pattern = "yyyy/MM/dd HH:mm")
 	private LocalDateTime created_at;
 	
 	private String user_id;			

@@ -16,7 +16,7 @@
 	
 	<select id="getBoard" parameterType="community" resultType="community">
 		<![CDATA[
-		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+		SELECT c.post_id, c.title, c.created_at, 
 	        	c.comment_count, c.view_count, m.user_id, m.user_name, 0 AS isFavorite  
 	    FROM community c
 	    JOIN member m 
@@ -36,7 +36,7 @@
 	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회 -->
 	<select id="getBoardWithFavorite" parameterType="community" resultType="community">
 		<![CDATA[
-		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+		SELECT c.post_id, c.title, c.created_at, 
 	        	c.comment_count, c.view_count, m.user_id, m.user_name,
 	        	CASE WHEN f.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
 	    FROM community c
@@ -92,7 +92,7 @@
 	
 	<!-- 커뮤니티 상세 페이지 -->
 	<select id="getPost" resultType="community">
-		SELECT c.post_id, c.title, c.content, c.view_count, to_char(c.created_at,'YYYY"년" MM"월" DD"일" HH24:MI') as created_at, m.user_name, c.user_id 
+		SELECT c.post_id, c.title, c.content, c.view_count, c.created_at, m.user_name, c.user_id 
 		FROM community c
 		LEFT JOIN Member m 
 		ON c.user_id = m.user_id
@@ -110,7 +110,7 @@
 	
 	<!-- 커뮤니티 수정 할 글 불러오기 -->
 	<select id="getPostById" parameterType="community"  resultType="community">
-		SELECT post_id, title, content, imageFileName
+		SELECT post_id, title, content
 		FROM community
 		WHERE post_id = #{post_id} 
 	</select>
@@ -139,7 +139,7 @@
 	<!-- 작성한 커뮤니티 글 조회 --> 
 	<select id="getMyPosts" resultType="community" parameterType="community">
 		<![CDATA[
-		SELECT c.post_id, c.title, TO_CHAR(c.created_at, 'YYYY/MM/DD HH24:MI') AS created_at, 
+		SELECT c.post_id, c.title, c.created_at, 
 	        	c.comment_count, c.view_count, m.user_name
 	    FROM community c
 	    JOIN member m 
