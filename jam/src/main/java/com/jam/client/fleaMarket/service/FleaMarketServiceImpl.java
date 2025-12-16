@@ -166,7 +166,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	@Transactional
 	@Override
 	public void deletePost(Long post_id, String userId) {
-		List<ImageFileVO> deleteFileNames = getImages(post_id);
+		List<ImageFileVO> deleteFileNames = imageFileDao.getImages(post_id, "FLEA");
 		
 		int count = fleaDao.deletePost(post_id, userId);
 		if(count < 1) throw new ForbiddenException("게시물을 삭제할 권한이 없습니다.");
@@ -206,6 +206,6 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 
 	@Override
 	public List<ImageFileVO> getImages(Long post_id) {
-		return fleaDao.getImages(post_id);
+		return imageFileDao.getImages(post_id, "FLEA");
 	}
 }

@@ -221,10 +221,5 @@
 		]]>
 	</select>
 
-	<select id="getImages" resultType="imageFile">
-		SELECT image_id, image_name
-		FROM image_file
-		WHERE post_id = #{post_id} AND post_type = 'FLEA'
-	</select>
 
 </mapper>
