@@ -26,33 +26,24 @@
   background-color: #ffffff;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  height: 700px;
+  height: 740px;
 }
 
 
-.login-input {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid #ddd;
-  background-color: #f0f3ff;
-  border-radius: 30px;
-  font-size: 16px;
-  outline: none;
-  transition: border 0.2s ease;
-  margin-bottom: 16px;
-}
 
 .login-input::placeholder {
   color: #aaa;
 }
 
 .login-input:focus {
-  border: 1px solid #a7b8f0; /* 연보라 테두리 */
-  background-color: #e8edff; /* 포커스 시 살짝 더 연한 느낌 */
+  border: none;
+  outline: none;
 }
-
-#autoLogin {
-  margin-right: 6px;
+.auto-login-label{
+    align-items: center;
+    display: flex;
+    gap: 7px;
+    justify-content: right;
 }
 
 </style>
@@ -214,9 +205,9 @@ $(function(){
 				</ul>
 			</div>
 			<div style="height: 30px; text-align: end;">
-				<label>
-					<input type="checkbox" id="autoLogin">
-					<span>로그인 상태 유지</span>
+				<label class="auto-login-label">
+					<input type="checkbox" id="autoLogin" style="margin: 0;transform: scale(1.3);">
+					<span style="color: #a5a5a5;">로그인 상태 유지</span>
 				</label>
 			</div>
 
