@@ -5,6 +5,7 @@
 <style>
 	p{
 		margin: 0;
+    	font-size: 15px;
 	}
 		
 	@media screen and (max-width: 768px) {
@@ -13,6 +14,9 @@
 		}
 		.footer {
 			padding: 10px 20px;
+		}
+		p {
+		    font-size: 12px;
 		}
 	}
 </style>
