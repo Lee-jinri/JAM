@@ -2,6 +2,7 @@ package com.jam.client.fleaMarket.vo;
 
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jam.common.vo.CommonVO;
 
 import lombok.Data;
@@ -16,9 +17,11 @@ public class FleaMarketVO extends CommonVO {
 	private int category_id;		
 	private int sales_status;		// 거래 완료 여부 0: 거래중 1: 거래완료
 	private int view_count;			// 조회수
-	private LocalDateTime created_at;		// 작성일
 	private int price;				// 가격
 	private String user_id;			// 작성자 id
 	private String user_name;		// 작성자 닉네임
 	private String thumbnail;
+	
+	@JsonFormat(pattern = "yyyy/MM/dd HH:mm")
+	private LocalDateTime created_at;		// 작성일
 }

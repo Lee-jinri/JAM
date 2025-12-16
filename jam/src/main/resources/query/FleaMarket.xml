@@ -6,8 +6,7 @@
 	<select id="getBoard" parameterType="flea" resultType="flea">
 		<![CDATA[
 		SELECT 
-			post_id, title, 
-			to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
+			post_id, title, created_at,
 			category_id, price, 
 			thumbnail, user_id, user_name
 		FROM (
@@ -41,8 +40,7 @@
 		resultType="flea">
 		<![CDATA[
 		SELECT 
-			f.post_id, f.title, 
-			to_char(f.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at, 
+			f.post_id, f.title, f.created_at,
 			f.category_id, f.price, f.thumbnail,
 			f.user_id, f.user_name,
 			CASE WHEN fav.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
@@ -112,7 +110,7 @@
 	<select id="getPostDetail" resultType="flea">
 		SELECT f.post_id, f.title,
 		f.content, f.category_id, f.view_count, f.sales_status,
-		to_char(f.created_at,'YYYY/MM/DD HH24:MI:SS') as created_at, f.price,
+		f.created_at, f.price,
 		m.user_name, f.user_id
 		FROM fleaMarket f
 		LEFT JOIN member m
@@ -173,8 +171,7 @@
 
 	<select id="getMyStore" resultType="flea" parameterType="flea">
 	    <![CDATA[
-	    SELECT post_id, title, thumbnail,
-	    TO_CHAR(created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at, 
+	    SELECT post_id, title, thumbnail, created_at, 
 	    price, sales_status
 	    FROM (
 	        SELECT
@@ -207,8 +204,7 @@
 		SELECT *
 		FROM (
 			SELECT 
-				f.post_id, f.title, f.price, f.thumbnail, f.user_id,
-				TO_CHAR(f.created_at,'YYYY-MM-DD"T"HH24:MI:SS') AS created_at, 
+				f.post_id, f.title, f.price, f.thumbnail, f.user_id, f.created_at, 
 				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
 			FROM fleaMarket f
 			JOIN favorite fav ON f.post_id = fav.post_id
