@@ -133,7 +133,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	            
 	            imageVO.setPost_id(flea_vo.getPost_id());
 	            imageVO.setImage_name(savedFileName);
-	            imageVO.setPost_type("flea");
+	            imageVO.setPost_type("FLEA");
 	            
 	            imageFileDao.insertImage(imageVO); // 이미지 메타정보 DB에 저장
 	            
