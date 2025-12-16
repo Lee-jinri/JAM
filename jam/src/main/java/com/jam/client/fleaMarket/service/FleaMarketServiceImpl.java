@@ -67,7 +67,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 		
 		for (int i = 0; i < images.size(); i++) {
 			MultipartFile image = images.get(i);
-            String savedFileName = fileUtils.saveToLocal(image, "FLEA"); // 파일 저장
+            String savedFileName = fileUtils.saveToLocal(image, "flea"); // 파일 저장
             
             if (savedFileName == null) {
                 throw new RuntimeException("이미지 저장 실패");
