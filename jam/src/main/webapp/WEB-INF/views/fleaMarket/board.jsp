@@ -7,8 +7,10 @@
 <meta charset="UTF-8">
 <title>JAM</title>
 
+<script src="/resources/include/dist/js/categories.js"></script>
 <script src="/resources/include/dist/js/favorite.js"></script>	
 <style>
+
 .f-board {
 	padding-top: 40px;
 }
@@ -73,33 +75,49 @@
 	background-color: #ccc;
 }
 
+
+/**/
 .category-table {
 	margin: 46px 0 30px 0;
 	display: table;
 	width: 100%;
-	border-collapse: collapse;
 	table-layout: fixed;
 }
 
 .category-row {
 	display: table-row;
+	outline: 1px solid #eee;
+	border-radius: 16px;
+	overflow: hidden;
 }
 
 .category-cell {
 	display: table-cell;
-	padding: 12px;
 	text-align: center;
 	vertical-align: middle;
-	border: 1px solid #eee;
-	font-size: 14px;
+	padding: 7px 0;
+	font-size: 15px;
 	color: #444;
 	cursor: pointer;
 }
 
 .category-cell a {
-	text-decoration: none;
-	color: inherit;
+	display: inline-block; 
+	padding: 7px 31px;
+	border-radius: 12px;
+	transition: .22s;
+	line-height: 1;
 }
+
+.category-cell:hover a, .selected-category a {
+	background: #e5ebff;
+	padding: 7px 16px; 
+	border-radius: 14px;
+	color: #3b4abb;
+	font-weight: 600;
+	box-shadow: 0 4px 8px rgba(80, 110, 255, 0.22);
+}
+
 
 .post-grid {
 	display: grid;
@@ -111,19 +129,29 @@
 .post-card {
 	cursor: pointer;
 	border: 1px solid #ddd;
-	border-radius: 8px;
+	border-radius: 14px;
 	overflow: hidden;
 	background-color: #fff;
 	font-family: sans-serif;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+	box-shadow:
+		0 4px 10px rgba(0, 0, 0, 0.06);
+	transition:
+		transform 0.18s ease-out,
+		box-shadow 0.18s ease-out;
 }
 
 .post-card img {
-	width: 100%;
-	height: 210px;
-	object-fit: cover;
+	width: calc(100% - 20px);
+    height: 200px;
+    margin: 10px;
+    border-radius: 14px;
+    object-fit: cover;
 }
-
+.post-card:hover {
+	transform: translateY(-6px);
+	box-shadow:
+		0 10px 24px rgba(0, 0, 0, 0.12); 
+}
 .post-content {
 	padding: 10px;
 }
@@ -136,10 +164,14 @@
 	text-overflow: ellipsis;
 }
 
+.post-category{
+	font-size: 13px;
+    color: #666;
+}
 .post-price {
 	font-size: 15px;
 	color: #000;
-	margin: 8px 0 4px;
+	margin: 0 0 8px;
 }
 
 .post-meta {
@@ -158,18 +190,26 @@
 	border: none; 
 	box-shadow: none;
 }
-.selected-category {
-	background-color: #f2f2f2;
-	border-radius: 5px;
-	font-weight: bold;
+.f-board-button::after {
+	content: "";
+	position: absolute;
+	left: 50%;
+	bottom: -7px;
+	width: 0;
+	height: 2px;
+	background: #bfc8ea;
+	border-radius: 2px;
+	transition: width .25s ease, left .25s ease;
 }
-
+.f-board-button:hover {
+	color: #4a4a4a;
+}
+.f-board-button:hover::after {
+	width: 100%;
+	left: 0;
+}
 </style>
 <script type="text/javascript">
-/* FIXME: 
- * 플리마켓
-  채팅 구현 ㄱㄱ
- */
 $(function(){
 	getBoard().then(() => {
 		toggleUserMenu(); 
@@ -280,7 +320,11 @@ function getBoard(){
  			$('.category-cell a[data-category="' + category_id + '"]')
 				.parent()
 				.addClass("selected-category");
-		}	
+		}else{
+			$('.category-cell a[data-category="' + 0 + '"]')
+			.parent()
+			.addClass("selected-category");
+		}
 		
 	    fetch(url)
 		.then(response=>{
@@ -305,33 +349,43 @@ function renderList(data){
 	$postGrid.empty();
 	/* FIXME: sales_status 판매중인 것만 가져오기 즐겨찾기한 글에서는 모든 sales_status 조회
 	*/
-	data.fleaMarketList.forEach(post =>{
-		let $clone = $template.clone().removeAttr("id").show();
-		
-		$clone.find('.post-title').text(post.title);
-		$clone.find('.post-price').text(post.price.toLocaleString() + '원');
-		$clone.find('.post-createdAt').text(timeAgo(post.created_at)); 
-		
-		if (!post.thumbnail || post.thumbnail === '') {
-			$clone.find('img').attr('src', '/resources/include/images/no-image.png');
-		} else {
-			$clone.find('img').attr('src', '/images/flea/' + post.thumbnail);
-		}
-		
-		$clone.attr("data-location", "/fleaMarket/post/" + post.post_id);
-		
-		let $favoriteSpan = $clone.find(".favoriteSpan");
-		$favoriteSpan.attr("data-board-no", post.post_id);
-		$favoriteSpan.attr("data-board-type", "fleaMarket");
-		
-		let $icon = $favoriteSpan.find("i"); 
-		post.favorite ? $icon.addClass("fa-solid")
-					   : $icon.addClass("fa-regular");
-		
-        $postGrid.append($clone);
-	})
-    
-    loadPagination(data.pageMaker);
+	let subMap = {};
+	setTimeout(function () {
+	    subMap = window.subMap;
+	    
+	    data.fleaMarketList.forEach(post =>{
+			let $clone = $template.clone().removeAttr("id").show();
+			
+			$clone.find('.post-title').text(post.title);
+			$clone.find('.post-price').text(post.price.toLocaleString() + '원');
+			$clone.find('.post-createdAt').text(timeAgo(post.created_at)); 
+			
+			if (!post.thumbnail || post.thumbnail === '') {
+				$clone.find('img').attr('src', '/resources/include/images/no-image.png');
+			} else {
+				$clone.find('img').attr('src', '/images/flea/' + post.thumbnail);
+			}
+
+			let savedSub = post.category_id;
+			let { big, name } = subMap[savedSub];
+
+			$clone.find('.post-category').text(savedSub >= 8 ? name : ""); 
+			
+			$clone.attr("data-location", "/fleaMarket/post/" + post.post_id);
+			
+			let $favoriteSpan = $clone.find(".favoriteSpan");
+			$favoriteSpan.attr("data-post-id", post.post_id);
+			$favoriteSpan.attr("data-board-type", "fleaMarket");
+			
+			let $icon = $favoriteSpan.find("i"); 
+			post.favorite ? $icon.addClass("fa-solid")
+						   : $icon.addClass("fa-regular");
+			
+	        $postGrid.append($clone);
+		})
+	    
+	    loadPagination(data.pageMaker);
+	}, 0);
 }
 
 
@@ -387,22 +441,23 @@ function timeAgo(dateString) {
 	<div class="f-board fleaMarket">
 		<div class="my-bottom-15">
 			
-			<div class="postTopBar flex justify-center item-center">
-				
-				<div class="search-div flex justify-center items-center border border-radius-43px">
-					<div class="search-bar-wrapper item-center flex justify-space-around">
-					
-						<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
+			<div class="postTopBar flex justify-between item-center">
+				<div class="flex items-center">
+					<div class="neo-wrap flex items-center">
+						<input type="text" name="keyword" id="keyword" class="search-input neo-input"
 						value="${not empty param.keyword ? param.keyword : ''}" />
 						
-						<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
+						<button id="searchBtn" class="search-btn border-none background-none">
+						    <img src="/resources/include/images/bubble-search.svg" class="search-icon">
+						</button>
 					</div>
 				</div>
+				
 				<div class="f-board-buttons flex items-center border-radius-7px">
-					<button id="flea-writeBtn" class="f-board-button write_btn_font  border-none bColor_fff ">판매하기</button>
-					<button id="flea-myStoreBtn" class="f-board-button write_btn_font border-none bColor_fff ">내 상점</button>
-					<button id="flea-favoriteBtn" class="f-board-button write_btn_font border-none bColor_fff ">찜한상품</button>
-					<button id="flea-chatBtn" class="f-board-button write_btn_font border-none bColor_fff ">채팅</button>
+					<button id="flea-writeBtn" class="f-board-button write_btn_font bColor_fff border-none font-color-gray ">판매하기</button>
+					<button id="flea-myStoreBtn" class="f-board-button write_btn_font border-none bColor_fff font-color-gray ">내 상점</button>
+					<button id="flea-favoriteBtn" class="f-board-button write_btn_font border-none bColor_fff font-color-gray ">찜한상품</button>
+					<button id="flea-chatBtn" class="f-board-button write_btn_font border-none bColor_fff font-color-gray ">채팅</button>
 					
 				</div>
 			</div>
@@ -426,6 +481,7 @@ function timeAgo(dateString) {
 					<img>
 					<div class="post-content">
 						<div class="post-title"></div>
+						<div class="post-category"></div>
 						<div class="post-price"></div>
 						<div class="post-meta">
 							<span class="post-createdAt"></span>
