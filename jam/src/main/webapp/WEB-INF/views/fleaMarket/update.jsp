@@ -6,244 +6,474 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM - 중고악기</title>
+<script src="/resources/include/dist/js/categories.js"></script>
+<style>
+#flea_content{
+	width: 1000px;
+}
+#imageUpload-label{
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	width: 170px;
+	height: 170px;
+	border: 1px solid #ccc;
+	background-color: #fafafa;
+	cursor: pointer;
+	gap: 8px;
+}
 
-  <!-- 서머노트를 위해 추가해야할 부분 -->
-  <script src="/resources/include/dist/summernote/summernote-lite.js"></script>
-  <script src="/resources/include/dist/summernote/summernote-ko-KR.js"></script>
-  <link rel="stylesheet" href="/resources/include/dist/summernote/summernote-lite.css">
+.previewBox{
+	position: relative;
+	display: inline-block;
+	margin-right: 10px;
+}
 
-	<script>
-		$(function(){
-			// summernote 초기화
-			$('.summernote').summernote({
-				toolbar: [
-				    ['fontname', ['fontname']],
-				    ['fontsize', ['fontsize']],
-				    ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
-				    ['color', ['forecolor','color']],
-				    ['table', ['table']],
-				    ['para', ['ul', 'ol', 'paragraph']],
-				    ['height', ['height']],
-				    ['insert',['picture','link','video']]
-				],
-				fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
-				fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
-				height: 450,
-				lang: "ko-KR",
-				placeholder : "내용을 작성하세요.",
-				callbacks : {
-			    	onImageUpload : function(files, editor, welEditable){
-			    		for(var i = files.length - 1; i >= 0; i--){
-			    			uploadImageFile(files[i],this);
-			    		}
-			    	}
-			    }
+.previewBox img{
+	width: 170px;
+	height: 170px;
+	border: 1px solid #ccc;
+	border-radius: 4px;
+	object-fit: cover;
+}
+
+.delete-btn {
+	position: absolute;
+	top: 8px;
+	right: 8px;
+	background: #0000005c;
+	color: white;
+	border: none;
+	border-radius: 50%;
+	cursor: pointer;
+	width: 23px;
+	height: 23px;
+	font-size: 12px;
+	
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.form-row{
+	margin: 35px 0;
+}
+.form-textarea{
+	padding: 1rem;
+    resize: none;
+    line-height: 1.35;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 125%;
+    color: rgb(25, 25, 25);
+    border-radius: 2px;
+    height: 115px;
+}
+
+.form-span{
+	width: 150px;
+}
+.price-span{
+	position: absolute;
+    right: 14px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 20px;
+    color: rgb(140, 140, 140);
+    top: 50%;
+    transform: translateY(-50%);
+}
+#price{
+	height: 2rem;
+	padding: 0 13px;
+    font-size: 16px;
+    font-weight: 400;
+    line-height: 125%;
+}
+.category-container {
+  display: flex;
+  gap: 20px;
+  border: 1px solid #ddd;
+  width: 710px;
+}
+
+.category-column {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.category-column h4 {
+  margin-bottom: 10px;
+  font-size: 16px;
+}
+
+.category-column ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 16px;
+    letter-spacing: 0.5px;
+}
+
+.category-column li {
+	padding: 11px 14px;
+	cursor: pointer;
+	border-radius: 4px;
+}
+
+.category-column li:hover {
+  background-color: #f0f0f0;
+}
+
+.category-column li.active {
+  background-color: #ddd;
+  font-weight: bold;
+}
+#mainCategory li.active {
+  background-color: #ddd;
+  font-weight: bold;
+}
+.btn-group{
+	float: right;
+    border: none;
+    background-color: #fff;
+    font-size: 15px;
+    color: #444; 
+    padding: 4px 8px;
+    transition: all 0.2s ease-in-out; 
+    cursor: pointer;
+}
+.btn-group:hover{
+	background-color: #f0f0f0; 
+    color: #222; 
+    text-decoration: underline; 
+    opacity: 0.8; 
+}
+.flea_title{
+	width: 1000px;
+}
+
+</style>
+<script>
+
+let imageList = [];        // 기존 + 새 이미지
+let newImages = [];        // 새 이미지의 File 객체
+let deletedImages = [];    // 삭제할 기존 이미지의 image_id
+
+let previewContainer;
+let imageCountDisplay;
+let imageInput;
+
+$(function(){
+	
+	let postId = '${postId}';
+	getPost(postId);
+	
+	imageInput = document.getElementById("imageUpload");
+	imageCountDisplay = document.getElementById("imageCount");
+	previewContainer = document.getElementById("imagePreviewContainer");
+
+	imageInput.addEventListener("change", function (e) {
+		const files = Array.from(e.target.files);
+
+		if (imageList.length + files.length > 5) {
+			alert("이미지는 최대 5장까지 등록할 수 있습니다.");
+			return;
+		}
+
+		files.forEach(function(file){
+			const reader = new FileReader();
+			reader.onload = function (e2) {
+
+				const imageObj = {
+					id: null,
+					name: file.name,
+					isExisting: false,
+					file: file
+				};
+
+				imageList.push(imageObj);
+				newImages.push(file);
+	
+				addPreview(e2.target.result, imageObj);
+				updateCount();
+			};
+			reader.readAsDataURL(file);
+		});
+
+		imageInput.value = "";
+	});
+	
+	// 수정 버튼 클릭
+	$("#update").click(async function(){
+		
+		// 유효성 검사
+		let flea_title = $("#title").val();
+		let flea_content = $("#flea_content").val();
+		let price = $("#price").val();
+		let flea_category = $("#category_id").val();
+		
+		if(postId == null){
+			alert("시스템 오류입니다. 잠시 후 다시 시도하세요.");
+		}
+		if(flea_title.replace(/\s/g,"") == ""){
+			alert("제목을 입력하세요.");
+			$("#flea_title").focus();
+			return false;
+		}
+		
+		if(flea_content.replace(/\s/g,"") == ""){
+			alert("본문을 입력하세요.");
+			$("#flea_content").focus();
+			return false;
+		}
+		
+		if(price.replace(/\s/g,"") == ""){
+			alert("가격을 입력하세요.");
+			$("#price").focus();
+			return false;
+		}
+		
+		if(flea_category.replace(/\s/g,"") == ""){
+			alert("카테고리를 선택하세요.");
+			return false;
+		}
+		
+		if (imageList.length === 0) {
+		    alert("사진은 최소 1장 이상 등록해주세요.");
+		    return false;
+		}
+		
+		try {
+			let sales_status = $("#saleDone").is(":checked") ? 1 : 0;
+
+			let formData = new FormData();
+			
+			formData.append("postId", postId);
+			formData.append("title", flea_title);
+			formData.append("content", flea_content);
+			formData.append("price", price);
+			formData.append("category_id", flea_category);
+			formData.append("sales_status", sales_status);
+
+			// 첫 번째 이미지 = 썸네일
+			if(imageList[0].id != null) formData.append("thumbnailId", imageList[0].id); 
+			formData.append("thumbnailName", imageList[0].name);
+			
+			// 새 파일 추가
+			newImages.forEach(function(file){
+				formData.append("newImages", file);
 			});
-			function uploadImageFile(file, el) {
-				data = new FormData();
-				data.append("file", file);
-				$.ajax({                                                              
-					data : data,
-					type : "POST",
-					url : 'uploadImageFile',
-					contentType : false,
-					enctype : 'multipart/form-data',
-					processData : false,
-					success : function(data) {                                         
-						$(el).summernote('editor.insertImage',data.url);
-					}
-				});
-			}
-			
-			
-			let flea_no = $("#flea_no").val();
-			
-			// 수정할 글 정보 불러오는 함수
-			function getEditBoard(){
-				
-				if(flea_no == null){
-					alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
-					$(location).attr('href','/fleaMarket/boards');
-				}else{
-					fetch('/api/fleaMarket/board/edit/'+flea_no)
-					.then(response => {
-						if(!response.ok) throw new Error('Network response was not ok.')
-						return response.json();
-					})
-					.then(data => {
-						$("#flea_title").val(data.flea_title);
-						$("#flea_content").summernote('code', data.flea_content);
-						$("#price").val(data.price);
-						
-						// 카테고리가 판매인지 구매인지 판단
-						const selectElement = document.getElementById("flea_category");
 
-						selectElement.value = data.flea_category.toString();
-						
-						// 판매 완료라면 checked로 변경
-						const saleDone = document.getElementById("saleDone");
-						if(data.sales_status == 1) saleDone.checked = true;
-						
-						
-					})
-				}
-			}
+			// 삭제할 기존 이미지 image_id 전달
+			deletedImages.forEach(function(id){
+				formData.append("deletedImages", id);
+			});
+		
+			console.log("thumbnailId: " + imageList[0].id);
+			console.log("thumbnailName: " + imageList[0].name);
+			console.log("newImages : " + newImages);
+			console.log("deletedImages :" +deletedImages);
 			
-			getEditBoard();
-			
-			let loggedInUserId;
-			let loggedInUsername;
-			
-			// 수정 버튼 클릭
-			$("#update").click(async function(){
-				
-				// 유효성 검사
-				let flea_title = $("#flea_title").val();
-				let flea_content = $("#flea_content").val();
-				let price = $("#price").val();
-				
-				if(flea_title.replace(/\s/g,"") == ""){
-					alert("제목을 입력하세요.");
-					$("#flea_title").focus();
-					return false;
-				}
-				
-				if(flea_content.replace(/\s/g,"") == ""){
-					alert("본문을 입력하세요.");
-					$("#flea_content").focus();
-					return false;
-				}
-				
-				if(price.replace(/\s/g,"") == ""){
-					alert("가격을 입력하세요.");
-					$("#price").focus();
-					return false;
-				}
-				
-				try{
-					// 사용자의 아이디와 닉네임 가져오기
-					await getUserInfo();
-					
-					// 판매완료인지도 가져와야됨
-					// flea_category 판매인지 구매인지 가져와야됨
-					let flea_category = $("#flea_category").val();
-					
-					let sales_status = 0; 
-					if($("#saleDone").is(":checked")) sales_status = 1;
-					
-					let data ={
-							'flea_no':flea_no,
-							'flea_title':flea_title,
-							'flea_content':flea_content,
-							'price':price,
-							'flea_category': flea_category,
-							'sales_status': sales_status,
-							'user_id':loggedInUserId,
-							'user_name':loggedInUsername
-					};
-					
-					const response = await fetch('/api/fleaMarket/board',{
-						method :'PUT',
-						headers:{
-							'Content-Type':'application/json'
-						},
-						body: JSON.stringify(data)
-					});
-					
-					if(response.ok){
-						alert('수정이 완료되었습니다.');
-						const body = await response.text();
-						if(body){
-							$(location).attr('href','/fleaMarket/board/'+body);
-						}
-					} else{
-						const errorText = await response.text();
-						throw new Error(errorText);
-					}
-				}catch(error){
-					alert("게시글 작성을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
-					console.error('Error: ', error);
-				}
+			const response = await fetch('/api/fleaMarket/post/update',{
+				method :'POST',
+				body: formData,
 			});
 			
-			// 사용자의 아이디, 닉네임 가져오는 함수
-			async function getUserInfo(){
-				try{
-					const response = await fetch('/api/member/me/token',{
-						method: 'GET'
-					}).then(response =>{
-						if(!response.ok){
-							throw new Error('Network response was not ok.');
-						}
-						return response.json();
-					}).then(data =>{
-						loggedInUserId = data.user_id;
-						loggedInUsername = data.user_name;
-						
-						if(loggedInUserId == null || loggedInUsername == null){
-							alert("로그인이 필요한 작업입니다. 로그인 후 다시 시도해 주세요.");
-							$(location).attr('href','/member/login');
-						}
-					})
-					
-					}catch(error){
-						console.error('사용자 정보를 가져오는 중 오류 발생:', error);
-						throw error;
-					
+			if(response.ok){
+				alert('수정이 완료되었습니다.');
+				const body = await response.text();
+				if(body){
+					$(location).attr('href','/fleaMarket/post/'+body);
 				}
+			} else{
+				const errorText = await response.text();
+				throw new Error(errorText);
 			}
-			
-			
-			
+		}catch(error){
+			alert(error.message);
+			console.error('Error: ', error);
+		}
+	});
+})
+
+function getPost(postId){
+	if(postId == "" || postId == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
+	else{
+		fetch('/api/fleaMarket/posts/'+postId+'/edit-data')
+		.then(response => {
+			if (!response.ok) {
+				throw new Error('Network response was not ok');
+			}
+			return response.json();
 		})
-	</script>
+		.then(data => {
+			console.log(data);
+			const post = data.post;
+			const images = data.images;
+			
+			$("#title").val(post.title);
+			$("#flea_content").val(post.content);
+			$("#price").val(post.price);
+			
+			const savedSub = post.category_id;
+			const { big } = window.subMap[savedSub];  
+			
+			// 대분류 자동 선택
+			$('#mainCategory li[data-id="' + big + '"]').trigger('click');
+
+			// 소분류 목록 로드 끝나면 자동 선택
+			setTimeout(function () {
+				$('#subCategory li[data-id="' + savedSub + '"]').addClass('active');
+			}, 0);
+			
+			$("#category_id").val(savedSub);
+			renderImages(images);
+		})
+		.catch(error => {
+            console.error('Error:', error);
+        });
+	}
+}
+
+function renderImages(images){
+	images.forEach(function(image) {
+
+		let src = "/images/flea/" + image.image_name;
+		
+		const imageObj = {
+			id: image.image_id,
+			name: image.image_name,
+			isExisting: true,
+			file: null
+		};
+
+		imageList.push(imageObj);
+		addPreview(src, imageObj);
+	});
+	updateCount();
+}
+
+function addPreview(src, imageObj){
+	const previewBox = document.createElement("div");
+	previewBox.classList.add("previewBox");
+
+	const img = document.createElement("img");
+	img.src = src;
+
+	const deleteBtn = document.createElement("button");
+	deleteBtn.innerText = "X";
+	deleteBtn.classList.add("delete-btn");
+
+	deleteBtn.onclick = function(){
+		previewBox.remove();
+
+		// 기존 이미지 삭제
+		if (imageObj.isExisting) {
+			deletedImages.push(imageObj.id);
+		}
+		
+		// 새 이미지 삭제: 업로드할 목록에서 제거
+		else {
+			newImages = newImages.filter(function(file) {
+				return file !== imageObj.file;
+			});
+		}
+
+		// 화면 유지 배열에서 제거
+		imageList = imageList.filter(function(img) {
+			return img !== imageObj;
+		});
+
+		updateCount();
+	};
+
+	previewBox.appendChild(img);
+	previewBox.appendChild(deleteBtn);
+	previewContainer.appendChild(previewBox);
+}
+
+function updateCount() {
+    imageCountDisplay.textContent = "(" + imageList.length + "/5)";
+}
+</script>
 </head>
 <body class="wrap">
-	<div class="rem-30 my-top-15 my-bottom-15">
-		<div class="title flex justify-center my-bottom-8" >
-			<h2>중고 악기</h2>
+	<div class="my-top-15 my-bottom-15">
+		<div class="page-header">
+			<p class="page-title">판매 상품 등록</P>
+			<p>구매자가 궁금해할 정보들을 자세히 남겨주세요 ✨</p>
+			<p>사진·사용감·보유기간 등이 상세할수록 거래가 빠릅니다.</p>
 		</div>
-		<div class="content flex justify-center" >
-			<form id="fleaUpdate">
-				<div>
-					<input type="hidden" id="flea_no" name="flea_no" value="${flea_no }">
+		<div style="margin-bottom: 100px;">
+			<h3>상품정보</h3>
+			<hr>
+			
+			<label style="display: block; margin-bottom: 10px;">상품이미지 <span id="imageCount">(0/5)</span></label>
+			<div id="imagePreviewContainer" style="display: flex; gap: 10px; flex-wrap: wrap;">
+			  
+				<!-- 이미지 등록 버튼 -->
+				<label id="imageUpload-label" for="imageUpload">
+					<i class="fa-solid fa-camera" style="font-size: 24px; color: #aaa;"></i>
+					<span style="font-size: 14px; color: #777;">이미지 등록</span>
+				</label>
+				<input type="file" id="imageUpload" accept="image/*" multiple style="display: none;">
+			</div>
+			
+			<div class="form-row my-bottom-4 flex items-center">
+				<span class="form-span">상품명</span>
+				<input type="text" class="flea_title height4 border" id="title" name="title">
+			</div>
+			<hr>
+			
+			<div class="form-row my-bottom-4 flex">
+				<span class="form-span">설명</span>
+				<textarea id="flea_content" class="form-textarea border" name="content" placeholder="브랜드, 모델명, 구매 시기, 하자 유무 등 상품 설명을 최대한 자세히 적어주세요."></textarea>    
+			</div>
+			<hr>
+			
+			<div class="form-row my-bottom-4 flex">
+				<input type="hidden" id="category_id">
+				<span class="form-span">카테고리</span>
+				<div class="category-container">
+					<div class="category-column">
+						<ul id="mainCategory">
+							<li data-id="1" data-sub="guitar">기타류</li>
+							<li data-id="2" data-sub="keyboard">키보드/피아노</li>
+							<li data-id="3" data-sub="drum">드럼</li>
+							<li data-id="4" data-sub="wind">관악기</li>
+							<li data-id="5" data-sub="string">현악기</li>
+							<li data-id="6" data-sub="equipment">장비</li>
+							<li data-id="7" data-sub="accessory">그 외 악세서리</li>
+						</ul>
+					</div>
+			
+					<div class="category-column">
+						<ul id="subCategory">
+							<li>소분류 선택</li>
+						</ul>
+					</div>
 				</div>
-				<div>
-					<label class="my-bottom-4"><input type="checkbox" id="saleDone" name="sales_status" value=1> 거래 완료 시 체크하세요.</label>
+			</div>
+		</div>
+		<div>
+			<h3>가격</h3>
+			<hr>
+			<div class="form-row my-bottom-4 flex items-center">
+				<span class="form-span">가격</span>
+				<div class="flex" style="position: relative;">
+					<div style="position: static; width: 100%;">
+						<input type="text" name="price" id="price" autocomplete="off" class="border" placeholder="가격을 입력해 주세요." value="" style="width: 300px;">
+						<span class="price-span">원</span>
+					</div>
 				</div>
-				<div class="flex my-bottom-7 items-center">
-					<select id="flea_category" name="flea_category" class="mr-2">
-						<option value=0>판매</option>
-						<option value=1>구매</option>
-					</select><br/>
-					
-					<label class="mr-1">가격</label>
-					<input type="number" name="price" id="price" value="${updateData.price }">&nbsp;원
-					<br/>
-					
-				</div>
-				<div class="my-bottom-4">
-					<label>제목</label>
-				</div>
-				<div class="my-bottom-4">
-					<input type="text" id="flea_title" class="flea_title my-bottom-7 height4 border width-85 border-radius-10" id="flea_title" name="flea_title" value="${updateData.flea_title }">
-				</div>
-				<div class="my-bottom-4">
-					<label>본문</label>
-				</div>
-				<div class="content">
-					<textarea id="flea_content" class="summernote flea_content height50 width-85 border-radius-10 resize-none" name="flea_content" style="resize: none;">${updateData.flea_content }</textarea>
-				</div>
-				<div class=" flex justify-right my-top-8">
-					<button type="button" class="fleaUpdateBtn mr-1" id="update">수정</button>
-					<a href="/fleaMarket/boards/${flea_no }"  class="fleaUpdateBtn text-center">취소</a>
-				</div>
-			</form>
+			</div>
+		</div>
+		<div class="flex justify-end">
+			<button id="update" class="btn-group">수정</button>
+			<button id="cancel" class="btn-group">취소</button>
 		</div>
 	</div>
-	
-		<script>
-	
-	</script>
 </body>
 </html>
