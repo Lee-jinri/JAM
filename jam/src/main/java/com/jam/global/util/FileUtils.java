@@ -3,6 +3,7 @@ package com.jam.global.util;
 import java.io.File;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,8 +12,9 @@ import com.jam.file.vo.FileType;
 
 @Component
 public class FileUtils {
-
-	private final String uploadDir = "C:/upload"; 
+	
+	@Value("${file.upload-dir}")
+	private String uploadDir;
 	
 	private static final long MB = 1024L * 1024L;
 	private static final long APP_MAX_SIZE = 20L * MB;   // 20MB
@@ -30,7 +32,10 @@ public class FileUtils {
             File dir = new File(uploadDir, postType);
             
             if (!dir.exists()) {
-                dir.mkdirs(); // 폴더 없으면 생성
+                boolean created = dir.mkdirs(); // 폴더 없으면 생성
+            	if (!created) {
+            		throw new RuntimeException("업로드 디렉토리 생성 실패: " + dir.getAbsolutePath());
+            	}
             }
             
             File targetFile = new File(dir, savedName);
