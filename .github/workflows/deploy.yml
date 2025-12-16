@@ -43,6 +43,8 @@ jobs:
 
         cloud.aws.s3.static=${{ secrets.AWS_DEFAULT_REGION }}
         cloud.aws.s3.bucket=jam-resume-bucket
+
+        file.upload-dir=${{ secrets.FILE_UPLOAD_DIR }}
         EOF  
 
     - name: Set up JDK 17
