@@ -67,7 +67,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 		
 		for (int i = 0; i < images.size(); i++) {
 			MultipartFile image = images.get(i);
-            String savedFileName = fileUtils.saveToLocal(image, "flea"); // 파일 저장
+            String savedFileName = fileUtils.saveToLocal(image, "FLEA"); // 파일 저장
             
             if (savedFileName == null) {
                 throw new RuntimeException("이미지 저장 실패");
@@ -79,7 +79,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
             
             imageVO.setPost_id((long) post_id);
             imageVO.setImage_name(savedFileName);
-            imageVO.setPost_type("flea");
+            imageVO.setPost_type("FLEA");
             
             imageFileDao.insertImage(imageVO); // 이미지 메타정보 DB에 저장
         }
@@ -147,7 +147,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	            // DB에서 파일명 먼저 조회
 	            String deleteFileName = imageFileDao.findNameById(Long.valueOf(id));
 
-	            fileUtils.deleteToLocal(deleteFileName, "flea");
+	            fileUtils.deleteToLocal(deleteFileName, "FLEA");
 				imageFileDao.deleteImage(id);
 	        }
 		}
@@ -172,7 +172,7 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 		if(count < 1) throw new ForbiddenException("게시물을 삭제할 권한이 없습니다.");
 		
 		for(ImageFileVO file: deleteFileNames) {
-			fileUtils.deleteToLocal(file.getImage_name(), "flea");
+			fileUtils.deleteToLocal(file.getImage_name(), "FLEA");
 			imageFileDao.deleteImage(file.getImage_id());
 		}
 	}
