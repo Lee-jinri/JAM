@@ -30,7 +30,7 @@ $(function(){
 		$(this).addClass('active');
 		
 		const mainIndex = $(this).index() + 1;
-		const subList = subCategories[mainIndex];
+		const subList = window.subCategories[mainIndex];
 		
 		const $subUl = $('#subCategory');
 		$subUl.empty(); 
