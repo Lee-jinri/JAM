@@ -132,6 +132,7 @@
 	cursor: pointer;
 	font-size: 14px;
 	transition: all 0.2s;
+	font-weight: 500;
 }
 
 .my-tabs button:hover {
@@ -154,12 +155,16 @@ $(function(){
 	let view = params.get("view") || "store";
 	
 	if (view === "favorites") {
+		$("#favTab").addClass("active");
+		$("#storeTab").removeClass("active");
 		loadData('/api/fleaMarket/my/favorites');
 	} else {
+		$("#storeTab").addClass("active");
+		$("#favTab").removeClass("active");
 		loadData('/api/fleaMarket/my/store');
 	}
 	
-	
+
 	$(document).on("click", ".post-card", function (e) {
 	    e.preventDefault();
 	    var location = $(this).attr("data-location");
@@ -215,7 +220,7 @@ function loadData(apiUrl){
 	let keyword = params.get("keyword") || "";
 	
 	let url = apiUrl + '?pageNum=' + pageNum + '&keyword=' + encodeURIComponent(keyword);
-console.log(url);
+
 	fetch(url)
 	.then(res=>{
 		if(res.status === 401){
@@ -249,7 +254,7 @@ function renderList(data){
 	$template.hide(); 
 	$postGrid.empty();
 	
-	$(".store-title").text(data.userName + '님의 상점');
+	$(".store-title").text(window.MY_NAME + '님의 상점');
 	
 	if(data.fleaMarketList.length === 0) {
 		$postGrid.append('<div class="no-posts">등록된 게시글이 없습니다.</div>');
@@ -265,7 +270,7 @@ function renderList(data){
 		if (!post.thumbnail || post.thumbnail === '') {
 			$clone.find('img').attr('src', '/resources/include/images/no-image.png');
 		} else {
-			$clone.find('img').attr('src', '/images/flea/' + post.thumbnail);
+			$clone.find('img').attr('src', '/upload/flea/' + post.thumbnail);
 		}
 		
 		$clone.attr("data-location", "/fleaMarket/post/" + post.post_id);
@@ -337,24 +342,26 @@ function timeAgo(dateString) {
 </head>
 <body class="wrap">
 	<div class="f-myStore my-bottom-15">
-		<div class="search-div flex justify-center items-center border border-radius-43px">
-			<div class="search-bar-wrapper item-center flex justify-space-around">
-			
-				<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
-				value="${not empty param.keyword ? param.keyword : ''}" />
-				
-				<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
-			</div>
-		</div>
 		
 		<div class="store-header">
 			<h2 class="store-title"></h2>
 		</div>
 	
-		<div class="my-tabs">
-			<button id="storeTab" onclick="location.href='/fleaMarket/my?view=store'">내 상점</button>
-			<button id="favTab" onclick="location.href='/fleaMarket/my?view=favorites'">찜한 상품</button>
+		<div class="flex items-center justify-between">
+			<div class="my-tabs">
+				<button id="storeTab" onclick="location.href='/fleaMarket/my?view=store'">내 상점</button>
+				<button id="favTab" onclick="location.href='/fleaMarket/my?view=favorites'">찜한 상품</button>
+			</div>
+			<div class="search-div flex justify-center items-center border border-radius-43px "style="margin: 0 20px;">
+				<div class="search-bar-wrapper item-center flex justify-space-around">
+					<input type="text" name="keyword" id="keyword" class=" rem-2 search search-input"
+					value="${not empty param.keyword ? param.keyword : ''}" />
+					
+					<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
+				</div>
+			</div>
 		</div>
+	
 	
 		<div class="post-grid">
 			<div id="postTemplate" class="post-card">
