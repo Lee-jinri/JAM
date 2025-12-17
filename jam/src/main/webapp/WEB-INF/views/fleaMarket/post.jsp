@@ -6,25 +6,21 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM - 중고악기</title>
+<script src="/resources/include/dist/js/categories.js"></script>
 <style>
+.page-header{
+    border-bottom: #ccc 1px solid;
+    padding-bottom: 10px;
+}
 .flea-post-container{
 	padding: 60px;
 	justify-content: space-between;
 }
-/*
-.flea-slider {
-	position: relative;
-	width: 372px;
-	height: 372px;
-	overflow: hidden;
-	margin-right: 40px;
+.content-div{
+    min-height: 100px;
+    margin: 16px;
+    line-height: 1.6;
 }
-
-.flea-slider-images {
-	display: flex;
-	transition: transform 0.3s ease-in-out;
-}*/
-
 .flea-slider-img {
 	width: 300px;
 	height: 200px;
@@ -85,6 +81,8 @@
 .flea-info{
     height: 372px;
     width: 455px;
+    display: flex;
+    flex-direction: column;
 }
 .image-box {
 	position: relative;
@@ -105,22 +103,26 @@
 	font-size: 24px;
     font-weight: 600;
     line-height: 1.4;
-    margin-top: 45px;
+    margin-top: 0;
     margin-bottom: 30px;
 }
 #price{
 	font-size: 33px;
     font-weight: 500;
 }
+#category{
+    font-size: 16px;
+    margin-right: 15px;
+    color: rgb(204, 204, 204);
+    margin-top: 45px;
+}
 .meta{
 	height: 30px;
     margin-top: 15px;
-    margin-bottom: 25px;
-    display: flex;
     -webkit-box-pack: justify;
     align-items: center;
     border-top: #ccc 1px solid;
-    padding-top: 20px;
+    padding-top: 10px;
 }
 
 .meta li{
@@ -145,7 +147,7 @@
     font-weight: 700;
     line-height: normal;
     height: 52px;
-    margin-top: 105px;
+    margin-top: auto;
 }
 #fleaUpdateBtn, #fleaDeleteBtn{
 	display: flex;
@@ -155,16 +157,16 @@
     justify-content: center;
     width: 100%;
     height: 100%;
-    background: rgb(255, 164, 37);
-    border: 1px solid rgb(243, 150, 20);
-    color: rgb(255, 255, 255);
+    border: none;
+    color: #fff;
+    background: #ffb689;
     font-size: 18px;
     font-weight: 700;
     line-height: normal;
 }
 #chatBtn{
-    background: rgb(255, 164, 37);
-    border: 1px solid rgb(243, 150, 20);
+    background: #ffb689;
+    border: none;
     color: rgb(255, 255, 255);
     font-weight: 700;
     display: flex;
@@ -187,13 +189,14 @@
     -webkit-box-pack: center;
     justify-content: center;
     line-height: 1;
-    background: rgb(51, 51, 51);
+    background: #fdd77f;
+    border: none;
 }
 .slide-image {
-	width: 372px;         /* 원하는 가로 크기 */
-	height: 372px;        /* 원하는 세로 크기 */
-	object-fit: cover;    /* 비율 유지하면서 넘치는 부분 자르기 */
-	object-position: center; /* 자를 때 중앙 기준으로 */
+	width: 372px;         
+	height: 372px;        
+	object-fit: cover;    
+	object-position: center;
 }
 
 </style>
@@ -228,6 +231,20 @@ $(function(){
 				$("#view_count").html(post.view_count);
 				$("#post_content").html(post.content);
 				$("#price").html(post.price.toLocaleString());
+				
+				let subMap = {};
+				setTimeout(function () {
+				    subMap = window.subMap;
+				    
+				    let savedSub = post.category_id;
+					let { big, name } = subMap[savedSub];
+					
+					let bigCategory = window.bigCategory[big];
+					let subCategory = " > " + name;
+					
+					let category = bigCategory + subCategory;
+					$("#category").html(category);
+				})
 				
 				if(post.sales_status == 1) $("#saleDone").html("거래 완료 된 글 입니다.");
 				
@@ -325,6 +342,7 @@ $(function(){
 			var favoriteBtn = document.createElement("button");
 			favoriteBtn.type = "button";
 			favoriteBtn.id = "favoriteBtn";
+			favoriteBtn.classList.add("favorite");
 			favoriteBtn.innerHTML = '<i class="fa-regular fa-heart"></i>&nbsp; 찜';
 			
 			var chatBtn = document.createElement("button");
@@ -434,21 +452,34 @@ $(function(){
 			</div>
 
 			<div class="flea-info">
-				<h2 id="title"></h2>
-				<span id="price"></span>
-				<span style="font-size:24px;">원</span>
-				<ul class="meta flex">
-					<i class="fa-regular fa-eye" style="color: #cccccc;"></i>
-					<li id="view_count"></li>
-					<i class="fa-solid fa-clock" style="color: #cccccc;"></i>
-					<li id="created_at"></li>
-				</ul>
+				<p id="category"></p>
+					<h2 id="title"></h2>
+				<div class="flex items-center">
+					<span id="price"></span>
+					<span style="font-size:24px;">원</span>
+				</div>
+				<div class="meta">
+					<ul class="flex">
+						<i class="fa-regular fa-eye" style="color: #cccccc;"></i>
+						<li id="view_count"></li>
+						<i class="fa-solid fa-clock" style="color: #cccccc;"></i>
+						<li id="created_at"></li>
+					</ul>
+				</div>
+				
 				<div id="flea-postBtn">
 				</div>
 			</div>
 		</div>
-		<div>
-			<span id="post_content"></span>
+		<div class="" style="margin: 15px 60px 90px;">
+			<div class="page-header">
+				<p class="page-title">상품 정보</p>
+				<p>판매자가 직접 작성한 정보입니다.
+					구매 전 내용과 사진을 꼼꼼하게 확인해 주세요.</p>
+			</div>
+			<div class="content-div">
+				<span id="post_content"></span>
+			</div>
 		</div>
 	</div>
 </body>
