@@ -160,11 +160,15 @@
 	font-size: 16px;
 	line-height: 1.3em;
 	height: 2.6em;
-	overflow: hidden;
 	text-overflow: ellipsis;
+	display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .post-category{
+    margin: 8px 0 0;
 	font-size: 13px;
     color: #666;
 }
