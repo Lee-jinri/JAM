@@ -7,283 +7,370 @@
 <head>
 <meta charset="UTF-8">
 <title>커뮤니티 작성 글</title>
+<style>
+.container {
+    max-width: 1000px;
+    margin: 0 auto 4rem;
+    padding-top: 50px;
+}
+.user-profile {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  padding: 14px 18px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  width: fit-content;
+  margin: 0 0 20px 0;
+}
+.profile-info .nickname {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#userNickname{
+	font-size: 20px;
+    font-weight: 600;
+    color: #7c7c7c;
+    margin: 7px 7px;
+}
+
+
+.profile-icon {
+  width: 40px;
+  height: 40px;
+  background-color: #c7e7f3;
+  border-radius: 50%;
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profile-btn-div{
+	margin-left: 4px;
+}
+.sub{
+	margin-left: 7px;
+	color: #7c7c7c;
+}
+.posts-meta{
+    display: flex;
+    justify-content: end;
+    align-items: flex-end;
+    flex-shrink: 0;
+    min-width: 120px;
+    max-width: 170px;
+}
+.check-box {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 20px;
+	height: 20px;
+	border: 2px solid #d9d9d9;
+	border-radius: 6px;
+	background: #fff;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	position: relative;
+}
+
+.check-box:hover {
+	border-color: #9ac7ff;
+	box-shadow: 0 0 4px rgba(138, 190, 255, 0.4);
+}
+
+.check-box:checked {
+	background: #7bbcff;
+	border-color: #7bbcff;
+	box-shadow: 0 0 6px rgba(123, 188, 255, 0.5);
+}
+
+.check-box:checked::after {
+	content: '✔';
+	position: absolute;
+	top: 47%;
+	left: 50%;
+	transform: translate(-50%, -55%);
+	font-size: 13px;
+	color: #fff;
+	font-weight: 700;
+}
+
+</style>
 <script>
-	$(function(){
-
-		loadPosts();
+const state = {
+		keyword: "",
+		pageNum: 1
 		
-		$("#searchBtn").click(function(){
-			if($("#search").val() != "all"){
-				if($("#keyword").val().replace(/\s/g, "") == ""){
-					alert("검색어를 입력하세요.");
-					$("#keyword").focus();
-					return;
-				}
-			} 
-			$("#pageNum").val(1);
-			goPage();
-		})
-			
-		$("#keyword").keypress(function(event) {
-            if (event.key === "Enter") {
-                event.preventDefault(); 
-                $("#searchBtn").click();
-            }
-        });
-			
-		$(".paginate_button a").click(function(e) {
-			e.preventDefault();
-			$("#searchForm").find("input[name='pageNum']").val($(this).attr("href"));
-			goPage();
-		})
-		
-		$("#comPosts").click(function(){
-			setURL("/community/comPosts");
-		})
-		
-		$("#fleaPosts").click(function(){
-			setURL("/fleaMarket/fleaPosts");
-		})
-		$("#jobPosts").click(function(){
-			setURL("/jobs/jobPosts");
-		})
-		$("#roomPosts").click(function(){
-			setURL("/roomRental/roomPosts");
-		})
-	})
+}
+$(function(){
+	loadPosts();
 	
-	function goPage(){
-		if($("#search").val()=="all"){
-			$("#keyword").val("");
+	if(!window.MY_ID) {
+		if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+			location.href = "/member/login";
+		} else {
+			location.href = "/community/board";
 		}
-		
-		let search = $("#search").val();
-	    let keyword = $("#keyword").val();
-	    
-	    let params = new URLSearchParams(window.location.search);
-	    
-	    params.delete("search");
-	    params.delete("keyword");
-	    
-	    params.append("search", search);
-	    params.append("keyword", keyword);
-	    
-	    let url = "/community/comPosts?" + params.toString();
-
-	    console.log(url);
-	    
-	    location.href = url;
-	}
+		return;
+    }
 	
-	function setURL(url) {
-	    let params = new URLSearchParams(window.location.search);
-	    let type = params.get("type");
-	    let userId = params.get("userId");
+	if(window.MY_NAME) {
+		$("#userNickname").text(window.MY_NAME + " 님의 게시글");
+    }
 	
-	    if(type == 'my') url += '?type=my';
-	    else {
-	        url += '?userId=' + encodeURIComponent(userId);
+	$(document).on("click", ".boardLink", function (e) {
+	    e.preventDefault();
+	    var location = $(this).attr("data-location");
+	    if (location) {
+	        window.location.href = location;
 	    }
-	    
-	    location.href = url;
-	}
+	});
 	
-	/*검색을 위한 실질적인 처리 함수
-	function goPage(){
-			let search = $("#search").val();
-			let keyword = $("#keyword").val();
-			
-			if(search=="all"){
-				$("#keyword").val("");
-			}
-			이거 바꿔야됨 restful한 방식으로 할건데
-			sessionStorage.setItem('postUserId', user_id);
-			이렇게 해서 누구의 글을 볼건지 저장하고 세션에서 꺼내서
-			클라이언트에서 fetch해서 가져와야 될 듯? 너가 알아서 해봥ㅎ
-			let url = "/posts/comPosts?user_id=";
-			
-			$(location).attr('href', redirectURL + user_id + "&search=" + search + "&keyword=" + keyword);
-			//getUserIDAndRedirect(url, search, keyword);
-		}*/
-		/*
-		function getUserIDAndRedirect(redirectURL, search, keyword) {
-		    fetch('http://localhost:8080/api/member/me/token', {
-		        method: 'GET'
-		    })
-		    .then(response => {
-		        if (!response.ok) {
-		        	throw new Error('Network response was not ok');
-		        } 
-		        return response.json();
-		    })
-		    .then((data) => {
-		    	let user_id = data.user_id;
-		        if (user_id) {
-		        	$(location).attr('href', redirectURL + user_id + "&search=" + search + "&keyword=" + keyword);
-		        } else {
-		            alert("");
-		        	$(location).attr('href', '/member/login');
-		        }
-		    })
-		    .catch(error => {
-		        console.error('사용자 정보를 가져오는 중 오류 발생:', error);
+	$(document).on("click", ".post-check", function (e) {
+	    e.stopPropagation();
+	});
+	
+	$("#searchBtn").click(function(){
+		let keyword = $("#keyword").val();
+		
+		if(keyword.replace(/\s/g, "") == ""){
+			alert("검색어를 입력하세요.");
+			$("#keyword").focus();
+			return;
+		} 
+		state.keyword = keyword;
+		state.pageNum = 1;
+		
+		loadPosts();
+	})
+		
+	$("#keyword").keypress(function(event) {
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+            $("#searchBtn").click();
+        }
+    });
+	
+	$("#deletePostsBtn").click(function () {
+	    let ids = [];
+
+	    $(".post-check:checked").each(function () {
+	        ids.push($(this).val());
+	    });
+
+	    if (ids.length === 0) {
+	        alert("삭제할 게시글을 선택하세요.");
+	        return;
+	    }
+
+	    if (!confirm("정말 삭제하시겠습니까?")) return;
+
+	    deletePosts(ids);
+	});
+	
+	$("#checkAll").change(function () {
+	    $(".post-check").prop("checked", $(this).is(":checked"));
+	    updateSelectedCount();
+	});
+	
+	$(document).on("change", ".post-check", function() {
+	    const total = $(".post-check").length;
+	    const checked = $(".post-check:checked").length;
+	    $("#checkAll").prop("checked", total === checked);
+	    
+	    updateSelectedCount();
+	});
+})
+
+function loadPosts(){
+    let pageNum = state.pageNum || "1";
+    let keyword = state.keyword || "";
+    
+	let queryString = new URLSearchParams(state).toString();
+	let url = "/api/community/my/posts?" + queryString;
+	
+    fetch(url)
+	.then(res=>{
+		if (!res.ok) {
+			return res.json().then(err => {
+		        throw err;
 		    });
 		}
-		
-		*/
-		
-		function loadPosts() {
-			let params = new URLSearchParams(window.location.search);
-			
-		    let queryString = new URLSearchParams(window.location.search);
-		    let url = "/api/community/posts?"+queryString;
-		    console.log(url);
-		    
-			fetch(url, {
-		        method: 'GET'
-		    })
-		    .then(response => {
-		        if (!response.ok) {
-		        	throw new Error('Network response was not ok');
-		        } 
-		        return response.json();
-		    })
-		    .then((data) => {
-		    	let html;
-		    	let posts = data.posts;
-		    	if (posts.length > 0) {
-	                $.each(posts, function(index, item) {
-	                    html += '<tr class="text-center" data-num="' + item.com_no + '">';
-	                    html += '  <td class="class">';
-	                    html += '    <a href="/community/board/' + item.com_no + '">' + item.com_title + '</a>';
-	                    html += '  </td>';
-	                    html += '  <td class="col-md-1">' + item.com_date + '</td>';
-	                    html += '  <td class="col-md-1">' + item.com_hits + '</td>';
-	                    html += '</tr>';
-	                });
-	            } else {
-	                html += '<tr>';
-	                html += '  <td colspan="3" class="text-center">등록된 게시물이 존재하지 않습니다.</td>';
-	                html += '</tr>';
-	            }
+		return res.json();
+	}).then(data=>{
+		renderList(data);
+	})
+	.catch(err => {
+		if (handleApiError(err)) return;
+		alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+	});
+}
 
-	            $('#postList').html(html);
-	            
-	         	// 페이징 처리
-	            let pageMaker = data.pageMaker;
-	            
-	            console.log(pageMaker.cvo.pageNum);
-	            
-	            let paginationHtml = '';
-	            for (let i = pageMaker.startPage; i <= pageMaker.endPage; i++) {
-	            	let currentParams = new URLSearchParams(window.location.search);
-	                currentParams.set("pageNum", i); 
+function renderList(data){
+	let $template = $("#boardTemplate");
+	let $boardList = $("#boardList");
+	     
+	$boardList.empty(); 
+	
+	data.posts.forEach(board => {
+		console.log(board);
+		let $clone = $template.clone().removeAttr("id").show();
+		         
+		$clone.find(".boardDate").text(timeAgo(board.created_at));
+		$clone.find(".boardTitle").text(board.title);
+		$clone.find(".boardHits").text("조회 " +board.view_count);
+		$clone.find(".boardReplyCnt").text(board.comment_count);
+		$clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
+		$clone.find(".check-box-template").removeClass("check-box-template")
+	    	.addClass("post-check").prop("disabled", false).val(board.post_id);
+		
+		$boardList.append($clone);
+	});
+	     
+	loadPagination(data.pageMaker);
+}
 
-	                paginationHtml += '<li class="paginate_button">';
-	                paginationHtml += '  <a href="?' + currentParams.toString() + '" ' + (pageMaker.cvo.pageNum === i ? 'id="btnColor"' : '') + '>' + i + '</a>';
-	                paginationHtml += '</li>';
-	            }
-	            
-	            // 페이징 버튼 렌더링
-	            $('#pagination').html(paginationHtml);
-		    })
-		    .catch(error => {
-		        console.error('error:', error);
-		    });
-		    
-		}
-	</script>
+function deletePosts(ids) {
+    fetch("/api/community/posts/my", {
+        method: "DELETE",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(ids)
+    })
+    .then(res => {
+        if (!res.ok) {
+	    	return res.json().then(err => {
+	            throw err;
+	        });
+        }
+
+        alert("삭제되었습니다.");
+        $("#checkAll").prop("checked", false);
+        $("#selectedCount").text(""); 
+        loadPosts();
+    })
+    .catch(err => {
+		if (handleApiError(err)) return;
+    	alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+	});
+}
+
+function updateSelectedCount() {
+    const count = $(".post-check:checked").length;
+    $("#selectedCount").text(count > 0 ? count + '개 선택됨' : "");
+}
+
+function loadPagination(pageMaker) {
+    const $pagination = $("#pagination");
+    $pagination.empty(); // 기존 페이지 버튼 초기화
+
+    // 페이지 번호 버튼
+    for (let num = pageMaker.startPage; num <= pageMaker.endPage; num++) {
+        $pagination.append(
+            '<li class="paginate_button">' +
+                '<a href="#" data-page="' + num + '" class="font-weight-bold ' + (pageMaker.cvo.pageNum === num ? 'selected_btn' : 'default_btn') + '">' + num + '</a>' +
+            '</li>'
+        );
+    }
+
+    $("#pagination a").click(function (e) {
+        e.preventDefault();
+        let pageNum = $(this).data("page");
+
+        state.pageNum = pageNum;
+	    loadPosts();
+    });
+}
+</script>
 </head>
 <body class="wrap">
-	<div class="rem-20 my-top-15 my-bottom-15">
-		<div class="title my-bottom-15">
-			<p class="text-center my-7">작성한 글</p>
-		</div>
-		
-		<div class="py-2rem flex justify-right">
-			<div class="items-center">
-				<form id="searchForm">
-					<div class="item-center flex">
-						<select id="search" name="search" class="search">
-							<option value="all">전체</option>
-							<option value="com_title">제목</option>
-							<option value="com_content">내용</option>
-						</select>
-						<div>
-							<input type="text" name="keyword" id="keyword" placeholder="검색" class="border border-radius-43px rem-2 search"/>
-						</div>
-						<img class="icon" id="searchBtn" style="cursor:pointer; width:3rem;" src="/resources/include/images/search.svg">
-					</div>
-				</form>
+	<div class="container my-bottom-15 ">
+		<div class="user-profile">
+			<div class="profile-info">
+			    <div class="nickname">
+			    	<span id="userNickname" style="margin-left: 7px"></span>
+			    </div>
+   				<p class="sub">작성한 커뮤니티 글을 확인할 수 있어요</p>
 			</div>
-		</div>	 
-		<div class="border-bottom">
-			<ul class="nav nav-tabs nav-justified">
-				<li><button type="button" id="comPosts" class="postBtn" style="background-color:#CED8F6;">커뮤니티</button></li>
-				<li><button type="button" id="fleaPosts" class="postBtn">중고악기</button></li>
-				<li><button type="button" id="jobPosts" class="postBtn">구인구직</button></li>
-				<li><button type="button" id="roomPosts" class="postBtn">합주실/연습실</button></li>
-			</ul>
 		</div>
-		
-		
+		<div class="flex justify-between items-center" style="margin-bottom: 40px;" >
+			<div class="flex items-center">
+				<div class="neo-wrap flex items-center">
+					<input type="text" name="keyword" id="keyword" class="neo-input" placeholder="제목 / 내용 검색">
+					<button id="searchBtn" class="search-btn border-none background-none">
+					    <img src="/resources/include/images/bubble-search.svg" class="search-icon">
+					</button>
+				</div>
+			</div>
+			<button id="comWriteBtn" class="rainbow-btn">
+				<i class="fa-solid fa-pencil"></i> 새 글
+			</button>
+		</div>
 		<div class="content">
-    		<table summary="커뮤니티 리스트" class="table ">
-        		<thead>
-		            <tr>
-		                <th class="text-center col-md-3">제목</th>
-		                <th data-value="com_date" class="order col-md-1 text-center">작성일</th>
-		                <th data-value="com_hits" class="order col-md-1 text-center">조회수</th>
-		            </tr>
-		        </thead>
-        		<tbody id="postList">
-	            	<!-- 게시물 리스트가 존재하는 경우에만 표시 
-	            	<c:if test="${not empty comPosts}">
-	                	<c:forEach items="${comPosts}" var="comPost" varStatus="status">
-	                    	<tr class="text-center" data-num="${comPost.com_no}">
-		                        <td class="class">
-		                            <a class="" href="/community/board/${comPost.com_no}">${comPost.com_title}</a>
-		                        </td>
-		                        <td class="col-md-1">${comPost.com_date}</td>
-		                        <td class="col-md-1">${comPost.com_hits}</td>
-		                    </tr>
-	                	</c:forEach>
-	            	</c:if>-->
-	
-			        <!-- 게시물이 없을 경우에만 표시
-			        <c:if test="${empty comPosts}">
-			        	<tr>
-			            	<td colspan="3" class="text-center">등록된 게시물이 존재하지 않습니다.</td>
-			            </tr>
-			        </c:if>
-			         -->
-		    	</tbody>
-		    </table>
-		</div> 
-
-		 페이징 
-		<div class="text-center">
-			<ul id="pagination" class="pagination pagination_border"><!--
-				<c:if test="${pageMaker.prev}">
-					<li class="paginate_button previous">
-						<a href="${pageMaker.startPage -1}" >Previous</a>
-					</li>
-				</c:if>
-						
-				<c:forEach var="num" begin="${pageMaker.startPage}" end="${pageMaker.endPage}">
-					<li class="paginate_button"  >
-						<a id="${pageMaker.cvo.pageNum == num ? 'btnColor':''}" class="font-weight-bold" href="${num}">${num}</a>
-					</li>
-				</c:forEach>
-						
-				<c:if test="${pageMaker.next}">
-					<li class="paginate_button next">
-						<a href="${pageMaker.endPage +1 }">Next</a>
-					</li>
-				</c:if>-->
-			</ul>
+			<div>
+			    <ul style="display:none;">
+			        <li id="boardTemplate" class="border-bottom" >
+			            <div class="boardLink cursor-pointer pd-2rem flex items-center " >
+			                <div class="flex items-center justify-center " style="width: 3rem;">
+			                    <input class="check-box-template check-box"type="checkbox" disabled>
+			                </div>
+			
+			                <div class="title-container flex-1 flex items-center cursor-pointer">
+			                    <div class="flex items-center">
+			                        <span class="font-size-5 boardTitle"></span>
+			                        <span class="ml-05 boardReplyCnt"></span>
+			                    </div>
+			                </div>
+			                
+			                <div class="posts-meta flex-1 text-right">
+			                    <div class="my-bottom-2">
+			                        <span class="boardDate"></span>
+			                    </div>
+			                    <div class="flex items-center justify-end my-top-2">
+			                        <span class="ml-05 boardHits"></span>
+			                    </div>
+			                </div>
+			            </div>
+			        </li>
+			    </ul>
+			    <ul>
+			    	<li class="border-bottom">
+			    		<div class="cursor-pointer pd-2rem flex items-center ">
+			    			<div class="flex items-center justify-center" style="width: 3rem;">
+			    				<input type="checkbox" class="check-box" id="checkAll">
+			    			</div>
+			    			<div>
+			    				<button id="deletePostsBtn" class="action-btn" style="margin-left: 2rem;">삭제</button>
+			    			</div>
+			    			<div>
+			    				<span id="selectedCount" class="ml-05" style="color:#7c7c7c; font-size:14px;"></span>
+			    			</div>
+			    		</div>
+			    	</li>
+			    </ul>
+			    <ul id="boardList">
+				</ul>
+			</div>
+			
+			<div>
+				<!-- 페이징 영역 -->
+				<div class="text-center my-top-8">
+				    <ul id="pagination" class="pagination pagination_border"></ul>
+				</div>
+			</div>
 		</div>
-		
-	</div>
+	</div>	
 </body>
 </html>
