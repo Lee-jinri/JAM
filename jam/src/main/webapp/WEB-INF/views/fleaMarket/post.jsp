@@ -342,7 +342,7 @@ $(function(){
 		
 		images.forEach(function(image) {
 			let img = document.createElement("img");
-			img.src = '/images/flea/' + image.image_name; 
+			img.src = '/upload/flea/' + image.image_name; 
 			img.alt = "상품 이미지";
 			img.className = "slide-image"; 
 			container.appendChild(img);

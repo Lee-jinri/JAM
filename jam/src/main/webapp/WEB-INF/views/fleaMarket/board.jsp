@@ -363,7 +363,7 @@ function renderList(data){
 			if (!post.thumbnail || post.thumbnail === '') {
 				$clone.find('img').attr('src', '/resources/include/images/no-image.png');
 			} else {
-				$clone.find('img').attr('src', '/images/flea/' + post.thumbnail);
+				$clone.find('img').attr('src', '/upload/flea/' + post.thumbnail);
 			}
 
 			let savedSub = post.category_id;

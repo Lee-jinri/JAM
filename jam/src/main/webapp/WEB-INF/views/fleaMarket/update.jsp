@@ -340,7 +340,7 @@ function getPost(postId){
 function renderImages(images){
 	images.forEach(function(image) {
 
-		let src = "/images/flea/" + image.image_name;
+		let src = "/upload/flea/" + image.image_name;
 		
 		const imageObj = {
 			id: image.image_id,
