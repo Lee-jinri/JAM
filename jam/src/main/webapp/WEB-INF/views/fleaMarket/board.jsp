@@ -379,7 +379,7 @@ function renderList(data){
 			
 			let $favoriteSpan = $clone.find(".favoriteSpan");
 			$favoriteSpan.attr("data-post-id", post.post_id);
-			$favoriteSpan.attr("data-board-type", "fleaMarket");
+			$favoriteSpan.attr("data-board-type", "FLEA");
 			
 			let $icon = $favoriteSpan.find("i"); 
 			post.favorite ? $icon.addClass("fa-solid")
