@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -35,6 +36,9 @@ import com.jam.global.jwt.JwtInterceptor;
 @EnableGlobalMethodSecurity(prePostEnabled=true, securedEnabled=true)
 public class ServletConfig implements WebMvcConfigurer {
 
+	@Value("${file.upload-dir}")
+	private String uploadDir;
+	
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/resources/**")
@@ -43,8 +47,8 @@ public class ServletConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/uploadStorage/**")
         		.addResourceLocations("file:C:/uploadStorage/");
         
-        registry.addResourceHandler("/images/**")
-        		.addResourceLocations("file:///C:/upload/");
+        registry.addResourceHandler("/upload/**")
+        		.addResourceLocations("file:" + uploadDir + "/");
     }
 
     @Bean
