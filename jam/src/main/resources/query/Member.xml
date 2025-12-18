@@ -4,14 +4,15 @@
 
 	<!-- 회원가입 -->
 	<insert id="memberJoin" parameterType="member">
-		INSERT INTO member (user_id, user_pw, user_name, phone, email, address)
+		INSERT INTO member (user_id, user_pw, user_name, phone, email, address, social_login)
 		VALUES (
 			#{user_id}, 
 			#{user_pw}, 
 			#{user_name}, 
 			#{phone}, 
 			#{email},
-			#{address}
+			#{address},
+			0
 		)
 	</insert>
 	
