@@ -112,11 +112,12 @@
   	</select>
 	
   	<!-- 아이디 찾기 -->
-  	<select id="findId" parameterType="String" resultType="String">
+  	<select id="findId" resultType="String">
   		SELECT user_id
   		FROM member
   		WHERE email = #{email}
   		AND phone = #{phone}
+  		AND social_login = 0
   	</select>
   	
   	<!-- 아이디와 이메일로 존재하는 사용자인지 확인 (비밀번호 변경 전 사용) -->
@@ -126,13 +127,15 @@
 		WHERE user_id = #{user_id} 
 		AND email = #{email} 
 		AND phone = #{phone}
+  		AND social_login = 0
 	</select>
 	
 	<!-- 비밀번호 변경 -->
-	<update id="updatePw" parameterType="String">
+	<update id="updatePw" parameterType="member">
 		UPDATE member
 		SET user_pw = #{user_pw}
 		WHERE user_id = #{user_id}
+  		AND social_login = 0
 	</update>
 	
 	<!-- 닉네임 변경 -->
@@ -140,6 +143,7 @@
 		UPDATE member
 		SET user_name = #{user_name}
 		WHERE user_id = #{user_id}
+  		AND social_login = 0
 	</update>
 	
 	<!-- 전화번호 변경 -->
@@ -147,6 +151,7 @@
 		UPDATE member
 		SET phone = #{phone}
 		WHERE user_id = #{user_id}
+  		AND social_login = 0
 	</update>
 	
 	<!-- 비밀번호 확인 -->
@@ -154,6 +159,7 @@
 		SELECT user_pw
 		FROM member
 		WHERE user_id = #{user_id}
+  		AND social_login = 0
 	</select>
 	
 	<!-- 주소 변경 -->
@@ -161,6 +167,7 @@
 		UPDATE member
 		SET address = #{address}
 		WHERE user_id = #{user_id}
+  		AND social_login = 0
 	</update>
 	
 	<!-- 회원 탈퇴 -->
