@@ -176,20 +176,20 @@
 		DELETE FROM member WHERE user_id = #{user_id}		
 	</delete>
 	
-	
 	<!-- 저장된 소셜 회원인지 확인 -->
 	<select id="findSocialUser" parameterType="String" resultType="int">
 		<![CDATA[
 		select COUNT(*)
 		from member 
 		where user_id = #{user_id}
+		AND social_login = 1
 		]]>
 	</select>
 	
 	<!-- 소셜 회원 정보 저장 -->
 	<insert id="SocialRegister" parameterType="map">
-		INSERT INTO member(user_id, user_name,  email, role, social_login)
-		VALUES (#{user_id}, #{user_name}, #{email},'MEMBER', 1)
+		INSERT INTO member(user_id, user_name, user_pw, email, social_login)
+		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, 1)
 	</insert>
 	
 	
