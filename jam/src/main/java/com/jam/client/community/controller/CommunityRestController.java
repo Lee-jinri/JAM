@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.community.service.CommunityService;
 import com.jam.client.community.vo.CommunityVO;
+import com.jam.client.member.vo.MemberVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.NotFoundException;
@@ -51,7 +53,8 @@ public class CommunityRestController {
 	public ResponseEntity<Map<String, Object>> getBoards(
 			HttpServletRequest request,
 			@RequestParam (defaultValue = "1")int pageNum,
-			@RequestParam(required=false) String keyword){
+			@RequestParam(required=false) String keyword,
+			@AuthenticationPrincipal MemberVO user){
 			
 		CommunityVO community = new CommunityVO();
 		community.setPageNum(pageNum);
@@ -60,8 +63,9 @@ public class CommunityRestController {
 		    community.setKeyword(keyword);
 		}
 		
-		String user_id = (String)request.getAttribute("userId");
-		if(user_id != null) community.setUser_id(user_id);
+		if (user != null) {
+			community.setUser_id(user.getUser_id());
+		}
 		
 		Map<String, Object> result = new HashMap<>();
 
@@ -89,7 +93,7 @@ public class CommunityRestController {
 
 		Map<String, Object> result = new HashMap<>();
 		result.put("popularList", popularList);
-
+		
 		return ResponseEntity.ok(result);
 	}
 	

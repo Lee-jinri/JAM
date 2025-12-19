@@ -15,9 +15,10 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jam.client.fleaMarket.service.FleaMarketService;
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
+import com.jam.client.member.vo.MemberVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.file.vo.ImageFileVO;
 import com.jam.global.exception.BadRequestException;
@@ -45,31 +47,30 @@ public class FleaMarketRestController {
 	private final FleaMarketService fleaService;
 	
 	@GetMapping(value = "board")
-	public ResponseEntity<Map<String, Object>> getBoards(FleaMarketVO flea_vo, HttpServletRequest request){
-		try {
-			String user_id = (String)request.getAttribute("userId");
-			if(user_id != null) flea_vo.setUser_id(user_id);
-			
-			// FIXME: 임시로 해놓음
-			flea_vo.setAmount(24);
-			
-			Map<String, Object> result = new HashMap<>();
-
-			List<FleaMarketVO> fleaMarketList = fleaService.getBoard(flea_vo);
-			
-			result.put("fleaMarketList", fleaMarketList);
-			
-			int total = fleaService.listCnt(flea_vo);
-			
-			PageDTO pageMaker = new PageDTO(flea_vo, total);
-	        result.put("pageMaker", pageMaker);
-
-	        return ResponseEntity.ok(result);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
+	public ResponseEntity<Map<String, Object>> getBoards(
+			FleaMarketVO flea_vo, 
+			HttpServletRequest request,
+			@AuthenticationPrincipal MemberVO user){
+		
+		if (user != null) {
+			flea_vo.setUser_id(user.getUser_id());
 		}
+		
+		// FIXME: 임시
+		flea_vo.setAmount(24);
+		
+		Map<String, Object> result = new HashMap<>();
+
+		List<FleaMarketVO> fleaMarketList = fleaService.getBoard(flea_vo);
+		
+		result.put("fleaMarketList", fleaMarketList);
+		
+		int total = fleaService.listCnt(flea_vo);
+		
+		PageDTO pageMaker = new PageDTO(flea_vo, total);
+        result.put("pageMaker", pageMaker);
+
+        return ResponseEntity.ok(result);
 	}
 
 	/**********************************
@@ -111,6 +112,7 @@ public class FleaMarketRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping(value="/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> writeBoard(
 				@RequestParam("title") String title,
@@ -152,6 +154,7 @@ public class FleaMarketRestController {
 	 * @param post_id 수정을 위해 불러올 글 번호
 	 * @return ResponseEntity<FleaMarketVO> - 조회된 중고악기 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
 	 *******************************************/
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/posts/{post_id}/edit-data", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> getEditData(
 			@PathVariable("post_id") Long post_id, 
@@ -181,6 +184,7 @@ public class FleaMarketRestController {
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 * @return 성공 시 수정한 중고악기 글 상세 페이지 / 실패 시 중고악기 글 수정 페이지
 	 ***********************************/
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
 	public ResponseEntity<String> editBoard(
 			@RequestParam("postId") Long postId,
@@ -234,6 +238,7 @@ public class FleaMarketRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
+	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/post/{post_id}")
 	public ResponseEntity<String> boardDelete(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
 		
@@ -256,6 +261,7 @@ public class FleaMarketRestController {
 	 * 중고악기 사진 업로드
 	 * @return String 사진 저장 경로 
 	 ********************************/
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
 	public ResponseEntity<Map<String, Object>> uploadImageFile(
 			@RequestParam("file") MultipartFile multipartFile, 
@@ -295,6 +301,7 @@ public class FleaMarketRestController {
 		}
 	}
 	
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value="/my/store")
 	public ResponseEntity<Map<String, Object>> getMyStore(FleaMarketVO flea, HttpServletRequest request){
 		try {
@@ -324,6 +331,7 @@ public class FleaMarketRestController {
 		}
 	}
 	
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/favorites")
 	public ResponseEntity<Map<String, Object>> favorites(FleaMarketVO flea, HttpServletRequest request){
 		try {
