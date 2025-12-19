@@ -71,8 +71,7 @@ public class MemberServiceImpl implements MemberService {
     	}
         
         // Redis에 닉네임 저장
-        String key = "users:name:" + member.getUser_id();
-        stringRedisTemplate.opsForValue().set(key, member.getUser_name());
+        cacheUserName(member.getUser_id(), member.getUser_name());
 	}
 	
 	// 아이디 중복확인
