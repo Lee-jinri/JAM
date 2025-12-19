@@ -501,6 +501,10 @@ background-color: #fff;
 	background-color: #0A1E34;
 	transform: translateY(0);
 }
+
+#areaConainer{
+	display: block;margin: 30px auto;
+}
 </style>
 <link rel="stylesheet" href="/resources/include/dist/css/job-common.css">
 <script type="text/javascript">
@@ -938,11 +942,11 @@ function formatNumberKo(pay) {
 			
 			<div class="filterDiv">
 				<div class="filterBtnContainer flex">
-					<button id="areaBtn" class="filter-btn">
+					<button id="areaBtn" class="filter-btn neo-btn">
 				        지역
 				        <span class="icon"><i class="fa-solid fa-caret-down"></i></span>
 				    </button>
-					<button id="positionBtn" class="filter-btn">
+					<button id="positionBtn" class="filter-btn neo-btn">
 			        	포지션
 			        	<span class="icon"><i class="fa-solid fa-caret-down"></i></span>
 				    </button>
