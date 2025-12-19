@@ -3,6 +3,7 @@ package com.jam.client.member.controller;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -13,10 +14,10 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -38,7 +39,6 @@ import com.jam.client.member.vo.MemberVO;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 
-import io.jsonwebtoken.io.IOException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -53,6 +53,7 @@ public class OAuthController {
 
 	private final MemberService memberService;
 	private final JwtService jwtService;
+    private final RedisTemplate<String, String> stringRedisTemplate;
 	
 	@Value("${oauth.kakao.clientId}")
     private String kakao_clientId;
@@ -66,20 +67,24 @@ public class OAuthController {
 	/**
 	 * 카카오 OAuth 로그인 요청을 시작하는 메서드.
 	 * - 카카오 인증 페이지로 리다이렉트시켜 사용자가 로그인하게 함
-	 * - CSRF 방어를 위해 state 생성 후 세션에 저장
+	 * - CSRF 방어를 위해 state 생성 후 redis에 저장
 	 * - 로그인 완료 후 카카오에서 redirect_uri로 code, state 전달됨
 	 * @throws java.io.IOException 
 	 */
 	@GetMapping("/kakao")
-	public void  redirectToKakaoAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
+	public String redirectToKakaoAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
 	    
-		try {
-			String clientId = kakao_clientId;
-	        String redirectUri = "http://localhost:8080/oauth/kakao/callback";
-	        String state = URLEncoder.encode(UUID.randomUUID().toString(), StandardCharsets.UTF_8.toString());
-
-	        // CSRF 방어용 state 저장
-	        session.setAttribute("kakao_oauth_state", state);
+		String clientId = kakao_clientId;
+        String redirectUri = "http://localhost:8080/oauth/kakao/callback";
+        String state = URLEncoder.encode(UUID.randomUUID().toString(), StandardCharsets.UTF_8.toString());
+        
+        try {
+	        // CSRF 방어용 레디스 저장
+	        stringRedisTemplate.opsForValue().set(
+	        	"oauth:state:" + state,
+	        	"kakao",
+	        	Duration.ofMinutes(5)
+	        );
 	        
 	        String requestUrl = UriComponentsBuilder
 	            .fromHttpUrl("https://kauth.kakao.com/oauth/authorize")
@@ -89,27 +94,20 @@ public class OAuthController {
 	            .queryParam("state", state)
 	            .build()
 	            .toUriString();
-
-	        response.sendRedirect(requestUrl);
-	        
-		}catch(Exception e) {
-			log.error("카카오 로그인 리다이렉트 실패" + e.getMessage());
-			response.sendRedirect("/member/login?error=oauth");
-			try {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "카카오 로그인 실패");
-			} catch (IOException ioException) {
-				log.error("오류 응답 실패", ioException);
-			}
-		}
+	
+	    	return "redirect:" + requestUrl;
+        } catch (Exception e) {
+    		log.error("카카오 OAuth 시작 실패", e);
+    		return "redirect:/member/login?error=oauth";
+    	}
 	}
 	
-
 	/***********************************
 	 * 카카오 콜백
 	 * 1. state 검증
 	 * 2. access token 발급 및 쿠키 저장
 	 * 3. 사용자 정보 조회 및 회원 처리
-	 * 4. JWT 쿠키 저장 및 세션 로그인 표시
+	 * 4. JWT 발급 및 쿠키 저장
 	 * 5. 로그인 이전 페이지로 리다이렉트
 	 * @param code 인가코드
 	 * @param state CSRF 공격을 방지하기 위해 애플리케이션에서 생성한 상태 토큰값
@@ -122,58 +120,66 @@ public class OAuthController {
 			HttpSession session,
 			HttpServletRequest request, 
 			HttpServletResponse response) {
-		
-		// 1. state 검증
-		String expectedState = (String)session.getAttribute("kakao_oauth_state");
-		
-		if (!state.equals(expectedState)) {
-		    return "/member/login?error=invalid_state";
+		try {
+			// 1. state 검증
+			String key = "oauth:state:" + state;
+
+			Boolean exists = stringRedisTemplate.hasKey(key);
+			
+			if (exists == null || !exists) {
+				log.error("Invalid OAuth state");
+				return "redirect:/member/login?error=invalid_state";
+			}
+			
+			stringRedisTemplate.delete(key);
+			
+			String accessToken = getKakaoAccessToken(code);
+			
+			// 2. access token 발급 및 쿠키 저장
+			Cookie kakaoAccessTokenCookie = new Cookie("kakaoAccessToken", accessToken);
+			kakaoAccessTokenCookie.setHttpOnly(true);   
+			kakaoAccessTokenCookie.setPath("/");       
+			kakaoAccessTokenCookie.setMaxAge(3 * 60 * 60);
+
+			response.addCookie(kakaoAccessTokenCookie);
+			
+			// 3. 사용자 정보 조회 및 회원 처리
+			Map<String, Object> userInfo = getKakaoUserInfo(accessToken);
+			
+			if(userInfo.isEmpty()) return "redirect:/member/login?error=oauth";
+
+			MemberVO user = memberService.socialLoginOrRegister(userInfo, "kakao");
+			
+			if(user.isEmpty()) {
+				log.error("소셜 로그인 사용자 매핑 실패");
+				return "redirect:/member/login?error=oauth";
+		    }
+			
+			// 4. 서비스 로그인
+			Authentication authentication = memberService.authenticateSocialUser(user);
+
+			TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "kakao");
+			
+			// RefreshToken DB에 저장
+			memberService.addRefreshToken((String)userInfo.get("user_id"), token.getRefreshToken());
+			
+			// 5. JWT 쿠키 저장
+			setCookies(response, token.getAccessToken(), token.getRefreshToken());
+			
+			// 6. 로그인 이전 페이지로 리다이렉트
+			String prevPage = (String) request.getSession().getAttribute("prevPage");
+			
+			if (prevPage != null && !prevPage.isBlank()) {
+			    URI uri = URI.create(prevPage);
+			    return "redirect:" + uri.toString();
+			}else{
+				return "redirect:/";
+			}
+		} catch (Exception e) {
+			log.error("카카오 OAuth 콜백 실패", e);
+			return "redirect:/member/login?error=oauth";
 		}
-
-		session.removeAttribute("kakao_oauth_state");
 		
-		String accessToken = getKakaoAccessToken(code);
-		
-		// 2. access token 발급 및 쿠키 저장
-		Cookie kakaoAccessTokenCookie = new Cookie("kakaoAccessToken", accessToken);
-		kakaoAccessTokenCookie.setHttpOnly(true);   
-		kakaoAccessTokenCookie.setPath("/");       
-		kakaoAccessTokenCookie.setMaxAge(3 * 60 * 60);
-
-		response.addCookie(kakaoAccessTokenCookie);
-		
-		// 3. 사용자 정보 조회 및 회원 처리
-		Map<String, Object> userInfo = getKakaoUserInfo(accessToken);
-		
-		if(userInfo.isEmpty()) return "/member/login?error=oauth";
-
-		MemberVO user = memberService.socialLoginOrRegister(userInfo, "kakao");
-		
-		if(user.isEmpty()) {
-			log.error("소셜 로그인 사용자 매핑 실패");
-		    return "redirect:/member/login?error=oauth";
-	    }
-		
-		// 4. 서비스 로그인
-		Authentication authentication = memberService.authenticateSocialUser(user);
-
-		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "kakao");
-		
-		// RefreshToken DB에 저장
-		memberService.addRefreshToken((String)userInfo.get("user_id"), token.getRefreshToken());
-		
-		// 5. JWT 쿠키 저장
-		setCookies(response, token.getAccessToken(), token.getRefreshToken());
-		
-		// 6. 로그인 이전 페이지로 리다이렉트
-		String prevPage = (String) request.getSession().getAttribute("prevPage");
-		
-		if (prevPage != null && !prevPage.isBlank()) {
-		    URI uri = URI.create(prevPage);
-		    return "redirect:" + uri.toString();
-		}
-		
-		return "/";
 	}
 	
 	/**
@@ -273,20 +279,14 @@ public class OAuthController {
 	@PostMapping("/kakao/logout")
 	public ResponseEntity<Void> kakaoLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
 		
-		// 1. 서비스 로그아웃 
-        String userId = (String) request.getAttribute("userId");
-    	
-		if (userId == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-		
-		memberService.deleteRefreshToken(userId);
-		
 		// 모든 세션 만료
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.invalidate();
+		}
 		SecurityContextHolder.clearContext();
-		request.getSession().invalidate();
 		
-		// 2. kakaoAccessToken 추출
+		// 1. kakaoAccessToken 추출
 		Cookie[] cookies = request.getCookies();
 		String kakaoAccessToken = null;
 		
@@ -297,6 +297,13 @@ public class OAuthController {
 		            break;
 		        }
 		    }
+		}
+
+		// 2. 서비스 로그아웃 
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof MemberVO) {
+			String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
+			memberService.deleteRefreshToken(userId);
 		}
 		
 		// 3. 카카오 로그아웃
@@ -316,12 +323,11 @@ public class OAuthController {
 		            log.warn("카카오 로그아웃 실패 - 응답 코드: " + res.getStatusCodeValue());
 		        }
 		        
-		        
 		    } catch (Exception e) {
 		        log.error("카카오 로그아웃 실패: " + e.getMessage());
-		        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		    }
 		}
+
         deleteCookies(response, "kakaoAccessToken");
         
 		return ResponseEntity.ok().build();
@@ -330,19 +336,25 @@ public class OAuthController {
 	/********
 	 * 네이버 OAuth 로그인 요청을 시작하는 메서드.
 	 * - 네이버 인증 페이지로 리다이렉트시켜 사용자가 로그인하게 함
-	 * - CSRF 방어를 위해 state 생성 후 세션에 저장
+	 * - CSRF 방어를 위해 state 생성 후 redis에 저장
 	 * - 로그인 완료 후 네이버에서 redirect_uri로 code, state 전달됨
 	 */
 	@GetMapping("/naver")
-	public void redirectToNaverAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
-        try {
-			String clientId = naver_clientId;
-			String redirectUri = "http://localhost:8080/oauth/naver/callback";
-			String state = URLEncoder.encode(UUID.randomUUID().toString(), StandardCharsets.UTF_8.toString());
+	public String redirectToNaverAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
+		
+		String clientId = naver_clientId;
+		String redirectUri = "http://localhost:8080/oauth/naver/callback";
+		String state = URLEncoder.encode(UUID.randomUUID().toString(), StandardCharsets.UTF_8.toString());
 
-	        // CSRF 방어용 state 저장
-	        session.setAttribute("naver_oauth_state", state);
-
+		try {
+			
+			// CSRF 방어용 레디스 저장
+	        stringRedisTemplate.opsForValue().set(
+	        	"oauth:state:" + state,
+	        	"naver",
+	        	Duration.ofMinutes(5)
+	        );
+	        
 	        String requestUrl = UriComponentsBuilder
 	            .fromHttpUrl("https://nid.naver.com/oauth2.0/authorize")
 	            .queryParam("response_type", "code")
@@ -352,16 +364,11 @@ public class OAuthController {
 	            .build()
 	            .toUriString();
 
-	        response.sendRedirect(requestUrl);
+	    	return "redirect:" + requestUrl;
 	        
 		}catch(Exception e) {
 			log.error("네이버 로그인 리다이렉트 실패", e);
-			response.sendRedirect("/member/login?error=oauth");
-			try {
-				response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, "네이버 로그인 실패");
-			} catch (IOException ioException) {
-				log.error("오류 응답 실패", ioException);
-			}
+    		return "redirect:/member/login?error=oauth";
 		}
    	}
 	
@@ -371,7 +378,7 @@ public class OAuthController {
 	 * 1. state 검증
 	 * 2. access token 발급 및 쿠키 저장
 	 * 3. 사용자 정보 조회 및 회원 처리
-	 * 4. JWT 쿠키 저장 및 세션 로그인 표시
+	 * 4. 4. JWT 발급 및 쿠키 저장
 	 * 5. 로그인 이전 페이지로 리다이렉트
 	 * @param code 인가코드
 	 * @param state CSRF 공격을 방지하기 위해 애플리케이션에서 생성한 상태 토큰값
@@ -386,13 +393,16 @@ public class OAuthController {
 			HttpServletResponse response) {
 		
 		// 1. state 검증
-		String expectedState = (String)session.getAttribute("naver_oauth_state");
-		
-		if (!state.equals(expectedState)) {
-		    return "/member/login?error=invalid_state";
-		}
+		String key = "oauth:state:" + state;
 
-		session.removeAttribute("naver_oauth_state");
+		Boolean exists = stringRedisTemplate.hasKey(key);
+		
+		if (exists == null || !exists) {
+			log.error("Invalid OAuth state");
+			return "redirect:/member/login?error=invalid_state";
+		}
+		
+		stringRedisTemplate.delete(key);
 		
 		String accessToken = getNaverAccessToken(code, state);
 		
@@ -407,7 +417,7 @@ public class OAuthController {
 		// 3. 사용자 정보 조회 및 회원 처리
 		Map<String, Object> userInfo = getNaverUserInfo(accessToken);
 		
-		if(userInfo.isEmpty()) return "/member/login?error=oauth";
+		if(userInfo.isEmpty()) return "redirect:/member/login?error=oauth";
 		
 		// 사용자 정보가 DB에 없으면 회원가입
 		MemberVO user = memberService.socialLoginOrRegister(userInfo, "naver");
@@ -432,7 +442,7 @@ public class OAuthController {
 		    URI uri = URI.create(prevPage);
 		    return "redirect:" + uri.toString();
 		}
-		return "/";
+		return "redirect:/";
 	}
 	
 	
@@ -535,27 +545,28 @@ public class OAuthController {
 	 */
 	@PostMapping("/naver/logout")
 	public ResponseEntity<Void> naverLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
+
+		// 1. 모든 세션 만료
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.invalidate();
+		}
+		SecurityContextHolder.clearContext();
+		
 		try {
-	        // 서비스 로그아웃 
-	        String userId = (String) request.getAttribute("userId");
-	    	
-			if (userId == null) {
-			    return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			// 2. 서비스 로그아웃 
+			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+			if (auth != null && auth.getPrincipal() instanceof MemberVO) {
+				String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
+				memberService.deleteRefreshToken(userId);
 			}
 			
-			memberService.deleteRefreshToken(userId);
 			deleteCookies(response, "naverAccessToken");
-			
-			// 모든 세션 만료
-			SecurityContextHolder.clearContext();
-			request.getSession().invalidate();
-
-			return ResponseEntity.ok().build();
-	        
+		        
 	    } catch (Exception e) {
 	        log.error("네이버 로그아웃 실패: " + e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 	    }
+		return ResponseEntity.ok().build();
 	}
 	
 	private void setCookies(HttpServletResponse response, String accessToken, String refreshToken) {
@@ -587,5 +598,4 @@ public class OAuthController {
 	        response.addCookie(cookie);
 	    }
 	}
-	
 }

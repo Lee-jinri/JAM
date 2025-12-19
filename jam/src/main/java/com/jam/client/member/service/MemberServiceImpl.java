@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -13,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -101,8 +101,6 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.emailCheck(email);
 	}
 	
-	
-
 	public String getAccessToken(HttpServletRequest request) {
 
 		String accessToken ="";
@@ -117,7 +115,6 @@ public class MemberServiceImpl implements MemberService {
                 }
             }
         }
-		
 		return accessToken;
 	}
 	
@@ -251,36 +248,49 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public MemberVO socialLoginOrRegister(Map<String, Object> userInfo, String provider) {
 	
-		try {
-	        MemberVO user = new MemberVO();
-	        
-	        // 가입 여부 확인
-	        String userId = (String)userInfo.get("user_id");
-	        int result = memberDao.findSocialUser(userId);
+        MemberVO user = new MemberVO();
+        
+        // 가입 여부 확인
+        String userId = (String)userInfo.get("user_id");
+        int result = memberDao.findSocialUser(userId);
 
-	        // 회원 정보 없으면 회원가입
-	        if (result == 0) {
-	            String base = provider + "_" + userInfo.get("user_name");
-	            String user_name = base;
-	            int count = 1;
-	            
-	            while (memberDao.nameCheck(user_name) == 1) { // 중복이면 숫자 붙임
-	                user_name = base + "_" + count;
-	                count++;
-	            }
+        // 회원 정보 없으면 회원가입
+        if (result == 0) {
+            String base = provider + "_" + userInfo.get("user_name");
+            String user_name = base;
+            int count = 1;
+            
+            while (memberDao.nameCheck(user_name) == 1) { // 중복이면 숫자 붙임
+                user_name = base + "_" + count;
+                count++;
+            }
 
-	            userInfo.put("user_name", user_name);
-	            memberDao.SocialRegister(userInfo);
-	            user.setUser_name(user_name);
-	        }else user = memberDao.findByUserInfo(userId);
-	        
-	        log.info("소셜 로그인 처리 완료");
-	        
-	        return user;
-	    } catch (Exception e) {
-	        log.error("소셜 로그인 처리 중 오류 발생: " + e.getMessage());
-	    }
-		return null;
+            userInfo.put("user_name", user_name);
+            
+            String randomPw = UUID.randomUUID().toString();
+            userInfo.put("user_pw", encoder.encode(randomPw));
+            
+            memberDao.SocialRegister(userInfo);
+            
+            // 기본 권한 부여(ROLE_USER)
+            int roleResult = memberDao.assignDefaultRoleToMember(userId);
+
+            if (roleResult != 1) {
+            	log.error("회원가입 중 기본 권한 부여 실패 (userId={})", userId);;
+            	throw new ConflictException("회원가입 처리 중 오류가 발생했습니다. 다시 시도해주세요.");
+        	}
+            
+            user.setUser_name(user_name);
+
+            // Redis에 닉네임 저장
+            cacheUserName(userId, user_name);
+        }else {
+        	user = memberDao.findByUserInfo(userId);
+        	
+            log.info("소셜 로그인 처리 완료");
+            
+        }
+        return user;
 	}
 	
 	// 닉네임 변경
@@ -289,8 +299,7 @@ public class MemberServiceImpl implements MemberService {
 		
 		try {
 	        // Redis에 닉네임 저장
-	        String key = "users:name:" + member.getUser_id();
-	        stringRedisTemplate.opsForValue().set(key, member.getUser_name());
+            cacheUserName(member.getUser_id(), member.getUser_name());
 
 	         return memberDao.updateUserName(member) == 1;
 	    } catch (Exception e) {
@@ -520,5 +529,10 @@ public class MemberServiceImpl implements MemberService {
 	@Override
 	public MemberVO findByUserInfo(String userId) {
 		return memberDao.findByUserInfo(userId);
+	}
+	
+	private void cacheUserName(String userId, String userName) {
+		String key = "users:name:" + userId;
+		stringRedisTemplate.opsForValue().set(key, userName);
 	}
 }
