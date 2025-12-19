@@ -20,7 +20,7 @@ import com.jam.global.handler.CustomLoginFailureHandler;
 import com.jam.global.handler.CustomLoginSuccessHandler;
 import com.jam.global.handler.CustomLogoutHandler;
 import com.jam.global.handler.CustomLogoutSuccessHandler;
-import com.jam.global.jwt.JwtTokenProvider;
+import com.jam.global.jwt.JwtService;
 import com.jam.global.security.CustomUserDetailsService;
 import com.jam.global.security.JwtAuthenticationFilter;
 
@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 @ComponentScan(basePackages = "com.jam")
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	private final JwtTokenProvider jwtTokenProvider;
+	private final JwtService jwtService;
 	private final CustomLoginSuccessHandler customSuccessHandler;
 	private final CustomLoginFailureHandler customFailureHandler;
 	private final CustomLogoutHandler customLogoutHandler;
@@ -42,6 +42,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private final CustomUserDetailsService customUserDetailsService;
 	private final CustomAuthEntryPoint customAuthEntryPoint;
 	private final CustomAccessDeniedHandler customAccessDeniedHandler;
+	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	
 	/*
 	@Bean
@@ -94,8 +95,35 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				// .antMatchers("/admin/admin").hasRole("ADMIN")
 				.antMatchers("/.well-known/**")
 				.denyAll() // 차단
-				.antMatchers("/**")
-				.permitAll()
+				.antMatchers(
+						"/api/member/auth/check",
+        				"/api/member/me/token", 
+        				"/api/member/logout", 
+        				"/oauth/kakao/logout",
+        				"/oauth/naver/logout",
+        				"/api/member/userName",
+        				"/api/member/phone",
+        				"/api/member/verify-password",
+        				"/api/member/password",
+        				"/api/member/address",
+        				"/api/member/deleteAccount",
+        				"/api/member/convertBusiness",
+        				
+        				"/api/jobs/**",
+        				"/api/community/**",
+        				//"/api/fleaMarket/**",
+        				"/api/roomRental/**",
+        				"/api/chat/**",
+        				
+        				"/api/**/posts",
+        				"/community/comments/**",
+        				"/community/posts/**",
+        				
+        				"/api/mypage/myPosts",
+        				"/api/mypage/account",
+        				
+        				"/api/files/**/download-url"
+					).authenticated()
 			.and()
 			.formLogin()
 				.loginPage("/member/login")
@@ -115,13 +143,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
 			// .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 			.and()
-			// 스프링 시큐리티 실행전에 JwtAuthenticationFilter의 doFilter가 실행됨
-			/*
-			 * UsernamePasswordAuthenticationFilter 클래스를 기준으로 JwtAuthenticationFilter를 이 필터
-			 * 앞에 추가하도록 지정하고 있습니다. 즉, JwtAuthenticationFilter가
-			 * UsernamePasswordAuthenticationFilter보다 먼저 실행
+			/* UsernamePasswordAuthenticationFilter: 로그인 처리
+			 * JwtAuthenticationFilter: 로그인 이후의 모든 요청을 처리하는 필터
 			 */
-				.addFilterBefore(new JwtAuthenticationFilter(jwtTokenProvider),
+				.addFilterBefore(jwtAuthenticationFilter,
 					UsernamePasswordAuthenticationFilter.class)
 			.csrf().disable();
 	}

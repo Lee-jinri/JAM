@@ -6,59 +6,67 @@ import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.GenericFilterBean;
+import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.jam.global.jwt.JwtTokenProvider;
-import com.jam.global.jwt.TokenInfo.TokenStatus;
+import com.jam.global.jwt.JwtService;
 
 @Component
-public class JwtAuthenticationFilter extends GenericFilterBean {
-/*JWt 인증을 위해 생성되는 토큰 , 요청과 함께 바로 실행 , 요청이 들어오면 헤더에서 토큰 추출*/
-	
-	private final JwtTokenProvider jwtTokenProvider;
-	
-	public JwtAuthenticationFilter(JwtTokenProvider jwtTokenProvider) {
-		this.jwtTokenProvider = jwtTokenProvider;
+//public class JwtAuthenticationFilter extends GenericFilterBean {
+public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+	private final JwtService jwtService;
+	public JwtAuthenticationFilter(JwtService jwtService) {
+		this.jwtService = jwtService;
 	}
- 
+ /*
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
 			throws IOException, ServletException {
-			    
-		String token = extractToken((HttpServletRequest) request);
 		
-		TokenStatus tokenStatus = jwtTokenProvider.validateToken(token);
-		
-		// 토큰 유효성 검사
-		if(tokenStatus == TokenStatus.VALID) {
-			// 유저의 인증 정보를 가져옴
-			Authentication authentication = jwtTokenProvider.getAuthentication(token);
+		if (((HttpServletRequest) request).getCookies() != null) {
+			Authentication authentication = jwtService.getAuthentication(
+					((HttpServletRequest) request).getCookies(),
+					(HttpServletRequest) request,
+					(HttpServletResponse) response);
 			
-			//  사용자 인증 정보를 현재 스레드의 보안 컨텍스트에 저장 
-			//SecurityContextHolder는 Spring Security에서 현재 보안 관련 정보를 관리하는 클래스
-			SecurityContextHolder.getContext().setAuthentication(authentication);
-			
+			if(authentication != null) SecurityContextHolder.getContext().setAuthentication(authentication);
 		}
+		
 		// 다음 필터로 요청 전달
 		chain.doFilter(request, response);
-		
 	}
+*/
+	@Override
+	protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+			throws ServletException, IOException {
+		
+		if (request.getCookies() != null) {
+			Authentication authentication =
+				jwtService.getAuthentication(
+					request.getCookies(),
+					request,
+					response
+				);
 
-	// 쿠키에서 토큰 추출
-	private String extractToken(HttpServletRequest request) {
-	    if (request.getCookies() == null) return null;
-	    for (Cookie cookie : request.getCookies()) {
-	        if ("Authorization".equals(cookie.getName())) {
-	            return cookie.getValue();
-	        }
-	    }
-	    return null;
+			if (authentication != null) {
+				SecurityContextHolder.getContext().setAuthentication(authentication);
+			}
+		}
+		
+		// 다음 필터로 요청 전달
+		filterChain.doFilter(request, response);
 	}
 	
+	@Override
+	protected boolean shouldNotFilter(HttpServletRequest request) {
+		return request.getServletPath().equals("/api/member/login-process");
+	}
+
 }

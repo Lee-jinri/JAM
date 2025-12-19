@@ -104,37 +104,8 @@ public class ServletConfig implements WebMvcConfigurer {
 	
 	@Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtInterceptor)
-        		.addPathPatterns(
-        				"/api/member/auth/check",
-        				"/api/member/me/token", 
-        				"/api/member/logout", 
-        				"/oauth/kakao/logout",
-        				"/oauth/naver/logout",
-        				"/api/member/userName",
-        				"/api/member/phone",
-        				"/api/member/verify-password",
-        				"/api/member/password",
-        				"/api/member/address",
-        				"/api/member/deleteAccount",
-        				"/api/member/convertBusiness",
-        				
-        				"/api/jobs/**",
-        				"/api/community/**",
-        				"/api/fleaMarket/**",
-        				"/api/roomRental/**",
-        				"/api/chat/**",
-        				
-        				"/api/**/posts",
-        				"/community/comments/**",
-        				"/community/posts/**",
-        				
-        				"/api/mypage/favorite/**",
-        				"/api/mypage/myPosts",
-        				"/api/mypage/account",
-        				
-        				"/api/files/**/download-url"
-        		);
+		registry.addInterceptor(jwtInterceptor)
+	    .addPathPatterns("/**");
    }
     
 }

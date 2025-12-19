@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import com.jam.client.member.service.MemberService;
@@ -42,15 +41,13 @@ public class JwtService {
 	 * @return           userId, auth가 포함된 Map (로그인된 경우), 실패 시 빈 Map
 	 * @throws Exception 내부 처리 중 예외 발생 시
 	 */
-	public MemberVO getUserInfo(Cookie[] cookies, HttpServletRequest request, HttpServletResponse response) throws Exception {
-		
+	public Authentication getAuthentication(Cookie[] cookies, HttpServletRequest request, HttpServletResponse response){
+				
 		try {
 			String accessToken = extractToken(cookies, "Authorization");
 			
 			TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
 			
-			log.info("[JWT] AccessToken 상태: " + tokenStatus);
-
 			switch(tokenStatus) {
 				// accessToken 인증됨
 				case VALID: 
@@ -60,16 +57,13 @@ public class JwtService {
 					        null,
 					        userInfo.getAuthorities()
 					    );
-					    SecurityContextHolder.getContext().setAuthentication(authentication);
-					return userInfo;
+					return authentication;
 				case EXPIRED:
 				case EMPTY:
 					String refreshToken = extractToken(cookies, "RefreshToken");
 					
 					if (refreshToken == null || 
 					    jwtTokenProvider.validateToken(refreshToken) != TokenStatus.VALID) {
-						
-						log.warn("[JWT] 자동로그인 실패: refreshToken 없음.");
 						
 						AuthClearUtil.clearAuth(request, response);
 						return null;
@@ -79,23 +73,21 @@ public class JwtService {
 					
 					if (autoLogin) {
 						log.info("[JWT] AccessToken 만료, refreshToken 재발급 시도 autoLogin: " + autoLogin);
-						return processRefreshToken(refreshToken, response, request, true);
+						authentication = processRefreshToken(refreshToken, response, request, true);
+						
+						return authentication;
 					}
-					
-					log.warn("[JWT] 자동로그인 실패: 자동로그인 설정되지 않음.");
-					
 					AuthClearUtil.clearAuth(request, response);
 					return null;
 				case INVALID:
 					log.warn("[JWT] 유효하지 않은 토큰");
 					
 					AuthClearUtil.clearAuth(request, response);
-					response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-	                return new MemberVO();
+	                return null;
 			}
 		}catch(Exception e) {
 	        log.error("[JWT] 내부 처리 중 예외 발생", e);
-	        response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+	        AuthClearUtil.clearAuth(request, response);
 	    }
 		
 		return null;
@@ -118,7 +110,7 @@ public class JwtService {
 		return userInfo;
 	}
 	
-	private MemberVO processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
+	private Authentication processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
 		log.info("processRefreshToken 진입");
 		
 		// 1. RefreshToken으로 사용자 정보 가져옴.
@@ -126,18 +118,16 @@ public class JwtService {
 		
 		if (userId == null || userId.isEmpty()) {
 		    log.error("[JWT] refreshToken으로 사용자 정보 조회 실패");
-		    return new MemberVO();
+		    return null;
 		}
 		
 		MemberVO userInfo = memberService.findByUserInfo(userId);
 
     	String loginType = jwtTokenProvider.extractLoginType(refreshToken);
-
+    	
     	// 2. SecurityContext에 Authentication 설정
     	Authentication authentication = new UsernamePasswordAuthenticationToken(
     			userInfo, null,  userInfo.getAuthorities());
-    	
-        SecurityContextHolder.getContext().setAuthentication(authentication);
     	
         // 3. 새로운 토큰 갱신
         TokenInfo token = jwtTokenProvider.generateToken(authentication, autoLogin, loginType);
@@ -153,7 +143,7 @@ public class JwtService {
         
         log.info("[JWT] 새로운 AccessToken/RefreshToken 발급 - userId: " + userId + " loginType: " + loginType);
 
-        return userInfo;
+        return authentication;
 	}
 	
 	// 쿠키에서 토큰 추출
@@ -278,5 +268,9 @@ public class JwtService {
         }
 		
 		return jwtTokenProvider.extractAutoLogin(token); 
+	}
+
+	public TokenStatus validateToken(String token) {
+		return jwtTokenProvider.validateToken(token);
 	}
 }

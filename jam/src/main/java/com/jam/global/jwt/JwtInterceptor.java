@@ -5,6 +5,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -15,23 +17,23 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
-
-	private final JwtService jwtService;
-
-	
-	public JwtInterceptor(JwtService jwtService) {
-		this.jwtService = jwtService;
-	}
 	
 	@Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 		
-		MemberVO userInfo = jwtService.getUserInfo(request.getCookies(), request, response);
-		
-		if (userInfo == null) {
-			return true; 
-		}
-		setRequestAttributes(request, userInfo);
+		Authentication authentication =
+			        SecurityContextHolder.getContext().getAuthentication();
+
+	    if (authentication == null || !authentication.isAuthenticated()) {
+	        return true; // 비로그인 사용자도 통과
+	    }
+	    
+	    Object principal = authentication.getPrincipal();
+
+	    if (principal instanceof MemberVO) {
+	        MemberVO userInfo = (MemberVO) principal;
+	        setRequestAttributes(request, userInfo);
+	    }
 		return true;
 	}
 
