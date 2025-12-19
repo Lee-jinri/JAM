@@ -10,10 +10,20 @@ import lombok.extern.slf4j.Slf4j;
 @RequestMapping("/common")
 @Slf4j
 public class CommonController {
-	@GetMapping("/accessError")
-	public void accessDenied(Authentication auth, Model model) {
-		log.info("access Denied : " + auth);
-		model.addAttribute("msg","Access Denied");
+	
+	/*****************
+	 * 
+	 */
+	@GetMapping("/unauthorized")
+	public String unauthorized() {
+		return "/common/unauthorized";
 	}
+	
+	@GetMapping("/accessDenied")
+	public String accessDenied() {
+		return "/common/accessDenied";
+	}
+	
+	
 	
 }
