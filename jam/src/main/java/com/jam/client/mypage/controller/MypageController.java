@@ -19,24 +19,35 @@ public class MypageController {
 	/***********************************
 	 * @return 북마크 페이지
 	 ***********************************/
-	@RequestMapping(value="/favorite", method = RequestMethod.GET)
+	@GetMapping("/favorite")
 	public String favoritePage() {
 		return "mypage/favorite";
 	}
 	
 	/*************************************
-	 * @return 작성한 글 페이지
+	 * @return 사용자가 작성한 글 페이지
 	 ************************************/
-	@RequestMapping(value="/written", method = RequestMethod.GET)
-	public String writtenPage() {
-		return "mypage/written";
+	@GetMapping("/posts")
+	public String myPostsPage() {
+		return "mypage/posts";
+	}
+
+	// TODO: 추후 다른 사용자의 작성글 조회 기능 추가 (닉네임 클릭 시 이동)
+	/*************************************
+	 * @return 다른 사용자가 작성한 글 페이지
+	 ************************************/
+	@GetMapping("/user/{targetUserId}/posts")
+	public String userPostsPage(@PathVariable String targetUserId, Model model) {
+	    model.addAttribute("targetUserId", targetUserId);
+	    return "mypage/posts";
 	}
 	
 	/****************************************************
 	 * 마이페이지 - 회원 정보 페이지로 이동하는 메서드
 	 * @return 마이페이지 - 회원 정보 페이지 / 로그인 되어 있지 않으면 로그인 페이지로 이동
 	 ****************************************************/
-	@RequestMapping(value = "/account", method = RequestMethod.GET)
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/account")
 	public String mypageAccount() throws Exception {
 
 		return "mypage/account";
