@@ -6,7 +6,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
@@ -19,7 +18,6 @@ import com.jam.global.exception.ConflictException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
-import com.jam.global.util.AuthClearUtil;
 
 import lombok.extern.slf4j.Slf4j;
 

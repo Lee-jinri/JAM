@@ -23,7 +23,6 @@ import lombok.RequiredArgsConstructor;
 public class CommunityServiceImpl implements CommunityService {
 	
 	private final CommunityDAO comDao;
-	private final FileService fileService;
 	private final PostImageViewService imageViewService;
 	private final FileReferenceService fileRefService;	
 	
