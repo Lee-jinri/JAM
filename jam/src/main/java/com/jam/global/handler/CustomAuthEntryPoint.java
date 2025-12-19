@@ -18,6 +18,8 @@ public class CustomAuthEntryPoint implements AuthenticationEntryPoint  {
 	public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException ex) throws IOException {
 		AuthClearUtil.clearAuth(request, response);
 	    
-	    response.sendRedirect("/common/unauthorized");
+		response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+
+	    //response.sendRedirect("/common/unauthorized");
 	}
 }
