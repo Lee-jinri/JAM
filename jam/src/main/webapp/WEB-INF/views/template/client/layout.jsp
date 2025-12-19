@@ -9,6 +9,10 @@ pageEncoding="UTF-8" session="false" buffer="32kb" autoFlush="true" %>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;700&display=swap" rel="stylesheet">	
 
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+
 <c:set var="ctx" value="${pageContext.request.contextPath}" />
 <c:set var="rawUri" value="${pageContext.request.requestURI}" />
 

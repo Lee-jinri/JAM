@@ -307,7 +307,7 @@
 			
 			<form id="replyForm">
 				<div class="reply_div">
-					<div id="reply_login"></div>
+					<div id="reply_login" class="reply_login"></div>
 					<table>
 						<tr id="reply_userName">
 							<td id="reply_name"></td>

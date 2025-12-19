@@ -530,6 +530,12 @@ ul {
     gap: 10px;
 }
 
+#com_content img{
+	max-width: 100%;
+	height: auto;
+	display: block;	
+}
+
 .commentContainer {
     width: 100%;
     margin-top: 6rem;

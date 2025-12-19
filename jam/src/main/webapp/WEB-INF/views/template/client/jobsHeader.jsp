@@ -29,7 +29,7 @@ header {
     align-items: center;
     justify-content: space-between; 
     max-width: 114rem;
-    padding: 0 20px;
+    padding: 0 32px;
     height: 42px;
     margin: 0 60px;
 }
@@ -102,12 +102,12 @@ header {
 	font-size: 15px;
 }
 
-.search-div {
-	max-width: 500px; 
+.job-search-div {
+	max-width: 345px; 
 	min-width: 345px;
 	width: 100%;    
 	margin: 0 15px;
-	padding: 3px 8px;
+	padding: 0 8px;
 	border: 2px solid #0F2D4A;
 }
 
@@ -234,7 +234,7 @@ header {
 		height: 30px;
 	}
 
-	.search-div {
+	.job-search-div {
 		min-width: 0;
 		 /*flex-basis: 240px; max-width: 280px;*/ 
 		max-width: 240px;
@@ -298,7 +298,7 @@ header {
 	}
 	#header_name, .userTypeSpan{font-size:12px;}
 	.brand-link span{font-size: 12px;}
-	.search-div {
+	.job-search-div {
 		/*flex-basis: 420px; */
 		max-width: 350px;
     	min-width: 250px;
@@ -448,7 +448,7 @@ function openBusinessPopup() {
 					</div>
 				</div>
 				
-				<div class="search-div flex justify-center items-center border-radius-43px">
+				<div class="job-search-div flex justify-center items-center border-radius-43px">
 					<div class="search-bar-wrapper item-center flex justify-space-around">
 						<input type="text" name="keyword" id="keyword" class="search search-input">
 						<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>

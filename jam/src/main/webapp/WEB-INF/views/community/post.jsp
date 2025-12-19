@@ -39,7 +39,7 @@ $(function(){
 				    });
 				}
 
-				alert("삭제가 완료 되었습니다.");
+				alert("삭제가 완료되었습니다.");
 				$(location).attr('href', '/community/board');
 			})
 			.catch(err => {
@@ -67,7 +67,7 @@ function getPost(postId){
 		    authorUserName = detail.user_name;
 		        
 		    $("#com_title").text(detail.title);
-			$("#user_name").text(detail.user_name);
+			$("#user_name").text(detail.user_name + "님");
 			$("#user_name").attr("data-userid", detail.user_id);
 			$("#created_at").text(detail.created_at);
 			$("#view_count").text("조회 " + detail.view_count);
@@ -120,7 +120,7 @@ function currentUserIsAuthor(isAuthor){
 			</div>
 			<div class="post-info">
 				<div class="post-user-profile">
-					<i class="fa-solid fa-face-smile" style="font-size: 31px; color: #bbb;"></i>
+					<i class="fa-solid fa-face-smile" style="font-size: 25px; color: #bbb;"></i>
 					<span id="user_name" class="userName font-size-14"></span>  
 					<div class="userNameToggle"></div>
 				</div>

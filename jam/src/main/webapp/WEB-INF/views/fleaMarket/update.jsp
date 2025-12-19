@@ -472,7 +472,7 @@ function updateCount() {
 		</div>
 		<div class="flex justify-end">
 			<button id="update" class="btn-group">수정</button>
-			<button id="cancel" class="btn-group">취소</button>
+			<button id="cancel" class="btn-group" onclick="history.back()">취소</button>
 		</div>
 	</div>
 </body>

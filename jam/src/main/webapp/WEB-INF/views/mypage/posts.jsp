@@ -521,8 +521,6 @@ function loadPagination(pageMaker, boardType) {
 			</div>
 	
 	        <div>
-	        
-		        
 				<div class="search-div flex justify-center items-center ">
 					<div class="search-container">
 						<i id="searchBtn" class="fa-solid fa-magnifying-glass search-icon cursor-pointer"></i>

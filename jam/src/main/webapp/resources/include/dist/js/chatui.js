@@ -5,8 +5,6 @@ $(function(){
 	let offsetY = 0;
 	let isDragging = false;
 	
-	chatContainer.style.left = "75%"; // 화면 오른쪽에서 20% 떨어진 위치
-	chatContainer.style.top = "35%"; // 화면 아래에서 20% 떨어진 위치
 	
 	chatDrag.addEventListener("mousedown", (e) => {
 		isDragging = true;

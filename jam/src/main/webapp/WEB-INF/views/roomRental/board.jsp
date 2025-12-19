@@ -117,7 +117,7 @@
 						if(!response.ok){
 							throw new Error('Network response was not ok.');
 						}
-						alert('삭제가 완료 되었습니다.');
+						alert('삭제가 완료되었습니다.');
 						$(location).attr('href','/roomRental/boards');
 					})
 					.catch(error =>{

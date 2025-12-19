@@ -323,8 +323,10 @@
 		<input type="hidden" id="result" value="${result }">
 	</div>	
 	<div class="my-top-15 my-bottom-15">
-		<div class="title flex my-bottom-8" >
-			<h2>중고 악기</h2>
+		<div class="page-header">
+			<p class="page-title">판매 상품 등록</P>
+			<p>구매자가 궁금해할 정보들을 자세히 남겨주세요 ✨</p>
+			<p>사진·사용감·보유기간 등이 상세할수록 거래가 빠릅니다.</p>
 		</div>
 		<div style="margin-bottom: 100px;">
 			<h3>상품정보</h3>

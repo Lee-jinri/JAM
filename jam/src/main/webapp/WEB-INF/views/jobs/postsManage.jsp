@@ -400,7 +400,7 @@ $(function(){
 		const $btn = $(this);
 		const $div = $btn.closest("div"); 
 		const postId = $div.attr("data-post-id");
-		
+
 		if(!postId){
 			alert("오류가 발생했습니다. 잠시 후 다시 시도하세요.");
 			return;

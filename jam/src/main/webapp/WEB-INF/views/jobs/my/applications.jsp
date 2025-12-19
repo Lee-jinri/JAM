@@ -176,7 +176,7 @@
 					let msg = data?.detail || data?.error || '지원 취소 중 오류가 발생했습니다.';
 					throw data ? { ...data } : { detail: msg };
 				}
-				alert('지원 취소가 완료 되었습니다.');
+				alert('지원 취소가 완료되었습니다.');
 				loadApps();
 			}catch(err){
 				if (handleApiError(err, "/jobs/board")) return;
