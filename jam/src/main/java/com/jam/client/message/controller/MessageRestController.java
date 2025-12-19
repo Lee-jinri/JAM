@@ -29,7 +29,7 @@ public class MessageRestController {
 	 * @param MessageVO message_vo
 	 * @return 쪽지 전송 결과 
 	 ****************************/
-	@RequestMapping(value="/send", method=RequestMethod.POST)
+	@PostMapping("/send")
 	public ResponseEntity<String> messageWrite(@RequestBody MessageVO message, HttpServletRequest request) {
 
 		String validationError  = validateMessage(message);

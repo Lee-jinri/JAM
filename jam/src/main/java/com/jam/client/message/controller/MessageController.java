@@ -29,7 +29,7 @@ public class MessageController {
 	/***********************************************
 	 * @return 받은 쪽지 목록 페이지
 	 ***********************************************/
-	@RequestMapping(value = "/receiveMessage", method = RequestMethod.GET)
+	@GetMapping("/receiveMessage")
 	public String receiveMessage(@ModelAttribute MessageVO message, Model model, HttpServletRequest request) {
 		
 		
@@ -58,7 +58,7 @@ public class MessageController {
 	/***********************************************
 	 * @return 보낸 쪽지 목록 페이지
 	 ***********************************************/
-	@RequestMapping(value = "/sendMessage", method = RequestMethod.GET)
+	@GetMapping("/sendMessage")
 	public String sendMessage(@ModelAttribute MessageVO message, Model model, HttpServletRequest request) {
 	    
 	    try {
@@ -89,7 +89,7 @@ public class MessageController {
 	 * @param MessageVO message_vo
 	 * @return 받은 쪽지 상세 페이지
 	 ***********************************/
-	@RequestMapping(value="/receiveMsgDetail/{message_no}", method=RequestMethod.GET)
+	@GetMapping("/receiveMsgDetail/{message_no}")
 	public String receiveMessageDetailPage(@PathVariable("message_no") Long message_no, Model model, HttpServletRequest request) {
 		
 		String receiver_id = (String)request.getAttribute("userId");
@@ -120,7 +120,7 @@ public class MessageController {
 	 * @param MessageVO message_vo
 	 * @return 보낸 쪽지 상세페이지
 	 ******************************/
-	@RequestMapping(value="/sendMsgDetail/{message_no}", method=RequestMethod.GET)
+	@GetMapping("/sendMsgDetail/{message_no}")
 	public String sendMessageDetailPage(@PathVariable("message_no") Long message_no, Model model, HttpServletRequest request) {
 		
 		String sender_id = (String) request.getAttribute("userId");
@@ -148,7 +148,7 @@ public class MessageController {
 	/********************************
 	 * @return 쪽지 전송 페이지
 	 ********************************/
-	@RequestMapping(value = "/send/{user_name}", method = RequestMethod.GET)
+	@GetMapping("/send/{user_name}")
 	public String sendMessage(@PathVariable("user_name") String user_name, Model model) {
 	    
 		model.addAttribute("receiver", user_name);
@@ -160,7 +160,7 @@ public class MessageController {
 	 * @param MessageVO message_vo 
 	 * @return 쪽지 답장 페이지
 	 ********************************/
-	@RequestMapping(value="/response/{user_name}", method=RequestMethod.GET)
+	@GetMapping("/response/{user_name}")
 	public String responseForm(@PathVariable("user_name") String user_name, Model model) {
 	    
 		model.addAttribute("receiver", user_name);
