@@ -34,6 +34,7 @@ import com.jam.file.vo.ImageFileVO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
+import com.jam.global.util.HtmlSanitizer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -134,7 +135,13 @@ public class FleaMarketRestController {
 		if (content == null || content.trim().isEmpty()) {
 		    return ResponseEntity.badRequest().body("설명을 입력하세요.");
 		}
-
+		if (images == null || images.isEmpty()) {
+			return ResponseEntity.badRequest().body("사진은 최소 1장 이상 등록해야 합니다.");
+		}
+		if (price <= 0) {
+			return ResponseEntity.badRequest().body("가격은 0원보다 커야 합니다.");
+		}
+		content = HtmlSanitizer.sanitizeHtml(content);
 		FleaMarketVO flea_vo = new FleaMarketVO();
 		
 		flea_vo.setTitle(title);
@@ -217,7 +224,12 @@ public class FleaMarketRestController {
 	    if (thumbnailId == null && thumbnailName == null) {
 	        throw new RuntimeException("썸네일이 설정되지 않았습니다.");
 	    }
+	    
+		if (price <= 0) {
+			return ResponseEntity.badRequest().body("가격은 0원보다 커야 합니다.");
+		}
 
+		content = HtmlSanitizer.sanitizeHtml(content);
 		FleaMarketVO flea_vo = new FleaMarketVO();
 
 		flea_vo.setPost_id(postId);
