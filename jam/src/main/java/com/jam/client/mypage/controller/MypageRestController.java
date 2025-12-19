@@ -92,18 +92,16 @@ public class MypageRestController {
 		return ResponseEntity.ok(result);
 	}
 
-	@PostMapping(value = "/favorite/{boardNo}", produces = "application/json")
-    public ResponseEntity<String> addFavorite(@PathVariable Long boardNo, @RequestParam String boardType, HttpServletRequest request) {
+	@PostMapping(value = "/favorite/{postId}", produces = "application/json")
+    public ResponseEntity<String> addFavorite(@PathVariable Long postId, @RequestParam String boardType, @AuthenticationPrincipal MemberVO user) {
         
-		String user_id = (String)request.getAttribute("userId");
-		
-		if(user_id == null) {
+		if(user == null || user.getUser_id() == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body("로그인이 필요한 서비스 입니다. 로그인 하시겠습니까?");
 		}
 		
 		try {
-			boolean added = mypageService.addFavorite(user_id, boardType, boardNo);
+			boolean added = mypageService.addFavorite(user.getUser_id(), boardType, postId);
 	        
 			if (!added) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -119,17 +117,16 @@ public class MypageRestController {
 		}
     }
 	
-	@DeleteMapping(value = "/favorite/{boardNo}", produces = "application/json")
-	public ResponseEntity<String> deleteFavorite(@PathVariable Long boardNo, @RequestParam String boardType, HttpServletRequest request){
-		String user_id = (String)request.getAttribute("userId");
+	@DeleteMapping(value = "/favorite/{postId}", produces = "application/json")
+	public ResponseEntity<String> deleteFavorite(@PathVariable Long postId, @RequestParam String boardType, @AuthenticationPrincipal MemberVO user){
 		
-		if(user_id == null) {
+		if(user == null || user.getUser_id() == null) {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-					.body("로그인 되지 않음.");
+					.body("로그인이 필요한 서비스 입니다. 로그인 하시겠습니까?");
 		}
 		
 		try {
-			boolean deleted = mypageService.deleteFavorite(user_id, boardNo, boardType);
+			boolean deleted = mypageService.deleteFavorite(user.getUser_id(), boardType, postId);
 			
 			if (!deleted) {
 	            return ResponseEntity.status(HttpStatus.NOT_FOUND)
