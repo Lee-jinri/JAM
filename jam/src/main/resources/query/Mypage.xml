@@ -15,7 +15,7 @@
 			FROM favorite f
 			WHERE f.post_id   = c.post_id
 			  AND f.user_id    = #{user_id}
-			  AND f.board_type = 'community'
+			  AND f.board_type = 'COM'
 		)
 		ORDER BY c.created_at DESC, c.post_id DESC
 		OFFSET (#{pageNum} - 1) * #{amount} ROWS
@@ -31,7 +31,7 @@
 			FROM favorite f
 			WHERE f.post_id = flea.post_id
 			  AND f.user_id = #{user_id}
-			  AND f.board_type = 'fleaMarket'
+			  AND f.board_type = 'FLEA'
 		)
 		ORDER BY flea.created_at DESC, flea.post_id DESC
 		OFFSET (#{pageNum} - 1) * #{amount} ROWS
@@ -51,7 +51,7 @@
 	                post_id 
 	            FROM favorite 
 	            WHERE user_id = #{user_id} 
-	            AND board_type = 'roomRental'
+	            AND board_type = 'ROOM'
 	        )
 	    )
 	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
@@ -140,8 +140,8 @@
 		SELECT count(*) 
 		FROM 
 		<choose>
-			<when test="board_type == 'community'">community</when>
-			<when test="board_type == 'roomRental'">roomRental</when>
+			<when test="board_type == 'COM'">community</when>
+			<when test="board_type == 'ROOM'">roomRental</when>
 			<otherwise>community</otherwise>
 		</choose>
 		WHERE user_id  = #{user_id}

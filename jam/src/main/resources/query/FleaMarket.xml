@@ -69,7 +69,7 @@
 		) f
 		LEFT JOIN favorite fav  
 			ON f.post_id = fav.post_id  
-			AND fav.board_type = 'fleaMarket'  
+			AND fav.board_type = 'FLEA'  
 			AND fav.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
 		AND rnum <= #{pageNum} * #{amount}
@@ -209,7 +209,7 @@
 			FROM fleaMarket f
 			JOIN favorite fav ON f.post_id = fav.post_id
 			WHERE fav.user_id = #{user_id}
-			AND fav.board_type = 'fleaMarket'
+			AND fav.board_type = 'FLEA'
 			]]>
 		<if test="keyword != null and keyword != ''">
 			AND f.title LIKE '%' || #{keyword} || '%'

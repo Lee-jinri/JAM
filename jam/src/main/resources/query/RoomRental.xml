@@ -88,7 +88,7 @@
 		) r
 		LEFT JOIN favorite f  
 			ON r.post_id = f.post_id  
-			AND f.board_type = 'roomRental'  
+			AND f.board_type = 'ROOM'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		WHERE rnum > (#{pageNum} - 1) * #{amount} 
 		AND rnum <= #{pageNum} * #{amount}

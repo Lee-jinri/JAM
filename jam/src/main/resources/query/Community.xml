@@ -43,7 +43,7 @@
 	    JOIN member m ON c.user_id = m.user_id
 	    LEFT JOIN favorite f  
 			ON c.post_id = f.post_id  
-			AND f.board_type = 'community'  
+			AND f.board_type = 'COM'  
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
 	    ]]>
 	    <where>
