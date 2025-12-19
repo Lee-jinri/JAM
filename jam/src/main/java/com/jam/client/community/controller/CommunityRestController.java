@@ -28,6 +28,7 @@ import com.jam.common.vo.PageDTO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
+import com.jam.global.util.HtmlSanitizer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -162,6 +163,13 @@ public class CommunityRestController {
 	 *****************************/
 	@PostMapping("/post")
 	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO community, HttpServletRequest request) throws Exception{
+
+	    String userId = (String)request.getAttribute("userId");
+		
+		if(userId == null) {
+			log.error("Community writeBoard User is not Authenticated.");
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		}
 		
 		if (community == null) {
 	        log.error("Request body (community) is missing.");
@@ -177,12 +185,9 @@ public class CommunityRestController {
 	        throw new BadRequestException("내용을 입력하세요.");
 	    }
 	    
-	    String userId = (String)request.getAttribute("userId");
-		
-		if(userId == null) {
-			log.error("Community writeBoard User is not Authenticated.");
-	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		}
+	    String c = HtmlSanitizer.sanitizeHtml(community.getContent());
+	    community.setContent(c);
+	    		
 		community.setUser_id(userId);
 		
 		String post_id = comService.writePost(community).toString();
