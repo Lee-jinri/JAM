@@ -9,8 +9,8 @@ import com.jam.client.mypage.vo.MemberBoardVO;
 
 public interface MypageDAO {
 
-	int addFavorite(@Param("user_id") String user_id,  @Param("board_type") String boardType, @Param("board_no") Long boardNo);
-	int deleteFavorite(@Param("user_id") String user_id, @Param("board_type") String boardType, @Param("board_no") Long boardNo);
+	int addFavorite(@Param("user_id") String user_id,  @Param("board_type") String boardType, @Param("post_id") Long post_id);
+	int deleteFavorite(@Param("user_id") String user_id, @Param("board_type") String boardType, @Param("post_id") Long post_id);
 	
 	List<MemberBoardVO> getFavoriteCommunity(MemberBoardVO favorite);
 	List<MemberBoardVO> getFavoriteJob(MemberBoardVO favorite);

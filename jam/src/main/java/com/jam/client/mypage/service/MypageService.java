@@ -8,8 +8,8 @@ import com.jam.client.mypage.vo.MemberBoardVO;
 
 public interface MypageService {
 
-	boolean addFavorite(String user_id, String boardType, Long boardNo);
-	boolean deleteFavorite(String user_id, Long boardNo, String boardType);
+	boolean addFavorite(String user_id, String boardType, Long post_id);
+	boolean deleteFavorite(String user_id, String boardType, Long post_id);
 
 	List<MemberBoardVO> getFavoriteCommunity(MemberBoardVO favorite);
 	List<MemberBoardVO> getFavoriteJob(MemberBoardVO favorite);

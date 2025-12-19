@@ -48,8 +48,8 @@ public class MypageServiceImpl implements MypageService{
 	 * @param boardNo 	추가할 게시글 번호
 	 */
 	@Override
-	public boolean addFavorite(String user_id, String boardType, Long boardNo) {
-		int result = mypageDao.addFavorite(user_id, boardType, boardNo);
+	public boolean addFavorite(String user_id, String boardType, Long post_id) {
+		int result = mypageDao.addFavorite(user_id, boardType, post_id);
 		return result == 1;
 	}
 
@@ -61,8 +61,8 @@ public class MypageServiceImpl implements MypageService{
 	 * @param boardNo  	삭제할 게시글 번호
 	 */
 	@Override
-	public boolean deleteFavorite(String user_id, Long boardNo, String boardType) {
-		int result = mypageDao.deleteFavorite(user_id, boardType, boardNo);
+	public boolean deleteFavorite(String user_id, String boardType, Long post_id) {
+		int result = mypageDao.deleteFavorite(user_id, boardType, post_id);
 		return result == 1;
 	}
 
