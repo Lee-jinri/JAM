@@ -43,18 +43,17 @@
 	</definition>
 
 	<definition name="jobs/toBusiness" template="/WEB-INF/views/jobs/toBusiness.jsp" />
+		
+	<definition name="jobs/*/*" extends="layout">
+		<put-attribute name="title" value="JAM - Jobs"/>
+  		<put-attribute name="favicon" value="/resources/include/images/jobs-favicon.svg"/>
+		<put-attribute name="body" value="/WEB-INF/views/jobs/{1}/{2}.jsp"/>
+	</definition>
 	
 	<definition name="jobs/*" extends="layout">
 		<put-attribute name="title" value="JAM - Jobs"/>
   		<put-attribute name="favicon" value="/resources/include/images/jobs-favicon.svg"/>
 		<put-attribute name="body" value="/WEB-INF/views/jobs/{1}.jsp"/>
-	</definition>
-	
-
-	
-	<definition name="message/*" extends="layout">
-		<put-attribute name="title" value="JAM - MESSAGE"/>
-		<put-attribute name="body" value="/WEB-INF/views/message/{1}.jsp"/>
 	</definition>
 	
 	<definition name="error/*" extends="content">
