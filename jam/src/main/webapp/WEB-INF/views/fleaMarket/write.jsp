@@ -158,8 +158,29 @@
 </style>
 <script>	
 	$(function(){
-		checkLoginStatus();
-			
+		if(!window.MY_ID){
+			if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
+				location.href = "/member/login";
+			} else {
+				location.href = "/fleaMarket/board";
+			}
+			return;
+		}
+		
+		const priceInput = document.getElementById("price");
+		
+		// price 숫자만 허용, 9자리 제한
+		priceInput.addEventListener("input", () => {
+			const value = priceInput.value.replace(/\D/g, "");
+
+			if (value.length > 9) {
+				priceInput.value = value.slice(0, 9);
+				return;
+			}
+
+			priceInput.value = value;
+		});
+		
 		const imageInput = document.getElementById("imageUpload");
 		const previewContainer = document.getElementById("imagePreviewContainer");
 		const imageCountDisplay = document.getElementById("imageCount");
@@ -212,34 +233,13 @@
 			imageCountDisplay.textContent = "(" + imageFiles.length + "/5)";
 		}
 		
-		$('#mainCategory li').click(function () {
-			$('#mainCategory li').removeClass('active');
-			$(this).addClass('active');
-			
-			const mainIndex = $(this).index() + 1;
-			const subList = subCategories[mainIndex];
-			
-			const $subUl = $('#subCategory');
-			$subUl.empty(); 
-			
-			subList.forEach(([name, id]) => {
-				$('#subCategory').append("<li data-id=" + id + ">" + name + "</li>");
-			});
-		});
 		
-		$('#subCategory').on('click', 'li', function () {
-			$('#subCategory li').removeClass('active');
-			$(this).addClass('active');
-	
-			const category_id = $(this).data('id');
-			$('#category_id').val(category_id);
-		});
-
 		$("#submit").click(async function(){
 			// 유효성 검사
 			let title = $("#title").val();
-			let content = $("#flea_content").val();
-			let price = $("#price").val();
+			let contentValue = $("#flea_content").val();
+			let priceValue = $("#price").val();
+			let price = Number(priceValue);
 			let category_id = $("#category_id").val();
 			
 			if (imageFiles.length === 0) {
@@ -247,26 +247,38 @@
 				return false;
 			}
 
-		
 			if(title.replace(/\s/g,"") == ""){
 				alert("제목을 입력하세요.");
 				$("#title").focus();
 				return false;
 			}
 			
-			if(content.trim() === ""){
+			if(contentValue.replace(/\s/g, "") === ""){
 				alert("설명을 입력하세요.");
 				$("#flea_content").focus();
 				return false;
 			}
+
+			let content = contentValue
+				.replace(/&/g, "&amp;")
+				.replace(/</g, "&lt;")
+				.replace(/>/g, "&gt;")
+				.replace(/\n/g, "<br>");
+
 			
 			if(category_id.replace(/\s/g,"") == ""){
 				alert("카테고리를 선택하세요.");
 				return false;
 			}
 			
-			if(price.replace(/\s/g,"") == ""){
+			if(priceValue.replace(/\s/g,"") == ""){
 				alert("가격을 입력하세요.");
+				$("#price").focus();
+				return false;
+			}
+			
+			if (price <= 0 || price > 999999999) {
+				alert("가격은 1원 이상 9자리 이하로 입력해주세요.");
 				$("#price").focus();
 				return false;
 			}
@@ -303,19 +315,11 @@
 	            console.error('Error:', error);
 	        }
 	    });
-	})
-	
-	function checkLoginStatus(){
-		fetch("/api/member/auth/check").then((res) => {
-			if (res.status === 401) {
-				if (confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")) {
-					location.href = "/member/login";
-				} else {
-					location.href = "/fleaMarket/boards";
-				}
-			}
+		
+		$("#cancel").click(function(){
+			location.href = '/fleaMarket/board';
 		})
-	}
+	})
 </script>
 </head>
 <body class="wrap">
