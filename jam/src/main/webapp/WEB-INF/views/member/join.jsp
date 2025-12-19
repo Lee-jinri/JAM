@@ -48,11 +48,11 @@
 		let email_check = false;
 		
 		/* 	아이디, 비밀번호 정규식 : 영문 대,소문자 + 숫자 8 ~ 20자
-		닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 3~10자
+		닉네임 정규식 : 영문 대,소문자 + 한글 + 숫자 + _  3 ~ 10자
 		전화번호 정규식 : 01 + 0,1,6,7,8,9 + 0~9 3~4글자 + 0~9 4글자 */
 		const idRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
 		const pwRegex = /^(?=.*[a-zA-Z])(?=.*\d)[a-zA-Z\d]{8,20}$/;
-		const nameRegex = /^[가-힣a-zA-Z0-9]{3,10}$/;
+		const nameRegex = /^[가-힣a-zA-Z0-9_]{3,10}$/;
 		const phoneRegex = /^01[016-9]\d{7,8}$/;
 		const emailRegex = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;
 		

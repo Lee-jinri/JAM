@@ -495,7 +495,7 @@ function handleNicknameUpdate(){
 	} 
 		
 	// 닉네임 유효성 검사
-	let name_legExp = /^.{3,10}$/;
+	let name_legExp = /^[가-힣a-zA-Z0-9_]{3,10}$/;
 	if (name_legExp.test(new_name) == false) {
 		alert("닉네임은 3자 이상 10자 이하로 입력해주세요.");
 		$("#usernameInput").val("");
