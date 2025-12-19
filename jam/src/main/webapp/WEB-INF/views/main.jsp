@@ -341,7 +341,7 @@ const communityLatestState = { all: [], pageNum: 1, pageSize: 5, maxPage: 1 };
     		if (!post.thumbnail) {
     			$card.find('img').attr('src', '/resources/include/images/no-image.png');
     		} else {
-    			$card.find('img').attr('src', '/images/flea/' + post.thumbnail);
+    			$card.find('img').attr('src', '/upload/flea/' + post.thumbnail);
     		}
     		$target.append($card);
     	});
