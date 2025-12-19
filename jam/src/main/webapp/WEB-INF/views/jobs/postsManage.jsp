@@ -413,11 +413,11 @@ $(function(){
 			if (res.ok) {
 				alert("삭제가 완료되었습니다.");
 				location.reload();
+			}else{
+				return res.json().then(err => {
+		            throw err;
+		        });
 			}
-
-	    	return res.json().then(err => {
-	            throw err;
-	        });
 		})
 		.catch(err => {
 			if (handleApiError(err, "/jobs/board")) return;
@@ -435,10 +435,11 @@ function getPostings(){
 	.then(res =>{
 		if (res.ok) {
 			return res.json();
+		}else{
+	    	return res.json().then(err => {
+	            throw err;
+	        });
 		}
-    	return res.json().then(err => {
-            throw err;
-        });
 	}).then(data =>{
 		if(!data) return;
 		
