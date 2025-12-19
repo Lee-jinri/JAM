@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Positive;
 import javax.validation.constraints.Size;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jam.common.vo.CommonVO;
 import com.jam.file.vo.FileAssetVO;
 
@@ -30,6 +31,8 @@ public class ApplicationVO extends CommonVO{
 	
 	@Size(max = 800)
 	private String content;
+	
+	@JsonFormat(pattern = "yyyy/MM/dd HH:mm")
 	private LocalDateTime created_at;
 	
 	@NotEmpty @Valid

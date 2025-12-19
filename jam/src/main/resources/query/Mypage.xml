@@ -4,10 +4,11 @@
 
 	<select id="getFavoriteCommunity" parameterType="memberBoard" resultType="memberBoard">
 		SELECT
-			c.com_no   AS post_id,
-			c.com_title AS title,
-			view_count, reply_cnt
-			TO_CHAR(c.com_date, 'YYYY/MM/DD HH24:MI') AS created_at
+			c.post_id,
+			c.title,
+			c.view_count, 
+			c.comment_count,
+			c.created_at
 		FROM community c
 		WHERE EXISTS (
 			SELECT /*+ INDEX(f UNIQUE_FAVORITE) */ 1
@@ -16,15 +17,14 @@
 			  AND f.user_id    = #{user_id}
 			  AND f.board_type = 'community'
 		)
-		ORDER BY c.com_date DESC, c.com_no DESC
+		ORDER BY c.created_at DESC, c.post_id DESC
 		OFFSET (#{pageNum} - 1) * #{amount} ROWS
 		FETCH NEXT #{amount} ROWS ONLY
 	</select>
 	
 	<select id="getFavoriteFlea" parameterType="memberBoard" resultType="memberBoard">
 		SELECT
-			post_id, title, 
-			TO_CHAR(created_at, 'YYYY/MM/DD HH24:MI') AS created_at
+			post_id, title, created_at
 		FROM fleaMarket flea
 		WHERE EXISTS (
 			SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */ 1
@@ -40,7 +40,7 @@
 	
 	<select id="getFavoriteRoom" parameterType="memberBoard" resultType="memberBoard">
 	    <![CDATA[
-	    SELECT roomRental_no AS board_no, roomRental_title AS board_title, TO_CHAR(roomRental_date, 'YYYY/MM/DD HH24:MI') AS created_at
+	    SELECT roomRental_no AS board_no, roomRental_title AS board_title, created_at
 	    FROM (
 	        SELECT 
 	           	r.roomRental_no, r.roomRental_title, r.roomRental_date,
@@ -100,8 +100,8 @@
 	<select id="getCommunityMyPost" resultType="memberBoard" parameterType="memberBoard">
 		<![CDATA[ 
 	    SELECT 
-            com_no AS post_id, com_title AS title, com_hits AS view_count,
-            TO_CHAR(com_date,'YYYY/MM/DD') AS created_at, com_reply_cnt AS reply_cnt
+            post_id, title, com_hits AS view_count,
+            TO_CHAR(created_at,'YYYY/MM/DD') AS created_at, comment_count
         FROM community
         WHERE user_id = #{user_id}]]>
     	<include refid="myPostSearch">
@@ -109,7 +109,7 @@
 			<property name="contentColumn" value="com_content"/>
     	</include>
     	<![CDATA[ 
-    	ORDER BY com_no DESC
+    	ORDER BY post_id DESC
     	OFFSET (#{pageNum} -1) * #{amount} ROWS
     	FETCH NEXT #{amount} ROWS ONLY
     	]]>
@@ -119,8 +119,7 @@
 	<select id="getRoomMyPost" resultType="memberBoard" parameterType="memberBoard">
 	    <![CDATA[
 	    SELECT 
-	        roomRental_no AS post_id, roomRental_title AS title, roomRental_hits AS view_count,
-	        TO_CHAR(roomRental_date,'YYYY/MM/DD') AS created_at
+	        roomRental_no AS post_id, roomRental_title AS title, roomRental_hits AS view_count, created_at
 	        FROM roomRental 
 	        WHERE user_id = #{user_id}
 	    ]]>
