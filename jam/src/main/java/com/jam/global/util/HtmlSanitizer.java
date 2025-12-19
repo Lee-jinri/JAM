@@ -16,4 +16,16 @@ public final class HtmlSanitizer {
 		String cleaned = Jsoup.clean(input, Safelist.none());
 		return !cleaned.equals(input);
 	}
+	
+	public static String sanitizeHtml(String html) {
+		if (html == null) {
+			return null;
+		}
+
+		Safelist safelist = Safelist.none()
+			.addTags("br", "p", "b", "strong", "i", "em", "ul", "ol", "li", "span")
+			.addAttributes("span", "style");
+
+		return Jsoup.clean(html, safelist);
+	}
 }
