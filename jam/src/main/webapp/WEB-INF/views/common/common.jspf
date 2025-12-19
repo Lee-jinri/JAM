@@ -6,6 +6,33 @@
 <%@ taglib uri="http://www.springframework.org/security/tags"
 	prefix="sec"%>
 
+<sec:authorize access="isAuthenticated()">
+	<script>
+		const id = '<sec:authentication property="name" />';
+		window.MY_ID = decodeHtmlEntities(id);
+		
+		const nickname = '<sec:authentication property="principal.user_name" />';
+		window.MY_NAME = decodeHtmlEntities(nickname);
+		
+		const auth = '<sec:authentication property="principal.authorities" />';
+		window.MY_AUTH = decodeHtmlEntities(auth);
+		
+		// 회사명 (기업 회원일 때만)
+		let companyNameVal = null;
+		if (window.MY_AUTH.includes('ROLE_COMPANY')) {
+			companyNameVal = '<sec:authentication property="principal.company_name" />';
+			companyNameVal = decodeHtmlEntities(companyNameVal);
+		}
+		window.COMPANY_NAME = companyNameVal;
+		
+		function decodeHtmlEntities(str) {
+			const txt = document.createElement("textarea");
+			txt.innerHTML = str;
+			return txt.value;
+		}
+	</script>
+</sec:authorize>
+	
 <head>
 	<meta charset="UTF-8" />
 	<meta http-equiv="X-UA-Compatible" content="IE=edge, chrome=1" />
@@ -39,30 +66,5 @@
 	
 	<script src="/resources/include/dist/js/userToggle.js"></script>
 	
-	<sec:authorize access="isAuthenticated()">
-		<script>
-			const id = '<sec:authentication property="name" />';
-			window.MY_ID = decodeHtmlEntities(id);
-			
-			const nickname = '<sec:authentication property="principal.user_name" />';
-			window.MY_NAME = decodeHtmlEntities(nickname);
-			
-			const auth = '<sec:authentication property="principal.authorities" />';
-			window.MY_AUTH = decodeHtmlEntities(auth);
-			
-			// 회사명 (기업 회원일 때만)
-			let companyNameVal = null;
-			if (window.MY_AUTH.includes('ROLE_COMPANY')) {
-				companyNameVal = '<sec:authentication property="principal.company_name" />';
-				companyNameVal = decodeHtmlEntities(companyNameVal);
-			}
-			window.COMPANY_NAME = companyNameVal;
-			
-			function decodeHtmlEntities(str) {
-				const txt = document.createElement("textarea");
-				txt.innerHTML = str;
-				return txt.value;
-			}
-		</script>
-	</sec:authorize>
+	
 </head>
