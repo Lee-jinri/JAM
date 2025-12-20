@@ -48,6 +48,9 @@ public class JwtService {
 			
 			TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
 			
+			// tokenStatus가 null인 경우를 대비한 기본값 처리
+			if (tokenStatus == null) tokenStatus = TokenStatus.EMPTY;
+			
 			switch(tokenStatus) {
 				// accessToken 인증됨
 				case VALID: 
@@ -62,8 +65,13 @@ public class JwtService {
 				case EMPTY:
 					String refreshToken = extractToken(cookies, "RefreshToken");
 					
-					if (refreshToken == null || 
-					    jwtTokenProvider.validateToken(refreshToken) != TokenStatus.VALID) {
+					// 비로그인 사용자
+				    if (accessToken == null && refreshToken == null) {
+				        return null;
+				    }
+
+				    // 토큰이 있는데 유효하지 않거나 만료된 경우에만 정리
+					if (refreshToken == null ||jwtTokenProvider.validateToken(refreshToken) != TokenStatus.VALID) {
 						
 						AuthClearUtil.clearAuth(request, response);
 						return null;
@@ -76,8 +84,10 @@ public class JwtService {
 						authentication = processRefreshToken(refreshToken, response, request, true);
 						
 						return authentication;
+					}else {
+						AuthClearUtil.clearAuth(request, response);
 					}
-					AuthClearUtil.clearAuth(request, response);
+					
 					return null;
 				case INVALID:
 					log.warn("[JWT] 유효하지 않은 토큰");
@@ -93,6 +103,7 @@ public class JwtService {
 		return null;
 	}
 	
+	// NOTE: 토큰 기반 사용자 정보 (DB 최신 상태와 다를 수 있음)
 	public MemberVO extractUserInfoFromToken(String accessToken){
 		Claims claim = jwtTokenProvider.getClaims(accessToken);
 		
@@ -110,7 +121,17 @@ public class JwtService {
 		return userInfo;
 	}
 	
-	private Authentication processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
+	private synchronized Authentication processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
+		
+		// 쿠키에 새로 만든 토큰이 있는지 확인
+	    String currentAccessToken = extractToken(request.getCookies(), "Authorization");
+	    
+	    if (jwtTokenProvider.validateToken(currentAccessToken) == TokenStatus.VALID) {
+	    	MemberVO userInfo = extractUserInfoFromToken(currentAccessToken);
+	    
+	    	return new UsernamePasswordAuthenticationToken(userInfo, null, userInfo.getAuthorities());
+	    }
+	    
 		log.info("processRefreshToken 진입");
 		
 		// 1. RefreshToken으로 사용자 정보 가져옴.
@@ -182,7 +203,7 @@ public class JwtService {
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
 			AuthClearUtil.clearAuth(request, response);
-            log.warn("유효하지 않은 토큰입니다: " + token);
+            log.warn("유효하지 않은 토큰입니다.");
 
             return null;
         }
@@ -206,7 +227,7 @@ public class JwtService {
     	
     	if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
     		AuthClearUtil.clearAuth(request, response);
-            log.warn("유효하지 않은 토큰입니다: " + token);
+            log.warn("유효하지 않은 토큰입니다.");
 
             return null;
         }
@@ -242,7 +263,7 @@ public class JwtService {
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
 			AuthClearUtil.clearAuth(request, response);
-            log.warn("유효하지 않은 토큰입니다: " + token);
+            log.warn("유효하지 않은 토큰입니다.");
 
             return null;
         }
@@ -262,7 +283,7 @@ public class JwtService {
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
 			AuthClearUtil.clearAuth(request, response);
-            log.warn("유효하지 않은 토큰입니다: " + token);
+            log.warn("유효하지 않은 토큰입니다.");
 
             return null;
         }
