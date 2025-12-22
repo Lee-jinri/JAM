@@ -298,7 +298,7 @@ public class OAuthController {
 
 		// 2. 서비스 로그아웃 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null && auth.getPrincipal() instanceof MemberVO) {
+		if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof MemberVO) {
 			String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
 			memberService.deleteRefreshToken(userId);
 		}
@@ -549,7 +549,7 @@ public class OAuthController {
 
 		// 1. 서비스 로그아웃 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null && auth.getPrincipal() instanceof MemberVO) {
+		if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof MemberVO) {
 			String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
 			memberService.deleteRefreshToken(userId);
 		}
