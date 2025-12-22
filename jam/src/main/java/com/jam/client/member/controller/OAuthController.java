@@ -1,8 +1,6 @@
 package com.jam.client.member.controller;
 
 import java.net.URI;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -64,6 +62,12 @@ public class OAuthController {
 	@Value("${oauth.naver.naver_client_secret}")
 	private String naver_client_secret;
 	
+	@Value("${oauth.kakao.redirectUri}")
+	private String kakaoRedirectUri;
+	
+	@Value("${oauth.naver.redirectUri}")
+	private String naverRedirectUri;
+	
 	/**
 	 * 카카오 OAuth 로그인 요청을 시작하는 메서드.
 	 * - 카카오 인증 페이지로 리다이렉트시켜 사용자가 로그인하게 함
@@ -75,8 +79,8 @@ public class OAuthController {
 	public String redirectToKakaoAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
 	    
 		String clientId = kakao_clientId;
-        String redirectUri = "http://localhost:8080/oauth/kakao/callback";
-        String state = URLEncoder.encode(UUID.randomUUID().toString(), StandardCharsets.UTF_8.toString());
+        String redirectUri = kakaoRedirectUri;
+        String state = UUID.randomUUID().toString();
         
         try {
 	        // CSRF 방어용 레디스 저장
@@ -197,7 +201,7 @@ public class OAuthController {
 	        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
 	        params.add("grant_type", "authorization_code");
 	        params.add("client_id", kakao_clientId);
-	        params.add("redirect_uri", "http://localhost:8080/oauth/kakao/callback");
+	        params.add("redirect_uri", kakaoRedirectUri);
 	        params.add("code", code);
 
 	        HttpEntity<MultiValueMap<String, String>> httpRequest = new HttpEntity<>(params, headers);
@@ -278,14 +282,7 @@ public class OAuthController {
 	 */
 	@PostMapping("/kakao/logout")
 	public ResponseEntity<Void> kakaoLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
-		
-		// 모든 세션 만료
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-		}
-		SecurityContextHolder.clearContext();
-		
+				
 		// 1. kakaoAccessToken 추출
 		Cookie[] cookies = request.getCookies();
 		String kakaoAccessToken = null;
@@ -328,6 +325,13 @@ public class OAuthController {
 		    }
 		}
 
+		// 모든 세션 만료
+		HttpSession session = request.getSession(false);
+		if (session != null) {
+			session.invalidate();
+		}
+		SecurityContextHolder.clearContext();
+		
         deleteCookies(response, "kakaoAccessToken");
         
 		return ResponseEntity.ok().build();
@@ -342,12 +346,9 @@ public class OAuthController {
 	@GetMapping("/naver")
 	public String redirectToNaverAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
 		
-		String clientId = naver_clientId;
-		String redirectUri = "http://localhost:8080/oauth/naver/callback";
-		String state = URLEncoder.encode(UUID.randomUUID().toString(), StandardCharsets.UTF_8.toString());
-
+		String state = UUID.randomUUID().toString();
+		
 		try {
-			
 			// CSRF 방어용 레디스 저장
 	        stringRedisTemplate.opsForValue().set(
 	        	"oauth:state:" + state,
@@ -358,8 +359,8 @@ public class OAuthController {
 	        String requestUrl = UriComponentsBuilder
 	            .fromHttpUrl("https://nid.naver.com/oauth2.0/authorize")
 	            .queryParam("response_type", "code")
-	            .queryParam("client_id", clientId)
-	            .queryParam("redirect_uri", redirectUri)
+	            .queryParam("client_id", naver_clientId)
+	            .queryParam("redirect_uri", naverRedirectUri)
 	            .queryParam("state", state)
 	            .build()
 	            .toUriString();
@@ -504,7 +505,7 @@ public class OAuthController {
 	        params.add("client_id", naver_clientId);
 	        params.add("client_secret", naver_client_secret);
 	        
-	        params.add("redirect_uri", "http://localhost:8080/oauth/naver/callback");
+	        params.add("redirect_uri", naverRedirectUri);
 
 	        params.add("code", code);
 	        params.add("state", state);
@@ -546,26 +547,22 @@ public class OAuthController {
 	@PostMapping("/naver/logout")
 	public ResponseEntity<Void> naverLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
 
-		// 1. 모든 세션 만료
+		// 1. 서비스 로그아웃 
+		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+		if (auth != null && auth.getPrincipal() instanceof MemberVO) {
+			String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
+			memberService.deleteRefreshToken(userId);
+		}
+
+		// 2. 모든 세션 만료
 		HttpSession session = request.getSession(false);
 		if (session != null) {
 			session.invalidate();
 		}
 		SecurityContextHolder.clearContext();
 		
-		try {
-			// 2. 서비스 로그아웃 
-			Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-			if (auth != null && auth.getPrincipal() instanceof MemberVO) {
-				String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
-				memberService.deleteRefreshToken(userId);
-			}
-			
-			deleteCookies(response, "naverAccessToken");
-		        
-	    } catch (Exception e) {
-	        log.error("네이버 로그아웃 실패: " + e.getMessage());
-	    }
+		deleteCookies(response, "naverAccessToken");
+		
 		return ResponseEntity.ok().build();
 	}
 	
