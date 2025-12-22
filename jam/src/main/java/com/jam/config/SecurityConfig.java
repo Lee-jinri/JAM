@@ -109,15 +109,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
         				"/api/member/deleteAccount",
         				"/api/member/convertBusiness",
         				
-        				"/api/jobs/**",
-        				"/api/community/**",
-        				//"/api/fleaMarket/**",
-        				"/api/roomRental/**",
         				"/api/chat/**",
-        				
-        				"/api/**/posts",
-        				"/community/comments/**",
-        				"/community/posts/**",
         				
         				"/api/mypage/myPosts",
         				"/api/mypage/account",
