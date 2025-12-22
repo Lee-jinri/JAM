@@ -12,6 +12,8 @@ import javax.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -25,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.client.job.service.JobService;
 import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
+import com.jam.client.member.vo.MemberVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ForbiddenException;
@@ -52,12 +55,13 @@ public class JobRestController {
 	 * @return			jobList(채용공고 목록), pageMaker(페이징 정보)
 	 */
 	@GetMapping(value = "/board")
-	public ResponseEntity<Map<String, Object>> getBoard(JobVO jobs, HttpServletRequest request){
+	public ResponseEntity<Map<String, Object>> getBoard(JobVO jobs, HttpServletRequest request, @AuthenticationPrincipal MemberVO user){
 
-		if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
+		if (user != null) {
+			jobs.setUser_id(user.getUser_id());
+		}
 		
-		String user_id = (String)request.getAttribute("userId");
-		jobs.setUser_id(user_id); 
+		if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
 		
 		String kw = jobs.getKeyword();
 		jobs.setKeyword(ValueUtils.sanitizeForLike(kw));
@@ -83,7 +87,7 @@ public class JobRestController {
 	 * @throws Exception 데이터 조회 중 발생한 예외
 	 ************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> getPost(@PathVariable("post_id") Long post_id, HttpServletRequest request) throws Exception{
+	public ResponseEntity<Map<String, Object>> getPost(@PathVariable("post_id") Long post_id, @AuthenticationPrincipal MemberVO user) throws Exception{
 
 		post_id = ValidationUtils.requireValidId(post_id);
 		
@@ -95,11 +99,13 @@ public class JobRestController {
 		JobVO post = jobService.getPost(post_id);
 		post.setPosition(getTranslatedPosition(post.getPosition()));
 		result.put("post", post);
-		
-		String userId = (String)request.getAttribute("userId");
+
 		Boolean isAuthor = false;
 		
-		if(userId != null && userId.equals(post.getUser_id())) isAuthor = true;
+		if (user != null) {
+			if(user.getUser_id() != null && user.getUser_id().equals(post.getUser_id())) isAuthor = true;
+		}
+		
 		result.put("isAuthor", isAuthor);
 		
 		return ResponseEntity.ok(result);
@@ -130,6 +136,7 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/post")
 	public ResponseEntity<String> writePost(@RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
 		
@@ -196,6 +203,7 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
+	@PreAuthorize("isAuthenticated()")
 	@PutMapping("/post/{postId}")
 	public ResponseEntity<String> editPost(@PathVariable Long postId, @RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
 		
@@ -229,6 +237,7 @@ public class JobRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
+	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/post/{postId}")
 	public ResponseEntity<Void> deletePost(@PathVariable Long postId, HttpServletRequest request) {
 		
@@ -250,6 +259,7 @@ public class JobRestController {
 	 * @param request	HttpServletRequest (userId 추출용)
 	 * @return	처리 성공 시 204 No Content 
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@PatchMapping("/post/{postId}")
 	public ResponseEntity<Void> closeJob(@PathVariable Long postId, HttpServletRequest request) {
 
@@ -270,6 +280,7 @@ public class JobRestController {
 	 * @param request	HttpServletRequest, userId 추출용
 	 * @return			HTTP 200 OK (본문 없음) — 생성 성공
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/applications")
 	public ResponseEntity<String> createApplication(
 			@Valid @RequestBody ApplicationVO app,
@@ -290,6 +301,7 @@ public class JobRestController {
 	 * @param request	HttpServletRequest, userId 추출용
 	 * @return jobList(채용공고 목록), pageMaker(페이징 정보)
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/posts")
 	public ResponseEntity<Map<String, Object>> getPostings(JobVO jobs, HttpServletRequest request){		
 		
@@ -339,6 +351,7 @@ public class JobRestController {
 	 * @param request       HttpServletRequest (userId 추출용)
 	 * @return 지원서 상세 정보 (category, app, files 등 포함)
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/applications/{applicationId}")
 	public ResponseEntity<Map<String, Object>> getApplication(@PathVariable Long applicationId, HttpServletRequest request){
 
@@ -357,6 +370,7 @@ public class JobRestController {
 	 * @param request	HttpServletRequest, userId 추출용
 	 * @return apps(지원한 공고 목록), pageMaker(페이징 정보)
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/applications")
 	public ResponseEntity<Map<String, Object>> getMyApplications(ApplicationVO app, HttpServletRequest request){
 
@@ -390,6 +404,7 @@ public class JobRestController {
 	 * @param request	HttpServletRequest, userId 추출용	
 	 * @return	Http 상태코드
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/applications/{applicationId}/withdraw")
 	public ResponseEntity<Void>  withdrawApplication(@PathVariable Long applicationId, HttpServletRequest request){
 
@@ -409,6 +424,7 @@ public class JobRestController {
 	 * @param request	HttpServletRequest, userId 추출용
 	 * @return apps(지원자 목록), pageMaker(페이징 정보)
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/candidates")
 	public ResponseEntity<Map<String, Object>> getcandidates(ApplicationVO application, HttpServletRequest request){		
 
@@ -437,6 +453,7 @@ public class JobRestController {
 	 * @param request	HttpServletRequest, userId 추출용	
 	 * @return favorites(스크랩한 글 목록), pageMaker(페이징 정보)
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/favorites")
 	public ResponseEntity<Map<String, Object>> getMyFavorites(JobVO job, HttpServletRequest request){
 
