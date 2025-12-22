@@ -59,6 +59,7 @@ public class CommentController {
 	 * @return 댓글 작성 실행 결과
 	 *  - 로그인된 사용자만 작성 가능합니다.
 	 **************************/
+	@PreAuthorize("isAuthenticated()")
 	@JsonFormat
 	@PostMapping(value="/posts/{postId}/comments",consumes = "application/json", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<Void> insertComment(@PathVariable("postId") Long postId, @RequestBody CommentVO c, HttpServletRequest request) {
@@ -81,6 +82,7 @@ public class CommentController {
 	 * @return 댓글 수정 결과
 	 *  - 본인 댓글만 수정 가능합니다.
 	 *******************************/
+	@PreAuthorize("isAuthenticated()")
 	@PutMapping(value = "/comments/{commentId}")
 	public ResponseEntity<Void> updateComment(@PathVariable("commentId") Long commentId, @RequestBody CommentVO c, HttpServletRequest request) {
 		
@@ -102,6 +104,7 @@ public class CommentController {
 	 * @return 댓글 삭제 결과
 	 *  - 본인 댓글만 삭제 가능합니다.
 	 ********************************/
+	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping(value = "/comments/{commentId}", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<Void> deleteComment(@PathVariable("commentId") Long commentId, HttpServletRequest request){
 		

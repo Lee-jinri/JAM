@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -130,6 +131,7 @@ public class CommunityRestController {
         return new ResponseEntity<>(response, HttpStatus.OK);
 	}
 
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/posts/{post_id}/edit-data", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> getEditData(
 			@PathVariable("post_id") Long post_id, 
@@ -154,6 +156,7 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK와 작성된 글 번호를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
+	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/post")
 	public ResponseEntity<String> writeBoard(@RequestBody CommunityVO community, HttpServletRequest request) throws Exception{
 
@@ -196,6 +199,7 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK와 글 번호를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
+	@PreAuthorize("isAuthenticated()")
 	@PutMapping("/post")
 	public ResponseEntity<String> editBoard(@RequestBody CommunityVO community, HttpServletRequest request) throws Exception{
 		
@@ -236,6 +240,7 @@ public class CommunityRestController {
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
+	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/post/{postId}")
 	public ResponseEntity<Void> postDelete(@PathVariable("postId") Long postId, HttpServletRequest request) throws Exception{
 		
@@ -249,7 +254,8 @@ public class CommunityRestController {
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	
+
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/posts")
 	public ResponseEntity<Map<String, Object>> getMyPosts(
 			@RequestParam(defaultValue = "1") int pageNum,
@@ -281,7 +287,8 @@ public class CommunityRestController {
 
         return ResponseEntity.ok(result);
 	}
-	
+
+	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/posts/my")
 	public ResponseEntity<Void> deletePosts(@RequestBody List<Long> postIds, HttpServletRequest request) {
 	    String userId = (String)request.getAttribute("userId");
