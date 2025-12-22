@@ -35,7 +35,10 @@ jobs:
 
         oauth.naver.clientId=${{ secrets.NAVER_CLIENT_ID }}
         oauth.naver.naver_client_secret=${{ secrets.NAVER_CLIENT_SECRET }}
+        oauth.naver.redirectUri=${{ secrets.NAVER_REDIRECT_URI }}
+        
         oauth.kakao.clientId=${{ secrets.KAKAO_CLIENT_ID }}
+        oauth.kakao.redirectUri=${{ secrets.KAKAO_REDIRECT_URI }}
 
         location.consumer_key=${{ secrets.LOCATION_CONSUMER_KEY }}
         location.consumer_secret=${{ secrets.LOCATION_CONSUMER_SECRET }}
