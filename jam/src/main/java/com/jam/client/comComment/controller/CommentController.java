@@ -6,6 +6,8 @@ import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.jam.client.comComment.service.CommentService;
 import com.jam.client.comComment.vo.CommentVO;
+import com.jam.client.member.vo.MemberVO;
 import com.jam.global.exception.UnauthorizedException;
 
 import lombok.AllArgsConstructor;
@@ -41,9 +44,9 @@ public class CommentController {
 	 ****************************/
 	// TODO: 페이징 추가
 	@GetMapping(value = "/posts/{postId}/comments", produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<CommentVO> commentList(@PathVariable("postId") Long postId, HttpServletRequest request){
-		String userId = (String) request.getAttribute("userId");
-		if(userId == null) userId = "";
+	public List<CommentVO> commentList(@PathVariable("postId") Long postId, @AuthenticationPrincipal MemberVO user){
+		String userId = (user != null) ? user.getUser_id() : null;
+		
 		List<CommentVO> comment = commentService.commentList(postId, userId);
 		return comment;
 	}

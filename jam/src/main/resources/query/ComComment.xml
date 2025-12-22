@@ -4,17 +4,20 @@
 
 	<select id="commentList" resultType="comComment">
 		SELECT 
-			c.comment_id, c.content, c.user_id, m.user_name,
-			to_char(c.created_at,'YYYY.MM.DD HH24:MI') as created_at, 
-			CASE
-		        WHEN c.user_id = #{user_id}
-		        THEN 1 ELSE 0
-		    END AS author
+			c.comment_id, c.content, c.user_id, m.user_name, c.created_at, 
+			<choose>
+	            <when test="user_id != null">
+	                CASE WHEN c.user_id = #{user_id} THEN 1 ELSE 0 END
+	            </when>
+	            <otherwise>
+	                0
+	            </otherwise>
+	        </choose> AS author
 		FROM com_comment c
 		LEFT JOIN Member m
 		ON c.user_id = m.user_id
-		WHERE post_id = #{post_id}
-		ORDER BY comment_id DESC
+		WHERE c.post_id = #{post_id}
+		ORDER BY c.created_at DESC
 	</select>
 
 	<insert id="insertComment" parameterType="comComment">

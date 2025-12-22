@@ -108,8 +108,7 @@ public class CommunityRestController {
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> getBoardDetail(
 			@PathVariable("post_id") Long post_id, 
-			HttpServletRequest request) {
-		
+			@AuthenticationPrincipal MemberVO user) {
 		
 		// 상세 페이지 조회
 		CommunityVO detail = comService.getPost(post_id);
@@ -123,14 +122,8 @@ public class CommunityRestController {
 	
 		Map<String, Object> response = new HashMap<>();
 		response.put("detail", detail);
-		
-		String userId = (String)request.getAttribute("userId");
-		
-		boolean isAuthor = false;
-		
-        if (userId != null && userId.equals(detail.getUser_id())) {
-            isAuthor = true;
-        }
+
+		boolean isAuthor = (user != null) && user.getUser_id().equals(detail.getUser_id());
         
         response.put("isAuthor", isAuthor);
 		
