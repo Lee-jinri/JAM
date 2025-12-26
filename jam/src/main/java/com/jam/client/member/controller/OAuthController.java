@@ -268,22 +268,20 @@ public class OAuthController {
 	/**
 	 * 카카오 소셜 로그인 사용자의 로그아웃을 처리합니다.
 	 * 
-	 * 1. 사용자 인증 정보 확인 (userId)
-	 * 2. 서비스 refreshToken 삭제 및 세션 무효화
-	 * 3. kakaoAccessToken 쿠키에서 추출
-	 * 4. 카카오 로그아웃 요청 (kakaoAccessToken이 있을 경우에만)
-	 * 5. kakaoAccessToken 쿠키 삭제
+	 * 1. 필요한 정보 추출 (쿠키에서 kakaoAccessToken, 세션에서 userId)
+	 * 2. 서비스 리프레시 토큰 삭제 (DB)
+	 * 3. 카카오 API 로그아웃 요청 (AccessToken이 있는 경우)
+	 * 4. 로컬 로그아웃 처리 (세션 만료 및 SecurityContext 초기화)
+	 * 5. 브라우저의 kakaoAccessToken 쿠키 삭제
 	 * 
 	 * @param request  HTTP 요청 객체
 	 * @param response HTTP 응답 객체
-	 * @return 200 OK - 로그아웃 성공<br>
-	 *         401 Unauthorized - userId가 없을 경우
-	 *         500 Internal Server Error - 카카오 로그아웃 실패 시
+	 * @return 200 OK - 로그아웃 성공
 	 */
 	@PostMapping("/kakao/logout")
 	public ResponseEntity<Void> kakaoLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
 				
-		// 1. kakaoAccessToken 추출
+		// 1. 필요한 정보 추출 (kakaoAccessToken, userId)
 		Cookie[] cookies = request.getCookies();
 		String kakaoAccessToken = null;
 		
@@ -296,12 +294,21 @@ public class OAuthController {
 		    }
 		}
 
-		// 2. 서비스 로그아웃 
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof MemberVO) {
-			String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
-			memberService.deleteRefreshToken(userId);
-		}
+	    String userId = null;
+	    if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof MemberVO) {
+	        userId = ((MemberVO) auth.getPrincipal()).getUser_id();
+	    }
+
+		// 2. DB 리프레시 토큰 삭제
+	    if (userId != null) {
+	        try {
+	            memberService.deleteRefreshToken(userId);
+	        } catch (Exception e) {
+	            log.error("리프레시 토큰 삭제 실패 (사용자: {}): {}", userId, e.getMessage());
+	            // 실패해도 계속 진행
+	        }
+	    }
 		
 		// 3. 카카오 로그아웃
 		if(kakaoAccessToken != null) {
@@ -325,14 +332,17 @@ public class OAuthController {
 		    }
 		}
 
-		// 모든 세션 만료
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-		}
-		SecurityContextHolder.clearContext();
-		
-        deleteCookies(response, "kakaoAccessToken");
+		// 4. 로컬 로그아웃 로직
+	    try {
+	        HttpSession session = request.getSession(false);
+	        if (session != null) {
+	            session.invalidate();
+	        }
+	        SecurityContextHolder.clearContext();
+	        deleteCookies(response, "kakaoAccessToken");
+	    } catch (Exception e) {
+	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
+	    }
         
 		return ResponseEntity.ok().build();
 	}
@@ -527,14 +537,13 @@ public class OAuthController {
 	    }
 	}
 	
-
 	/**
 	 * 네이버 소셜 로그인 사용자의 로그아웃을 처리합니다.
 	 * 
-	 * 1. 사용자 인증 정보 확인 (userId)
-	 * 2. 서비스 refreshToken 삭제
-	 * 3. naverAccessToken 쿠키 삭제
-	 * 4. 세션 무효화
+	 * 1. 사용자 인증 정보 추출 (userId)
+	 * 2. 서비스 리프레시 토큰 삭제 (DB)
+	 * 3. 로컬 로그아웃 처리 (세션 만료 및 SecurityContext 초기화)
+	 * 4. 브라우저의 naverAccessToken 쿠키 삭제
 	 * 
 	 * 네이버는 별도의 서버 로그아웃 API를 제공하지 않으므로,
 	 * 클라이언트 측 토큰 삭제와 세션 종료만 수행합니다.
@@ -542,26 +551,38 @@ public class OAuthController {
 	 * @param request  HTTP 요청 객체
 	 * @param response HTTP 응답 객체
 	 * @return 200 OK - 로그아웃 성공
-	 *         500 INTERNAL_SERVER_ERROR - userId 없거나 처리 중 오류 발생
 	 */
 	@PostMapping("/naver/logout")
 	public ResponseEntity<Void> naverLogout(HttpServletRequest request, HttpServletResponse response) throws java.io.IOException{
 
-		// 1. 서비스 로그아웃 
+		// 1. userId 추출
 		Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-		if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof MemberVO) {
-			String userId = ((MemberVO) auth.getPrincipal()).getUser_id();
-			memberService.deleteRefreshToken(userId);
-		}
+	    String userId = null;
+	    if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof MemberVO) {
+	        userId = ((MemberVO) auth.getPrincipal()).getUser_id();
+	    }
+	    
+	    // 2. DB 리프레시 토큰 삭제
+	    if (userId != null) {
+	        try {
+	            memberService.deleteRefreshToken(userId);
+	        } catch (Exception e) {
+	            log.error("리프레시 토큰 삭제 실패 (사용자: {}): {}", userId, e.getMessage());
+	            // 실패해도 계속 진행
+	        }
+	    }
 
-		// 2. 모든 세션 만료
-		HttpSession session = request.getSession(false);
-		if (session != null) {
-			session.invalidate();
-		}
-		SecurityContextHolder.clearContext();
-		
-		deleteCookies(response, "naverAccessToken");
+	    // 3. 로컬 로그아웃 로직
+	    try {
+	        HttpSession session = request.getSession(false);
+	        if (session != null) {
+	            session.invalidate();
+	        }
+	        SecurityContextHolder.clearContext();
+	        deleteCookies(response, "naverAccessToken");
+	    } catch (Exception e) {
+	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
+	    }
 		
 		return ResponseEntity.ok().build();
 	}
