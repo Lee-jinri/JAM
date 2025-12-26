@@ -33,6 +33,7 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
+import com.jam.global.jwt.TokenInfo.TokenStatus;
 import com.jam.global.util.AuthClearUtil;
 import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValidationUtils;
@@ -685,12 +686,10 @@ public class MemberRestController {
 	/**
 	 * HttpServletRequest와 쿠키 정보를 기반으로 사용자 인증을 검증합니다.
 	 * 
-	 * return:
-	 * - 인증 성공 시: loginType, autoLogin, user 정보를 포함한 Map
-	 * - 인증 실패 시: null
-	 *
 	 * @param request HttpServletRequest (쿠키와 세션 접근)
-	 * @return Map<String, Object> 인증 데이터 또는 null
+	 * @return 
+	 * - 인증 성공 시: loginType, autoLogin, user 정보를 포함한 Map
+	 * - 인증 실패 시: UnauthorizedException
 	 */
 	private Map<String, Object> resolveAuthenticatedUser(HttpServletRequest request, HttpServletResponse response) {
 		Map<String, Object> data = new HashMap<>();
@@ -698,30 +697,38 @@ public class MemberRestController {
 		Cookie[] cookies = request.getCookies();
     	if(cookies == null) {
     		log.error("쿠키가 없습니다."); 
-    		return null;
+			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
     	}
+
+    	String accessToken = jwtService.extractToken(cookies, "Authorization");
+    	if (accessToken == null || accessToken.isEmpty()) {
+    		log.error("인증 토큰이 없습니다.");
+			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
+		}
+    	
+    	TokenStatus status = jwtService.validateToken(accessToken);
+		
+		if(status != TokenStatus.VALID) {
+	        AuthClearUtil.clearAuth(request, response);
+	        
+			log.error("유효하지 않은 사용자입니다.");
+			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
+		}
+
+    	MemberVO user = jwtService.extractUserInfoFromToken(accessToken);
+
+    	if (user == null) {
+    		AuthClearUtil.clearAuth(request, response);
+    		
+			log.error("유효하지 않은 사용자입니다.");
+			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
+		}
     	
     	String loginType = jwtService.extractLoginType(request, response, cookies);
     	boolean autoLogin = jwtService.extractAutoLogin(request, response, cookies);
 
 		data.put("loginType", loginType);
 		data.put("autoLogin", autoLogin);
-		
-    	String accessToken = jwtService.extractToken(cookies, "Authorization");
-    	if (accessToken == null || accessToken.isEmpty()) {
-    		log.error("인증 토큰이 없습니다.");
-			return null;
-		}
-
-    	MemberVO user = jwtService.extractUserInfoFromToken(accessToken);
-    	
-    	if (user == null) {
-    		AuthClearUtil.clearAuth(request, response);
-    		
-			log.error("유효하지 않은 사용자입니다.");
-			return null;
-		}
-    	
     	data.put("user", user);
     	
     	return data;
