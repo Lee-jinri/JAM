@@ -1,6 +1,7 @@
 package com.jam.global.util;
 
 import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 import org.jsoup.safety.Safelist;
 
 public final class HtmlSanitizer {
@@ -26,6 +27,6 @@ public final class HtmlSanitizer {
 			.addTags("br", "p", "b", "strong", "i", "em", "ul", "ol", "li", "span")
 			.addAttributes("span", "style");
 
-		return Jsoup.clean(html, safelist);
+		return Jsoup.clean(html, "", safelist, new Document.OutputSettings().prettyPrint(false));
 	}
 }
