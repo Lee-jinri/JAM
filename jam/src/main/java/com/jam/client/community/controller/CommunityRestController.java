@@ -102,9 +102,9 @@ public class CommunityRestController {
 	/********************************
 	 * 커뮤니티 글을 조회하는 메서드입니다.
 	 *
-	 * @param com_no 조회할 커뮤니티 글의 번호
-	 * @return ResponseEntity<CommunityVO> - 조회된 커뮤니티 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
-	 * @throws Exception 데이터 조회 중 발생한 예외
+	 * @param post_id 조회할 커뮤니티 글의 번호
+     * @param user 현재 접속 중인 인증된 사용자 정보 (Spring Security)
+	 * @return ResponseEntity<Map<String, Object>> - 게시글 정보, 작성자 여부를 포함한 응답
 	 *************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> getBoardDetail(
@@ -124,8 +124,7 @@ public class CommunityRestController {
 		Map<String, Object> response = new HashMap<>();
 		response.put("detail", detail);
 
-		boolean isAuthor = (user != null) && user.getUser_id().equals(detail.getUser_id());
-        
+		boolean isAuthor = user != null && user.getUser_id() != null && user.getUser_id().equals(detail.getUser_id());
         response.put("isAuthor", isAuthor);
 		
         return new ResponseEntity<>(response, HttpStatus.OK);
