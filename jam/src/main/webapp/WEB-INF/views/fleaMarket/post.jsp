@@ -203,8 +203,6 @@
 <script type="text/javascript">
 $(function(){
 	let post_id = $("#post_id").val();
-	let authorUserId;
-	let authorUserName;
 	let currentIndex = 0;
 	
 	getBoard();
@@ -221,9 +219,6 @@ $(function(){
 			})
 			.then(data =>{
 				let post = data.post;
-				
-				authorUserId = post.user_id;
-				authorUserName = post.user_name;
 				
 				$("#title").html(post.title);
 				$("#user_name").html(post.user_name);
@@ -249,19 +244,10 @@ $(function(){
 				if(post.sales_status == 1) $("#saleDone").html("거래 완료 된 글 입니다.");
 				
 				renderImages(data.images);
-				currentUserIsAuthor(authorUserId);
+				renderPostActionButtons(data.isAuthor);
 			})
 			.catch(error => console.error('Error : ', error));
 		}
-	}
-	
-	// 현재 로그인한 사용자와 글쓴이가 같은지 비교하는 함수
-	function currentUserIsAuthor(authorUserId){
-
-		let isAuthor = false;
-       	if(window.MY_ID == authorUserId) isAuthor = true;
-       	
-       	renderPostActionButtons(isAuthor);
 	}
 	
 	// 수정 버튼 클릭
@@ -322,7 +308,6 @@ $(function(){
 	// 글쓴이와 로그인한 사용자가 다르면 채팅 버튼 생성
 	function renderPostActionButtons(isAuthor) { 
 		var btnDiv = document.getElementById("flea-postBtn");
-		
 		if(isAuthor){
 	           	// 수정 버튼 생성
 	           	var updateButton = document.createElement("button");

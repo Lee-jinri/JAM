@@ -76,37 +76,38 @@ public class FleaMarketRestController {
 
 	/**********************************
 	 * 중고악기 글 상세정보를 조회하는 메서드입니다.
-	 *
-	 * @param flea_no 조회할 중고악기 글의 번호
-	 * @return ResponseEntity<FleaMarketVO> - 조회된 중고악기 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
-	 * @throws Exception 데이터 조회 중 발생한 예외
+	 * 
+	 * @param post_id 조회할 게시글 번호
+     * @param user 현재 접속 중인 인증된 사용자 정보 (Spring Security)
+	 * @return ResponseEntity<Map<String, Object>> - 게시글 정보, 이미지 목록, 작성자 여부를 포함한 응답
 	 **************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("post_id") Long post_id) throws Exception{
+	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("post_id") Long post_id, @AuthenticationPrincipal MemberVO user) {
 		if (post_id == null) { 
 			log.error("post_id is required");
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 		}
 		
-			Map<String, Object> result = new HashMap<>();
+		Map<String, Object> result = new HashMap<>();
 
-	        // 조회수 증가
-			fleaService.incrementReadCnt(post_id);
-			
-			// 상세 페이지 조회
-			FleaMarketVO post = fleaService.getPostDetail(post_id);
-			
-			// 이미지 파일
-			List<ImageFileVO> images = fleaService.getImages(post_id);
-			
-			result.put("post", post);
-			result.put("images", images);
-			
-	        return new ResponseEntity<>(result, HttpStatus.OK);
+        // 조회수 증가
+		fleaService.incrementReadCnt(post_id);
+		
+		// 상세 페이지 조회
+		FleaMarketVO post = fleaService.getPostDetail(post_id);
+		
+		// 이미지 파일
+		List<ImageFileVO> images = fleaService.getImages(post_id);
+
+		result.put("post", post);
+		result.put("images", images);
+		
+		boolean isAuthor = user != null && user.getUser_id() != null && user.getUser_id().equals(post.getUser_id());
+		result.put("isAuthor", isAuthor);
+		
+        return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 	
-	
-
 	/******************************
 	 * 중고악기 글을 작성하는 메서드 입니다.
 	 * @param FleaMarketVO flea_vo 작성자 id와 닉네임, 제목과 내용, 가격, 카테고리(판매,구매)
