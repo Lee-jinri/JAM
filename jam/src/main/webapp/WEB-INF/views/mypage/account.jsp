@@ -538,14 +538,16 @@ function handleNicknameUpdate(){
         });
     })
     .then(response => {
-        if (!response.ok) {
-            throw new Error("닉네임 변경 중 오류가 발생했습니다.");
-        }
+    	if (!response.ok) {
+    		return response.json().then(error => {
+	            throw new Error(error.detail || '닉네임 변경 중 오류가 발생했습니다.');
+	        });
+		}
         alert('닉네임이 변경되었습니다.');
         location.reload();
     })
     .catch(error => {
-        alert(error.message || '오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+        alert(error.message);
         console.error('Error:', error);
     });
 }
@@ -709,7 +711,7 @@ function isEmpty(str){
 </script>
 </head>
 <body class="wrap">
-	<div style="height: 400px;">
+	<div style="min-height: 73vh;">
 		<!-- 비밀번호 확인 모달 -->
 		<div class="" id="password-box" style="display: none;">
 			<div class="section">
