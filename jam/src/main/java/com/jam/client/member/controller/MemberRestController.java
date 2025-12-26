@@ -582,23 +582,25 @@ public class MemberRestController {
     	
         return ResponseEntity.ok().build();
     }
-
+	
 	/**
 	 * 일반 회원을 기업 회원으로 전환합니다.
 	 * 
-	 * @param request  HttpServletRequest (userId attribute 포함)
-	 * @param response HttpServletResponse (JWT 쿠키 세팅/삭제에 사용)
-	 * @param member   요청 본문에 포함된 MemberVO (company_name 필수)
-	 * @return 성공 시 "기업회원 전환 성공" 메시지 반환,
-	 *         실패 시 상황에 맞는 HTTP 상태 코드와 에러 메시지 반환
+	 * 1. 요청 본문의 회사명 유효성 검사 (필수값, HTML 태그 제한)
+     * 2. 현재 로그인된 사용자 정보 확인 (resolveAuthenticatedUser)
+     * 3. DB 권한 변경 및 새로운 인증 정보(Authentication) 생성
+     * 4. 변경된 권한이 반영된 새로운 JWT 토큰 재발급 및 쿠키 설정
+     * 
+	 * @param request  HttpServletRequest 
+	 * @param response HttpServletResponse
+	 * @param member   회사명(company_name)을 포함한 요청 객체
+	 * 
+	 * @return ResponseEntity<String> - "기업회원 전환 성공" 메시지
+     * @throws BadRequestException 회사명이 없거나 부적절한 경우
+     * @throws UnauthorizedException 로그인이 되어 있지 않은 경우
 	 */
 	@PostMapping(value="/convertBusiness")
-	public ResponseEntity<String> convertBusiness(HttpServletRequest request, HttpServletResponse response, @RequestBody MemberVO member){
-		String userId = (String)request.getAttribute("userId");
-		
-		if (userId == null || userId.isEmpty()) {
-			throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		}
+	public ResponseEntity<String> convertBusiness(HttpServletRequest request, HttpServletResponse response,  MemberVO member){
 		
 		String company_name = member.getCompany_name();
 		if (company_name == null || company_name.trim().isEmpty()) {
@@ -611,15 +613,12 @@ public class MemberRestController {
 		
 		Map<String, Object> data = resolveAuthenticatedUser(request, response);
 
-		if(data == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		if(data == null || data.get("user") == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
 		
 		MemberVO user = (MemberVO)data.get("user");
-		if(!user.getUser_id().equals(userId)) {
-			throw new UnauthorizedException("인증 정보가 유효하지 않습니다.");
-		}
 		
 		user.setCompany_name(company_name);	
-    	Authentication authentication = memberService.convertBusiness(userId, company_name, user);
+    	Authentication authentication = memberService.convertBusiness(user.getUser_id(), company_name, user);
     	
     	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, (boolean)data.get("autoLogin"), (String)data.get("loginType"));
 		
