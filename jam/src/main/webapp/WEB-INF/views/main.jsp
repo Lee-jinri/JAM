@@ -390,7 +390,9 @@ const communityLatestState = { all: [], pageNum: 1, pageSize: 5, maxPage: 1 };
 
 	<div class="contents">
 		<div>
-			<img src="/resources/include/images/Jobs-banner.png" style="width: 930px; border-radius: 20px;"">
+			<a href="/jobs/board">
+				<img src="/resources/include/images/Jobs-banner.png" style="width: 930px; border-radius: 20px;">
+			</a>
 		</div>
 		
 	    <div class="section">
