@@ -262,9 +262,7 @@
 			let content = contentValue
 				.replace(/&/g, "&amp;")
 				.replace(/</g, "&lt;")
-				.replace(/>/g, "&gt;")
-				.replace(/\n/g, "<br>");
-
+				.replace(/>/g, "&gt;");
 			
 			if(category_id.replace(/\s/g,"") == ""){
 				alert("카테고리를 선택하세요.");
@@ -294,7 +292,7 @@
 				imageFiles.forEach((file, idx) => {
 					formData.append('images', file); 
 				});
-
+				
 	            const response = await fetch('/api/fleaMarket/post', {
 	                method: 'POST',
 	                body: formData,

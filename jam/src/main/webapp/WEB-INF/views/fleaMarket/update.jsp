@@ -210,8 +210,9 @@ $(function(){
 		
 		// 유효성 검사
 		let flea_title = $("#title").val();
-		let flea_content = $("#flea_content").val();
-		let price = $("#price").val();
+		let contentValue = $("#flea_content").val();
+		let priceValue = $("#price").val();
+		let price = Number(priceValue);
 		let flea_category = $("#category_id").val();
 		
 		if(postId == null){
@@ -223,14 +224,25 @@ $(function(){
 			return false;
 		}
 		
-		if(flea_content.replace(/\s/g,"") == ""){
-			alert("본문을 입력하세요.");
+		if(contentValue.replace(/\s/g, "") === ""){
+			alert("설명을 입력하세요.");
 			$("#flea_content").focus();
 			return false;
 		}
 		
-		if(price.replace(/\s/g,"") == ""){
+		let content = contentValue
+	    .replace(/&/g, "&amp;")
+	    .replace(/</g, "&lt;")
+	    .replace(/>/g, "&gt;");
+		
+		if(priceValue.replace(/\s/g,"") == ""){
 			alert("가격을 입력하세요.");
+			$("#price").focus();
+			return false;
+		}
+		
+		if (price <= 0 || price > 999999999) {
+			alert("가격은 1원 이상 9자리 이하로 입력해주세요.");
 			$("#price").focus();
 			return false;
 		}
@@ -252,7 +264,7 @@ $(function(){
 			
 			formData.append("postId", postId);
 			formData.append("title", flea_title);
-			formData.append("content", flea_content);
+			formData.append("content", content);
 			formData.append("price", price);
 			formData.append("category_id", flea_category);
 			formData.append("sales_status", sales_status);
@@ -271,11 +283,6 @@ $(function(){
 				formData.append("deletedImages", id);
 			});
 		
-			console.log("thumbnailId: " + imageList[0].id);
-			console.log("thumbnailName: " + imageList[0].name);
-			console.log("newImages : " + newImages);
-			console.log("deletedImages :" +deletedImages);
-			
 			const response = await fetch('/api/fleaMarket/post/update',{
 				method :'POST',
 				body: formData,
