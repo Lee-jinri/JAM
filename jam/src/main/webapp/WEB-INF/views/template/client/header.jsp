@@ -123,27 +123,6 @@ header {
 	background-position: 100% 0;
 }
 
-/*
-.header-board-a:hover{
-	color: #545051;
-}
-.header-board-a::after {
-    content: "";
-    position: absolute;
-    left: 50%;
-    bottom: -3px; 
-    width: 0;
-    height: 3px;
-    background: #EAECEF;
-    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
-}
-
-.header-board-a:hover::after {
-	color: #545051;
-    width: 100%;
-    left: 0;
-}*/
-
 #mobileMenu{
 	display: none;
 }
@@ -236,6 +215,36 @@ header {
 	}
 }
 
+.mypage_toggle_li {
+    padding: 6px;
+}
+
+.mypage_toggle_li span {
+    font-size: 11px;
+    color: #999; 
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+}
+
+.mypage_toggle_btn {
+    padding: 0;
+}
+
+.mypage_toggle_btn span {
+    display: block;
+    padding: 13px 20px;
+    font-size: 14px;
+    color: #5a5a5a;
+}
+
+.mypage_toggle_btn:hover span {
+    color: #8ab4f8;
+}
+
+.menu-divider {
+    height: 1px;
+    background-color: #eee;
+}
 </style>
 <script>
 // FIXME : XSS 3원칙 적용할 것
@@ -284,17 +293,21 @@ header {
 			$(location).attr('href', '/mypage/account');
 		});
 		
-		$("#myPosts").click(function(){
+		$("#comPosts").click(function(){
 			$(location).attr('href','/community/my');
+		})
+		
+		$("#comFavorite").click(function(){
+			$(location).attr('href','/mypage/favorite')
 		})
 		
 		$("#myStore").click(function(){
 			$(location).attr('href','/fleaMarket/my?view=store');
 		})	
 		
-		$("#myFavorite").click(function(){
-			$(location).attr('href','/mypage/favorite')
-		})
+		$("#fleaFavorite").click(function(){
+			$(location).attr('href',"/fleaMarket/my?view=favorites");
+		})	
 		
 		$("#chat").click(function(){
 			sessionStorage.removeItem("chatRoomId");
@@ -341,9 +354,6 @@ function logout(loginType){
     .then(() => {
     	location.reload();
      })
-    .catch(error => {
-        console.error('로그아웃 중 오류 발생 : ', error);
-    });
 }
 </script>
 </head>
@@ -397,22 +407,36 @@ function logout(loginType){
 					id="header_name"></span>
 	
 				<div class="mypage_toggle absolute border border-radius-7px">
+
 					<ul>
-						<li id="account" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold  mypage_font border-none bColor_fff">계정
-								정보</span></li>
-						<li id="myPosts" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold  mypage_font border-none bColor_fff">작성한 글</span>
-								</li>
-						<li id="myStore" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold  mypage_font border-none bColor_fff">내 상점</span>
-								</li>
-						<li id="myFavorite" class="mypage_toggle_btn cursor-pointer">
-							<span
-							class="font-weight-bold  mypage_font border-none bColor_fff">북마크</span>
+						<li class="mypage_toggle_li">
+							<span class="font-weight-bold mypage_font border-none bColor_fff">커뮤니티</span>
 						</li>
-						<li id="chat" class="mypage_toggle_btn cursor-pointer"><span
-							class="font-weight-bold  mypage_font border-none bColor_fff">채팅</span>
+						<li id="comPosts" class="mypage_toggle_btn cursor-pointer">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">작성한 글</span>
+						</li>
+						<li id="comFavorite" class="mypage_toggle_btn cursor-pointer">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">북마크</span>
+						</li>
+    					<div class="menu-divider"></div>
+						<li class="mypage_toggle_li">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">중고악기</span>
+						</li>
+						<li id="myStore" class="mypage_toggle_btn cursor-pointer">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">내 상점</span>
+						</li>
+						<li id="fleaFavorite" class="mypage_toggle_btn cursor-pointer">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">찜한 상품</span>
+						</li>
+						<li id="chat" class="mypage_toggle_btn cursor-pointer">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">채팅</span>
+						</li>
+						<div class="menu-divider"></div>
+						<li class="mypage_toggle_li">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">계정</span>
+						</li>
+						<li id="account" class="mypage_toggle_btn cursor-pointer">
+							<span class="font-weight-bold  mypage_font border-none bColor_fff">계정 정보</span>
 						</li>
 					</ul>
 				</div>
