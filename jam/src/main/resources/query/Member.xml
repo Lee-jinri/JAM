@@ -144,7 +144,6 @@
 		UPDATE member
 		SET user_name = #{user_name}
 		WHERE user_id = #{user_id}
-  		AND social_login = 0
 	</update>
 	
 	<!-- 전화번호 변경 -->
@@ -152,7 +151,6 @@
 		UPDATE member
 		SET phone = #{phone}
 		WHERE user_id = #{user_id}
-  		AND social_login = 0
 	</update>
 	
 	<!-- 비밀번호 확인 -->
@@ -168,7 +166,6 @@
 		UPDATE member
 		SET address = #{address}
 		WHERE user_id = #{user_id}
-  		AND social_login = 0
 	</update>
 	
 	<!-- 회원 탈퇴 -->
@@ -208,11 +205,11 @@
 	
 	<insert id="insertCompanyRole" parameterType="map">
 	    INSERT INTO member_role (user_id, role_code)
-		SELECT #{userId}, 'ROLE_COMPANY'
+		SELECT #{user_id}, 'ROLE_COMPANY'
 		FROM dual
 		WHERE NOT EXISTS (
 			SELECT 1 FROM member_role
-			WHERE user_id = #{userId} AND role_code = 'ROLE_COMPANY'
+			WHERE user_id = #{user_id} AND role_code = 'ROLE_COMPANY'
 		)
 	</insert>
 	
