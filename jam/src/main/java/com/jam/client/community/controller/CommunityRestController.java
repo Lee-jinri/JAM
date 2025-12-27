@@ -301,7 +301,7 @@ public class CommunityRestController {
 	}
 
 	@PreAuthorize("isAuthenticated()")
-	@DeleteMapping("/posts/my")
+	@DeleteMapping("/my/posts")
 	public ResponseEntity<Void> deletePosts(@RequestBody List<Long> postIds, HttpServletRequest request) {
 	    String userId = (String)request.getAttribute("userId");
 	    if (userId == null || userId.isEmpty()) {

@@ -242,7 +242,7 @@ function renderList(data){
 }
 
 function deletePosts(ids) {
-    fetch("/api/community/posts/my", {
+    fetch("/api/community/my/posts", {
         method: "DELETE",
         headers: {
             "Content-Type": "application/json"
