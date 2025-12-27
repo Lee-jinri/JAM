@@ -3,7 +3,6 @@ package com.jam.client.fleaMarket.controller;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -323,64 +322,50 @@ public class FleaMarketRestController {
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value="/my/store")
 	public ResponseEntity<Map<String, Object>> getMyStore(FleaMarketVO flea, HttpServletRequest request){
-		try {
-			String user_id = (String)request.getAttribute("userId");
-			
-			if(user_id == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-			flea.setUser_id(user_id);
-			// FIXME: 임시
-			flea.setAmount(36);
-			
-			Map<String, Object> result = new HashMap<>();
+		String user_id = (String)request.getAttribute("userId");
+		
+		if(user_id == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		flea.setUser_id(user_id);
+		// FIXME: 임시
+		flea.setAmount(36);
+		
+		Map<String, Object> result = new HashMap<>();
 
-			List<FleaMarketVO> myStoreList = fleaService.getMyStore(flea);
-			
-			result.put("fleaMarketList", myStoreList);
-			
-			int total = fleaService.getMyStoreCnt(flea);
-			
-			PageDTO pageMaker = new PageDTO(flea, total);
-	        result.put("pageMaker", pageMaker);
+		List<FleaMarketVO> myStoreList = fleaService.getMyStore(flea);
+		
+		result.put("fleaMarketList", myStoreList);
+		
+		int total = fleaService.getMyStoreCnt(flea);
+		
+		PageDTO pageMaker = new PageDTO(flea, total);
+        result.put("pageMaker", pageMaker);
 
-	        return ResponseEntity.ok(result);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
-		}
+        return ResponseEntity.ok(result);
 	}
 	
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/favorites")
 	public ResponseEntity<Map<String, Object>> favorites(FleaMarketVO flea, HttpServletRequest request){
-		try {
-			String user_id = (String)request.getAttribute("userId");
-			
-			if(user_id == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-			
-			flea.setUser_id(user_id);
-			// FIXME: 임시
-			flea.setAmount(36);
-			
-			Map<String, Object> result = new HashMap<>();
-
-			List<FleaMarketVO> favoriteList = fleaService.getFavorites(flea);
-			
-			result.put("fleaMarketList", favoriteList);
-			result.put("userName", request.getSession().getAttribute("userName"));
-			
-			int total = fleaService.getMyStoreCnt(flea);
-			
-			PageDTO pageMaker = new PageDTO(flea, total);
-	        result.put("pageMaker", pageMaker);
-
-	        return ResponseEntity.ok(result);
-			
-		}catch(Exception e) {
-			log.error(e.getMessage());
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-	                .body(Collections.singletonMap("error", "An unexpected error occurred"));
-		}
 		
+		String user_id = (String)request.getAttribute("userId");
+		if(user_id == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		
+		flea.setUser_id(user_id);
+		// FIXME: 임시
+		flea.setAmount(36);
+		
+		Map<String, Object> result = new HashMap<>();
+
+		List<FleaMarketVO> favoriteList = fleaService.getFavorites(flea);
+		
+		result.put("fleaMarketList", favoriteList);
+		result.put("userName", request.getSession().getAttribute("userName"));
+		
+		int total = fleaService.getMyStoreCnt(flea);
+		
+		PageDTO pageMaker = new PageDTO(flea, total);
+        result.put("pageMaker", pageMaker);
+
+        return ResponseEntity.ok(result);
 	}
 }
