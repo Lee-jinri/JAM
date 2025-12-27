@@ -35,6 +35,7 @@ import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.util.HtmlSanitizer;
+import com.jam.global.util.ValueUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +57,9 @@ public class FleaMarketRestController {
 		if (user != null) {
 			flea_vo.setUser_id(user.getUser_id());
 		}
+		
+		String kw = flea_vo.getKeyword();
+		flea_vo.setKeyword(ValueUtils.sanitizeForLike(kw));
 		
 		// FIXME: 임시
 		flea_vo.setAmount(24);
@@ -142,9 +146,10 @@ public class FleaMarketRestController {
 		if (price <= 0) {
 			return ResponseEntity.badRequest().body("가격은 0원보다 커야 합니다.");
 		}
+		title = HtmlSanitizer.sanitizeTitle(title);
 		content = HtmlSanitizer.sanitizeHtml(content);
-		FleaMarketVO flea_vo = new FleaMarketVO();
 		
+		FleaMarketVO flea_vo = new FleaMarketVO();
 		flea_vo.setTitle(title);
 		flea_vo.setContent(content);
 		flea_vo.setPrice(price);
@@ -230,9 +235,10 @@ public class FleaMarketRestController {
 			return ResponseEntity.badRequest().body("가격은 0원보다 커야 합니다.");
 		}
 
+		title = HtmlSanitizer.sanitizeTitle(title);
 		content = HtmlSanitizer.sanitizeHtml(content);
+		
 		FleaMarketVO flea_vo = new FleaMarketVO();
-
 		flea_vo.setPost_id(postId);
 		flea_vo.setTitle(title);
 		flea_vo.setContent(content);

@@ -30,6 +30,7 @@ import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.util.HtmlSanitizer;
+import com.jam.global.util.ValueUtils;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -61,6 +62,7 @@ public class CommunityRestController {
 		CommunityVO community = new CommunityVO();
 		community.setPageNum(pageNum);
 		
+		keyword = (ValueUtils.sanitizeForLike(keyword));
 		if (keyword != null && !keyword.trim().isEmpty()) {
 		    community.setKeyword(keyword);
 		}
@@ -171,16 +173,21 @@ public class CommunityRestController {
 	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
 	    }
 
-	    if (community.getTitle() == null || community.getTitle().trim().isEmpty()) {
+		String title = community.getTitle();
+		String content = community.getContent();
+		
+	    if (title == null || title.trim().isEmpty()) {
 	        log.error("Title cannot be null or empty.");
 	        throw new BadRequestException("제목을 입력하세요.");
 	    }
-	    if (community.getContent() == null || community.getContent().trim().isEmpty()) {
+	    if (content == null || content.trim().isEmpty()) {
 	        log.error("Content cannot be null or empty.");
 	        throw new BadRequestException("내용을 입력하세요.");
 	    }
-	    
-	    String c = HtmlSanitizer.sanitizeHtml(community.getContent());
+
+		String t = HtmlSanitizer.sanitizeTitle(title);
+		String c = HtmlSanitizer.sanitizeHtml(content);
+		community.setTitle(t);
 	    community.setContent(c);
 	    		
 		community.setUser_id(userId);
@@ -206,6 +213,15 @@ public class CommunityRestController {
 	        log.error("Request body (community) is missing.");
 	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
 		}
+
+		String user_id = (String)request.getAttribute("userId");
+
+		if(user_id == null || user_id.isEmpty()) {
+			log.error("Community writeBoard User is not Authenticated.");
+	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		}
+		community.setUser_id(user_id);
+		
 		String title = community.getTitle();
 		String content = community.getContent();
 		
@@ -218,15 +234,11 @@ public class CommunityRestController {
 	        throw new BadRequestException("내용을 입력하세요.");
 		}
 		
-		String user_id = (String)request.getAttribute("userId");
-
-		if(user_id == null || user_id.isEmpty()) {
-			log.error("Community writeBoard User is not Authenticated.");
-	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		}
-		
-		community.setUser_id(user_id);
-		
+		String t = HtmlSanitizer.sanitizeTitle(title);
+		String c = HtmlSanitizer.sanitizeHtml(content);
+		community.setTitle(t);
+	    community.setContent(c);
+	    
 		comService.editPost(community);
 		String post_id = community.getPost_id().toString();
 		
@@ -271,10 +283,11 @@ public class CommunityRestController {
         community.setUser_id(userId);
         community.setPageNum(pageNum);
         
-        if (keyword != null && !keyword.trim().isEmpty()) {
-            community.setKeyword(keyword);
-        }
-        
+        keyword = (ValueUtils.sanitizeForLike(keyword));
+		if (keyword != null && !keyword.trim().isEmpty()) {
+		    community.setKeyword(keyword);
+		}
+		
         Map<String, Object> result = new HashMap<>();
 
         List<CommunityVO> posts = comService.getMyPosts(community);

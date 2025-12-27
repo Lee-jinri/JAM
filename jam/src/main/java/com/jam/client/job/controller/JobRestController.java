@@ -32,6 +32,7 @@ import com.jam.common.vo.PageDTO;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.UnauthorizedException;
+import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValidationUtils;
 import com.jam.global.util.ValueUtils;
 
@@ -139,7 +140,10 @@ public class JobRestController {
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/post")
 	public ResponseEntity<String> writePost(@RequestBody JobVO jobs, HttpServletRequest request) throws Exception{
-		
+
+	    // 기본값 및 사용자 정보 세팅
+	    preprocessJobVO(jobs, request);
+	    
 		if (jobs == null) {
 	        log.error("JOBS writePost jobVO is null");
 	        throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요.");
@@ -150,9 +154,6 @@ public class JobRestController {
 	    if (validationError != null) {
 	        throw new BadRequestException(validationError);
 	    }
-
-	    // 기본값 및 사용자 정보 세팅
-	    preprocessJobVO(jobs, request);
 		
 		jobService.writePost(jobs);
 		
@@ -195,6 +196,9 @@ public class JobRestController {
 		jobs.setDong(ValueUtils.emptyToNull(jobs.getDong()));
 	    
 		jobs.setPay(jobs.getPay());
+
+	    jobs.setTitle(HtmlSanitizer.sanitizeTitle(jobs.getTitle()));
+	    jobs.setContent(HtmlSanitizer.sanitizeHtml(jobs.getContent()));
 	}
 	
 	/***********************************
@@ -212,17 +216,18 @@ public class JobRestController {
 		    throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요.");
 		}
 
+	    // 기본값 및 사용자 정보 세팅
+	    preprocessJobVO(jobs, request);
+
 		postId = ValidationUtils.requireValidId(postId);
 		jobs.setPost_id(postId);
+		
 	    // 유효성 검사
 	    String validationError = validateJobVO(jobs);
 	    if (validationError != null) {
 	        log.error(validationError);
 	        throw new BadRequestException(validationError);
 	    }
-	    
-	    // 기본값 및 사용자 정보 세팅
-	    preprocessJobVO(jobs, request);
     
 		jobService.editPost(jobs);
 		String post_id = jobs.getPost_id().toString();
