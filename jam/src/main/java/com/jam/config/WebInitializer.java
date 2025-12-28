@@ -1,6 +1,7 @@
 package com.jam.config;
 
 import javax.servlet.Filter;
+import javax.servlet.ServletRegistration;
 
 import org.springframework.web.filter.CharacterEncodingFilter;
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
@@ -34,5 +35,11 @@ public class WebInitializer extends AbstractAnnotationConfigDispatcherServletIni
         
 
         return new Filter[] {characterEncodingFilter};
+    }
+    
+    @Override
+    protected void customizeRegistration(ServletRegistration.Dynamic registration) {
+        // 404 에러를 Spring이 예외로 던지게 설정
+        registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
     }
 }

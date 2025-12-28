@@ -1,0 +1,17 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8"
+    pageEncoding="UTF-8"%>
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>페이지를 찾을 수 없습니다</title>
+</head>
+<body>
+	<div style="text-align: center; margin-top: 100px;">
+        <h1>404 - 찾으시는 페이지가 없어요! 😅</h1>
+        <p>입력하신 주소가 잘못되었거나 변경되었을 수 있습니다.</p>
+        <br>
+        <a href="/">홈으로 돌아가기</a>
+    </div>
+</body>
+</html>

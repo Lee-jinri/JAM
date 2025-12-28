@@ -12,6 +12,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.NoHandlerFoundException;
 
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ConflictException;
@@ -74,6 +76,14 @@ public class GlobalExceptionHandler {
 		body.put("path", req.getRequestURI());
 		return ResponseEntity.status(HttpStatus.NOT_FOUND).body(body);
 	}
+	
+	@ExceptionHandler(NoHandlerFoundException.class)
+    public ModelAndView handle404(NoHandlerFoundException ex) {
+		System.out.println("404");
+		ModelAndView mav = new ModelAndView();
+	    mav.setViewName("common/404"); // /WEB-INF/views/common/404.jsp로 이동
+	    return mav;
+    }
 	
 	@ExceptionHandler(ConflictException.class)
     public ResponseEntity<Map<String, Object>> handleConflict(ConflictException ex, HttpServletRequest req) {
