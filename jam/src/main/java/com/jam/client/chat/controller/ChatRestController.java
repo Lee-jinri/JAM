@@ -1,21 +1,20 @@
 package com.jam.client.chat.controller;
 
 import java.util.List;
-import java.util.Map;
 
-import javax.servlet.http.HttpServletRequest;
-
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.chat.service.ChatService;
+import com.jam.client.chat.vo.ChatRoomListVO;
 import com.jam.client.chat.vo.ChatVO;
+import com.jam.client.member.vo.MemberVO;
+import com.jam.global.exception.BadRequestException;
+import com.jam.global.exception.UnauthorizedException;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,108 +24,69 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class ChatRestController {
-	// FIXME: 무한 스크롤 만들어야 함
+	// TODO: 무한 스크롤
 	private final ChatService chatService;
 	
+    /**
+     * 내가 참여 중인 채팅방 목록 조회
+     * 
+     * - 현재 로그인한 사용자의 채팅방 목록을 조회
+	 * 
+	 * @param user	현재 로그인한 사용자
+	 * @return List<ChatRoomListVO> 채팅 상대방 정보와 마제막 메시지, 전송 시간
+     */
+    @GetMapping(value="/chatRooms")
+    public ResponseEntity<List<ChatRoomListVO>> getChatRooms(@AuthenticationPrincipal MemberVO user){
+    	
+    	if (user == null) {
+    		throw new UnauthorizedException("로그인이 필요한 서비스 입니다. 로그인 페이지로 이동하겠습니까?");
+    	}
+    	
+    	List<ChatRoomListVO> chatRooms = chatService.getChatRooms(user.getUser_id());
+		return ResponseEntity.ok().body(chatRooms);
+    }
+    
 	/**
 	 * 채팅방 ID 조회 또는 생성
-	 * - targetUserId와 현재 로그인 유저(userId) 기준으로 채팅방 ID를 가져옴
-	 * - 존재하지 않으면 새로 생성
-	 * - Redis에 참여자 정보 저장
+	 * 
+	 * - 현재 로그인 사용자와 targetUserId 기준으로 채팅방 ID를 조회
+	 * - 기존 채팅방이 없으면 새로 생성
 	 *
-	 * @param targetUserId  채팅 상대방의 사용자 ID
-	 * @param request       HttpServletRequest (JWT 인증 필터에서 userId를 setAttribute로 저장해 둠)
+	 * @param targetUserId  채팅 상대방 사용자 ID
+	 * @param user			현재 로그인한 사용자
 	 * @return 채팅방 ID
 	 */
 	@GetMapping(value="/chatRoomId")
-    public ResponseEntity<String> getChatRoomId(@RequestParam String targetUserId, HttpServletRequest request) {
+    public ResponseEntity<Long> getChatRoomId(
+    		@RequestParam String targetUserId,
+			@AuthenticationPrincipal MemberVO user) {
 
-    	String userId = (String)request.getAttribute("userId");
-    	
-    	if(userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-    	if(targetUserId == null) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    	if(user == null || user.getUser_id() == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다. 로그인 페이지로 이동하겠습니까?");
+    	if(targetUserId == null) throw new BadRequestException("잘못된 요청입니다. 잠시 후 다시 시도하세요.");
 
-    	String chatRoomId = chatService.getChatRoomId(userId, targetUserId);
+    	Long roomId = chatService.getOrCreateChatRoomId(user.getUser_id(), targetUserId);
     	
-    	chatService.addParticipant(chatRoomId, targetUserId, userId);
-    	
-    	return ResponseEntity.ok(chatRoomId);
+    	return ResponseEntity.ok(roomId);
     }
 	
 	/**
 	 * 특정 채팅방의 메시지 목록 조회
-	 * - 최근 메시지 100건 가져옴
-	 * - 각 메시지에 mine 필드 세팅 (현재 유저가 보낸 메시지인지 여부)
+	 * 
+	 * - 각 메시지에 대해 현재 사용자가 보낸 메시지인지 여부(mine) 설정
 	 *
-	 * @param chatRoomId   채팅방 ID
-	 * @param request      HttpServletRequest (userId 포함)
-	 * @return 메시지 리스트
+	 * @param roomId	채팅방 ID
+	 * @param user		현재 로그인한 사용자 정보
+	 * @return 메시지 목록
 	 */
     @GetMapping("/messages")
-    public ResponseEntity<List<ChatVO>> messages(@RequestParam String chatRoomId, HttpServletRequest request) {
+    public ResponseEntity<List<ChatVO>> messages(
+    		@RequestParam Long roomId,
+			@AuthenticationPrincipal MemberVO user) {
         
-    	try {
-    		// page, size
-        	Pageable pageable = PageRequest.of(1, 100);
-        	        
-        	List<ChatVO> messages = chatService.getMessages(chatRoomId, pageable);
-        	
-        	String userId = (String) request.getAttribute("userId");
-        	
-        	for (ChatVO message : messages) {
-        		message.setMine(message.getSenderId().equals(userId));
-            }
-        	
-            return ResponseEntity.ok(messages);
-    	}catch(Exception e){
-    		log.error(e.getMessage());
-    	}
+    	if(user == null || user.getUser_id() == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다. 로그인 페이지로 이동하겠습니까?");
     	
-		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);    
+    	List<ChatVO> messages = chatService.getMessages(roomId, user.getUser_id());
+    	
+        return ResponseEntity.ok(messages);   
     }
-    
-    /**
-     * 채팅 상대방 정보 조회
-     * - 채팅방 ID와 현재 로그인한 유저 기준으로 상대방 ID, 이름 반환
-     *
-     * @param chatRoomId  채팅방 ID
-     * @param request     HttpServletRequest (userId 포함)
-     * @return partnerId, partnerName 포함한 Map
-     */
-    @GetMapping(value="/chatPartner")
-    public ResponseEntity<Map<String,String>> getChatPartner(@RequestParam String chatRoomId, HttpServletRequest request){
-    	
-    	String userId = (String)request.getAttribute("userId");
-    	
-    	Map<String, String> chatPartner = chatService.getChatPartner(chatRoomId, userId);
-    	
-    	return ResponseEntity.ok(chatPartner);
-    }
-    
-    /**
-     * 내가 참여 중인 채팅방 목록 조회
-     * - 최근 대화 순으로 정렬되어 반환
-     *
-     * @param request  HttpServletRequest (userId 포함)
-     * @return 채팅방 목록 (ChatVO 리스트)
-     */
-    @GetMapping(value="/chatRooms")
-    public ResponseEntity<List<ChatVO>> getChatRooms(HttpServletRequest request){
-    	
-        try {
-        	String userId = (String) request.getAttribute("userId");
-        	
-        	if (userId == null) {
-        		return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        	}
-        	
-    		List<ChatVO> chatRooms = chatService.getChatRooms(userId);
-
-			return ResponseEntity.ok().body(chatRooms);
-		}catch(Exception e) {
-			log.error(e.getMessage());
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
-    }
-    
 }
