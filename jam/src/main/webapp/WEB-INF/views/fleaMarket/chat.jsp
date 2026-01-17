@@ -336,7 +336,11 @@ function initWebSocket(roomId) {
 			}
 		}
 		
-		socket = new WebSocket("ws://localhost:8080/ws");	
+		socket = new WebSocket(
+				"ws://"
+				+ location.host
+				+ "/ws"
+			);
 		
 		let retried = false;
 		socket.onopen = function() { 
