@@ -49,6 +49,8 @@ jobs:
         cloud.aws.s3.bucket=jam-resume-bucket
 
         file.upload-dir=${{ secrets.FILE_UPLOAD_DIR }}
+        
+        cors.allowed-origins=${{ secrets.CORS_ALLOWED_ORIGINS }}
         EOF  
 
     - name: Set up JDK 17
