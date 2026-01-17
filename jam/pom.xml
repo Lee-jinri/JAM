@@ -17,8 +17,15 @@
 
 	</properties>
 	<dependencies>
-
-		<!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail -->
+		<!-- Source: https://mvnrepository.com/artifact/io.netty/netty-all -->
+		<dependency>
+		    <groupId>io.netty</groupId>
+		    <artifactId>netty-all</artifactId>
+		    <version>4.1.127.Final</version>
+		    <scope>compile</scope>
+		</dependency>
+		
+		<!-- https://mvnrepository.com/artifact/com.sun.mail/javax.mail--> 
 		<dependency>
 		    <groupId>com.sun.mail</groupId>
 		    <artifactId>javax.mail</artifactId>
@@ -116,7 +123,7 @@
 		<dependency>
 		    <groupId>org.springframework</groupId>
 		    <artifactId>spring-messaging</artifactId>
-		    <version>5.3.24</version>
+		    <version>${org.springframework-version}</version>
 		</dependency>
 		
 		<!-- https://mvnrepository.com/artifact/org.webjars/sockjs-client -->
@@ -372,16 +379,19 @@
 			<version>1.28</version>
 		</dependency>
 		
-		
 		<!-- https://mvnrepository.com/artifact/io.lettuce/lettuce-core -->
 		<dependency>
 		    <groupId>io.lettuce</groupId>
 		    <artifactId>lettuce-core</artifactId>
 		    <version>6.3.2.RELEASE</version>
+		    <exclusions>
+		        <exclusion>
+		            <groupId>io.netty</groupId>
+		            <artifactId>*</artifactId>
+		        </exclusion>
+		    </exclusions>
 		</dependency>
 
-
-		
 		<!-- https://mvnrepository.com/artifact/org.springframework.data/spring-data-redis -->
 		<dependency>
 		    <groupId>org.springframework.data</groupId>
@@ -389,6 +399,13 @@
 		    <version>2.6.10</version>
 		</dependency>
 		
+		<!-- Source: https://mvnrepository.com/artifact/org.redisson/redisson -->
+		<dependency>
+		    <groupId>org.redisson</groupId>
+		    <artifactId>redisson</artifactId>
+		    <version>3.52.0</version>
+		    <scope>compile</scope>
+		</dependency>
 		
 		<!-- https://mvnrepository.com/artifact/com.fasterxml.jackson.datatype/jackson-datatype-jsr310 -->
 		<dependency>
