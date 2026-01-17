@@ -108,14 +108,20 @@
 
 	<!-- 중고거래 상세 글 조회 -->
 	<select id="getPostDetail" resultType="flea">
-		SELECT f.post_id, f.title,
-		f.content, f.category_id, f.view_count, f.sales_status,
-		f.created_at, f.price,
-		m.user_name, f.user_id
+		SELECT 
+			f.post_id, f.title, f.content, f.category_id, 
+			f.view_count, f.sales_status, f.created_at, f.price,
+			m.user_name, f.user_id,
+			(SELECT COUNT(*) 
+			FROM favorite 
+	        WHERE post_id = f.post_id 
+	        AND board_type = 'FLEA'
+	        AND user_id = #{user_id, jdbcType=VARCHAR}
+			) as isFavorite
 		FROM fleaMarket f
 		LEFT JOIN member m
-		ON f.user_id = m.user_id
-		WHERE post_id = #{post_id}
+			ON f.user_id = m.user_id
+		WHERE f.post_id = #{post_id}
 	</select>
 
 	<select id="getNextPostId" resultType="Long">

@@ -88,7 +88,7 @@ public class FleaMarketRestController {
 	public ResponseEntity<Map<String, Object>> getBoardDetail(@PathVariable("post_id") Long post_id, @AuthenticationPrincipal MemberVO user) {
 		if (post_id == null) { 
 			log.error("post_id is required");
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+			throw new BadRequestException("잘못된 요청입니다. 잠시 후 다시 시도하세요.");
 		}
 		
 		Map<String, Object> result = new HashMap<>();
@@ -97,7 +97,11 @@ public class FleaMarketRestController {
 		fleaService.incrementReadCnt(post_id);
 		
 		// 상세 페이지 조회
-		FleaMarketVO post = fleaService.getPostDetail(post_id);
+		FleaMarketVO flea = new FleaMarketVO();
+		if(user != null) flea.setUser_id(user.getUser_id());
+		flea.setPost_id(post_id);
+		
+		FleaMarketVO post = fleaService.getPostDetail(flea);
 		
 		// 이미지 파일
 		List<ImageFileVO> images = fleaService.getImages(post_id);

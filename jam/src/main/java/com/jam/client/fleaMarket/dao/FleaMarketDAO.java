@@ -21,7 +21,7 @@ public interface FleaMarketDAO {
 	public void incrementReadCnt(Long post_id);
 
 	// 중고거래 상세 페이지 조회
-	public FleaMarketVO getPostDetail(Long post_id);
+	public FleaMarketVO getPostDetail(FleaMarketVO flea);
 
 	// 중고거래 글 작성
 	int writePost(FleaMarketVO flea_vo);

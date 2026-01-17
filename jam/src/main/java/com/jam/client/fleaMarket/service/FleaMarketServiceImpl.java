@@ -49,9 +49,9 @@ public class FleaMarketServiceImpl implements FleaMarketService {
 	}
 
 	@Override
-	public FleaMarketVO getPostDetail(Long post_id) {
+	public FleaMarketVO getPostDetail(FleaMarketVO flea) {
 		
-		FleaMarketVO detail = fleaDao.getPostDetail(post_id);
+		FleaMarketVO detail = fleaDao.getPostDetail(flea);
 		
 		return detail;
 	}
