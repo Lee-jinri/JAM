@@ -1,5 +1,8 @@
 package com.jam.global.redis;
 
+import org.redisson.Redisson;
+import org.redisson.api.RedissonClient;
+import org.redisson.config.Config;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -32,11 +35,8 @@ public class RedisConfig implements DisposableBean {
     @Value("${spring.redis.port}")
     private int port;
     
-    @Bean
-    public ObjectMapper objectMapper() {
-        return new ObjectMapper();
-    }
-
+    @Value("${spring.redisson.address}")
+    private String address;
     
     @Bean
     public RestTemplate restTemplate() {
@@ -65,10 +65,10 @@ public class RedisConfig implements DisposableBean {
         // Key Serializer
         redisTemplate.setKeySerializer(new StringRedisSerializer());
 
-        // Value Serializer (ChatVO 설정)
+        // Value Serializer
         Jackson2JsonRedisSerializer<Object> valueSerializer = new Jackson2JsonRedisSerializer<>(Object.class);
         
-        ObjectMapper objectMapper = objectMapper(); 
+        ObjectMapper objectMapper = new ObjectMapper(); 
         
         objectMapper.activateDefaultTyping(
             BasicPolymorphicTypeValidator.builder().allowIfBaseType(Object.class).build(),
@@ -110,4 +110,12 @@ public class RedisConfig implements DisposableBean {
         }
     }
     
+    @Bean
+	public RedissonClient redissonClient() {
+		Config config = new Config();		
+		config.useSingleServer()
+			.setAddress(address);
+
+		return Redisson.create(config);
+	}
 }
