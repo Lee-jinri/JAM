@@ -1,8 +1,6 @@
 package com.jam.client.chat.webSocket;
 
 import java.io.IOException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -31,16 +29,16 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     // 현재 연결된 모든 WebSocket 세션을 관리
     private final Set<WebSocketSession> sessions = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
-    /* chatRoomId: {session1, session2}
+    /* roomId: {session1, session2}
      * 채팅에 입장하면 세션 추가됨. 채팅 나가면 세션 삭제
      * 특정 채팅방에 참여한 세션들을 관리. 키는 채팅방 ID, 값은 해당 채팅방에 연결된 세션들 /
      * 특정 채팅방에 속한 클라이언트들에게만 메시지를 보냄.*/
-    private final Map<String,Set<WebSocketSession>> chatRoomSession = new ConcurrentHashMap<>();
+    private final Map<Long,Set<WebSocketSession>> chatRoomSession = new ConcurrentHashMap<>();
 
-    /* session: chatRoomId
+    /* session: roomId
      * 채팅에 입장하면 채팅방 추가됨, 채팅방 
      * 특정 세션이 참여한 채팅방 관리, 채팅방 나갈 때 채팅방 id 찾기 위함  */
-    private final Map<WebSocketSession, String> sessionToChatRoom = new ConcurrentHashMap<>();
+    private final Map<WebSocketSession, Long> sessionToChatRoom = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -55,7 +53,7 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             // 페이로드(JSON 형식의 메시지 데이터) -> ChatVO로 변환
             ChatVO chatVO = convertToChatMessageVO(payload);
 
-            String chatRoomId = chatVO.getChatRoomId();
+            Long roomId = chatVO.getRoomId();
             
     	    Map<String, Object> attributes = session.getAttributes();
     	    String userId = (String) attributes.get("userId");
@@ -67,56 +65,57 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     	    }
     	    
             // 채팅방 세션 없으면 만듦
-            if (!chatRoomSession.containsKey(chatRoomId)) {
-                chatRoomSession.put(chatRoomId, ConcurrentHashMap.newKeySet());
+            if (!chatRoomSession.containsKey(roomId)) {
+                chatRoomSession.put(roomId, ConcurrentHashMap.newKeySet());
             }
             
             // 특정 채팅방에 연결된 세션 집합
-            Set<WebSocketSession> sessionSet = chatRoomSession.get(chatRoomId);
+            Set<WebSocketSession> sessionSet = chatRoomSession.get(roomId);
 
             // ENTER(채팅방 입장)
             if (chatVO.getType().equals(ChatVO.Type.ENTER)) {
             	
             	sessionSet.add(session);
-            	sessionToChatRoom.put(session, chatRoomId);
+            	sessionToChatRoom.put(session, roomId);
             	
-        	    Map<String, String> info = chatService.getChatPartner(chatVO.getChatRoomId(), userId);
+        	    Map<String, String> info = chatService.getChatPartner(roomId, userId);
         	    
-        	    if (info == null || info.get("chatPartnerId") == null) {
+        	    if (info == null || info.get("CHATPARTNERID") == null) {
+        	    	log.info("info : " + info);
         	    	sessionSet.remove(session);
-        	    	if (sessionSet.isEmpty()) chatRoomSession.remove(chatRoomId);
+        	    	if (sessionSet.isEmpty()) chatRoomSession.remove(roomId);
         	    	sessionToChatRoom.remove(session);
         	    	sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
         	    	return;
         		}
         	    
-        	    session.getAttributes().put("partnerId", info.get("chatPartnerId"));
-        	    session.getAttributes().put("partnerName", info.get("chatPartnerName"));
+        	    session.getAttributes().put("partnerId", info.get("CHATPARTNERID"));
+        	    session.getAttributes().put("partnerName", info.get("CHATPARTNERNAME"));
         	    
-        	    sendMessage(session, "PARTNER_INFO", Map.of("partnerName", info.get("chatPartnerName"))); 
+        	    sendMessage(session, "PARTNER_INFO", Map.of("partnerName", info.get("CHATPARTNERNAME"))); 
         	    
-        	    log.info("사용자 " + session.getId() + "가 채팅방 " + chatRoomId + "에 입장했습니다.");
+        	    log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에 입장했습니다.");
             } else if (chatVO.getType().equals(ChatVO.Type.LEAVE)) {
             	
                 // 1. chatRoomSession에서 제거
-                if (chatRoomSession.containsKey(chatRoomId)) {
+                if (chatRoomSession.containsKey(roomId)) {
                     sessionSet.remove(session);
 
                     // 채팅방에 세션이 없으면 맵에서 키 제거
                     if (sessionSet.isEmpty()) {
-                        chatRoomSession.remove(chatRoomId);
+                        chatRoomSession.remove(roomId);
                     }
                 }
 
                 sessionToChatRoom.remove(session);
 
-                log.info("사용자 " + session.getId() + "가 채팅방 " + chatRoomId + "에서 퇴장했습니다.");
+                log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에서 퇴장했습니다.");
             
             } else if (chatVO.getType().equals(ChatVO.Type.MESSAGE)) {
             	try {
 
             		// payload 검증
-            		if (chatRoomId == null || chatVO.getMessage() == null || chatVO.getMessage().isBlank()) {
+            		if (roomId == null || chatVO.getMessage() == null || chatVO.getMessage().isBlank()) {
             			sendMessage(session, "ERROR", Map.of("code", 400, "message", "잘못된 요청 입니다. 다시 시도해 주세요."));
             			return;
             		}
@@ -127,14 +126,8 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             			return;
             		}
             		
-            		// redis에 채팅방 있는지
-            		if (!chatService.roomExists(chatRoomId)) {
-            			sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
-            			return;
-            		}
-            		
-            		// Redis에서 멤버십 확인
-            		if (!chatService.isMemberOfRoom(userId, chatRoomId)) {
+            		// 멤버십 확인
+            		if (!chatService.isMemberOfRoom(userId, roomId)) {
             			sendMessage(session, "ERROR", Map.of("code", 403, "message", "잘못된 접근 입니다."));
             			return;
             		}
@@ -149,20 +142,6 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             		chatVO.setReceiverId(partnerId);
             	    chatVO.setSenderId(userId);
 
-            	    // 첫 메시지인지 확인
-            	    boolean isFirst = chatService.ensureRoomOnFirstMessage(chatRoomId, userId, partnerId);
-
-            		if (isFirst) { 
-            	    	String userName = chatService.getUserNameFromRedis(userId);
-            			String partnerName = (String) attributes.get("partnerName");
-            			
-            			if (chatVO.getChatDate() == null) chatVO.setChatDate(LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")));
-            			
-            			if (userName != null && partnerName != null) {
-                			broadcastRoomCreated(chatRoomId, userId, userName, partnerId, partnerName, chatVO.getMessage(), chatVO.getChatDate());
-                		}
-            		}
-            		
             	    // 메시지 저장 후 해당 방에만 브로드캐스트
             	    chatService.saveChat(chatVO);
             	    sendMessageToChatRoom(chatVO, "MESSAGE", sessionSet);
@@ -188,12 +167,11 @@ public class WebSocketHandler extends TextWebSocketHandler  {
         sessions.remove(session);
         
         // 세션이 속한 채팅방 ID 찾기
-        //String chatRoomId = sessionToChatRoom.get(session);
-        String chatRoomId = sessionToChatRoom.remove(session);
+        Long roomId = sessionToChatRoom.remove(session);
         
-        if (chatRoomId != null) {
+        if (roomId != null) {
             // 해당 채팅방의 세션 집합에서 제거
-            Set<WebSocketSession> chatRoomSessions = chatRoomSession.get(chatRoomId);
+            Set<WebSocketSession> chatRoomSessions = chatRoomSession.get(roomId);
             if (chatRoomSessions != null) {
                 chatRoomSessions.remove(session);
             }
@@ -225,48 +203,9 @@ public class WebSocketHandler extends TextWebSocketHandler  {
         }
     }
 
-
     // 특정 채팅방의 모든 클라이언트에게 메시지를 전송
     private void sendMessageToChatRoom(ChatVO chatVO, String type, Set<WebSocketSession> sessionSet) {
     	sessionSet.stream().forEach(sess -> sendMessage(sess, type, chatVO));
-    }
-    
-    // 현재 연결된 세션들 중 userId가 일치하는 모든 세션에 전송 (PC+모바일에서 동시 사용해도 새 채팅방 생성되도록)
-    private void sendMessageToUser(String userId, String type, Object data) {
-    	for (WebSocketSession s : sessions) {
-    		if (!s.isOpen()) continue;
-    		Object uid = s.getAttributes().get("userId");
-    		if (userId != null && userId.equals(uid)) {
-    			sendMessage(s, type, data);
-    		}
-    	}
-    }
-    
-    private void broadcastRoomCreated(
-    		String chatRoomId, 
-    		String senderId, String senderName, 
-    		String partnerId, String partnerName, 
-    		String firstMessage, String chatDate) {
-
-    	// 송신자에게는 partner = 상대 이름
-    	Map<String, Object> toSender = Map.of(
-    		"chatRoomId", chatRoomId,
-    		"partnerId", partnerId,
-    		"partner", partnerName,
-    		"message", firstMessage,
-    		"chatDate", chatDate
-    	);
-    	sendMessageToUser(senderId, "ROOM_CREATED", toSender);
-
-    	// 수신자에게는 partner = 보내는 사람 이름
-    	Map<String, Object> toPartner = Map.of(
-    		"chatRoomId", chatRoomId,
-    		"partnerId", senderId,
-    		"partner", senderName,
-    		"message", firstMessage,
-    		"chatDate", chatDate
-    	);
-    	sendMessageToUser(partnerId, "ROOM_CREATED", toPartner);
     }
 
     private void sendError(WebSocketSession session, int code, String msg) {
@@ -274,7 +213,7 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     }
 
     public ChatVO convertToChatMessageVO(String payload) {
-		ObjectMapper objectMapper = new ObjectMapper();
+    	log.info("payload = {}", payload);
         try {
             return objectMapper.readValue(payload, ChatVO.class);
         } catch (IOException e) {
