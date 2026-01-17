@@ -5,7 +5,6 @@ import java.util.List;
 import org.apache.ibatis.annotations.Param;
 
 import com.jam.client.fleaMarket.vo.FleaMarketVO;
-import com.jam.file.vo.ImageFileVO;
 
 public interface FleaMarketDAO {
 
@@ -45,7 +44,4 @@ public interface FleaMarketDAO {
 	public Long getNextPostId();
 
 	public List<FleaMarketVO> getFavorites(FleaMarketVO flea);
-
-	public List<ImageFileVO> getImages(Long post_id);
-
 }
