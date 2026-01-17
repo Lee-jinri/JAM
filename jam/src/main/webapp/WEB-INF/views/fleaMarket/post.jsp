@@ -6,6 +6,7 @@
 <head>
 <meta charset="UTF-8">
 <title>JAM - 중고악기</title>
+<script src="/resources/include/dist/js/favorite.js"></script>	
 <script src="/resources/include/dist/js/categories.js"></script>
 <style>
 .page-header{
@@ -177,6 +178,7 @@
     -webkit-box-flex: 1;
     width: 100%;
     height: 100%;
+    font-size: 15px;
 }
 #favoriteBtn{
     width: 100%;
@@ -191,6 +193,7 @@
     line-height: 1;
     background: #fdd77f;
     border: none;
+    font-size: 15px;
 }
 .slide-image {
 	width: 372px;         
@@ -204,7 +207,7 @@
 $(function(){
 	let post_id = $("#post_id").val();
 	let currentIndex = 0;
-	
+		
 	getBoard();
 	
 	function getBoard(){
@@ -244,7 +247,7 @@ $(function(){
 				if(post.sales_status == 1) $("#saleDone").html("거래 완료 된 글 입니다.");
 				
 				renderImages(data.images);
-				renderPostActionButtons(data.isAuthor);
+				renderPostActionButtons(data.isAuthor, post.user_id, post.favorite);
 			})
 			.catch(error => console.error('Error : ', error));
 		}
@@ -277,13 +280,15 @@ $(function(){
 	});
 	
 	$(document).on("click", "#chatBtn", async function(){
-		if (!authorUserId) {
+		var targetId = this.dataset.targetId;
+		
+		if (!targetId) {
 			alert("사용자 정보를 불러올 수 없습니다.");
 			return;
 		}
 		
-		try {
-			const res = await fetch('/api/chat/chatRoomId?targetUserId=' + authorUserId);
+		try {		
+			const res = await fetch('/api/chat/chatRoomId?targetUserId=' + targetId);
 
 			if (!res.ok) {
 				if (res.status === 401) {
@@ -295,10 +300,9 @@ $(function(){
 				}
 				return;
 			}
-			const chatRoomId = await res.text();
-			sessionStorage.setItem("chatRoomId", chatRoomId);
+			const roomId = await res.text();
+			sessionStorage.setItem("roomId", roomId);
 			window.location.href = '/chat';
-
 		} catch (error) {
 			console.error("채팅방 요청 중 오류:", error);
 			alert("네트워크 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
@@ -306,7 +310,7 @@ $(function(){
 	})
 
 	// 글쓴이와 로그인한 사용자가 다르면 채팅 버튼 생성
-	function renderPostActionButtons(isAuthor) { 
+	function renderPostActionButtons(isAuthor, authorUserId, isFavorite) { 
 		var btnDiv = document.getElementById("flea-postBtn");
 		if(isAuthor){
 	           	// 수정 버튼 생성
@@ -327,12 +331,28 @@ $(function(){
 			var favoriteBtn = document.createElement("button");
 			favoriteBtn.type = "button";
 			favoriteBtn.id = "favoriteBtn";
-			favoriteBtn.classList.add("favorite");
-			favoriteBtn.innerHTML = '<i class="fa-regular fa-heart"></i>&nbsp; 찜';
+			favoriteBtn.className = "favoriteSpan"; 
+			favoriteBtn.setAttribute("data-board-type", "FLEA");
+			favoriteBtn.setAttribute("data-post-id", post_id);
+
+			var iconClass = isFavorite ? "fa-solid" : "fa-regular";
+			favoriteBtn.innerHTML = "<i class='favorite " + iconClass + " fa-heart'></i>&nbsp; 찜";
+			
+			favoriteBtn.addEventListener('click', function (e) {
+			    e.preventDefault();
+			    
+			    if (e.target.classList.contains('favorite')) {
+			        return;
+			    }
+
+			    const $targetIcon = $(this).find(".favorite");
+			    $targetIcon.trigger("click");
+			});
 			
 			var chatBtn = document.createElement("button");
 			chatBtn.type = "button";
 			chatBtn.id = "chatBtn";
+			chatBtn.dataset.targetId = authorUserId;
 			chatBtn.innerHTML = '<i class="fa-regular fa-message"></i>&nbsp; 채팅';
 			
 			btnDiv.appendChild(favoriteBtn);
