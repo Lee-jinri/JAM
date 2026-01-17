@@ -23,10 +23,6 @@
 		
 		<typeAlias type="com.jam.client.roomRental.vo.RoomRentalVO" alias="room"/>
 		
-		<typeAlias type="com.jam.client.roomRentalReply.vo.RoomReplyVO" alias="roomReply"/>
-		
-		<typeAlias type="com.jam.client.message.vo.MessageVO" alias="message"/>
-		
 		<typeAlias type="com.jam.client.mypage.vo.MemberBoardVO" alias="memberBoard"/>
 		
 		<typeAlias type="com.jam.file.vo.ImageFileVO" alias="imageFile"/>
