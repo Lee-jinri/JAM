@@ -19,7 +19,7 @@ public interface FleaMarketService {
 	void incrementReadCnt(Long post_id);
 
 	// 중고거래 상세페이지 조회
-	FleaMarketVO getPostDetail(Long post_id);
+	FleaMarketVO getPostDetail(FleaMarketVO flea);
 
 	// 중고거래 글 작성
 	long writePost(FleaMarketVO flea_vo, List<MultipartFile> images);
