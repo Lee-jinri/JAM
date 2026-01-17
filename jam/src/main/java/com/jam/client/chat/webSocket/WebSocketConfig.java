@@ -6,6 +6,7 @@ import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.chat.service.ChatService;
 
 import lombok.RequiredArgsConstructor;
@@ -18,10 +19,11 @@ public class WebSocketConfig implements WebSocketConfigurer  {
 	
     private final ChatService chatService;
 	private final CustomWebSocketInterceptor customWebSocketInterceptor;
+    private final ObjectMapper objectMapper;
 
 	@Bean
 	public WebSocketHandler webSocketHandler() {
-		return new WebSocketHandler(chatService);
+		return new WebSocketHandler(chatService, objectMapper);
 	}
 
     @Override

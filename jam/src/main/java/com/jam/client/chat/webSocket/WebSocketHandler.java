@@ -26,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WebSocketHandler extends TextWebSocketHandler  {
 
     private final ChatService chatService;
+    private final ObjectMapper objectMapper;
     
     // 현재 연결된 모든 WebSocket 세션을 관리
     private final Set<WebSocketSession> sessions = java.util.concurrent.ConcurrentHashMap.newKeySet();
