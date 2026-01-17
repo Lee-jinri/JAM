@@ -1,8 +1,10 @@
 package com.jam.client.chat.vo;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,19 +22,21 @@ public class ChatVO {
     private String senderName;
     private String receiverId;
     private String receiverName;
-    private String chatDate;
-    private String chatRoomId;			
+
+    private Long roomId;
+    @JsonFormat(pattern = "yyyy/MM/dd HH:mm")
+    private LocalDateTime sentAt;
     
     private String partner;
     private boolean mine;
     
-    public ChatVO(String chatRoomId) {
-        this.chatRoomId = chatRoomId;
+    public ChatVO(Long roomId) {
+        this.roomId = roomId;
         this.messages = Collections.emptyList(); 
     }
     
-    public ChatVO(String chatRoomId, List<String> messages) {
-        this.chatRoomId = chatRoomId;
+    public ChatVO(Long roomId, List<String> messages) {
+        this.roomId = roomId;
         this.messages = messages;
     }
     
