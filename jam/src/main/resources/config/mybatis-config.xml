@@ -34,6 +34,11 @@
 		<typeAlias type="com.jam.client.job.vo.ApplicationVO" alias="app"/>
 		
 		<typeAlias type="com.jam.file.vo.FileAssetVO" alias="file"/>
+		
+		<typeAlias type="com.jam.client.chat.vo.ChatVO" alias="chat"/>
+		
+		<typeAlias type="com.jam.client.chat.vo.ChatRoomListVO" alias="chatRoomList"/>
+		
 	</typeAliases>
 	<!-- 
 	<typeHandlers>java.sql.Date를 java.util.Date 형으로 반환 
