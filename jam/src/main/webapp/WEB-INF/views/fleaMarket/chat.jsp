@@ -15,6 +15,7 @@
 	background-color: white;
 	margin: auto;
 	margin-top: 20px;
+	border-radius: 13px;
 	/*box-shadow: 0 0 10px rgba(0,0,0,0.2);
 	z-index: 999;*/
 }
@@ -35,6 +36,7 @@
 	padding: 10px;
 	font-weight: bold;
 	border-bottom: 1px solid #ddd;
+	height: 43px;
 }
 
 .chat-room-list {
@@ -92,6 +94,8 @@
 	justify-content: space-between;
 	align-items: center;
 	font-weight: bold;
+	border-radius: 0 13px 0 0;
+	height: 43px;
 }
 
 .chat-messages {
@@ -115,6 +119,18 @@
 	border: none;
 	outline: none;
 }
+.chat-input-container textarea{
+	min-height: 40px;
+    max-height: 150px; 
+    overflow-y: auto;
+    resize: none; 
+    flex: 1;
+	padding: 10px;
+	border: none;
+	outline: none;
+	font-size: 15px;
+	font-family: 'Arial', sans-serif;
+}
 
 .chat-input-container button {
 	padding: 10px 20px;
@@ -122,6 +138,9 @@
 	color: white;
 	border: none;
 	cursor: pointer;
+	font-size: 15px;
+    font-weight: 600;
+    border-radius: 0 0 13px 0;
 }
 .chat {
 	display: inline-block;
@@ -131,6 +150,7 @@
 	word-wrap: break-word;
 	position: relative;
 	margin-bottom: 8px;
+	height: fit-content;
 }
 
 .myChat {
@@ -138,6 +158,7 @@
 	color: white;
 	align-self: flex-end;
 	border-bottom-right-radius: 0;
+	font-weight: 500;
 }
 .otherChat {
 	background-color: #eee;
@@ -147,10 +168,24 @@
 }
 
 .chat-time {
-	font-size: 10px;
+	font-size: 13px;
 	color: #888;
 	margin-top: 4px;
 	text-align: right;
+}
+.chat-date-line {
+    text-align: center;
+    margin: 20px 0;
+    font-size: 0.8rem;
+    color: #888;
+    position: relative;
+}
+.chat-date-line::before {
+    content: "";
+    position: absolute;
+    left: 0; top: 50%; width: 100%; height: 1px;
+    background-color: #eee;
+    z-index: -1;
 }
 
 /* 방을 아직 선택하지 않은 상태 */
@@ -171,17 +206,16 @@
 
 <script>
 $(function(){
-	if (!window.MY_ID) { history.back(); }
 	loadChatRooms().then(() => {
-		const chatRoomId = sessionStorage.getItem('chatRoomId');
-		if (chatRoomId) {
+		const roomId = sessionStorage.getItem('roomId');
+		if (roomId) {
 			setEmptyUI(false);
-			getChatMessages(chatRoomId);
-			initWebSocket(chatRoomId);
+			getChatMessages(roomId);
+			initWebSocket(roomId);
 			
 			requestAnimationFrame(() => {
 				$('.chat-room-item').removeClass('active');
-				$('.chat-room-item[data-chatRoomId="' + chatRoomId + '"]').addClass('active');
+				$('.chat-room-item[data-roomId="' + roomId + '"]').addClass('active');
 				
 			});
 		} else {
@@ -194,7 +228,7 @@ $(function(){
 	
 	if ($send) {
 		$send.addEventListener("click", function() {
-			const roomId = sessionStorage.getItem("chatRoomId");
+			const roomId = sessionStorage.getItem("roomId");
 			if (!roomId) return;
 			sendChat(roomId);
 		});
@@ -209,8 +243,14 @@ $(function(){
 		});
 	}
 	
+	$input.addEventListener("input", function() {
+	    this.style.height = "auto"; // 높이 초기화
+	    this.style.height = (this.scrollHeight) + "px"; // 내용 높이만큼 조절
+	});
+	
+	
 	window.addEventListener('beforeunload', () => {
-		try { if (currentRoomId) socket?.send(JSON.stringify({ type:'LEAVE', chatRoomId: currentRoomId })); } catch(e){}
+		try { if (currentRoomId) socket?.send(JSON.stringify({ type:'LEAVE', roomId: currentRoomId })); } catch(e){}
 		try { socket?.close(1000); } catch(e){}
 	});
 })
@@ -226,23 +266,23 @@ function setEmptyUI(isEmpty) {
 }
 
 function timeAgo(dateString) {
-	  if (!dateString) return "";
-	  const past = new Date(dateString.replace(" ", "T"));
-	  if (isNaN(past)) return dateString;
+	if (!dateString) return "";
+	const past = new Date(dateString.replace(" ", "T"));
+	if (isNaN(past)) return dateString;
+	
+	const diff = Math.floor((Date.now() - past.getTime()) / 1000);
+	if (diff < 10) return "방금 전";
+	if (diff < 60) return diff + "초 전";
+	if (diff < 3600) return Math.floor(diff / 60) + "분 전";
+	if (diff < 86400) return Math.floor(diff / 3600) + "시간 전";
+	if (diff < 172800) return "어제";
+	if (diff < 2592000) return Math.floor(diff / 86400) + "일 전";
+	return past.toLocaleDateString().replace(/\.$/, "");
+}
 
-	  const diff = Math.floor((Date.now() - past.getTime()) / 1000);
-	  if (diff < 10) return "방금 전";
-	  if (diff < 60) return diff + "초 전";
-	  if (diff < 3600) return Math.floor(diff / 60) + "분 전";
-	  if (diff < 86400) return Math.floor(diff / 3600) + "시간 전";
-	  if (diff < 172800) return "어제";
-	  if (diff < 2592000) return Math.floor(diff / 86400) + "일 전";
-	  return past.toLocaleDateString().replace(/\.$/, "");
-	}
 
-
-function getChatMessages(chatRoomId){
-	fetch('/api/chat/messages?chatRoomId='+chatRoomId)
+function getChatMessages(roomId){
+	fetch('/api/chat/messages?roomId='+roomId)
 	.then(res=>{
 		if (!res.ok){
 			if (res.status === 401){
@@ -272,23 +312,23 @@ let currentRoomId = null;
 
 function sendEnter(roomId) {
 	if (!socket || socket.readyState !== WebSocket.OPEN) return;
-	socket.send(JSON.stringify({ type: "ENTER", chatRoomId: roomId }));
+	socket.send(JSON.stringify({ type: "ENTER", roomId: roomId }));
 	currentRoomId = roomId;
 }
 
 function sendLeave(roomId) {
 	if (!socket || socket.readyState !== WebSocket.OPEN) return;
-	socket.send(JSON.stringify({ type: "LEAVE", chatRoomId: roomId }));
+	socket.send(JSON.stringify({ type: "LEAVE", roomId: roomId }));
 	currentRoomId = null; // 상태 초기화
 }
 
 //웹소켓 초기화
-function initWebSocket(chatRoomId) {
+function initWebSocket(roomId) {
 	try {
 		// 웹소켓 중복 연결 방지
 		if (socket) {
 			if (socket.readyState === WebSocket.OPEN) {
-				sendEnter(chatRoomId);
+				sendEnter(roomId);
 				return;
 			}
 			if (socket.readyState === WebSocket.CONNECTING) {
@@ -301,7 +341,7 @@ function initWebSocket(chatRoomId) {
 		let retried = false;
 		socket.onopen = function() { 
 		  retried = false; 
-		  sendEnter(chatRoomId); 
+		  sendEnter(roomId); 
 		};
 
 		socket.onclose = function() {
@@ -321,14 +361,14 @@ function initWebSocket(chatRoomId) {
 			if (type === "MESSAGE") {
 				const isMine = (data.senderId === window.MY_ID);
 				displayChat({ ...data, mine: isMine });
-				updateRoomPreview({ chatRoomId: data.chatRoomId, message: data.message, chatDate: data.chatDate });
+				updateRoomPreview({ roomId: data.roomId, message: data.message, chatDate: data.chatDate });
 			} else if (type === "PARTNER_INFO") {
 				renderPartnerName(data.partnerName);
 			} else if (type === 'ROOM_CREATED'){
 				prependRoomItem(data);
-				$('.chat-room-item[data-chatRoomId="' + data.chatRoomId + '"]').trigger('click');
+				$('.chat-room-item[data-roomId="' + data.roomId + '"]').trigger('click');
 			} else if (type === "ERROR") {
-				sessionStorage.removeItem("chatRoomId");
+				sessionStorage.removeItem("roomId");
 
 				if(data.code === 401){
 					if (confirm(data.message)) location.href = '/member/login';
@@ -347,15 +387,15 @@ function initWebSocket(chatRoomId) {
 	}
 }
 
-function sendChat(chatRoomId) {
+function sendChat(roomId) {
 	let chatMessage = $("#chatMessage").val();
 	
-	if(!chatRoomId || chatRoomId.trim() === "") return;
+	if(!roomId || roomId.trim() === "") return;
 	if(!chatMessage || chatMessage.trim() === "") return;
 
 	if (socket && socket.readyState === WebSocket.OPEN) {
 		var chatObject = {
-			chatRoomId: chatRoomId,
+			roomId: roomId,
 			type: "MESSAGE",
 			message: chatMessage
 		};
@@ -363,13 +403,26 @@ function sendChat(chatRoomId) {
 		var chatJson = JSON.stringify(chatObject); // 객체를 JSON 문자열로 변환
 		socket.send(chatJson); // JSON 문자열을 WebSocket을 통해 전송
 		
-		$("#chatMessage").val(""); // 입력 필드를 비움
+		$("#chatMessage").val("").css("height", "auto"); // 입력 필드를 비움 + 높이 초기화
 	}
 }
+
+let globalLastDate = ""; // 마지막 채팅의 날짜를 저장
 
 function displayChat(data) {
 	const chatList = document.getElementById("chatList");
 
+	const msgDate = data.sentAt ? data.sentAt.split(" ")[0] : "";
+
+    if (msgDate && msgDate !== globalLastDate) {
+        const dateDiv = document.createElement("div");
+        dateDiv.className = "chat-date-line";
+        dateDiv.textContent = msgDate;
+        chatList.appendChild(dateDiv);
+        
+        globalLastDate = msgDate;
+    }
+	
 	const chatDiv = document.createElement("div");
 	chatDiv.className = "chat " + (data.mine ? "myChat" : "otherChat");
 
@@ -378,8 +431,8 @@ function displayChat(data) {
 
 	const timeDiv = document.createElement("div");
 	timeDiv.className = "chat-time";
-	// 서버가 시간을 안 주면 현재 시각으로 표시
-	const timeText = data.chatDate ? data.chatDate.split(" ")[1] : new Date().toTimeString().slice(0,5);
+	
+	const timeText = data.sentAt ? data.sentAt.split(" ")[1].slice(0,5) : new Date().toTimeString().slice(0,5);
 	timeDiv.textContent = timeText;
 
 	chatDiv.appendChild(textSpan);
@@ -396,6 +449,7 @@ function renderChatMessages(data){
 
 	if (!Array.isArray(data) || data.length === 0) return;
 	
+	globalLastDate = "";
 	data.forEach(msg => {
 		const isMine = (msg.senderId === window.MY_ID);
 		displayChat({
@@ -411,20 +465,20 @@ function renderPartnerName(partnerName) {
 	chatPartnerName.text(partnerName);
 }
 
-const roomsIndex = new Map(); // chatRoomId -> jQuery item
+const roomsIndex = new Map(); // roomId -> jQuery item
 
-function prependRoomItem({ chatRoomId, partnerId, partner, message, chatDate }) {
+function prependRoomItem({ roomId, partnerId, partner, message, chatDate }) {
 	// 이미 있으면 새로 만들지 말고 위로 올림
-	if (roomsIndex.has(chatRoomId)) {
-		const $item = roomsIndex.get(chatRoomId);
-		updateRoomPreview({ chatRoomId, message, chatDate });
+	if (roomsIndex.has(roomId)) {
+		const $item = roomsIndex.get(roomId);
+		updateRoomPreview({ roomId, message, chatDate });
 		$item.prependTo('.chat-room-list');
 		return;
 	}
 
 	const $list = $('.chat-room-list');
 	const $tpl  = $('<div class="chat-room-item"></div>')
-		.attr('data-chatRoomId', chatRoomId)
+		.attr('data-roomId', roomId)
 		.append(`
 			<div class="chat-room-info">
 				<div class="chat-user-name"></div>
@@ -443,10 +497,8 @@ function prependRoomItem({ chatRoomId, partnerId, partner, message, chatDate }) 
 	    // 현재 클릭한 아이템만 active
 	    $(this).addClass('active');
 	    
-		const roomId = chatRoomId;
-		
 		if (currentRoomId && currentRoomId !== roomId) sendLeave(currentRoomId);
-		sessionStorage.setItem('chatRoomId', roomId);
+		sessionStorage.setItem('roomId', roomId);
 		setEmptyUI(false);
 		
 		getChatMessages(roomId);
@@ -456,11 +508,11 @@ function prependRoomItem({ chatRoomId, partnerId, partner, message, chatDate }) 
 	});
 
 	$list.prepend($tpl);
-	roomsIndex.set(chatRoomId, $tpl);
+	roomsIndex.set(roomId, $tpl);
 }
 
-function updateRoomPreview({ chatRoomId, message, chatDate }) {
-	const $item = roomsIndex.get(chatRoomId);
+function updateRoomPreview({ roomId, message, chatDate }) {
+	const $item = roomsIndex.get(roomId);
 	if (!$item) return; // 리스트에 없으면 패스 (ROOM_CREATED로 들어올 때 생성됨)
 	$item.find('.chat-last-message').text(message || '');
 	$item.find('.chat-room-time').text(chatDate ? timeAgo(chatDate) : '');
@@ -469,23 +521,40 @@ function updateRoomPreview({ chatRoomId, message, chatDate }) {
 
 function loadChatRooms() {
 	return fetch('/api/chat/chatRooms')
-	.then(res => res.json())
+	.then(res => {
+		if(res.status === 401){
+			if (confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하겠습니까?")) {
+				location.href = "/member/login";
+			} else {
+				history.back();
+			}
+			return new Promise(() => {});
+		}
+		return res.json();
+	})
 	.then(list => {
 		roomsIndex.clear();
+
+		if(list == null) return;
 		
 		const $list = $('.chat-room-list').empty();
-		list.forEach(r => {
+		
+		for (let i = list.length - 1; i >= 0; i--) {
+			const r = list[i];
 			prependRoomItem({
-				chatRoomId: r.chatRoomId,
+				roomId: r.roomId,
 				partnerId: r.partnerId,
 				partner: r.partner || '',
 				message: r.message || '',
-				chatDate: r.chatDate || ''
+				chatDate: r.sentAt || ''
 			});
-		});
+		}
+		
 		highlightCurrentRoom();
 	})
-	.catch(console.error);
+	.catch(err => {
+		alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+	});
 }
 
 function selectRoom(roomId) {
@@ -498,12 +567,12 @@ function selectRoom(roomId) {
 	}
 
 	$('.chat-room-item').removeClass('active');
-	$(`.chat-room-item[data-chatRoomId="${roomId}"]`).addClass('active');
+	$(`.chat-room-item[data-roomId="${roomId}"]`).addClass('active');
 
 	// LEAVE → 상태 갱신 → 메시지 로드 → ENTER/연결
 	if (currentRoomId) sendLeave(currentRoomId);
 	currentRoomId = roomId;
-	sessionStorage.setItem('chatRoomId', roomId);
+	sessionStorage.setItem('roomId', roomId);
 	setEmptyUI(false);
 	getChatMessages(roomId);
 
@@ -512,9 +581,9 @@ function selectRoom(roomId) {
 }
 
 function highlightCurrentRoom() {
-	const id = sessionStorage.getItem('chatRoomId');
+	const id = sessionStorage.getItem('roomId');
 	$('.chat-room-item').removeClass('active');
-	if (id) $(`.chat-room-item[data-chatRoomId="${id}"]`).addClass('active');
+	if (id) $(`.chat-room-item[data-roomId="${id}"]`).addClass('active');
 }
 </script>
 
@@ -545,7 +614,7 @@ function highlightCurrentRoom() {
 		<div id="chatList" class="chat-messages">
 		</div>
 		<div class="chat-input-container">
-			<input id="chatMessage" placeholder="메시지를 입력하세요" />
+			<textarea id="chatMessage" placeholder="메시지를 입력하세요" ></textarea>
 			<button id="send">전송</button>
 		</div>
 	</div>
