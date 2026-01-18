@@ -9,13 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 @RequestMapping("/chat")
 public class ChatController {
 	
-	
-	// 채팅 페이지
-	@GetMapping("/chatRooms")
-	public String chatRoomsPage() {
-		
-		return "chat/chatRooms";
-	}
 	@GetMapping("")
 	public String chatPage() {
 		
