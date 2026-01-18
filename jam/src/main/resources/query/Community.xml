@@ -175,4 +175,30 @@
 		</foreach>
 	</delete>
 	
+	<select id="getFavorites" parameterType="community" resultType="community">
+		SELECT
+			c.post_id,
+			c.title,
+			c.view_count, 
+			c.comment_count,
+			c.created_at
+		FROM community c
+		WHERE EXISTS (
+			SELECT /*+ INDEX(f UNIQUE_FAVORITE) */ 1
+			FROM favorite f
+			WHERE f.post_id   = c.post_id
+			  AND f.user_id    = #{user_id}
+			  AND f.board_type = 'COM'
+		)
+		ORDER BY c.created_at DESC, c.post_id DESC
+		OFFSET (#{pageNum} - 1) * #{amount} ROWS
+		FETCH NEXT #{amount} ROWS ONLY
+	</select>
+	
+	<select id="favoritesListCnt" parameterType="map" resultType="int">
+	    SELECT COUNT(*)
+	    FROM favorite
+	    WHERE user_id = #{user_id}
+	    	AND board_type = 'COM'
+	</select>
 </mapper>

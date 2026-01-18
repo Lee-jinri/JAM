@@ -1,11 +1,5 @@
 package com.jam.client.mypage.controller;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
@@ -25,8 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.mypage.service.MypageService;
-import com.jam.client.mypage.vo.MemberBoardVO;
-import com.jam.common.vo.PageDTO;
 import com.jam.global.jwt.JwtService;
 
 import lombok.RequiredArgsConstructor;
@@ -41,55 +33,6 @@ public class MypageRestController {
     private final MypageService mypageService;
 	private final JwtService jwtService;
 
-
-	@GetMapping("/favorite/boards")
-	public ResponseEntity<Map<String, Object>> getFavoriteByBoardType(
-			@RequestParam("boardType") String boardType, 
-			HttpServletRequest request,
-			@RequestParam(value = "pageNum", defaultValue = "1") int pageNum) {
-		
-	    String userId = (String) request.getAttribute("userId");
-
-	    if(userId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "로그인이 필요한 서비스 입니다."));
-	    
-	    List<MemberBoardVO> favoriteList = new ArrayList<>();
-	    
-	    MemberBoardVO favorite = new MemberBoardVO();
-	    	    
-	    favorite.setUser_id(userId);
-	    favorite.setPageNum(pageNum);
-	    
-	    switch (boardType) {
-	        case "community":
-	            favoriteList = mypageService.getFavoriteCommunity(favorite);
-	            break;
-	        case "job":
-	            favoriteList = mypageService.getFavoriteJob(favorite);
-	            break;
-	        case "fleaMarket":
-	            favoriteList = mypageService.getFavoriteFlea(favorite);
-	            break;
-	        case "roomRental":
-	            favoriteList = mypageService.getFavoriteRoom(favorite);
-	            break;
-	        default:
-	            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid board type"));
-	    }
-	    
-	    
-	    Map<String, Object> result = new HashMap<>();
-	    
-	    result.put("favoriteList", favoriteList);
-	    
-	    int total = mypageService.listCnt(boardType, userId);
-	    
-		PageDTO pageMaker = new PageDTO(favorite, total);
-		
-		result.put("pageMaker", pageMaker);
-
-		return ResponseEntity.ok(result);
-	}
-	
 	@PostMapping(value = "/favorite/{postId}", produces = "application/json")
     public ResponseEntity<String> addFavorite(@PathVariable Long postId, @RequestParam String boardType, @AuthenticationPrincipal MemberVO user) {
         

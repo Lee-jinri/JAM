@@ -118,32 +118,9 @@ ul.pagination > li > a.selected_btn {
 <script>
 $(function(){
 	let params = new URLSearchParams(window.location.search);
-    let boardType = params.get("boardType") || "community";
     let pageNum = parseInt(params.get("pageNum")) || 1;
 
-	getFavorite(boardType, pageNum);
-	
-	$(".button-group button").each(function() {
-        if ($(this).attr("data-boardType") === boardType) {
-            $(this).addClass("active");
-        } else {
-            $(this).removeClass("active"); 
-        }
-    });
-	
-	$(".button-group button").click(function() {
-        // 모든 버튼에서 'active' 클래스 제거
-        $(".button-group button").removeClass("active");
-        // 클릭한 버튼에 'active' 클래스 추가
-        $(this).addClass("active");
-        
-        newBoardType = $(this).attr('data-boardType');
-        
-        let newUrl = window.location.pathname + "?boardType=" + newBoardType;
-        window.history.pushState(null, "", newUrl);
-        
-        getFavorite(newBoardType, 1);
-    });
+	getFavorite(pageNum);
 	
 	$(document).on("click", ".boardLink", function (e) {
 	    e.preventDefault();
@@ -156,8 +133,8 @@ $(function(){
 
 })
 
-function getFavorite(boardType, pageNum) {
-    let url = '/api/mypage/favorite/board?boardType=' + boardType + '&pageNum=' + pageNum;
+function getFavorite(pageNum) {
+    let url = '/api/community/my/favorites' + '?pageNum=' + pageNum;
     
     fetch(url)
     .then(response => {
@@ -170,8 +147,8 @@ function getFavorite(boardType, pageNum) {
 		return response.json();
     })
     .then(data => {
-        renderFavorite(data.favoriteList, boardType);
-        loadPagination(data.pageMaker, boardType);
+        renderFavorite(data.favorites);
+        loadPagination(data.pageMaker);
     })
     .catch(err => {
     	if (handleApiError(err)) return;
@@ -179,7 +156,7 @@ function getFavorite(boardType, pageNum) {
     });
 }
 
-function renderFavorite(favoriteList, boardType){
+function renderFavorite(favoriteList){
 	
 	let $bookmarkList = $("#bookmark-list");
 	$bookmarkList.empty(); // 기존 목록 비우기
@@ -199,9 +176,8 @@ function renderFavorite(favoriteList, boardType){
 	}
 	
 	favoriteList.forEach(favorite => {
-		console.log(favorite);
         const $li = $("<li>").addClass("boardLink bookmark-item cursor-pointer")
-            .attr("data-location", "/" + boardType + "/board/" + favorite.post_id);
+            .attr("data-location", "community/post/" + favorite.post_id);
 
         const $infoDiv = $("<div>").addClass("bookmark-info");
         const $titleSpan = $("<span>").addClass("bookmark-title").text(favorite.title);
@@ -211,7 +187,7 @@ function renderFavorite(favoriteList, boardType){
         const $iconDiv = $("<div>").addClass("flex items-center justify-center ml-2 mr-2").css("width", "3rem");
         const $iconSpan = $("<span>").addClass("favoriteSpan");
         $iconSpan.attr("data-post-id", favorite.post_id);
-        $iconSpan.attr("data-board-type", boardType);
+        $iconSpan.attr("data-board-type", "COM");
         
         const $icon = $("<i>").addClass("favorite fa-star fa-solid").css({ color: "#FFD43B", cursor: "pointer" });
         $iconSpan.append($icon);
@@ -220,10 +196,9 @@ function renderFavorite(favoriteList, boardType){
         $li.append($infoDiv, $iconDiv);
         $bookmarkList.append($li);
     });
-	
 }
 
-function loadPagination(pageMaker, boardType) {
+function loadPagination(pageMaker) {
     const $pagination = $("#pagination");
     
     $pagination.empty(); // 기존 페이지 버튼 초기화
@@ -242,7 +217,7 @@ function loadPagination(pageMaker, boardType) {
         e.preventDefault();
         let pageNum = $(this).data("page") || 1; 
 	    
-	    let url = "/mypage/favorite?pageNum="+pageNum + "&boardType=" + boardType;
+	    let url = "/my/favorites?pageNum="+pageNum;
         
 		window.location.href = url;
     });
@@ -251,12 +226,7 @@ function loadPagination(pageMaker, boardType) {
 </head>
 <body class="wrap">
 	<div class="content">
-		<h2 class="bookmark-title">📌 북마크</h2>
-        
-        <div class="button-group">
-		    <button data-boardType="community">커뮤니티</button>
-		    <button data-boardType="fleaMarket">중고악기</button>
-		</div>
+		<h2 class="bookmark-title">📌 커뮤니티 북마크</h2>
 			
         <div class="bookmark-container">
             <ul id="bookmark-list" class="bookmark-list">

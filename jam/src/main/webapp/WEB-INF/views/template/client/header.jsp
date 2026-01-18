@@ -298,7 +298,7 @@ header {
 		})
 		
 		$("#comFavorite").click(function(){
-			$(location).attr('href','/mypage/favorite')
+			$(location).attr('href','/community/my/favorites')
 		})
 		
 		$("#myStore").click(function(){

@@ -43,4 +43,9 @@ public interface CommunityService {
 	// 작성한 글 삭제
 	public void deleteMyPosts(String userId, List<Long> postIds);
 
+	// 북마크한 글
+	public List<CommunityVO> getFavorites(CommunityVO community);
+
+	// 북마크한 글 개수
+	public int favoritesListCnt(CommunityVO community);
 }

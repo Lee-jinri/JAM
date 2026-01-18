@@ -46,4 +46,10 @@ public interface CommunityDAO {
 	
 	// 작성한 커뮤니티 글 삭제
 	public void deleteMyPosts(@Param("user_id") String userId, @Param("postIds") List<Long> postIds);
+	
+	// 북마크한 글
+	public List<CommunityVO> getFavorites(CommunityVO community);
+	
+	// 북마크한 글 개수
+	public int favoritesListCnt(CommunityVO community);
 }

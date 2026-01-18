@@ -141,4 +141,14 @@ public class CommunityServiceImpl implements CommunityService {
 		if (postIds == null || postIds.isEmpty()) return;
 		comDao.deleteMyPosts(userId, postIds);
 	}
+
+	@Override
+	public List<CommunityVO> getFavorites(CommunityVO community) {
+		return comDao.getFavorites(community);
+	}
+
+	@Override
+	public int favoritesListCnt(CommunityVO community) {
+		return comDao.favoritesListCnt(community);
+	}
 }

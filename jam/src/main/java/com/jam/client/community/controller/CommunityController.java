@@ -65,4 +65,13 @@ public class CommunityController {
 		
 		return "community/myPosts";
 	}
+	
+	/*********************************
+	 * @return 북마크한 커뮤니티 글 페이지 
+	 *********************************/
+	@GetMapping(value="/my/favorites")
+	public String favoritesPosts(){
+		
+		return "community/favorite";
+	}
 }

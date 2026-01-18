@@ -15,22 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class MypageController {
 
-	/***********************************
-	 * @return 북마크 페이지
-	 ***********************************/
-	@GetMapping("/favorite")
-	public String favoritePage() {
-		return "mypage/favorite";
-	}
-	
-	/*************************************
-	 * @return 사용자가 작성한 글 페이지
-	 ************************************/
-	@GetMapping("/posts")
-	public String myPostsPage() {
-		return "mypage/posts";
-	}
-
 	// TODO: 추후 다른 사용자의 작성글 조회 기능 추가 (닉네임 클릭 시 이동)
 	/*************************************
 	 * @return 다른 사용자가 작성한 글 페이지

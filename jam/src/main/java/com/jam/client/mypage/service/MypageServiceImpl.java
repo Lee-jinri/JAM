@@ -1,12 +1,9 @@
 package com.jam.client.mypage.service;
 
-import java.util.List;
-
 import org.springframework.stereotype.Service;
 
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.mypage.dao.MypageDAO;
-import com.jam.client.mypage.vo.MemberBoardVO;
 
 import lombok.RequiredArgsConstructor;
 
@@ -15,27 +12,6 @@ import lombok.RequiredArgsConstructor;
 public class MypageServiceImpl implements MypageService{
 	
 	private final MypageDAO mypageDao;
-	
-	// 게시판별 북마크 목록 조회 (community, job, fleaMarket, roomRental)
-	@Override
-	public List<MemberBoardVO> getFavoriteCommunity(MemberBoardVO favorite) {
-		return mypageDao.getFavoriteCommunity(favorite);
-	}
-	
-	@Override
-	public List<MemberBoardVO> getFavoriteJob(MemberBoardVO favorite){
-		return mypageDao.getFavoriteJob(favorite);
-	}
-	
-	@Override
-	public List<MemberBoardVO> getFavoriteFlea(MemberBoardVO favorite){
-		return mypageDao.getFavoriteFlea(favorite);
-	}
-	
-	@Override
-	public List<MemberBoardVO> getFavoriteRoom(MemberBoardVO favorite){
-		return mypageDao.getFavoriteRoom(favorite);
-	}
 	
 	/***
 	 * 북마크 글 추가
@@ -61,18 +37,6 @@ public class MypageServiceImpl implements MypageService{
 	public boolean deleteFavorite(String user_id, String boardType, Long post_id) {
 		int result = mypageDao.deleteFavorite(user_id, boardType, post_id);
 		return result == 1;
-	}
-
-	/**
-	 * 북마크: 게시판별 게시글 개수를 조회 (페이징 처리를 위함)
-	 *
-	 * @param userId 사용자 아이디
-	 * @param boardType 게시판 타입 (community, job, fleaMarket, roomRental)
-	 * @return 게시글 개수
-	 */
-	@Override
-	public int listCnt(String boardType, String userId) {
-		return mypageDao.listCnt(boardType, userId);
 	}
 	
 	// 마이페이지 - 회원 정보 페이지

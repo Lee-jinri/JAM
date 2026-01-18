@@ -2,64 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jam.client.mypage.dao.MypageDAO">
 
-	<select id="getFavoriteCommunity" parameterType="memberBoard" resultType="memberBoard">
-		SELECT
-			c.post_id,
-			c.title,
-			c.view_count, 
-			c.comment_count,
-			c.created_at
-		FROM community c
-		WHERE EXISTS (
-			SELECT /*+ INDEX(f UNIQUE_FAVORITE) */ 1
-			FROM favorite f
-			WHERE f.post_id   = c.post_id
-			  AND f.user_id    = #{user_id}
-			  AND f.board_type = 'COM'
-		)
-		ORDER BY c.created_at DESC, c.post_id DESC
-		OFFSET (#{pageNum} - 1) * #{amount} ROWS
-		FETCH NEXT #{amount} ROWS ONLY
-	</select>
-	
-	<select id="getFavoriteFlea" parameterType="memberBoard" resultType="memberBoard">
-		SELECT
-			post_id, title, created_at
-		FROM fleaMarket flea
-		WHERE EXISTS (
-			SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */ 1
-			FROM favorite f
-			WHERE f.post_id = flea.post_id
-			  AND f.user_id = #{user_id}
-			  AND f.board_type = 'FLEA'
-		)
-		ORDER BY flea.created_at DESC, flea.post_id DESC
-		OFFSET (#{pageNum} - 1) * #{amount} ROWS
-		FETCH NEXT #{amount} ROWS ONLY
-	</select>
-	
-	<select id="getFavoriteRoom" parameterType="memberBoard" resultType="memberBoard">
-	    <![CDATA[
-	    SELECT roomRental_no AS board_no, roomRental_title AS board_title, created_at
-	    FROM (
-	        SELECT 
-	           	r.roomRental_no, r.roomRental_title, r.roomRental_date,
-	            ROW_NUMBER() OVER (ORDER BY r.roomRental_no DESC) AS rnum
-	        FROM roomRental r
-	        WHERE r.roomRental_no IN (
-	            SELECT /*+ INDEX(FAVORITE UNIQUE_FAVORITE) */
-	                post_id 
-	            FROM favorite 
-	            WHERE user_id = #{user_id} 
-	            AND board_type = 'ROOM'
-	        )
-	    )
-	    WHERE rnum > (#{pageNum} - 1) * #{amount} 
-	    AND rnum <= #{pageNum} * #{amount}
-	    ]]>
-	</select>
-
-	
 	<insert id="addFavorite">
 		<selectKey keyProperty="favorite_id" resultType="Long" order="BEFORE">
 		    SELECT seq_favorite.NEXTVAL FROM dual
@@ -76,13 +18,6 @@
 			AND post_id = #{post_id}
 	</delete>
 
-	<select id="listCnt" parameterType="map" resultType="int">
-	    SELECT COUNT(*)
-	    FROM favorite
-	    WHERE user_id = #{user_id}
-	    	AND board_type = #{board_type}
-	</select>
-		
 	<!-- 사용자 정보 -->
 	<select id="account" resultType="member" parameterType="String">
 		SELECT user_id, user_name, address, phone, social_login

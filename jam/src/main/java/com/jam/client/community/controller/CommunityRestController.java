@@ -1,6 +1,8 @@
 package com.jam.client.community.controller;
 
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -309,5 +311,39 @@ public class CommunityRestController {
 	    comService.deleteMyPosts(userId, postIds);
 
 	    return ResponseEntity.ok().build();
+	}
+	
+	/**
+	 * 커뮤니티 북마크한 글을 조회하는 메서드 입니다.
+	 * 
+	 * @param user		현재 로그인한 사용자 정보
+	 * @param pageNum	요청한 페이지 번호
+	 * 
+	 * @return HttpStatus.OK와 북마크 글 리스트를 반환
+	 */
+	@PreAuthorize("isAuthenticated()")
+	@GetMapping("/my/favorites")
+	public ResponseEntity<Map<String, Object>> getFavorites(
+			@AuthenticationPrincipal MemberVO user,
+			@RequestParam(value = "pageNum", defaultValue = "1") int pageNum) {
+		
+	    if(user == null || user.getUser_id() == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "로그인이 필요한 서비스 입니다."));
+	    
+	    CommunityVO community = new CommunityVO();
+	    community.setUser_id(user.getUser_id());
+	    community.setPageNum(pageNum);
+	    
+	    List<CommunityVO> favorites = new ArrayList<>();
+	    
+	    favorites = comService.getFavorites(community);
+
+	    int total = comService.favoritesListCnt(community);
+		PageDTO pageMaker = new PageDTO(community, total);
+		
+	    Map<String, Object> result = new HashMap<>();
+	    result.put("favorites", favorites);
+		result.put("pageMaker", pageMaker);
+
+		return ResponseEntity.ok(result);
 	}
 }
