@@ -316,9 +316,9 @@ public class MemberServiceImpl implements MemberService {
 	
 	// 비밀번호 확인
 	@Override
-	public String pwConfirm(MemberVO m_vo) {
+	public String getPassword(MemberVO m_vo) {
 		
-		return memberDao.pwConfirm(m_vo);
+		return memberDao.getPassword(m_vo);
 	}
 
 	// 비밀번호 변경

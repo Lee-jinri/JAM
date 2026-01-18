@@ -154,7 +154,7 @@
 	</update>
 	
 	<!-- 비밀번호 확인 -->
-	<select id="pwConfirm" resultType="String" parameterType="member">
+	<select id="getPassword" resultType="String" parameterType="member">
 		SELECT user_pw
 		FROM member
 		WHERE user_id = #{user_id}

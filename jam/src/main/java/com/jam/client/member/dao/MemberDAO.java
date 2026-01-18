@@ -61,8 +61,8 @@ public interface MemberDAO {
 	// 전화번호 변경
 	int updatePhone(MemberVO m_vo);
 	
-	// 비밀번호 확인
-	String pwConfirm(MemberVO m_vo);
+	// 비밀번호 확인을 위해 비밀번호 가져옴
+	String getPassword(MemberVO m_vo);
 
 	// 주소 변경
 	int updateAddress(MemberVO m_vo);
