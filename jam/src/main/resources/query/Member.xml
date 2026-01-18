@@ -158,7 +158,7 @@
 		SELECT user_pw
 		FROM member
 		WHERE user_id = #{user_id}
-  		AND social_login = 0
+  		AND social_login != 1
 	</select>
 	
 	<!-- 주소 변경 -->
