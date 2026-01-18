@@ -61,7 +61,7 @@
 	<select id="findByUserInfo" parameterType="string" resultMap="userWithRolesMap">
 		SELECT user_id, user_pw, user_name, company_name, 1 AS enabled
   		FROM member
-  		WHERE user_id = #{user_id}
+  		WHERE user_id = #{user_id} AND deleted_at IS NULL
 	</select>
 	
 	<select id="findRolesByUserId" parameterType="string" resultType="string">
@@ -169,9 +169,18 @@
 	</update>
 	
 	<!-- 회원 탈퇴 -->
-	<delete id="deleteAccount" parameterType="String">
-		DELETE FROM member WHERE user_id = #{user_id}		
-	</delete>
+	<update id="deleteAccount" parameterType="String">
+		update member
+		SET
+			user_name = '(알 수 없음)', 
+        	address = NULL,
+        	email = NULL,
+        	phone = NULL,
+        	REFRESHTOKEN = NULL,
+        	social_login = NULL,
+        	COMPANY_NAME = NULL,
+        	deleted_at = CURRENT_TIMESTAMP  WHERE user_id = #{user_id} 
+	</update>
 	
 	<!-- 저장된 소셜 회원인지 확인 -->
 	<select id="findSocialUser" parameterType="String" resultType="int">
@@ -188,7 +197,6 @@
 		INSERT INTO member(user_id, user_name, user_pw, email, social_login)
 		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, 1)
 	</insert>
-	
 	
 	<!-- 사용자 프로필 조회 -->
 	<select id="getUserProfile" parameterType="String" resultType="member">
@@ -212,5 +220,4 @@
 			WHERE user_id = #{user_id} AND role_code = 'ROLE_COMPANY'
 		)
 	</insert>
-	
 </mapper>

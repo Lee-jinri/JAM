@@ -1,5 +1,6 @@
 package com.jam.client.member.vo;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
@@ -27,6 +28,7 @@ public class MemberVO extends CommonVO implements UserDetails {
 	private int social_login; 		// 소셜 로그인 여부 0 : 소셜로그인 아님 / 1:소셜 로그인 
 
 	private String company_name; 	// nullable 기업 회원만 
+	private LocalDateTime deleted_at;
 	
 	// implements UserDetails
 	private boolean enabled;
