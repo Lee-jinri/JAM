@@ -10,7 +10,6 @@
 	<script type="text/javascript">
 		$(function(){
 
-			console.log($("#roomRental_no").val());
 			let room_no = $("#roomRental_no").val();
 			let authorUserId;
 			
@@ -177,9 +176,6 @@
 		<div class="text-right my-top-7">
 			<div id="btn_div"></div>
 		</div>	
-		<div class="py-8">
-			<jsp:include page="reply.jsp"/> 
-		</div>
 		<div class="text-center">
 				<a id="roomList" href="/roomRental/boards">목록</a>
 		</div>

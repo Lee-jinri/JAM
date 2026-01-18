@@ -27,13 +27,6 @@ $(function(){
 	let chatRoomList = document.getElementById("chatRoomList");
 	let chatRoom = document.getElementById("chatRoom");
 	
-	$("#chatExit").click(function(){
-		chatContainer.style.display = "none";
-	})
-	
-	$("#chatBack").click(function(){
-		chatListUi();
-	})
 	
 	$(".openChat").click(function(){
 		chatUi();

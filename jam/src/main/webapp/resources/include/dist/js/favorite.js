@@ -5,12 +5,12 @@ $(function(){
 		
 	    $icon = $(this);
 	    let isFavorite = $icon.hasClass("fa-solid"); // 현재 즐겨찾기 여부 확인
-	    
 	    let $favoriteSpan = $(this).closest(".favoriteSpan");
-	    
+		
+		if($favoriteSpan == null) $(this).find(".favoriteSpan");
 		let postId = $favoriteSpan.data("post-id"); // 게시글 번호 가져오기
 		let boardType = $favoriteSpan.data("board-type"); 
-		
+				
 	    if (isFavorite) {
 	        removeFavorite(postId, boardType, $icon);
 	    } else {
@@ -18,7 +18,6 @@ $(function(){
 	    }
 	});
 })
-
 
 function removeFavorite(postId, boardType, $icon){
 	let url = '/api/mypage/favorite/'+postId + '?boardType=' + boardType;
@@ -62,7 +61,6 @@ function removeFavorite(postId, boardType, $icon){
 function addFavorite(postId, boardType, $icon){
 	let url = '/api/mypage/favorite/'+postId + '?boardType=' + boardType;
 	
-	console.log(url);
 	if(!postId || !boardType) {
 		alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
 		return false;

@@ -77,7 +77,6 @@ function timeAgo(dateString) {
 
 function handleApiError(err, fallbackUrl = "/") {
 	const isPopup = window.opener != null;
-
 	// 401
 	if (err?.loginRequired) {
 		if (isPopup) {

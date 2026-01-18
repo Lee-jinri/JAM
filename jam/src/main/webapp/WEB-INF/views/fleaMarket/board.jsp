@@ -351,8 +351,7 @@ function renderList(data){
 
 	$template.hide(); 
 	$postGrid.empty();
-	/* FIXME: sales_status 판매중인 것만 가져오기 즐겨찾기한 글에서는 모든 sales_status 조회
-	*/
+	
 	let subMap = {};
 	setTimeout(function () {
 	    subMap = window.subMap;

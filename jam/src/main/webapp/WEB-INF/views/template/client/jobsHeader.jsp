@@ -377,7 +377,7 @@ header {
 				alert('알 수 없는 오류가 발생했습니다.');
 			});
 		})
-	    
+	    // FIXME: 이거 정리
 		$("#account").click(function() {$(location).attr('href', '/mypage/account');});
 		
 		$("#지원현황").click(function(){$(location).attr('href','/jobs/지원현황');})

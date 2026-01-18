@@ -347,7 +347,7 @@ function loadPagination(pageMaker) {
 			    </ul>
 			    <ul>
 			    	<li class="border-bottom">
-			    		<div class="cursor-pointer pd-2rem flex items-center ">
+			    		<div class="pd-2rem flex items-center ">
 			    			<div class="flex items-center justify-center" style="width: 3rem;">
 			    				<input type="checkbox" class="check-box" id="checkAll">
 			    			</div>

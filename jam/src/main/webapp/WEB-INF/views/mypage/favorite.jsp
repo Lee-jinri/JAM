@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <title>JAM - 북마크</title>
 <script src="/resources/include/dist/js/favorite.js"></script>
-
+<script src="/resources/include/dist/js/common.js"></script>
 <style>
 
 .bookmark-container {
@@ -157,32 +157,25 @@ $(function(){
 })
 
 function getFavorite(boardType, pageNum) {
-    let url = '/api/mypage/favorite/boards?boardType=' + boardType + '&pageNum=' + pageNum;
+    let url = '/api/mypage/favorite/board?boardType=' + boardType + '&pageNum=' + pageNum;
     
     fetch(url)
     .then(response => {
-    	if(response.status == 401){
-    		
-    		return response.text().then(text => { 
-    			if (confirm("로그인이 필요한 서비스 입니다. 로그인 하시겠습니까?")) {
-    				location.href = "/member/login"; 
-    			} else {
-    				location.href = '/';
-    			}
-    		});
-    	}else if (!response.ok) {
-    		throw new Error("서버 응답 오류: " + response.status + ": " +  response.statusText);
-        }
-    	
-        return response.json();
+    	if (!response.ok) {
+			console.log("response : " +response);
+			return response.json().then(err => {
+		        throw err;
+		    });
+		}
+		return response.json();
     })
     .then(data => {
         renderFavorite(data.favoriteList, boardType);
         loadPagination(data.pageMaker, boardType);
     })
-    .catch(error => {
-    	alert("시스템 오류 입니다. 잠시 후 다시 시도해주세요.");
-        console.error("데이터 불러오기 실패:", error);
+    .catch(err => {
+    	if (handleApiError(err)) return;
+		alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
     });
 }
 
@@ -206,11 +199,12 @@ function renderFavorite(favoriteList, boardType){
 	}
 	
 	favoriteList.forEach(favorite => {
+		console.log(favorite);
         const $li = $("<li>").addClass("boardLink bookmark-item cursor-pointer")
             .attr("data-location", "/" + boardType + "/board/" + favorite.post_id);
 
         const $infoDiv = $("<div>").addClass("bookmark-info");
-        const $titleSpan = $("<span>").addClass("bookmark-title").text(favorite.board_title);
+        const $titleSpan = $("<span>").addClass("bookmark-title").text(favorite.title);
         const $metaDiv = $("<div>").addClass("bookmark-meta").text(favorite.created_at);
         $infoDiv.append($titleSpan, $metaDiv);
 
@@ -262,8 +256,6 @@ function loadPagination(pageMaker, boardType) {
         <div class="button-group">
 		    <button data-boardType="community">커뮤니티</button>
 		    <button data-boardType="fleaMarket">중고악기</button>
-		    <button data-boardType="roomRental">연습실</button>
-		    <button data-boardType="job">Jobs</button>
 		</div>
 			
         <div class="bookmark-container">

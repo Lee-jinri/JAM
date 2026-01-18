@@ -170,7 +170,6 @@ label {
 	        }
 	        
 	        const file_assets = uploadedImages.filter(img => fileKeys.includes(img.file_key));
-	        
 	            var data = {
 	                'title': title,
 	                'content': content,

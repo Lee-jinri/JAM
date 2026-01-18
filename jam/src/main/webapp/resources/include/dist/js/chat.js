@@ -111,36 +111,6 @@ $(function(){
 		sendChat();
 	})
 	
-	// 이거 채팅방에 입장했을 때만 
-	$("#chatExit").click(function(){
-		
-		const chatRoomId = sessionStorage.getItem("chatRoomId");
-		
-		if (chatRoomId) {
-		    socket.send(JSON.stringify({
-		        chatRoomId: chatRoomId,
-		        type: "LEAVE"
-		    }));
-		    // 저장된 chatRoomId 삭제
-			sessionStorage.removeItem("chatRoomId");
-		}		
-		
-		$("#chatContainer").hide();
-		$("#chatRoom").hide();
-		$("#chatRoomList").hide();
-		/** 
-		$("#chatRoom").attr("display","none");
-		$("#chatRoomList").attr("display", "none");*/
-	})
-	
-	$("#chatBack").click(function(){
-		// 세션 스토리지에서 chatRoomId 삭제
-		if (sessionStorage.getItem("chatRoomId")) {
-	        sessionStorage.removeItem("chatRoomId");
-	    }
-		loadChatRooms(); // 참여한 채팅방 조회
-	})
-	
 	document.getElementById("chatMessage").addEventListener("keydown", function(event) {
 	    if (event.key === "Enter") {
 	        sendChat();

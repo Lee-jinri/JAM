@@ -348,7 +348,7 @@ $(function(){
 	
 	// 회원 탈퇴 버튼 클릭 
 	$("#delete_account_btn").click(function(){
-		var result = confirm("정말 탈퇴 하시겠습니까?");
+		var result = confirm("작성한 게시글은 삭제되지 않습니다. 정말 탈퇴 하시겠습니까?");
 		
 		if(result){
 			fetch('/api/member/me',{

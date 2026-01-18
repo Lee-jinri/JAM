@@ -37,10 +37,10 @@ $(function(){
 					return response.json().then(err => {
 				        throw err;
 				    });
-				}
-
-				alert("삭제가 완료되었습니다.");
-				$(location).attr('href', '/community/board');
+				}else{
+					alert("삭제가 완료되었습니다.");
+					$(location).attr('href', '/community/board');
+				}				
 			})
 			.catch(err => {
 				if (handleApiError(err)) return;

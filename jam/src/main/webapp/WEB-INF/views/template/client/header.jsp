@@ -90,7 +90,7 @@ header {
 }
 
 .mypage_toggle_btn {
-    height: 3rem;
+    height: 2.5rem;
     padding-top: 12px;
 }
 
