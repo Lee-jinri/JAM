@@ -59,9 +59,11 @@
 			<if test="category_id != null and category_id != 0">
 				AND f.category_id IN (
 				SELECT category_id
-				FROM flea_category
+				FROM
+				flea_category
 				WHERE category_id = #{category_id}
-				OR parent_id = #{category_id}
+				OR parent_id =
+				#{category_id}
 				)
 			</if>
 		</trim>
@@ -150,7 +152,7 @@
 	<!-- 중고거래 글 수정 -->
 	<update id="editPost" parameterType="flea">
 		UPDATE fleaMarket SET
-		title = #{title},
+		title =	#{title},
 		content = #{content},
 		created_at = sysdate,
 		sales_status = #{sales_status},

@@ -16,7 +16,6 @@ public class WebInitializer extends AbstractAnnotationConfigDispatcherServletIni
         return new Class[]{RootConfig.class, SecurityConfig.class, WebSocketConfig.class, RedisConfig.class}; 
     }
 
-	
     @Override
     protected Class<?>[] getServletConfigClasses() {
         return new Class[]{ServletConfig.class}; 
@@ -36,10 +35,10 @@ public class WebInitializer extends AbstractAnnotationConfigDispatcherServletIni
 
         return new Filter[] {characterEncodingFilter};
     }
-    
-    @Override
-    protected void customizeRegistration(ServletRegistration.Dynamic registration) {
-        // 404 에러를 Spring이 예외로 던지게 설정
-        registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
-    }
+
+	@Override
+	protected void customizeRegistration(ServletRegistration.Dynamic registration) {
+		// 404 에러를 Spring이 예외로 던지게 설정
+		registration.setInitParameter("throwExceptionIfNoHandlerFound", "true");
+	}
 }

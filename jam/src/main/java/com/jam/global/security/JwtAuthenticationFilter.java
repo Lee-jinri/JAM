@@ -15,7 +15,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import com.jam.global.jwt.JwtService;
 
 @Component
-//public class JwtAuthenticationFilter extends GenericFilterBean {
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
 	private final JwtService jwtService;

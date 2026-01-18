@@ -120,7 +120,7 @@ public class GlobalExceptionHandler {
 		body.put("path", req.getRequestURI());
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
 	}
-
+/*
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleAny(Exception ex, HttpServletRequest req) {
     	log.warn("500 INTERNAL_SERVER_ERROR: " + ex.getMessage());
@@ -131,5 +131,5 @@ public class GlobalExceptionHandler {
 		body.put("detail", "일시적인 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
 		body.put("path", req.getRequestURI());
 		return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(body);
-    }
+    }*/
 }

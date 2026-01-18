@@ -48,6 +48,8 @@ public class ServletConfig implements WebMvcConfigurer {
         		.addResourceLocations("file:C:/uploadStorage/");
         
         registry.addResourceHandler("/upload/**")
+        		//.addResourceLocations("file:///C:/upload/");
+        		//.addResourceLocations("file:/home/ec2-user/upload/");
         		.addResourceLocations("file:" + uploadDir + "/");
     }
 
@@ -94,6 +96,7 @@ public class ServletConfig implements WebMvcConfigurer {
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
+        // FIXME: 배포할 때 주소 수정해야 됨!
             .allowedOrigins("http://localhost:8080")
             .allowedMethods("GET", "POST", "PUT", "DELETE")
             .allowCredentials(true);

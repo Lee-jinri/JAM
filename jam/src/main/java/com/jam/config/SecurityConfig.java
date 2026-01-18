@@ -44,39 +44,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	private final CustomAccessDeniedHandler customAccessDeniedHandler;
 	private final JwtAuthenticationFilter jwtAuthenticationFilter;
 	
-	/*
-	@Bean
-	public UserDetailsService customUserService() {
-		return new CustomUserDetailsService(null);
-	}*/
-
 	@Bean
 	@Override
 	public AuthenticationManager authenticationManagerBean() throws Exception {
 		return super.authenticationManagerBean();
 	}
-
-	/*
-	 * Spring Framework에서 CORS (Cross-Origin Resource Sharing) 설정을 정의
-	 * addAllowedOrigin : 허용할 출처를 입력(프론트엔드의 도메인과 포트를 입력.) addAllowedHeader : 허용할 헤더를
-	 * 입력 addAllowedMethod : 허용할 Http Method를 입력 setAllowCredentials : 쿠키 요청을 허용하도록
-	 * true로 설정
-	 
-	@Bean
-	public CorsConfigurationSource corsConfigurationSource() {
-		CorsConfiguration config = new CorsConfiguration();
-
-		config.setAllowCredentials(true);
-		config.setAllowedOrigins(Arrays.asList("http://localhost:8080"));
-		config.setAllowedMethods(Arrays.asList("HEAD", "POST", "GET", "DELETE", "PUT"));
-		config.setAllowedHeaders(Arrays.asList("*"));
-
-		UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-		source.registerCorsConfiguration("/**", config); // 모든 엔드포인트에 CORS 설정을 적용
-
-		return source;
-	}*/
-
+	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
