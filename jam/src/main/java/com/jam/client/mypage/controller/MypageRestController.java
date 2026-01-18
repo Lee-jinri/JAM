@@ -214,6 +214,7 @@ public class MypageRestController {
 	 * @param request 클라이언트 요청 객체 (세션 및 쿠키 접근용)
 	 * @return 사용자 정보(MemberVO) 또는 HTTP 상태 코드
 	 */
+	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/account", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<MemberVO> getAccount(HttpServletRequest request, HttpServletResponse response){
 		try {
