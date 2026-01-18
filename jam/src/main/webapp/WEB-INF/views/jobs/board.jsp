@@ -300,6 +300,7 @@ input:checked+.slider:before {
 	display: flex;
 	justify-content: flex-end;
 	gap: 6px;
+	align-items: center;
 }
 .pay_category {
 background-color: #fff;

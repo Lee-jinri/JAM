@@ -438,7 +438,9 @@ $(function() {
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
 					file_name: file.name,
-					file_type: contentType
+					file_type: contentType,
+					file_size: file.size,
+					file_category: "APPLICATION"
 				})
 			})
 			.then(res => res.json())

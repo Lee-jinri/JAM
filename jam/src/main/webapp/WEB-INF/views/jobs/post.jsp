@@ -159,7 +159,7 @@ $(function(){
 	        	$("#created_at").text(timeAgo(data.created_at));
 	        	$("#view_count").text(data.view_count);
 	        	
-	        	$("#post-content").text(data.content);
+	        	$("#post-content").html(data.content);
 		        	
 	        	$("#post-city").text(data.city);
 	        	$("#post-gu").text(data.gu);

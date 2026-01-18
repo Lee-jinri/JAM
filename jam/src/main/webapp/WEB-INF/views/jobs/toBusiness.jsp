@@ -228,7 +228,11 @@
 					body: JSON.stringify(payload)
 				});
 
-				if (!res.ok) throw new Error('Failed');
+				if (!res.ok){
+					return res.json().then(err => {
+			            throw err;
+			        });				
+				}
 				
 				alert('기업회원으로 전환되었습니다.');
 				
@@ -238,8 +242,9 @@
 				}
 				window.close();
 			} catch (e) {
-				alert('기업회원 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.');
 				console.error(e);
+				if (handleApiError(e, "/jobs/board")) return;
+			    alert(e.detail || '기업회원 전환에 실패했습니다. 잠시 후 다시 시도해 주세요.');
 			}
 		});
 	</script>
