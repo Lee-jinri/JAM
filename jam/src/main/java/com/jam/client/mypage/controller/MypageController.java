@@ -1,6 +1,5 @@
 package com.jam.client.mypage.controller;
 
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,13 +43,10 @@ public class MypageController {
 	
 	/****************************************************
 	 * 마이페이지 - 회원 정보 페이지로 이동하는 메서드
-	 * @return 마이페이지 - 회원 정보 페이지 / 로그인 되어 있지 않으면 로그인 페이지로 이동
+	 * @return 마이페이지 - 회원 정보 페이지
 	 ****************************************************/
-	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/account")
 	public String mypageAccount() throws Exception {
-
 		return "mypage/account";
-		
 	}
 }
