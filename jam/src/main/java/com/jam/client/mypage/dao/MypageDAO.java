@@ -16,14 +16,8 @@ public interface MypageDAO {
 	List<MemberBoardVO> getFavoriteJob(MemberBoardVO favorite);
 	List<MemberBoardVO> getFavoriteFlea(MemberBoardVO favorite);
 	List<MemberBoardVO> getFavoriteRoom(MemberBoardVO favorite);
-
-	List<MemberBoardVO> getWrittenCommunity(MemberBoardVO written);
-	List<MemberBoardVO> getWrittenJob(MemberBoardVO written);
-	List<MemberBoardVO> getWrittenFlea(MemberBoardVO written);
-	List<MemberBoardVO> getWrittenRoom(MemberBoardVO written);
 	
 	int listCnt(@Param("board_type") String boardType, @Param("user_id") String userId);
-	int writtenListCnt(MemberBoardVO writtend);
 	
 	// 사용자 정보 조회
 	MemberVO account(String user_id);

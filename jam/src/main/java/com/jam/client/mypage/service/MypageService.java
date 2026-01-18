@@ -18,13 +18,6 @@ public interface MypageService {
 
 	int listCnt(String boardType, String userId);
 	
-	List<MemberBoardVO> getWrittenCommunity(MemberBoardVO written);
-	List<MemberBoardVO> getWrittenJob(MemberBoardVO written);
-	List<MemberBoardVO> getWrittenFlea(MemberBoardVO written);
-	List<MemberBoardVO> getWrittenRoom(MemberBoardVO written);
-
-	int writtenListCnt(MemberBoardVO written);
-	
 	// 회원 정보
 	public MemberVO account(String user_id);
 

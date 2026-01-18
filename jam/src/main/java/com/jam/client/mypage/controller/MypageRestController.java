@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.jam.client.member.service.MemberService;
 import com.jam.client.member.vo.MemberVO;
 import com.jam.client.mypage.service.MypageService;
 import com.jam.client.mypage.vo.MemberBoardVO;
@@ -40,7 +39,6 @@ import lombok.extern.slf4j.Slf4j;
 public class MypageRestController {
 	
     private final MypageService mypageService;
-	private final MemberService memberService;
 	private final JwtService jwtService;
 
 
@@ -91,7 +89,7 @@ public class MypageRestController {
 
 		return ResponseEntity.ok(result);
 	}
-
+	
 	@PostMapping(value = "/favorite/{postId}", produces = "application/json")
     public ResponseEntity<String> addFavorite(@PathVariable Long postId, @RequestParam String boardType, @AuthenticationPrincipal MemberVO user) {
         
@@ -116,7 +114,7 @@ public class MypageRestController {
 	                .body("서버 오류로 인해 즐겨찾기에 실패했습니다.");
 		}
     }
-	
+
 	@DeleteMapping(value = "/favorite/{postId}", produces = "application/json")
 	public ResponseEntity<String> deleteFavorite(@PathVariable Long postId, @RequestParam String boardType, @AuthenticationPrincipal MemberVO user){
 		
@@ -139,69 +137,6 @@ public class MypageRestController {
 	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
 	                .body("서버 오류로 인해 즐겨찾기 취소에 실패했습니다.");
 		}
-	}
-	
-	/**
-	 * 마이페이지 - 사용자가 작성한 게시글 목록 조회
-	 * 
-	 * @param user_id    조회 대상 사용자 ID
-	 * @param boardType  게시판 타입 (community, fleaMarket)
-	 * @param request    로그인 사용자 확인용 (토큰 기반)
-	 * @param pageNum    페이지 번호 (기본값 1)
-	 * @param search     검색 조건 (title, content 등)
-	 * @param keyword    검색어
-	 * @return 작성한 게시글 목록 + 페이지 정보 + 유저 프로필 + isMine 여부
-	 */
-	@GetMapping("/written/boards")
-	public ResponseEntity<Map<String, Object>> getWrittenBoardType(
-			@RequestParam(value = "user_id") String user_id,
-			@RequestParam("boardType") String boardType, 
-			HttpServletRequest request,
-			@RequestParam(value = "pageNum", defaultValue = "1") int pageNum,
-			@RequestParam(value = "search", required = false) String search,
-			@RequestParam(value = "keyword", required = false) String keyword) {
-		
-		String loginUserId = (String) request.getAttribute("userId");
-		
-		// 로그인 한 사용자만 이용 가능
-		if(loginUserId == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "로그인 후 이용할 수 있는 서비스 입니다."));
-				
-		MemberBoardVO written = new MemberBoardVO();
-		
-	    List<MemberBoardVO> writtenList = new ArrayList<>();
-	    
-	    written.setUser_id(user_id);
-	    written.setPageNum(pageNum);
-	    written.setBoard_type(boardType);
-	    written.setSearch(search);
-	    written.setKeyword(keyword);
-	    
-	    switch (boardType) {
-	        case "community":
-	        	writtenList = mypageService.getWrittenCommunity(written);
-	            break;
-	        case "fleaMarket":
-	        	writtenList = mypageService.getWrittenFlea(written);
-	            break;
-	        default:
-	            return ResponseEntity.badRequest().body(Collections.singletonMap("error", "Invalid board type"));
-	    }
-	    
-	    Map<String, Object> result = new HashMap<>();
-	    
-	    result.put("writtenList", writtenList);
-	    
-	    int total = mypageService.writtenListCnt(written);
-		PageDTO pageMaker = new PageDTO(written, total);
-		result.put("pageMaker", pageMaker);
-		
-		MemberVO userProfile = memberService.getUserProfile(user_id);
-		result.put("userProfile", userProfile);
-		
-		boolean isMine = loginUserId.equals(user_id);
-		result.put("isMine", isMine);
-		
-		return ResponseEntity.ok(result);
 	}
 	
 	/**
