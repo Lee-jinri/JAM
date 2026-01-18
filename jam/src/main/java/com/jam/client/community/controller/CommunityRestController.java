@@ -47,7 +47,7 @@ public class CommunityRestController {
 	 * community 게시판 조회 API
 	 * 요청 파라미터(pageNum, keyword)에 따라 커뮤니티 글 목록을 조회하고 페이징 정보를 함께 반환합니다.
 	 * 
-	 * @param request	HttpServletRequest, userId 추출용
+	 * @param user		현재 로그인한 사용자
 	 * @param pageNum	요청한 페이지 번호
 	 * @param keyword	검색 키워드 (없을 경우 전체 조회)
 	 * @return communityList(커뮤니티 글 목록), pageMaker(페이징 정보)
@@ -147,8 +147,6 @@ public class CommunityRestController {
         return new ResponseEntity<>(data, HttpStatus.OK);
 	}
 	
-	// fleaMarket, job, roomRental도 오류 메시지 이렇게 바꾸삼 ㅠ ....
-	// 그리고 이건 사용자 아이디, 닉네임도 추가한거임!!
 	/******************************
 	 * 커뮤니티 글을 작성하는 메서드 입니다.
 	 * 
