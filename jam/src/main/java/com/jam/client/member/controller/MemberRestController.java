@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -394,12 +395,13 @@ public class MemberRestController {
 		}
 	}
 	
-	 
 	/**
 	 * 사용자의 비밀번호 확인 후, verify-password 플래그를 세션에 저장합니다.
 	 * (마이페이지 > 계정정보(Account)에서 인증 확인 용도)
 	 * 
-	 * @param user_pw 사용자가 입력한 비밀번호
+	 * @param user	현재 로그인한 사용자
+	 * @param member 사용자가 입력한 비밀번호를 포함한 MemberVO 객체
+	 * 
 	 * @return HTTP 응답 상태코드
 	 * 		- 200 OK: 비밀번호 확인 완료
 	 *      - 400 BAD REQUEST: 입력된 비밀번호가 null
@@ -408,26 +410,26 @@ public class MemberRestController {
 	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
 	 */
 	@PostMapping("/verify-password")
-	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, HttpServletRequest request, HttpServletResponse response) throws Exception {
-
-		if(member.getUser_pw() == null) throw new BadRequestException("변경할 비밀번호를 입력하세요.");
+	public ResponseEntity<String> verifyPassword(@RequestBody MemberVO member, @AuthenticationPrincipal MemberVO user, HttpServletRequest request, HttpServletResponse response) throws Exception {
 		
-		String user_id = (String)request.getAttribute("userId");
+		if(member.getUser_pw() == null || member.getUser_pw().isBlank()) throw new BadRequestException("비밀번호를 입력하세요.");
 		
-		if(user_id == null || user_id.equals("")) {
+		if(user == null || user.getUser_id().equals("")) {
 			AuthClearUtil.clearAuth(request, response);
 			
 			log.error("VerifyPassword: userId is null.");
 			throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
 		}
 		
-		member.setUser_id(user_id);
+		String encodePw = memberService.getPassword(user);
 		
-		String encodePw = memberService.pwConfirm(member);
-
+		if (encodePw == null || encodePw.isBlank()) {
+			throw new UnauthorizedException("비밀번호 정보가 올바르지 않습니다.");
+		}
+		
 		String user_pw = member.getUser_pw();
 		
-		// 비밀번호 일치여부 판단
+		// 비밀번호 일치 여부 판단
 		if (encoder.matches(user_pw, encodePw)) { 
 			HttpSession session = request.getSession(false);
 			if (session == null) throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
@@ -437,8 +439,7 @@ public class MemberRestController {
 			throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
 		}
 	}
-	
-	
+		
 	/**
 	 * 사용자의 비밀번호를 변경합니다.
 	 * 
