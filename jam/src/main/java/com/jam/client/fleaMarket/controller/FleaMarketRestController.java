@@ -323,13 +323,21 @@ public class FleaMarketRestController {
 		}
 	}
 	
+	/**
+	 * 본인이 작성한 중고악기 게시글을 조회하는 메서드입니다.
+	 * 
+	 * @param pageNum	요청한 페이지 번호
+	 * @param keyword	검색 키워드 (없을 경우 전체 조회)
+	 * @param user		현재 로그인한 사용자 정보
+	 * 
+	 * @return HttpStatus.OK와 게시글 리스트를 반환
+	 */
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value="/my/store")
-	public ResponseEntity<Map<String, Object>> getMyStore(FleaMarketVO flea, HttpServletRequest request){
-		String user_id = (String)request.getAttribute("userId");
+	public ResponseEntity<Map<String, Object>> getMyStore(FleaMarketVO flea, @AuthenticationPrincipal MemberVO user){
 		
-		if(user_id == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		flea.setUser_id(user_id);
+		if(user == null || user.getUser_id().isEmpty()) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		flea.setUser_id(user.getUser_id());
 		// FIXME: 임시
 		flea.setAmount(36);
 		
@@ -346,15 +354,22 @@ public class FleaMarketRestController {
 
         return ResponseEntity.ok(result);
 	}
-	
+
+	/**
+	 * 중고악기 찜한 글을 조회하는 메서드 입니다.
+	 * 
+	 * @param user		현재 로그인한 사용자 정보
+	 * @param pageNum	요청한 페이지 번호
+	 *
+	 * @return HttpStatus.OK와 찜한 글 리스트를 반환
+	 */
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/favorites")
-	public ResponseEntity<Map<String, Object>> favorites(FleaMarketVO flea, HttpServletRequest request){
+	public ResponseEntity<Map<String, Object>> favorites(FleaMarketVO flea, @AuthenticationPrincipal MemberVO user){
 		
-		String user_id = (String)request.getAttribute("userId");
-		if(user_id == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
+		if(user == null || user.getUser_id().isEmpty()) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
 		
-		flea.setUser_id(user_id);
+		flea.setUser_id(user.getUser_id());
 		// FIXME: 임시
 		flea.setAmount(36);
 		
@@ -363,7 +378,6 @@ public class FleaMarketRestController {
 		List<FleaMarketVO> favoriteList = fleaService.getFavorites(flea);
 		
 		result.put("fleaMarketList", favoriteList);
-		result.put("userName", request.getSession().getAttribute("userName"));
 		
 		int total = fleaService.getMyStoreCnt(flea);
 		

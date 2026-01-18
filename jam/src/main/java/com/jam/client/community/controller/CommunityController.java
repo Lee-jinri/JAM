@@ -25,29 +25,28 @@ public class CommunityController {
 	
 	/**************************************************
 	 * 커뮤니티 글의 상세 페이지를 반환하는 메서드 입니다.
-	 * @param com_no 조회할 커뮤니티의 글 번호
+	 * 
+	 * @param postId 조회할 커뮤니티의 글 번호
 	 * @return 커뮤니티 상세 페이지
 	 **************************************************/
 	@GetMapping("/post/{postId}")
 	public String communityDetail(@PathVariable("postId") Long postId, Model model) {
 		model.addAttribute("postId", postId);
-		
 	    return "community/post";
 	}
-	
 	
 	/***************************************
 	 * @return 커뮤니티 글 작성 페이지
 	 ***************************************/
 	@GetMapping("/post/write")
-	public String writeView() throws Exception{
-				
+	public String writeView(){
 		return "community/write";
 	}
 	
 	/********************************
 	 *  커뮤니티 글의 수정 페이지를 반환하는 메서드 입니다.
-	 * @param com_no 수정할 커뮤니티의 글 번호
+	 *  
+	 * @param postId 수정할 커뮤니티의 글 번호
 	 * @return 커뮤니티 글 수정 페이지
 	 *********************************/
 	@GetMapping("/post/edit/{postId}")
@@ -58,10 +57,9 @@ public class CommunityController {
 	
 	/*********************************
 	 * @return 작성한 커뮤니티 글 페이지 
-	 * @throws Exception 
 	 *********************************/
 	@GetMapping(value="/my")
-	public String viewPosts() throws Exception {
+	public String viewPosts(){
 		
 		return "community/myPosts";
 	}

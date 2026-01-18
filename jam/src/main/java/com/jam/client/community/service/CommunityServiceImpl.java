@@ -10,7 +10,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jam.client.community.dao.CommunityDAO;
 import com.jam.client.community.vo.CommunityVO;
-import com.jam.file.service.FileService;
 import com.jam.file.vo.FileAssetVO;
 import com.jam.file.vo.FileCategory;
 import com.jam.global.service.FileReferenceService;

@@ -266,6 +266,15 @@ public class CommunityRestController {
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
+	/**
+	 * 본인이 작성한 커뮤니티 게시글을 조회하는 메서드입니다.
+	 * 
+	 * @param pageNum	요청한 페이지 번호
+	 * @param keyword	검색 키워드 (없을 경우 전체 조회)
+	 * @param user		현재 로그인한 사용자 정보
+	 * 
+	 * @return HttpStatus.OK와 게시글 리스트를 반환
+	 */
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping("/my/posts")
 	public ResponseEntity<Map<String, Object>> getMyPosts(
@@ -300,15 +309,23 @@ public class CommunityRestController {
         return ResponseEntity.ok(result);
 	}
 
+	/**
+	 * 작성한 게시글을 일괄 삭제하는 메서드 입니다.
+	 * 
+	 * @param postIds	삭제할 글 번호 List
+	 * @param user		현재 로그인한 사용자 정보
+	 * 	
+	 * @return HttpStatus.OK를 반환
+	 */
 	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/my/posts")
-	public ResponseEntity<Void> deletePosts(@RequestBody List<Long> postIds, HttpServletRequest request) {
-	    String userId = (String)request.getAttribute("userId");
-	    if (userId == null || userId.isEmpty()) {
+	public ResponseEntity<Void> deletePosts(@RequestBody List<Long> postIds, @AuthenticationPrincipal MemberVO user) {
+	    
+	    if (user == null || user.getUser_id().isEmpty()) {
 	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
         }
 	    
-	    comService.deleteMyPosts(userId, postIds);
+	    comService.deleteMyPosts(user.getUser_id(), postIds);
 
 	    return ResponseEntity.ok().build();
 	}
