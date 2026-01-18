@@ -145,7 +145,7 @@ function getBoard(){
     fetch(url)
 	.then(response=>{
 		if (!response.ok) {
-			return res.json().then(err => {
+			return response.json().then(err => {
 		        throw err;
 		    });
 		}
