@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.jam.client.comReply.vo.ComReplyVO;
+import com.jam.client.comComment.dao.CommentDAO;
+import com.jam.client.comComment.vo.CommentVO;
+import com.jam.client.community.dao.ComMapperTest;
 import com.jam.config.RootConfig;
 
 import lombok.Setter;
@@ -20,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ComReplyMapperTest {
 	
 	@Setter(onMethod_=@Autowired)
-	private ComReplyDAO comreplyDao;
+	private CommentDAO comreplyDao;
 	
 	/* 커뮤니티 댓글 리스트 
 	@Test	

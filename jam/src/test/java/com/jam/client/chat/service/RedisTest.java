@@ -12,6 +12,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.client.chat.vo.ChatVO;
+import com.jam.client.community.dao.ComMapperTest;
 import com.jam.global.redis.RedisConfig;
 
 import lombok.extern.slf4j.Slf4j;

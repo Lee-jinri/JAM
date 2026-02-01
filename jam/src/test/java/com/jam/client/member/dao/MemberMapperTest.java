@@ -143,11 +143,11 @@ public class MemberMapperTest {
 	
 	/* 비밀번호 확인 
 	@Test
-	public void testPwConfirm() {
+	public void testGetPassword() {
 		MemberVO member = new MemberVO();
 		member.setUser_id("abcd1234");
 		
-		log.info(memberDao.pwConfirm(member));
+		log.info(memberDao.getPassword(member));
 	}*/
 	
 	

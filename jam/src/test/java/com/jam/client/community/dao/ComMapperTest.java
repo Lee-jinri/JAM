@@ -5,11 +5,10 @@ import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
-import com.jam.client.community.dao.ComMapperTest;
 import com.jam.client.community.vo.CommunityVO;
 import com.jam.config.RootConfig;
+import com.jam.global.util.HtmlSanitizer;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -62,14 +61,11 @@ public class ComMapperTest {
 	public void testComInsert() {
 		CommunityVO com_vo = new CommunityVO();
 		log.info("커뮤니티 글 입력");
-		com_vo.setCom_title("?번째 글");
-		com_vo.setCom_content("?번째 글");
+		com_vo.setTitle("XSS 테스트");
+		com_vo.setContent("?번째 글");
 		com_vo.setUser_id("abcd123");
 		com_vo.setUser_name("김철수");
-		com_vo.setCom_hits(0);
-		com_vo.setCom_reply_cnt(0);
-		log.info(communityDao.writeBoard(com_vo));
-		
+		communityDao.writePost(com_vo);
 	}*/
 	
 	/* 수정할 글 정보 조회 
@@ -107,4 +103,11 @@ public class ComMapperTest {
 		
 		communityDao.updateReplyCnt(com_no, amount);
 	}*/
+	
+	@Test
+	public void testHtmlInput() {
+		String c = HtmlSanitizer.sanitizeHtml("<script>alert(1)</script><p>안녕</p>");
+		String cc = HtmlSanitizer.sanitizeHtml("<p style=\"text-align:center;\">중앙</p>");
+		log.info(cc);
+	}
 }

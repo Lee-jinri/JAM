@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.ibatis.annotations.Param;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,9 +14,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import com.jam.client.community.dao.ComMapperTest;
+import com.jam.client.job.vo.ApplicationVO;
 import com.jam.client.job.vo.JobVO;
 import com.jam.common.vo.PageDTO;
 import com.jam.config.RootConfig;
+import com.jam.file.vo.FileAssetVO;
 import com.jam.global.util.ValueUtils;
 
 import lombok.Setter;
@@ -129,7 +132,7 @@ public class JobMapperTest {
 		//log.info(applicants);
 		log.info("글 삭제 " + jobDao.deletePost(post_id, user_id));
 	} */
-	
+	/*
 	@Test
 	public void testGetMyJobPosts() {
 		JobVO jobs = new JobVO();
@@ -158,4 +161,64 @@ public class JobMapperTest {
 		log.info(jobDao.getMyPostCnt(jobs));
 	}
 	
+	@Test
+	public void testClosePost() {
+		String user_id = "abcd1234";
+		long post_id = 67L;
+		log.info(jobDao.closePost(post_id, user_id));
+	}
+	
+	@Test
+	public void testCareaApplication() {
+		ApplicationVO app = new ApplicationVO();
+		app.setUser_id("zxcv1234");
+		app.setCompany_user_id("asdf1234");
+		app.setTitle("1");
+		app.setContent("1");
+		app.setPost_id(77L);
+		
+		jobDao.createApplication(app);
+	}
+	
+	@Test
+	public void testFindPostInfo() {
+		long post_id = 67L;
+		log.info(jobDao.findPostInfo(post_id));
+	}
+	
+	@Test
+	public void testFindPostInfoByAppId() {
+		long application_id = 42L;
+		log.info(jobDao.findPostInfoByAppId(application_id));
+	}
+	
+	@Test
+	public void testGetMyApplications() {
+		ApplicationVO app = new ApplicationVO();
+		app.setUser_id("asdf1234");
+		app.setPeriod("30");
+		app.setJob_status(0);
+		
+		log.info(jobDao.getMyApplications(app));
+		//log.info(jobDao.getMyApplicationsCnt(app));
+	}*/
+	/*
+	@Test
+	public void testWithdrawApplication() {
+		Long applicationId = 75L;
+		String userId = "asdf1234";
+		jobDao.withdrawApplication(applicationId, userId);
+	}
+	
+	@Test
+	public void testGetMyFavorites() {
+		JobVO job = new JobVO();
+		job.setUser_id("asdf1234");
+		job.setCategory(0);
+		
+		log.info(jobDao.getMyFavorites(job));
+		log.info(jobDao.getMyFavoritesCnt(job));
+		
+		
+	}*/
 }
