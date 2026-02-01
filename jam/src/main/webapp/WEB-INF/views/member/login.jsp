@@ -14,12 +14,7 @@
   	<!-- 네이버 로그인 -->
   	<script type="text/javascript" src="https://static.nid.naver.com/js/naveridlogin_js_sdk_2.0.2.js" charset="utf-8"></script>
   	
-
-
 <style>
-
-
-
 .common-box {
   max-width: 480px;
   margin: 80px auto;
@@ -28,9 +23,6 @@
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
   height: 740px;
 }
-
-
-
 .login-input::placeholder {
   color: #aaa;
 }

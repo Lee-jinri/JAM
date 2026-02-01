@@ -267,10 +267,21 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 	margin: 0 auto;
 }
 
-#join-box, #info-box {
+#join-box{
+	min-height: 840px;
+    height: auto;
+}
+#info-box {
 	height: 840px;
 }
-
+@media (max-width: 600px) {
+    .common-box {
+        width: 100%; 
+        padding: 30px;
+        min-height: none;
+        height: auto;
+    }
+}
 .join_button, .login_button, .findID_div, .findPw_div {
 	display: flex;
 	justify-content: center;
@@ -293,13 +304,23 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
     border: none;
 }
 
+
 .join_check {
 	width: 23px;
 	height: 20px;
 	margin-left: 5px;
 	display: none;
+	position: absolute;
+    right: 15px; 
+    top: 46px; 
+    transform: translateY(-50%); 
+    z-index: 5;
 }
-
+#join_form li {
+    position: relative; 
+    margin-bottom: 20px;
+    list-style: none;
+}
 #loginBtn {
 	width: 480px;
 	font-weight: 600;
@@ -399,12 +420,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
     height: fit-content;
 }
 
-#detailAddress {
-	width: 390px;
-}
-
 #address_search {
-	margin-left: 15px;
 	width: 65px;
 	height: 45px;
 	border-radius: 15px;
@@ -2231,4 +2247,43 @@ textarea {
   	font-size: 14px;
   }
   
+}
+
+@media (max-width: 600px) {
+    .common-box {
+        width: 100% !important;
+        min-width: 320px;
+        padding: 20px !important;
+        min-height: auto !important;
+        margin: 10px auto;
+    }
+
+    .join_input {
+        font-size: 13px;
+    }
+
+    /* 주소 입력 부분 레이아웃 조정 */
+    #address_search {
+        width: 100%;
+        margin-top: 8px;
+        height: 45px;
+    }
+    .join_title>p, .login_title>p{
+        font-size: 20px;
+    }
+    .join_input{
+    	 height: 40px;
+    }
+    .join_hint{
+    	font-size: 12px;
+    }
+    .join_check{
+    	top: 23px;
+    }
+    .join_input, .login-input{
+    	margin-top: 0;
+    }
+    #detailAddress{
+        margin-top: 10px;
+    }
 }

@@ -3,11 +3,8 @@
 <html>
 <head>
 <!-- 카카오 주소 검색 API -->
-<script
-	src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-
+<script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <title>JAM-회원가입</title>
-
 <script type="text/javascript">
 	$(function(){
 		if(window.MY_ID) location.href = "/";
@@ -389,9 +386,9 @@ function showEmpty($ok, $err, $hint, $hintErr) {
 
 </script>
 </head>
-<body class="wrap">
+<body class="wrap my-bottom-15 my-top-8">
 	<div class="">
-		<div class="common-box my-top-15 my-bottom-15" id="join-box">
+		<div class="common-box" id="join-box">
 			<div class="join_title">
 				<p>회원가입</p>
 			</div>

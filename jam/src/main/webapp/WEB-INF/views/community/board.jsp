@@ -161,32 +161,32 @@ function getBoard(){
 
 function renderList(data){
 	let $template = $("#boardTemplate");
-       let $boardList = $("#boardList");
-       
-       $boardList.empty(); 
-
-       data.communityList.forEach(board => {
-           let $clone = $template.clone().removeAttr("id").show();
-           
-           $clone.find(".userName").text(board.user_name);
-           $clone.find(".boardDate").text(timeAgo(board.created_at));
-           $clone.find(".boardTitle").text(board.title);
-           $clone.find(".boardHits").text("조회 " +board.view_count);
-           $clone.find(".boardReplyCnt").text(board.comment_count);
-           $clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
-
-           let $favoriteSpan = $clone.find(".favoriteSpan");
-           $favoriteSpan.attr("data-post-id", board.post_id);
-   		$favoriteSpan.attr("data-board-type", "COM");
-   		
-   		let $icon = $favoriteSpan.find("i"); 
-   		board.favorite ? $icon.addClass("fa-solid")
-   					   : $icon.addClass("fa-regular");
-   		
-           $boardList.append($clone);
-       });
-       
-       loadPagination(data.pageMaker);
+	let $boardList = $("#boardList");
+	       
+	$boardList.empty(); 
+	
+	data.communityList.forEach(board => {
+		let $clone = $template.clone().removeAttr("id").show();
+					           
+		$clone.find(".userName").text(board.user_name);
+		$clone.find(".boardDate").text(timeAgo(board.created_at));
+		$clone.find(".boardTitle").text(board.title);
+		$clone.find(".boardHits").text("조회 " +board.view_count);
+		$clone.find(".boardReplyCnt").text(board.comment_count);
+		$clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
+					
+		let $favoriteSpan = $clone.find(".favoriteSpan");
+		$favoriteSpan.attr("data-post-id", board.post_id);
+		$favoriteSpan.attr("data-board-type", "COM");
+					 		
+		let $icon = $favoriteSpan.find("i"); 
+		board.favorite ? $icon.addClass("fa-solid")
+					   : $icon.addClass("fa-regular");
+					
+		$boardList.append($clone);
+	});
+	       
+	loadPagination(data.pageMaker);
 }
 
 const popularState = {
