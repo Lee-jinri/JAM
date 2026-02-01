@@ -15,20 +15,16 @@ public final class AuthClearUtil {
 	    HttpSession session = request.getSession(false);
 	    if(session != null) session.invalidate();
 	    
-	    // Authorization 쿠키 삭제
-	    Cookie cookie = new Cookie("Authorization", null);
+	    deleteCookie(response, "Authorization");
+	    deleteCookie(response, "RefreshToken");
+	    deleteCookie(response, "JSESSIONID");
+	}
+
+	private static void deleteCookie(HttpServletResponse response, String name) {
+	    Cookie cookie = new Cookie(name, null);
 	    cookie.setHttpOnly(true);
 	    cookie.setPath("/");
-	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
-	    
+	    cookie.setMaxAge(0);
 	    response.addCookie(cookie);
-	    
-	    // refreshToken 쿠키 삭제
-	    Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
-	    refreshTokenCookie.setHttpOnly(true); 
-	    refreshTokenCookie.setMaxAge(0);
-	    refreshTokenCookie.setPath("/");
-	    
-	    response.addCookie(refreshTokenCookie);
 	}
 }
