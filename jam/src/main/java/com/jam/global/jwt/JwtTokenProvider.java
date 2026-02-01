@@ -63,6 +63,7 @@ public class JwtTokenProvider {
                 .claim("userName", userName)
                 .claim("companyName", companyName)
                 .claim("loginType", loginType)
+                //.setExpiration(new Date(System.currentTimeMillis() + 30000)) // 30초 후 만료 (자동로그인 테스트)
                 .setExpiration(new Date(System.currentTimeMillis() + 3 * 3600 * 1000)) // 유효 기간 3시간
                 .signWith(key, SignatureAlgorithm.HS256)
                 .setHeaderParam("typ","JWT")

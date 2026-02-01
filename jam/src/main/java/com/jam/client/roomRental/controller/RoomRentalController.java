@@ -93,7 +93,8 @@ public class RoomRentalController {
 	 * 합주실/연습실 사진 업로드
 	 * @return String 사진 저장 경로
 	 ********************************/
-	@RequestMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
+	// FIXME: 서버 내부 경로 저장 방식(getRealPath)을 외부 스토리지 또는 공통 파일 업로드 서비스로 변경할 것 (fleaMarket 로직 참조)
+	@GetMapping(value="/uploadImageFile", produces="application/json; charset=UTF-8")
 	@ResponseBody
 	public String uploadImageFile(@RequestParam("file") MultipartFile multipartFile, HttpServletRequest request )  {
 		JsonObject jsonObject = new JsonObject();
@@ -145,5 +146,4 @@ public class RoomRentalController {
 		
 		return "roomRental/roomPosts";
 	}
-	
 }

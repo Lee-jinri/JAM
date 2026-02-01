@@ -177,11 +177,8 @@
 	
 	<select id="getFavorites" parameterType="community" resultType="community">
 		SELECT
-			c.post_id,
-			c.title,
-			c.view_count, 
-			c.comment_count,
-			c.created_at
+			c.post_id, c.title, c.view_count, 
+			c.comment_count, c.created_at
 		FROM community c
 		WHERE EXISTS (
 			SELECT /*+ INDEX(f UNIQUE_FAVORITE) */ 1
