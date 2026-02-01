@@ -10,6 +10,13 @@ Servers/
 application.properties
 application.yml
 
+# Redis
+dump.rdb
+appendonly.aof
+
+# IDE
+.factorypath
+
 *.log
 *.tmp
 *.bak
