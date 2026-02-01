@@ -8,8 +8,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-import org.redisson.api.RLock;
-import org.redisson.api.RedissonClient;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,7 +26,6 @@ public class ChatServiceImpl implements ChatService {
     
 	private final ChatDAO chatDao;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final RedissonClient redissonClient;
     
 	@Override
 	public List<ChatRoomListVO> getChatRooms(String userId) {
@@ -48,49 +45,22 @@ public class ChatServiceImpl implements ChatService {
 		
 		return chatList;
 	}
-	
+
     // 채팅방 Id 조회
  	@Override
  	@Transactional
- 	public Long getOrCreateChatRoomId(String userId, String targetUserId) {
- 		String firstUser = userId.compareTo(targetUserId) < 0 ? userId : targetUserId;
-        String secondUser = userId.compareTo(targetUserId) < 0 ? targetUserId : userId;
-        String pairKey = firstUser + ":" + secondUser;
-        String lockKey = "lock:chatroom:" + pairKey;
-
-        RLock lock = redissonClient.getLock(lockKey);
-        Long roomId = null;
-        
-        try {
-            // 락 획득 시도
-            boolean isLocked = lock.tryLock(5, TimeUnit.SECONDS);
-            
-            if (!isLocked) {
-                log.warn("락 획득 실패: {} & {}", userId, targetUserId);
-                throw new RuntimeException("잠시 후 다시 시도해주세요.");
-            }
-
-            // 락 획득 후 로직 수행 이미 방이 있는지 다시 확인
-            roomId = chatDao.getChatRoomId(userId, targetUserId);
-            if (roomId == null) {
-                roomId = chatDao.nextChatRoomId();
-                chatDao.createChatRoomId(roomId, pairKey);
-                chatDao.insertChatRoomUser(roomId, userId);
-                chatDao.insertChatRoomUser(roomId, targetUserId);
-                log.info("새로운 채팅방 생성 완료: {}", roomId);
-            }
-
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new RuntimeException("시스템 오류입니다. 잠시 후 다시 시도해 주세요.");
-        } finally {
-            // 락 해제
-            if (lock.isHeldByCurrentThread()) {
-                lock.unlock();
-            }
+ 	public Long createChatRoomWithTransaction(String userId, String targetUserId, String pairKey) {
+ 		// 락 획득 후 로직 수행 이미 방이 있는지 다시 확인
+        Long roomId = chatDao.getChatRoomId(userId, targetUserId);
+        if (roomId == null) {
+            roomId = chatDao.nextChatRoomId();
+            chatDao.createChatRoomId(roomId, pairKey);
+            chatDao.insertChatRoomUser(roomId, userId);
+            chatDao.insertChatRoomUser(roomId, targetUserId);
+            log.info("새로운 채팅방 생성 완료: {}", roomId);
         }
- 	    return roomId;
- 	}
+		return roomId;
+	}
 	
 	@Override
 	public Map<String, String> getChatPartner(Long roomId, String userId) {

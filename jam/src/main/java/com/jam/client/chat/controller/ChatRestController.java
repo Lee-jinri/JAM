@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.jam.client.chat.service.ChatRoomFacade;
 import com.jam.client.chat.service.ChatService;
 import com.jam.client.chat.vo.ChatRoomListVO;
 import com.jam.client.chat.vo.ChatVO;
@@ -26,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatRestController {
 	// TODO: 무한 스크롤
 	private final ChatService chatService;
+	private final ChatRoomFacade chatRoomFacade;
 	
     /**
      * 내가 참여 중인 채팅방 목록 조회
@@ -64,7 +66,7 @@ public class ChatRestController {
     	if(user == null || user.getUser_id() == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다. 로그인 페이지로 이동하겠습니까?");
     	if(targetUserId == null) throw new BadRequestException("잘못된 요청입니다. 잠시 후 다시 시도하세요.");
 
-    	Long roomId = chatService.getOrCreateChatRoomId(user.getUser_id(), targetUserId);
+    	Long roomId = chatRoomFacade.getOrCreateChatRoomId(user.getUser_id(), targetUserId);
     	
     	return ResponseEntity.ok(roomId);
     }

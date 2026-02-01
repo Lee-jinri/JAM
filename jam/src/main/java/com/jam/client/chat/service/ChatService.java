@@ -9,8 +9,8 @@ import com.jam.client.chat.vo.ChatVO;
 public interface ChatService {
 
 	List<ChatRoomListVO> getChatRooms(String userId);
-	
-	Long getOrCreateChatRoomId(String userId, String targetUserId);
+
+	Long createChatRoomWithTransaction(String userId, String targetUserId, String pairKey);
 	
 	List<ChatVO> getMessages(Long roomId, String userId);
 		
@@ -19,4 +19,5 @@ public interface ChatService {
 	void saveChat(ChatVO chat);
 	
 	boolean isMemberOfRoom(String userId, Long chatRoomId);
+
 }
