@@ -22,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 public class WebSocketHandler extends TextWebSocketHandler  {
-
     private final ChatService chatService;
     private final ObjectMapper objectMapper;
     
@@ -174,10 +173,11 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             Set<WebSocketSession> chatRoomSessions = chatRoomSession.get(roomId);
             if (chatRoomSessions != null) {
                 chatRoomSessions.remove(session);
+                if (chatRoomSessions.isEmpty()) {
+                    chatRoomSession.remove(roomId);
+                }
             }
         }
-
-        chatRoomSession.values().forEach(this::removeClosedSession);
     }
 
     // 닫힌 세션을 chatRoomSession에서 제거
