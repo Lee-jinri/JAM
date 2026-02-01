@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jam.client.member.dao.MemberDAO">
-
 	<!-- 회원가입 -->
 	<insert id="memberJoin" parameterType="member">
 		INSERT INTO member (user_id, user_pw, user_name, phone, email, address, social_login)
@@ -33,21 +32,21 @@
   	<select id="nameCheck" resultType="int">
   		SELECT count(*) 
   		FROM member 
-  		WHERE user_name = #{user_name}
+  		WHERE user_name = #{user_name} AND deleted_at IS NULL
   	</select>
   	
   	<!-- 전화번호 중복검사 -->
   	<select id="phoneCheck" resultType="int">
   		SELECT count(*) 
   		FROM member 
-  		WHERE phone = #{phone}
+  		WHERE phone = #{phone} AND deleted_at IS NULL
   	</select>
   	
   	<!-- 이메일 중복검사 -->
   	<select id="emailCheck" resultType="int">
   		SELECT count(*)
   		FROM member
-  		WHERE email = #{email}
+  		WHERE email = #{email} AND deleted_at IS NULL
   	</select>
   	
   	<resultMap id="userWithRolesMap" type="member">
@@ -67,49 +66,49 @@
 	<select id="findRolesByUserId" parameterType="string" resultType="string">
 	    SELECT role_code
 	    FROM member_role
-	    WHERE user_id = #{user_id} 
+	    WHERE user_id = #{user_id}
 	</select>
 	
 	<!-- refresh token으로 회원 아이디 조회 -->
 	<select id="findUserIdByRefreshToken" parameterType="string" resultType="string">
 	    SELECT user_id
 	    FROM member
-	    WHERE refreshToken = #{refreshToken}
+	    WHERE refreshToken = #{refreshToken} AND deleted_at IS NULL
 	</select>
   	
   	<!-- 회원 닉네임 가져오기 -->
   	<select id="getUserName" resultType="String">
   		SELECT user_name
   		FROM member
-  		WHERE user_id = #{user_id}
+  		WHERE user_id = #{user_id} AND deleted_at IS NULL
   	</select>
   	
   	<!-- 아이디 가져오기 -->
   	<select id="getUserId" resultType="String">
   		SELECT user_id
   		FROM member
-  		WHERE user_name = #{user_nae}
+  		WHERE user_name = #{user_name} AND deleted_at IS NULL
   	</select>
   	
   	<!-- refresh 토큰 저장 -->
   	<update id="addRefreshToken" parameterType="String">
 		UPDATE member
 		SET refreshToken = #{refreshToken}
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{user_id} AND deleted_at IS NULL
   	</update>
   	
   	<!-- refresh 토큰 삭제 -->
   	<update id="deleteRefreshToken" parameterType="String">
   		UPDATE member
 		SET refreshToken = NULL
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{user_id} AND deleted_at IS NULL
   	</update>
   	
   	<!-- refresh 토큰 가져오기 -->
   	<select id="getRefreshToken" parameterType="String" resultType="String">
   		SELECT refreshToken
   		FROM member
-  		WHERE user_id = #{user_id}
+  		WHERE user_id = #{user_id} AND deleted_at IS NULL
   	</select>
 	
   	<!-- 아이디 찾기 -->
@@ -119,6 +118,7 @@
   		WHERE email = #{email}
   		AND phone = #{phone}
   		AND social_login = 0
+  		AND deleted_at IS NULL
   	</select>
   	
   	<!-- 아이디와 이메일로 존재하는 사용자인지 확인 (비밀번호 변경 전 사용) -->
@@ -129,6 +129,7 @@
 		AND email = #{email} 
 		AND phone = #{phone}
   		AND social_login = 0
+  		AND deleted_at IS NULL
 	</select>
 	
 	<!-- 비밀번호 변경 -->
@@ -137,20 +138,21 @@
 		SET user_pw = #{user_pw}
 		WHERE user_id = #{user_id}
   		AND social_login = 0
+  		AND deleted_at IS NULL
 	</update>
 	
 	<!-- 닉네임 변경 -->
 	<update id="updateUserName" parameterType="member">
 		UPDATE member
 		SET user_name = #{user_name}
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{user_id} AND deleted_at IS NULL
 	</update>
 	
 	<!-- 전화번호 변경 -->
 	<update id="updatePhone" parameterType="member">
 		UPDATE member
 		SET phone = #{phone}
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{user_id} AND deleted_at IS NULL
 	</update>
 	
 	<!-- 비밀번호 확인 -->
@@ -158,14 +160,15 @@
 		SELECT user_pw
 		FROM member
 		WHERE user_id = #{user_id}
-  		AND social_login != 1
+  		AND social_login != 1 
+  		AND deleted_at IS NULL
 	</select>
 	
 	<!-- 주소 변경 -->
 	<update id="updateAddress" parameterType="member">
 		UPDATE member
 		SET address = #{address}
-		WHERE user_id = #{user_id}
+		WHERE user_id = #{user_id} AND deleted_at IS NULL
 	</update>
 	
 	<!-- 회원 탈퇴 -->
@@ -188,7 +191,8 @@
 		select COUNT(*)
 		from member 
 		where user_id = #{user_id}
-		AND social_login = 1
+		AND social_login = 1 
+		AND deleted_at IS NULL
 		]]>
 	</select>
 	
@@ -203,12 +207,14 @@
 		SELECT user_name
 		FROM member
 		WHERE user_id = #{user_id}
+		AND deleted_at IS NULL
 	</select>
 	
 	<update id="updateCompanyName" parameterType="map">
 	    UPDATE member
 	    SET company_name = #{company_name}
-	    WHERE user_id = #{user_id}
+	    WHERE user_id = #{user_id} 
+	    AND deleted_at IS NULL
 	</update>
 	
 	<insert id="insertCompanyRole" parameterType="map">
@@ -217,7 +223,8 @@
 		FROM dual
 		WHERE NOT EXISTS (
 			SELECT 1 FROM member_role
-			WHERE user_id = #{user_id} AND role_code = 'ROLE_COMPANY'
+			WHERE user_id = #{user_id} 
+			AND role_code = 'ROLE_COMPANY' 
 		)
 	</insert>
 </mapper>

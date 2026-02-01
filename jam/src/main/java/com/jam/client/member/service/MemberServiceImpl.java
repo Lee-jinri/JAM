@@ -421,8 +421,12 @@ public class MemberServiceImpl implements MemberService {
 
 	// 회원 탈퇴
 	@Override
+	@Transactional
 	public void deleteAccount(String user_id) {
 		memberDao.deleteAccount(user_id);
+		
+		String redisKey = "user:nickname:" + user_id;
+		stringRedisTemplate.delete(redisKey);
 	}
 	
 	// 카카오 탈퇴
@@ -530,6 +534,7 @@ public class MemberServiceImpl implements MemberService {
 		return memberDao.findByUserInfo(userId);
 	}
 	
+	// NOTE: 채팅 관련 확장 대비 (현재 미사용)
 	private void cacheUserName(String userId, String userName) {
 		String key = "users:name:" + userId;
 		stringRedisTemplate.opsForValue().set(key, userName);
