@@ -13,44 +13,59 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v4
 
-    - name: Create application.properties
+    - name: Create application.yaml
       run: |
-        cat > jam/src/main/resources/application.properties << 'EOF'
-        server.servlet.encoding.force=true
-        server.servlet.encoding.force-response=true
-        server.servlet.encoding.charset=UTF-8
+        cat > src/main/resources/application.yaml << 'EOF'
+        spring:
+          datasource:
+            url: ${{ secrets.DB_URL }}
+            username: ${{ secrets.DB_USERNAME }}
+            password: ${{ secrets.DB_PASSWORD }}
+          redis:
+            host: ${{ secrets.REDIS_HOST }}
+            port: ${{ secrets.REDIS_PORT }}
+            database: 0
+          redisson:
+            address: ${{ secrets.REDISSON_ADDRESS }}
+          mail:
+            username: ${{ secrets.MAIL_USERNAME }}
+            password: ${{ secrets.MAIL_PASSWORD }}
+            
+        server:
+          servlet:
+            encoding:
+              force: true
+              force-response: true
+              charset: UTF-8
+              
+        jwt:
+          secret: ${{ secrets.JWT_SECRET }}
+          
+        oauth:
+          naver:
+            clientId: ${{ secrets.NAVER_CLIENT_ID }}
+            clientSecret: ${{ secrets.NAVER_CLIENT_SECRET }}
+            redirectUri: ${{ secrets.NAVER_REDIRECT_URI }}
+          kakao: 
+            clientId: ${{ secrets.KAKAO_CLIENT_ID }}
+            redirectUri: ${{ secrets.KAKAO_REDIRECT_URI }}
+            
+        location:
+          consumer_key: ${{ secrets.LOCATION_CONSUMER_KEY }}
+          consumer_secret: ${{ secrets.LOCATION_CONSUMER_SECRET }}
+          save:
+            path: ${{ secrets.LOCATION_SAVE_PATH }}
 
-        db.url=${{ secrets.DB_URL }}
-        db.username=${{ secrets.DB_USERNAME }}
-        db.password=${{ secrets.DB_PASSWORD }}
+        cloud:
+          aws:
+            s3:
+              bucket: jam-resume-bucket
 
-        jwt.secret=${{ secrets.JWT_SECRET }}
-
-        spring.redis.host=${{ secrets.REDIS_HOST }}
-        spring.redis.port=${{ secrets.REDIS_PORT }}
-        spring.redis.database=0
-        spring.redisson.address=${{ secrets.redisson_address }}
-
-        spring.mail.username=${{ secrets.MAIL_USERNAME }}
-        spring.mail.password=${{ secrets.MAIL_PASSWORD }}
-
-        oauth.naver.clientId=${{ secrets.NAVER_CLIENT_ID }}
-        oauth.naver.naver_client_secret=${{ secrets.NAVER_CLIENT_SECRET }}
-        oauth.naver.redirectUri=${{ secrets.NAVER_REDIRECT_URI }}
+        file:
+          upload-dir: ${{ secrets.FILE_UPLOAD_DIR }}
         
-        oauth.kakao.clientId=${{ secrets.KAKAO_CLIENT_ID }}
-        oauth.kakao.redirectUri=${{ secrets.KAKAO_REDIRECT_URI }}
-
-        location.consumer_key=${{ secrets.LOCATION_CONSUMER_KEY }}
-        location.consumer_secret=${{ secrets.LOCATION_CONSUMER_SECRET }}
-        location.save.path=${{ secrets.LOCATION_SAVE_PATH }}
-
-        cloud.aws.s3.static=${{ secrets.AWS_DEFAULT_REGION }}
-        cloud.aws.s3.bucket=jam-resume-bucket
-
-        file.upload-dir=${{ secrets.FILE_UPLOAD_DIR }}
-        
-        cors.allowed-origins=${{ secrets.CORS_ALLOWED_ORIGINS }}
+        cors: 
+          allowed-origins: ${{ secrets.CORS_ALLOWED_ORIGINS }}
         EOF  
 
     - name: Set up JDK 17
@@ -61,15 +76,15 @@ jobs:
 
     - name: Build with Maven
       run: mvn -B package -Dmaven.test.skip=true
-      working-directory: ./jam
+      working-directory: ./
 
     - name: List WAR files
-      run: ls -lh /home/runner/work/JAM/JAM/jam/target
+      run: ls -lh ./target
 
     - name: Debug WAR path
       run: |
         echo "SEARCHING:"
-        find /home/runner/work/JAM/JAM -name "*.war" -type f
+        find -name "*.war" -type f
 
     - name: Copy WAR file with native scp
       env:
@@ -78,7 +93,7 @@ jobs:
         echo "$EC2_KEY" > /tmp/ec2_key.pem
         chmod 400 /tmp/ec2_key.pem
     
-        WAR_FILE=$(find "$GITHUB_WORKSPACE/jam/target" -name "*.war" -type f | head -n 1)
+        WAR_FILE=$(find "./target" -name "*.war" -type f | head -n 1)
         if [ -z "$WAR_FILE" ]; then
           echo "ERROR: WAR 파일을 찾을 수 없습니다"
           exit 1
@@ -114,9 +129,10 @@ jobs:
           sudo chown -R ec2-user:ec2-user /home/ec2-user/tomcat
           
           echo "Tomcat 재시작..."
-          export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64 
-          setsid /home/ec2-user/tomcat/bin/catalina.sh start > /home/ec2-user/tomcat/logs/catalina.out 2>&1 < /dev/null &
+          export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64
+          echo "===== DEPLOY $(date '+%Y-%m-%d %H:%M:%S %Z') =====" >> /home/ec2-user/tomcat/logs/catalina.out
+          setsid /home/ec2-user/tomcat/bin/catalina.sh start >> /home/ec2-user/tomcat/logs/catalina.out 2>&1 < /dev/null &
 
           echo "배포 완료. 5초 후 로그 확인 시작..."
           sleep 5
-          /usr/bin/tail -n 10 /home/ec2-user/tomcat/logs/catalina.out
+          /usr/bin/tail -n 50 /home/ec2-user/tomcat/logs/catalina.out
