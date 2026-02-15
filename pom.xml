@@ -11,7 +11,7 @@
 	<groupId>com.jam</groupId>
 	<artifactId>jam</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>jam</name>
 	<description>jam project for Spring Boot</description>
 	<url/>
