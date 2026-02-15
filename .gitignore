@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # .gitignore
 
 # Ignore Eclipse metadata
@@ -50,3 +51,40 @@ target/
 *.class
 *.war
 *.jar
+=======
+HELP.md
+target/
+.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+### STS ###
+.apt_generated
+.classpath
+.factorypath
+.project
+.settings
+.springBeans
+.sts4-cache
+
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
+build/
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+### VS Code ###
+.vscode/
+
+src/main/resources/application.yaml
+>>>>>>> 53300b7 (feat: Spring Boot로 마이그레이션 및 Thymeleaf로 뷰 레이어 전환 (war 유지))

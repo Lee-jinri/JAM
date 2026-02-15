@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html 
+	xmlns:th="http://www.thymeleaf.org" 
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{template/client/layout}">
+<head>
+<meta charset="UTF-8">
+<title></title>
+	<style>
+		.chat-container {
+			display: flex;
+			width: 800px;
+			height: 600px;
+			border: 1px solid #ccc;
+			font-family: 'Arial', sans-serif;
+			background-color: white;
+			margin: auto;
+			margin-top: 20px;
+			border-radius: 13px;
+			/*box-shadow: 0 0 10px rgba(0,0,0,0.2);
+			z-index: 999;*/
+		}
+		
+		.chat-sidebar {
+			width: 280px;
+			border-right: 1px solid #eee;
+			overflow-y: auto;
+		}
+		
+		.chat-main {
+			flex: 1;
+			display: flex;
+			flex-direction: column;
+		}
+		
+		.chat-header {
+			padding: 10px;
+			font-weight: bold;
+			border-bottom: 1px solid #ddd;
+			height: 43px;
+		}
+		
+		.chat-room-list {
+			padding: 0;
+			margin: 0;
+		}
+		
+		.chat-room-item {
+			display: flex;
+			align-items: center;
+			padding: 10px;
+			border-bottom: 1px solid #f0f0f0;
+			cursor: pointer;
+		}
+		
+		.chat-room-item:hover {
+			background-color: #f9f9f9;
+		}
+		
+		.chat-room-item.active {
+		    background-color: #f9f9f9;
+		}
+		
+		.chat-profile-img {
+			width: 36px;
+			height: 36px;
+			border-radius: 50%;
+			margin-right: 10px;
+		}
+		
+		.chat-room-info {
+			flex-grow: 1;
+		}
+		
+		.chat-user-name {
+			font-weight: bold;
+		}
+		
+		.chat-last-message {
+			font-size: 12px;
+			color: #888;
+		}
+		
+		.chat-room-time {
+			font-size: 11px;
+			color: #aaa;
+			white-space: nowrap;
+		}
+		
+		.chat-topbar {
+			padding: 10px 12px;
+			background: #f5f5f5;
+			border-bottom: 1px solid #ddd;
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			font-weight: bold;
+			border-radius: 0 13px 0 0;
+			height: 43px;
+		}
+		
+		.chat-messages {
+			display: flex;
+			flex-direction: column;
+			overflow-y: auto;
+			padding: 10px;
+			background: #fafafa;
+		    flex: 1;
+		    gap: 8px;
+		}
+		
+		.chat-input-container {
+			display: flex;
+			border-top: 1px solid #ddd;
+		}
+		
+		.chat-input-container input {
+			flex: 1;
+			padding: 10px;
+			border: none;
+			outline: none;
+		}
+		.chat-input-container textarea{
+			min-height: 40px;
+		    max-height: 150px; 
+		    overflow-y: auto;
+		    resize: none; 
+		    flex: 1;
+			padding: 10px;
+			border: none;
+			outline: none;
+			font-size: 15px;
+			font-family: 'Arial', sans-serif;
+		}
+		
+		.chat-input-container button {
+			padding: 10px 20px;
+			background: #ffa425;
+			color: white;
+			border: none;
+			cursor: pointer;
+			font-size: 15px;
+		    font-weight: 600;
+		    border-radius: 0 0 13px 0;
+		}
+		.chat {
+			display: inline-block;
+			max-width: 60%;
+			padding: 8px 12px;
+			border-radius: 12px;
+			word-wrap: break-word;
+			position: relative;
+			margin-bottom: 8px;
+			height: fit-content;
+		}
+		
+		.myChat {
+			background-color: #ffa425;
+			color: white;
+			align-self: flex-end;
+			border-bottom-right-radius: 0;
+			font-weight: 500;
+		}
+		.otherChat {
+			background-color: #eee;
+			color: black;
+			align-self: flex-start;
+			border-bottom-left-radius: 0;
+		}
+		
+		.chat-time {
+			font-size: 13px;
+			color: #888;
+			margin-top: 4px;
+			text-align: right;
+		}
+		.chat-date-line {
+		    text-align: center;
+		    margin: 20px 0;
+		    font-size: 0.8rem;
+		    color: #888;
+		    position: relative;
+		}
+		.chat-date-line::before {
+		    content: "";
+		    position: absolute;
+		    left: 0; top: 50%; width: 100%; height: 1px;
+		    background-color: #eee;
+		    z-index: -1;
+		}
+		
+		/* 방을 아직 선택하지 않은 상태 */
+		.chat-main.empty .chat-topbar,
+		.chat-main.empty .chat-input-container,
+		.chat-main.empty .chat-messages { display: none; }
+		
+		.chat-main.empty::before {
+			content: "대화를 선택해 주세요";
+			display: flex;
+			justify-content: center;
+			align-items: center;
+			height: 100%;
+			color: #aaa;
+			font-size: 14px;
+		}	
+	</style>
+	<script th:inline="javascript">
+		$(function(){
+			loadChatRooms().then(() => {
+				const roomId = sessionStorage.getItem('roomId');
+				if (roomId) {
+					setEmptyUI(false);
+					getChatMessages(roomId);
+					initWebSocket(roomId);
+					
+					requestAnimationFrame(() => {
+						$('.chat-room-item').removeClass('active');
+						$('.chat-room-item[data-roomId="' + roomId + '"]').addClass('active');
+						
+					});
+				} else {
+					setEmptyUI(true);
+				}
+			});
+			
+			const $input = document.getElementById("chatMessage");
+			const $send = document.getElementById("send");
+			
+			if ($send) {
+				$send.addEventListener("click", function() {
+					const roomId = sessionStorage.getItem("roomId");
+					if (!roomId) return;
+					sendChat(roomId);
+				});
+			}
+			
+			if ($input) {
+				$input.addEventListener("keydown", function(e) {
+					if (e.key === "Enter" && !e.shiftKey) {
+						e.preventDefault();
+						$send?.click();
+					}
+				});
+			}
+			
+			$input.addEventListener("input", function() {
+			    this.style.height = "auto"; // 높이 초기화
+			    this.style.height = (this.scrollHeight) + "px"; // 내용 높이만큼 조절
+			});
+			
+			
+			window.addEventListener('beforeunload', () => {
+				try { if (currentRoomId) socket?.send(JSON.stringify({ type:'LEAVE', roomId: currentRoomId })); } catch(e){}
+				try { socket?.close(1000); } catch(e){}
+			});
+		})
+		
+		function setEmptyUI(isEmpty) {
+			const main = document.getElementById("chatRoom");
+			if (!main) return;
+			if (isEmpty) {
+				main.classList.add("empty");
+			} else {
+				main.classList.remove("empty");
+			}
+		}
+		
+		function timeAgo(dateString) {
+			if (!dateString) return "";
+			const past = new Date(dateString.replace(" ", "T"));
+			if (isNaN(past)) return dateString;
+			
+			const diff = Math.floor((Date.now() - past.getTime()) / 1000);
+			if (diff < 10) return "방금 전";
+			if (diff < 60) return diff + "초 전";
+			if (diff < 3600) return Math.floor(diff / 60) + "분 전";
+			if (diff < 86400) return Math.floor(diff / 3600) + "시간 전";
+			if (diff < 172800) return "어제";
+			if (diff < 2592000) return Math.floor(diff / 86400) + "일 전";
+			return past.toLocaleDateString().replace(/\.$/, "");
+		}
+		
+		
+		function getChatMessages(roomId){
+			fetch('/api/chat/messages?roomId='+roomId)
+			.then(res=>{
+				if (!res.ok){
+					if (res.status === 401){
+						alert("로그인이 필요합니다.");
+						location.href = "/member/login";
+						return Promise.reject();
+					}
+					if (res.status === 403 || res.status === 404){
+						alert("채팅방에 접근할 수 없습니다.");
+						location.href = "/chat";
+						return Promise.reject();
+					}
+					throw new Error("서버 오류: " + res.status);
+				}
+				return res.json();
+			})
+			.then(data =>{
+				renderChatMessages(data);
+			})
+			.catch(err =>{
+				console.error('채팅 메시지 불러오기 실패:', err);
+			})
+		}
+		
+		let socket = null;
+		let currentRoomId = null;
+		
+		function sendEnter(roomId) {
+			if (!socket || socket.readyState !== WebSocket.OPEN) return;
+			socket.send(JSON.stringify({ type: "ENTER", roomId: roomId }));
+			currentRoomId = roomId;
+		}
+		
+		function sendLeave(roomId) {
+			if (!socket || socket.readyState !== WebSocket.OPEN) return;
+			socket.send(JSON.stringify({ type: "LEAVE", roomId: roomId }));
+			currentRoomId = null; // 상태 초기화
+		}
+		
+		//웹소켓 초기화
+		function initWebSocket(roomId) {
+			try {
+				// 웹소켓 중복 연결 방지
+				if (socket) {
+					if (socket.readyState === WebSocket.OPEN) {
+						sendEnter(roomId);
+						return;
+					}
+					if (socket.readyState === WebSocket.CONNECTING) {
+						return; // 연결 중이면 대기
+					}
+				}
+				
+				socket = new WebSocket(
+						"ws://"
+						+ location.host
+						+ "/ws"
+					);
+				
+				let retried = false;
+				socket.onopen = function() { 
+				  retried = false; 
+				  sendEnter(roomId); 
+				};
+		
+				socket.onclose = function() {
+				  console.log("WebSocket is closed now.");
+				  if (currentRoomId && !retried) {
+				    retried = true;
+				    setTimeout(() => initWebSocket(currentRoomId), 2000);
+				  }
+				};
+				
+				socket.onerror = function(error) {
+					console.log("WebSocket error: " + error);
+				};
+		
+				socket.onmessage = function(event) {
+					const { type, data } = JSON.parse(event.data);
+					if (type === "MESSAGE") {
+						const isMine = (data.senderId === window.MY_ID);
+						displayChat({ ...data, mine: isMine });
+						updateRoomPreview({ roomId: data.roomId, message: data.message, chatDate: data.chatDate });
+					} else if (type === "PARTNER_INFO") {
+						renderPartnerName(data.partnerName);
+					} else if (type === 'ROOM_CREATED'){
+						prependRoomItem(data);
+						$('.chat-room-item[data-roomId="' + data.roomId + '"]').trigger('click');
+					} else if (type === "ERROR") {
+						sessionStorage.removeItem("roomId");
+		
+						if(data.code === 401){
+							if (confirm(data.message)) location.href = '/member/login';
+							else location.href = '/';
+						}else if ([403, 404].includes(data.code)) {
+							alert(data.message);
+							location.href = '/chat';
+						} else { // 400, 500
+							alert(data.message);
+							window.location.reload();
+						}
+					}
+				};
+			} catch (err) {
+				console.error("채팅 초기화 중 오류 발생:", err);
+			}
+		}
+		
+		function sendChat(roomId) {
+			let chatMessage = $("#chatMessage").val();
+			
+			if(!roomId || roomId.trim() === "") return;
+			if(!chatMessage || chatMessage.trim() === "") return;
+		
+			if (socket && socket.readyState === WebSocket.OPEN) {
+				var chatObject = {
+					roomId: roomId,
+					type: "MESSAGE",
+					message: chatMessage
+				};
+		
+				var chatJson = JSON.stringify(chatObject); // 객체를 JSON 문자열로 변환
+				socket.send(chatJson); // JSON 문자열을 WebSocket을 통해 전송
+				
+				$("#chatMessage").val("").css("height", "auto"); // 입력 필드를 비움 + 높이 초기화
+			}
+		}
+		
+		let globalLastDate = ""; // 마지막 채팅의 날짜를 저장
+		
+		function displayChat(data) {
+			const chatList = document.getElementById("chatList");
+		
+			const msgDate = data.sentAt ? data.sentAt.split(" ")[0] : "";
+		
+		    if (msgDate && msgDate !== globalLastDate) {
+		        const dateDiv = document.createElement("div");
+		        dateDiv.className = "chat-date-line";
+		        dateDiv.textContent = msgDate;
+		        chatList.appendChild(dateDiv);
+		        
+		        globalLastDate = msgDate;
+		    }
+			
+			const chatDiv = document.createElement("div");
+			chatDiv.className = "chat " + (data.mine ? "myChat" : "otherChat");
+		
+			const textSpan = document.createElement("span");
+			textSpan.textContent = data.message;
+		
+			const timeDiv = document.createElement("div");
+			timeDiv.className = "chat-time";
+			
+			const timeText = data.sentAt ? data.sentAt.split(" ")[1].slice(0,5) : new Date().toTimeString().slice(0,5);
+			timeDiv.textContent = timeText;
+		
+			chatDiv.appendChild(textSpan);
+			chatDiv.appendChild(timeDiv);
+		
+			chatList.appendChild(chatDiv);
+			chatList.scrollTop = chatList.scrollHeight; // 스크롤 맨 아래로
+		}
+		
+		
+		function renderChatMessages(data){
+			const chatList = document.getElementById("chatList");
+			chatList.innerHTML = "";
+		
+			if (!Array.isArray(data) || data.length === 0) return;
+			
+			globalLastDate = "";
+			data.forEach(msg => {
+				const isMine = (msg.senderId === window.MY_ID);
+				displayChat({
+					...msg,
+					mine: isMine
+				});
+			});
+			chatList.scrollTop = chatList.scrollHeight;
+		}
+		
+		function renderPartnerName(partnerName) {
+			const chatPartnerName = $("#chatPartnerName");
+			chatPartnerName.text(partnerName);
+		}
+		
+		const roomsIndex = new Map(); // roomId -> jQuery item
+		
+		function prependRoomItem({ roomId, partnerId, partner, message, chatDate }) {
+			// 이미 있으면 새로 만들지 말고 위로 올림
+			if (roomsIndex.has(roomId)) {
+				const $item = roomsIndex.get(roomId);
+				updateRoomPreview({ roomId, message, chatDate });
+				$item.prependTo('.chat-room-list');
+				return;
+			}
+		
+			const $list = $('.chat-room-list');
+			const $tpl  = $('<div class="chat-room-item"></div>')
+				.attr('data-roomId', roomId)
+				.append(`
+					<div class="chat-room-info">
+						<div class="chat-user-name"></div>
+						<div class="chat-last-message"></div>
+					</div>
+					<div class="chat-room-time"></div>
+				`);
+		
+			$tpl.find('.chat-user-name').text(partner || '');
+			$tpl.find('.chat-last-message').text(message || '');
+			$tpl.find('.chat-room-time').text(chatDate ? timeAgo(chatDate) : '');
+		
+			$tpl.on('click', function() {
+				// 기존 active 제거
+			    $('.chat-room-item').removeClass('active');
+			    // 현재 클릭한 아이템만 active
+			    $(this).addClass('active');
+			    
+				if (currentRoomId && currentRoomId !== roomId) sendLeave(currentRoomId);
+				sessionStorage.setItem('roomId', roomId);
+				setEmptyUI(false);
+				
+				getChatMessages(roomId);
+				
+				if (socket && socket.readyState === WebSocket.OPEN) sendEnter(roomId);
+				else initWebSocket(roomId);
+			});
+		
+			$list.prepend($tpl);
+			roomsIndex.set(roomId, $tpl);
+		}
+		
+		function updateRoomPreview({ roomId, message, chatDate }) {
+			const $item = roomsIndex.get(roomId);
+			if (!$item) return; // 리스트에 없으면 패스 (ROOM_CREATED로 들어올 때 생성됨)
+			$item.find('.chat-last-message').text(message || '');
+			$item.find('.chat-room-time').text(chatDate ? timeAgo(chatDate) : '');
+			$item.prependTo('.chat-room-list'); // 최근 활동이므로 맨 위로
+		}
+		
+		function loadChatRooms() {
+			return fetch('/api/chat/chatRooms')
+			.then(res => {
+				if(res.status === 401){
+					if (confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하겠습니까?")) {
+						location.href = "/member/login";
+					} else {
+						history.back();
+					}
+					return new Promise(() => {});
+				}
+				return res.json();
+			})
+			.then(list => {
+				roomsIndex.clear();
+		
+				if(list == null) return;
+				
+				const $list = $('.chat-room-list').empty();
+				
+				for (let i = list.length - 1; i >= 0; i--) {
+					const r = list[i];
+					prependRoomItem({
+						roomId: r.roomId,
+						partnerId: r.partnerId,
+						partner: r.partner || '',
+						message: r.message || '',
+						chatDate: r.sentAt || ''
+					});
+				}
+				
+				highlightCurrentRoom();
+			})
+			.catch(err => {
+				alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+			});
+		}
+		
+		function selectRoom(roomId) {
+			if (!roomId) return;
+		
+			// 이미 선택된 방이면 스킵
+			if (currentRoomId === roomId) {
+				highlightCurrentRoom();
+				return;
+			}
+		
+			$('.chat-room-item').removeClass('active');
+			$(`.chat-room-item[data-roomId="${roomId}"]`).addClass('active');
+		
+			// LEAVE → 상태 갱신 → 메시지 로드 → ENTER/연결
+			if (currentRoomId) sendLeave(currentRoomId);
+			currentRoomId = roomId;
+			sessionStorage.setItem('roomId', roomId);
+			setEmptyUI(false);
+			getChatMessages(roomId);
+		
+			if (socket && socket.readyState === WebSocket.OPEN) sendEnter(roomId);
+			else initWebSocket(roomId);
+		}
+		
+		function highlightCurrentRoom() {
+			const id = sessionStorage.getItem('roomId');
+			$('.chat-room-item').removeClass('active');
+			if (id) $(`.chat-room-item[data-roomId="${id}"]`).addClass('active');
+		}
+	</script>
+</head>
+<body>
+	<div layout:fragment="body">
+		<div id="chatContainer" class="chat-container">
+			<!-- 왼쪽: 채팅방 리스트 -->
+			<div id="chatRoomList" class="chat-sidebar">
+				<div class="chat-header">
+					<span>전체 대화</span>
+				</div>
+				<div class="chat-room-list">
+					<div class="chat-room-item openChat" data-user="닉네임">
+						<div class="chat-room-info">
+							<div class="chat-user-name"></div>
+							<div class="chat-last-message"></div>
+						</div>
+						<div class="chat-room-time"></div>
+					</div>
+				</div>
+			</div>
+		
+			<!-- 오른쪽: 채팅창 -->
+			<div id="chatRoom" class="chat-main">
+				<div id="chatDrag" class="chat-topbar">
+					<span id="chatPartnerName"></span>
+				</div>
+				<div id="chatList" class="chat-messages">
+				</div>
+				<div class="chat-input-container">
+					<textarea id="chatMessage" placeholder="메시지를 입력하세요" ></textarea>
+					<button id="send">전송</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

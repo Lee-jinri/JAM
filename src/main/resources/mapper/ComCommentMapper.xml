@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.comComment.mapper.CommentMapper">
+
+	<select id="commentList" resultType="comComment">
+		SELECT 
+			c.comment_id, c.content, c.user_id, m.user_name, c.created_at, 
+			<choose>
+	            <when test="user_id != null">
+	                CASE WHEN c.user_id = #{user_id} THEN 1 ELSE 0 END
+	            </when>
+	            <otherwise>
+	                0
+	            </otherwise>
+	        </choose> AS author
+		FROM com_comment c
+		LEFT JOIN Member m
+		ON c.user_id = m.user_id
+		WHERE c.post_id = #{post_id}
+		ORDER BY c.created_at DESC
+	</select>
+
+	<insert id="insertComment" parameterType="comComment">
+		<selectKey keyProperty="comment_id" resultType="Long" order="BEFORE">
+			select seq_com_comment.nextval from dual
+		</selectKey>
+			insert into com_comment(comment_id, post_id, content, created_at, user_id)
+			values(#{comment_id},#{post_id},#{content}, sysdate ,#{user_id})	
+	</insert>
+	
+	<update id="updateComment" parameterType="comComment">
+		UPDATE com_comment
+		set content = #{content}, created_at = sysdate	
+		where comment_id = #{comment_id} AND user_id = #{user_id}
+	</update>
+	
+	<delete id="deleteComment" parameterType="comComment">
+		delete from com_comment where comment_id = #{comment_id} AND user_id = #{user_id}
+	</delete>
+	
+	<select id="getPostIdByCommentId" resultType="Long">
+		SELECT post_id
+		FROM com_comment
+		WHERE comment_id = #{comment_id} 
+	</select>
+	
+</mapper>
+

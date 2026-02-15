@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko"
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;700&family=Playfair+Display:ital,wght@0,400..900;1,400..900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <title layout:title-pattern="$LAYOUT_TITLE - $CONTENT_TITLE">JAM</title>
+        
+    <title layout:title-pattern="$CONTENT_TITLE">JAM</title>
+    
+    <link rel="icon" th:href="@{/images/main-favicon.svg}">
+    <link rel="apple-touch-icon" th:href="@{/images/main-favicon.svg}">
+
+    <script type="text/javascript" th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/css/layout.css}">
+    <script type="text/javascript" th:src="@{/js/common.js}"></script>
+    <!-- <script th:src="@{/js/userToggle.js}"></script> -->
+    <!-- <link rel="stylesheet" th:href="@{/css/css/all.min.css}"> -->
+    
+    <script sec:authorize="isAuthenticated()" th:inline="javascript">
+    	const isLogin = /*[[${#authentication.principal != 'anonymousUser'}]]*/ false;
+        window.MY_ID = /*[[${#authentication.name}]]*/ "";
+        window.MY_NAME = /*[[${#authentication.principal.user_name}]]*/ "";
+        
+        // 권한 정보 가져오기
+        const authList = /*[[${#authentication.principal.authorities}]]*/ [];
+		const authorities = authList.map(a => a.authority);
+        window.MY_AUTH = authorities.join(',');
+
+        // 기업 회원일 때 회사명 처리
+        let companyNameVal = null;
+        if (window.MY_AUTH.includes('ROLE_COMPANY')) {
+            companyNameVal = /*[[${#authentication.principal.company_name}]]*/ '';
+        }
+        window.COMPANY_NAME = companyNameVal;
+        /*]]>*/
+    </script>
+</head>
+<body>
+	<div id="container">    
+		<div th:with="headerPath=${currentURI.startsWith('/jobs')} 
+                          ? 'template/client/jobsHeader' 
+                          : 'template/client/header'">
+    
+		    <header th:replace="~{__${headerPath}__ :: headerFragment}"></header>
+		</div>
+		
+        <div id="content" layout:fragment="body"></div>
+        <th:block layout:fragment="script"></th:block>
+        
+        <div id="footer">
+            <footer th:replace="~{template/client/footer :: footerFragment}"></footer>
+        </div>
+    </div>
+</body>
+</html>

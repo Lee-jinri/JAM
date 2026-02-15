@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html 
+	xmlns:th="http://www.thymeleaf.org" 
+	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	layout:decorate="~{template/client/layout}">
+<head>
+<meta charset="UTF-8">
+<title>커뮤니티</title>
+<script src="/summernote/summernote-lite.js"></script>
+<script src="/summernote/summernote-ko-KR.js"></script>
+<link rel="stylesheet" href="/summernote/summernote-lite.css">
+	<style>
+	
+		.container {
+			max-width: 1000px;
+			margin: 0 auto;
+			padding-top: 50px;
+		}
+		
+		.form-group {
+			margin-bottom: 25px;
+		}
+		
+		label {
+			display: block;
+		    font-weight: 500;
+		    margin-bottom: 8px;
+		    font-size: 15px;
+		}
+		
+		.input-text {
+			width: 100%;
+			padding: 12px;
+			border: 1px solid #dadada;
+			border-radius: 6px;
+			font-size: 15px;
+		}
+		
+		.btn-area {
+			display: flex;
+			justify-content: center;
+			gap: 12px;
+			margin-top: 35px;
+		}
+		
+		.btn-primary, .btn-secondary {
+			padding: 10px 26px;
+			border-radius: 6px;
+			font-size: 15px;
+			display: inline-block;
+			text-decoration: none;
+		}
+		
+		.btn-primary {
+			background-color: #5C6BC0;
+			color: white;
+			border: none;
+			cursor: pointer;
+		}
+		
+		.btn-primary:hover {
+			background-color: #3F4EA6;
+		}
+		
+		.btn-secondary {
+			background-color: #E0E0E0;
+			color: #333;
+		}
+		
+		.btn-secondary:hover {
+			background-color: #C8C8C8;
+		}
+		.note-editable img {
+		    max-width: 50%;
+		    height: auto;
+		}
+	</style>
+	<script th:inline="javascript">
+		let uploadedImages = [];
+		let beforeKeys = [];
+		let added = [];
+		let removed = [];
+	
+		const ALLOWED = [
+			  'image/jpeg',
+			  'image/png',
+			  'image/webp',
+			  'image/gif'
+			];
+		
+		$(function(){
+			initSummernote();
+			
+			let postId = /*[[${postId}]]*/ '';
+			getPost(postId);
+			
+			// 수정 버튼 클릭
+			$("#update").click(function(){
+				// 유효성 검사
+				if(postId == "" || postId == null) alert("시스템 오류 입니다. 잠시 후 다시 시도하세요.");
+				let com_title = $("#com_title").val();
+				let com_content = $('.summernote').summernote('code');
+		
+				if (com_title.replace(/\s/g, "") == "") {
+		            alert("제목을 입력하세요.");
+		            $("#com_title").focus();
+		            return false;
+		        }
+		        
+		        const hasText = $(com_content).text().trim() !== "";
+		        const hasImage = $(com_content).find("img").length > 0;
+		        
+		        if (!hasText && !hasImage) {
+		            alert("본문을 입력하세요.");
+		            $('.summernote').summernote('focus');
+		            return false;
+		        }
+				
+		     	// 큰따옴표가 아닌 문자 1개 이상 반복
+		        const regex = /data-key="([^"]+)"/g;
+		        const matches = com_content.matchAll(regex);
+		
+		        // key만 배열에 추출
+		        const fileKeys = [];
+		        for (const match of matches) {
+		        	fileKeys.push(match[1]);
+		        }
+		        
+		        const currentKeys = fileKeys;
+		        
+		        removed = beforeKeys.filter(k => !currentKeys.includes(k));  
+		        added = uploadedImages.filter(img => !beforeKeys.includes(img.file_key));
+		
+		        var data = {
+		        	'post_id': postId,
+		            'title': com_title,
+		            'content': com_content,
+		            'file_assets': added,
+		            'deleted_keys': removed
+		        };
+
+		        fetch('/api/community/post', {
+		            method: 'PUT',
+		            headers: {
+		                'Content-Type': 'application/json'
+		            },
+		            body: JSON.stringify(data)
+		        }).then(response => {
+		        	if (!response.ok) {
+						return response.json().then(err => {
+					        throw err;
+					    });
+					}
+		
+		        	alert("수정이 완료되었습니다.");
+		        	return response.text();
+		        }).then(body =>{
+		            if (body) {
+		                $(location).attr('href', '/community/post/' + body);
+		            }else $(location).attr('href','/community/board');
+		        }).catch(err => {
+					if (handleApiError(err)) return;
+					alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+				});
+		    });
+			
+			$('.note-editable').on('click', 'img', function() {
+			    $(this).resizable({
+			        aspectRatio: true
+			    });
+			});
+		})
+		
+		function getMime(file){
+			
+			let name = file.name.toLowerCase();
+			if (name.endsWith('.jpeg')) return 'image/jpeg';
+			if (name.endsWith('.jpg')) return 'image/jpeg';
+			if (name.endsWith('.png')) return 'image/png';
+			if (name.endsWith('.webp')) return 'image/webp';
+			if (name.endsWith('.gif')) return 'image/gif'
+			return file.type || 'application/octet-stream';
+		}
+		
+		async function uploadImageFile(file, editor) {
+			try {
+				const contentType = getMime(file);
+	
+				if (!ALLOWED.includes(contentType)) {
+					alert("이미지 파일만 업로드할 수 있습니다.");
+					return;
+				}
+				
+				// 1. 이미지 압축
+				const optimized = await optimizeImage(file);
+
+				// 2. presigned URL 요청
+				const res = await fetch('/api/files/upload-url', {
+					method: 'POST',
+					headers: { 
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						file_name: optimized.name,
+						file_type: contentType,
+						file_size: optimized.size,
+						file_category: "POST_IMAGE"
+					})
+				});
+				const json = await res.json();
+				if (json.error){
+					throw new Error(json.error);
+				}
+				
+				uploadedImages.push({
+		            file_key: json.key,
+		            file_name: json.filename,
+		            file_type: contentType,
+		            file_size: optimized.size,
+		            file_category: "POST_IMAGE"
+		        });
+				
+				// 3. S3 업로드
+				await fetch(json.url, {
+					method: 'PUT',
+					headers: { 'Content-Type': contentType },
+					body: optimized
+				});
+	
+				// 4. Summernote에 이미지 삽입
+				const viewRes = await fetch('/api/files/view-url?key=' + json.key);
+				const viewUrl = await viewRes.text();
+				
+				$(editor).summernote('editor.insertImage', viewUrl, function ($image) {
+				    $image.attr("data-key", json.key);
+				});
+				
+			} catch (err) {
+				console.error(err);
+				alert('이미지 업로드에 실패했습니다. 잠시 후 다시 시도하세요.');
+			}
+		}
+		
+		function getPost(postId){
+			if(postId == "" || postId == null) alert("게시글을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.");
+			else{
+				fetch('/api/community/posts/'+postId+'/edit-data')
+				.then(response => {
+					if (!response.ok) {
+						throw new Error('Network response was not ok');
+					}
+					return response.json();
+				})
+				.then(data => {
+					const post = data.post;
+					
+					$("#com_title").val(post.title);
+					$("#com_content").summernote("code", post.content);
+					
+					uploadedImages = data.files;
+					beforeKeys = data.files.map(f => f.file_key);
+				})
+				.catch(err => {
+					if (handleApiError(err)) return;
+					alert(err.detail || '오류가 발생했습니다. 잠시 후 다시 시도하세요.');
+				});
+			}
+		}
+		
+		function initSummernote(){
+			// summernote 초기화
+			$('.summernote').summernote({
+				toolbar: [
+				    ['fontname', ['fontname']],
+				    ['fontsize', ['fontsize']],
+				    ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
+				    ['color', ['forecolor','color']],
+				    ['table', ['table']],
+				    ['para', ['ul', 'ol', 'paragraph']],
+				    ['height', ['height']],
+				    ['insert',['picture','link','video']]
+				],
+				fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
+				fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
+				minHeight: 450,
+				maxHeight: null,
+				lang: "ko-KR",
+				placeholder : "내용을 작성하세요.",
+				callbacks : {
+					onImageUpload : function(files, editor, welEditable){
+			    		for(var i = files.length - 1; i >= 0; i--){
+			    			uploadImageFile(files[i], $(this));
+			    		}
+			    	}
+			    }
+			});
+		}
+	</script>
+</head>
+<body>
+	<div layout:fragment="body">
+		<div class="container">
+			<div class="page-header">
+				<p class="page-title">포스트 수정</P>
+				<p>작성한 게시글의 내용을 수정할 수 있습니다.</p>
+			</div>
+	
+			<form id="comWrite">
+				
+				<div class="form-group">
+					<label for="com_title">제목</label>
+					<input type="text" id="com_title" name="com_title" class="input-text">
+				</div>
+	
+				<div class="form-group">
+					<label for="com_content">본문</label>
+					<textarea id="com_content" name="com_content" class="summernote" style="resize: none;"></textarea>
+				</div>
+	
+				<div class="btn-area">
+					<button type="button" id="update" class="board-btn action-btn">수정</button>
+					<a th:href="@{|/community/post/${postId}|}" class="board-btn action-btn">취소</a>
+				</div>
+	
+			</form>
+		</div>
+	</div>
+</body>
+</html>

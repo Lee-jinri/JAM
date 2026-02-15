@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jam.chat.mapper.ChatMapper">
+
+	<select id="getChatRooms" resultType="chatRoomList">
+		SELECT
+			cr.room_id			AS roomId,
+			m.user_name			AS partner,
+			lm.message			AS message,
+			lm.sent_at			AS sentAt
+		FROM chat_room cr
+		
+		<!-- 내가 속한 방 -->
+		JOIN chat_room_user cru_me
+			ON cr.room_id = cru_me.room_id
+			AND cru_me.user_id = #{userId}
+		
+		<!-- 상대방 -->
+		JOIN chat_room_user cru_other
+			ON cr.room_id = cru_other.room_id
+			AND cru_other.user_id != #{userId}
+		
+		JOIN member m
+			ON m.user_id = cru_other.user_id
+		
+		<!-- 채팅방별 마지막 메시지 1개 -->
+		LEFT JOIN (
+			SELECT room_id, message, sent_at
+			FROM (
+				SELECT
+					room_id,
+					message,
+					sent_at,
+					ROW_NUMBER() OVER (
+						PARTITION BY room_id
+						ORDER BY message_id DESC
+					) rn
+				FROM chat_message
+			)
+			WHERE rn = 1
+		) lm
+			ON lm.room_id = cr.room_id
+		
+		ORDER BY lm.sent_at DESC NULLS LAST
+	</select>
+	
+	<select id="getChatRoomId" resultType="Long">
+		SELECT room_id
+		FROM chat_room_user
+		WHERE user_id IN (#{userId}, #{targetUserId})
+		GROUP BY room_id
+		HAVING count(*) = 2
+	</select>
+	
+	<select id="nextChatRoomId" resultType="long">
+		SELECT seq_chat_room.NEXTVAL FROM dual
+	</select>
+	
+	<insert id="createChatRoomId">
+		INSERT INTO chat_room (room_id, user_pair_key)
+		VALUES (#{roomId}, #{pairKey})
+	</insert>
+	
+	<insert id="insertChatRoomUser">
+		INSERT INTO chat_room_user (room_id, user_id)
+		VALUES (#{roomId}, #{userId})
+	</insert>
+	
+	<select id="getChatPartner" resultType="map">
+		SELECT 
+			cru.user_id AS chatPartnerId,
+			m.user_name AS chatPartnerName
+		FROM chat_room_user cru
+		JOIN member m
+			ON m.user_id = cru.user_id
+		WHERE cru.room_id = #{roomId} 
+		AND cru.user_id != #{userId}
+	</select>
+	
+	<insert id="saveChat" parameterType="chat">
+		<selectKey keyProperty="messageId" resultType="long" order="BEFORE">
+			SELECT seq_chat_message.NEXTVAL FROM dual
+		</selectKey>
+		INSERT INTO chat_message (message_id, room_id, sender_id, message, sent_at)
+		VALUES (#{messageId}, #{roomId}, #{senderId}, #{message}, #{sentAt})
+	</insert>
+	
+	<select id="getMessages" resultType="chat">
+		SELECT
+			cm.message_id	AS messageId,
+			cm.sender_id	AS senderId,
+			cm.message		AS message,
+			cm.sent_at		AS sentAt
+		FROM chat_message cm
+		WHERE cm.room_id = #{roomId}
+		  AND EXISTS (
+				SELECT 1
+				FROM chat_room_user cru
+				WHERE cru.room_id = #{roomId}
+				  AND cru.user_id = #{userId}
+		  )
+		ORDER BY cm.message_id
+	</select>
+	
+	<select id="isMemberOfRoom" resultType="int">
+		SELECT count(*)
+		FROM chat_room_user 
+		WHERE room_id = #{roomId}
+	  		AND user_id = #{userId}
+	</select>
+</mapper>
