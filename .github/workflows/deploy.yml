@@ -78,38 +78,37 @@ jobs:
       run: mvn -B package -Dmaven.test.skip=true
       working-directory: ./
 
-    - name: List WAR files
+    - name: List JAR files
       run: ls -lh ./target
 
-    - name: Debug WAR path
+    - name: Debug JAR path
       run: |
         echo "SEARCHING:"
-        find -name "*.war" -type f
+        find -name "*.jar" -type f
 
-    - name: Copy WAR file with native scp
+    - name: Copy JAR file with native scp
       env:
         EC2_KEY: ${{ secrets.EC2_KEY }}
       run: |
         echo "$EC2_KEY" > /tmp/ec2_key.pem
         chmod 400 /tmp/ec2_key.pem
     
-        WAR_FILE=$(find "./target" -name "*.war" -type f | head -n 1)
-        if [ -z "$WAR_FILE" ]; then
-          echo "ERROR: WAR 파일을 찾을 수 없습니다"
+        JAR_FILE=$(find "./target" -name "*.jar" -type f | head -n 1)
+        if [ -z "$JAR_FILE" ]; then
+          echo "ERROR: JAR 파일을 찾을 수 없습니다"
           exit 1
         fi
     
-        echo "배포할 WAR 파일: $WAR_FILE"
-        ls -lh "$WAR_FILE"
-    
+        echo "배포할 JAR 파일: $JAR_FILE"
+        ls -lh "$JAR_FILE"
+
         scp -v -o StrictHostKeyChecking=no -i /tmp/ec2_key.pem \
-          "$WAR_FILE" \
-          ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/tomcat/webapps/ROOT.war
+          "$JAR_FILE" \
+          ec2-user@${{ secrets.EC2_HOST }}:/home/ec2-user/app.jar
     
         rm -f /tmp/ec2_key.pem
     
-    
-    - name: Restart Tomcat on EC2
+    - name: Restart Application on EC2
       uses: appleboy/ssh-action@v0.1.8
       with:
         host: ${{ secrets.EC2_HOST }}
@@ -121,18 +120,17 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           export AWS_DEFAULT_REGION=${{ secrets.AWS_DEFAULT_REGION }}
           
-          echo "기존 Tomcat 종료 중..."
+          echo "기존 프로세스(8080) 종료 중..."
           sudo fuser -k 8080/tcp || true
           sleep 3
           
           echo "권한 복구..."
           sudo chown -R ec2-user:ec2-user /home/ec2-user/tomcat
           
-          echo "Tomcat 재시작..."
-          export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto.x86_64
-          echo "===== DEPLOY $(date '+%Y-%m-%d %H:%M:%S %Z') =====" >> /home/ec2-user/tomcat/logs/catalina.out
-          setsid /home/ec2-user/tomcat/bin/catalina.sh start >> /home/ec2-user/tomcat/logs/catalina.out 2>&1 < /dev/null &
+          echo "애플리케이션 재시작..."
+          echo "===== DEPLOY $(date '+%Y-%m-%d %H:%M:%S') =====" >> /home/ec2-user/app.log
+          nohup java -jar /home/ec2-user/tomcat/webapps/app.jar >> /home/ec2-user/app.log 2>&1 &
 
           echo "배포 완료. 5초 후 로그 확인 시작..."
           sleep 5
-          /usr/bin/tail -n 50 /home/ec2-user/tomcat/logs/catalina.out
+          /usr/bin/tail -n 50 /home/ec2-user/app.log
