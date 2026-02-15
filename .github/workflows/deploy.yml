@@ -129,7 +129,7 @@ jobs:
           
           echo "애플리케이션 재시작..."
           echo "===== DEPLOY $(date '+%Y-%m-%d %H:%M:%S') =====" >> /home/ec2-user/app.log
-          nohup java -jar /home/ec2-user/tomcat/webapps/app.jar >> /home/ec2-user/app.log 2>&1 &
+          nohup java -jar /home/ec2-user/app.jar >> /home/ec2-user/app.log 2>&1 &
 
           echo "배포 완료. 5초 후 로그 확인 시작..."
           sleep 5
