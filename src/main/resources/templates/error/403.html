@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>권한이 없는 페이지 입니다.</title>
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+			alert("접근 권한이 없습니다.");
+			if (document.referrer) {
+                history.back();
+            } else {
+                location.href = "/main";
+            }
+		});
+	</script>
+</head>
+<body>
+</body>
+</html>

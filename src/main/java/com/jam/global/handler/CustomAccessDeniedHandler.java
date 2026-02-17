@@ -20,19 +20,25 @@ public class CustomAccessDeniedHandler implements AccessDeniedHandler{
 	@Override
 	public void handle(HttpServletRequest request, HttpServletResponse response,
 			AccessDeniedException accessDeniedException) throws IOException, ServletException {
+		
+		String accept = request.getHeader("Accept");
+		
+		if (accept != null && accept.contains("application/json")) {
+	        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+	        response.setContentType("application/json;charset=UTF-8");
 
-		response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-		response.setContentType("application/json;charset=UTF-8");
+	        Map<String, Object> body = new LinkedHashMap<>();
+	        body.put("status", 403);
+	        body.put("error", "Forbidden");
+			body.put("detail", "접근 권한이 없습니다.");
+			body.put("forbidden", true);
+			body.put("path", request.getRequestURI());
 
-		Map<String, Object> body = new LinkedHashMap<>();
-		body.put("status", 403);
-		body.put("error", "FORBIDDEN");
-		body.put("detail", "접근 권한이 없습니다.");
-		body.put("forbidden", true);
-		body.put("path", request.getRequestURI());
-
-		ObjectMapper mapper = new ObjectMapper();
-		response.getWriter().write(mapper.writeValueAsString(body));
+	        new ObjectMapper().writeValue(response.getWriter(), body);
+	    } 
+	    else {
+	        request.setAttribute("msg", "권한이 없는 페이지 입니다.");
+	        request.getRequestDispatcher("/error/403").forward(request, response);
+	    }
 	}
-
 }

@@ -65,7 +65,7 @@ public class GlobalExceptionHandler {
 		body.put("forbidden", true);
 		return ResponseEntity.status(HttpStatus.FORBIDDEN).body(body);
 	}
-
+	
 	@ResponseStatus(HttpStatus.NOT_FOUND)
 	@ExceptionHandler(NoResourceFoundException.class)
 	public ModelAndView handle404() {

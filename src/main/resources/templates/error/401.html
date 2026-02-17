@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>로그인이 필요한 서비스 입니다</title>
+	<script>
+		document.addEventListener("DOMContentLoaded", function() {
+		    if (confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하겠습니까?")) {
+		        location.href = "/member/login";
+		    } else {
+		    	if (document.referrer) {
+	                history.back();
+	            } else {
+	                location.href = "/main";
+	            }
+		    }
+		});
+	</script>
+</head>
+<body>
+</body>
+</html>
