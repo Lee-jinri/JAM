@@ -1,4 +1,6 @@
-<header th:fragment="headerFragment" xmlns:th="http://www.thymeleaf.org">
+<header th:fragment="headerFragment" 
+	xmlns:th="http://www.thymeleaf.org"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     
     <style>
 		@media screen and (max-width: 768px) {
@@ -307,11 +309,6 @@
 				$('.mypage_toggle').toggle();
 			})
 			
-			
-			$("#adminBtn").click(function(){
-				$(location).attr('href','/admin/admin');
-			})
-			
 			$("#mobile-menu-btn").click(function(){
 				const $menu = $("#mobileMenu");
 				
@@ -321,7 +318,6 @@
 					$menu.css("display", "flex"); 
 				}
 			})	
-			
 		})
 
 		function logout(loginType){
@@ -377,12 +373,15 @@
 				<div class="inline-block logoutDiv text-alignC">
 					<a th:href="@{/member/join}" class="neo-btn font-color-blue">회원가입</a>
 				</div>
-				
 			</div>
-	
+			
 			<!-- 로그인 했을 때 -->
 			<div id="loggedInDiv" class="flex items-center" style="display: none;">
-				<div id="adminPage"></div>
+				<div>
+					<span sec:authorize="hasRole('ADMIN')" class="">
+						<a th:href="@{/admin/main}">관리자페이지</a>
+					</span>
+				</div>
 				<span id="header_name" class=" font-weight-bold cursor-pointer mr-1 font-color-gray"></span>
 					<div class="mypage_toggle absolute border border-radius-7px">
 

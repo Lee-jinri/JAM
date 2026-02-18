@@ -22,6 +22,9 @@ public class WebConfig implements WebMvcConfigurer {
 	@Value("${cors.allowed-origins}")
     private List<String> allowedOrigins;
 	
+	@Value("${location.save-path}")
+    private String savePath;
+	
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
         registry.addResourceHandler("/resources/**")
@@ -32,24 +35,11 @@ public class WebConfig implements WebMvcConfigurer {
         
         registry.addResourceHandler("/upload/**")
                 .addResourceLocations("file:" + uploadDir + "/");
+        
+        registry.addResourceHandler("/address/**")
+        		.addResourceLocations("file:" + savePath + "/");
     }
-    // FIXME: Thymeleaf로 변경
-    /*
-    @Bean
-    public TilesConfigurer tilesConfigurer() {
-        TilesConfigurer tilesConfigurer = new TilesConfigurer();
-        tilesConfigurer.setDefinitions("/WEB-INF/tiles/tiles-setting.xml");
-        return tilesConfigurer;
-    }
-
-    @Bean
-    public UrlBasedViewResolver tilesViewResolver() {
-        UrlBasedViewResolver viewResolver = new UrlBasedViewResolver();
-        viewResolver.setViewClass(TilesView.class);
-        viewResolver.setOrder(1); // 우선 순위 설정
-        return viewResolver;
-    }*/
-
+    
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")

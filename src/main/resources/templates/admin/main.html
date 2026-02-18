@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"> 
+<head>
+<meta charset="UTF-8">
+<title>관리자 페이지</title>
+<script type="text/javascript" th:src="@{/js/jquery-3.7.1.min.js}"></script>
+    
+	<script th:inline="javascript">
+		$(function() { 
+			// 지역 설정 버튼 클릭 이벤트
+		    $("#areaUpdate").click(async function() {
+		        if (!confirm("전국 지역 데이터를 새로 저장하시겠습니까?")) {
+		            return;
+		        }
+	
+		        try {
+		            const response = await fetch('/admin/updateAreas', {
+		                method: 'POST',
+		                headers: {
+		                    'Content-Type': 'application/json'
+		                }
+		            });
+	
+		            const result = await response.json();
+	
+		            if (result.success) {
+		                alert("전국 지역 데이터 저장 완료!");
+		            } else {
+		                alert("저장 중 오류 발생: " + (result.error || "알 수 없는 오류"));
+		            }
+		        } catch (error) {
+		            console.error("지역 데이터 저장 요청 중 오류:", error);
+		            alert("서버 요청 실패");
+		        }
+		    });
+		});
+	</script>
+</head>
+<body>
+	<main>
+		<section>
+			<button id="areaUpdate">지역 설정</button>
+			<ul>
+				<li><a href="#">대시보드</a></li>
+				<li><a href="#">사용자 관리</a></li>
+				<li><a href="#">설정</a></li>
+			</ul>
+		</section>
+		<div class="container mt-5">
+		    <h2>관리자 대시보드</h2>
+		    <div class="row">
+		        <div class="col-md-6">
+		            <div class="card bg-primary text-white mb-4">
+		                <div class="card-body">신규 가입자 (오늘)</div>
+		                <div class="card-footer d-flex align-items-center justify-content-between">
+		                    <!-- <h3 th:text="${stats.todayJoinCount}">0</h3>명 -->
+		                </div>
+		            </div>
+		        </div>
+		        <div class="col-md-6">
+		            <div class="card bg-success text-white mb-4">
+		                <div class="card-body">전체 게시글 수</div>
+		                <div class="card-footer d-flex align-items-center justify-content-between">
+		                    <!-- 
+		                    <h3 th:text="${stats.totalPostCount}">0</h3>개 -->
+		                </div>
+		            </div>
+		        </div>
+		    </div>
+		
+		    <div class="list-group">
+		        <a th:href="@{/admin/members}" class="list-group-item list-group-item-action">회원 관리 바로가기</a>
+		        <a href="/" class="list-group-item list-group-item-action">사용자 메인으로 돌아가기</a>
+		    </div>
+		</div>
+	</main>
+</body>
+</html>
+

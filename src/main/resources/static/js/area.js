@@ -45,7 +45,7 @@ let locationData = {};  // JSON 데이터를 담아둘 전역 변수
 // 1. JSON 파일 로드 (페이지 로드 시)
 async function loadLocationData() {
 	try {
-		const response = await fetch('/json/locationData.json');
+		const response = await fetch('/address/locationData.json');
 		locationData = await response.json();
 	} catch (error) {
 		console.error("지역 데이터 로드 실패:", error);

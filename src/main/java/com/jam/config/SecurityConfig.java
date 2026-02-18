@@ -54,7 +54,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 로그인 필수
                 .requestMatchers(AUTH_REQUIRED_LIST).authenticated()
-                // .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/.well-known/**").denyAll()
                 .anyRequest().permitAll()
             )
