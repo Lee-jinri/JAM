@@ -25,7 +25,6 @@ public class CustomUserDetailsService implements UserDetailsService {
 	        log.warn("[로그인 실패] 사용자 정보 없음 - ID: {}" + username);
 	        throw new UsernameNotFoundException("해당 사용자를 찾을 수 없습니다. 입력한 ID: " + username);
 	    }
-		
 		return user;
 	}
 

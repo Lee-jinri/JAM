@@ -48,13 +48,4 @@ public class WebConfig implements WebMvcConfigurer {
             .allowedMethods("GET", "POST", "PUT", "DELETE")
             .allowCredentials(true);
     }
-    
-	/*
-    private final JwtInterceptor jwtInterceptor; 	
-	
-	@Override
-    public void addInterceptors(InterceptorRegistry registry) {
-		registry.addInterceptor(jwtInterceptor)
-	    .addPathPatterns("/**");
-   }*/
 }

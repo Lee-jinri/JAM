@@ -16,7 +16,6 @@ import com.jam.global.handler.CustomLoginFailureHandler;
 import com.jam.global.handler.CustomLoginSuccessHandler;
 import com.jam.global.handler.CustomLogoutHandler;
 import com.jam.global.handler.CustomLogoutSuccessHandler;
-import com.jam.global.security.CustomUserDetailsService;
 import com.jam.global.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -30,7 +29,6 @@ public class SecurityConfig {
     private final CustomLoginFailureHandler customFailureHandler;
     private final CustomLogoutHandler customLogoutHandler;
     private final CustomLogoutSuccessHandler customLogoutSuccessHandler;
-    private final CustomUserDetailsService customUserDetailsService;
     private final CustomAuthEntryPoint customAuthEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -79,16 +77,4 @@ public class SecurityConfig {
 
         return http.build();
     }
-
-    // 예전 configure(AuthenticationManagerBuilder auth) 역할을 스프링이 알아서 하도록 놔두면 되지만,
-    // 명시적으로 설정하고 싶다면 아래와 같이 작성할 수 있습니다. (생략 가능)
-    /*
-    @Bean
-    public DaoAuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
-        authProvider.setUserDetailsService(customUserDetailsService);
-        authProvider.setPasswordEncoder(passwordEncoder);
-        return authProvider;
-    }
-    */
 }

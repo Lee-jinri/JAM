@@ -123,6 +123,10 @@
 		.post-content { margin: 10px; }
 		.post-price { font-size: 15px; margin: 6px 0; color: #111; }
 		.post-createdAt { font-size: 14px; color: #666; }
+		
+		.banner-img{
+		 	width: 100%; border-radius: 20px;
+		}
 	</style>
 	
 	<script th:inline="javascript">
@@ -271,7 +275,7 @@
         <div class="contents">
 			<div>
 				<a th:href="@{/jobs/board}">
-					<img th:src="@{/images/Jobs-banner.png}" style="width: 930px; border-radius: 20px;">
+					<img class="banner-img" th:src="@{/images/Jobs-banner.png}">
 				</a>
 			</div>
 			

@@ -36,25 +36,6 @@
 		}
 		
 		
-		.hot-box {
-			box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
-		}
-		.hot-paper {
-			background-image: url('/images/check-paper.png');
-			background-size: 380px; 
-			background-repeat: repeat;
-			padding: 20px 20px; 
-			border-radius: 18px;
-		}
-		
-		.page-header-text {
-		  font-family: "Playfair Display", serif;
-		  font-optical-sizing: auto;
-		  font-weight: bold;
-		  font-style: normal;
-		  margin: 20px 0 10px 10px;
-		}
-	
 	</style>
 	<script th:inline="javascript">
 		const boardState = {
@@ -258,8 +239,8 @@
 </head>
 <body>
 	<div layout:fragment="body">
-		<div class="community my-bottom-15 my-top-8">
-			<div class=" flex  items-center">
+		<div class="contents community my-bottom-15 my-top-8">
+			<div class=" flex items-center">
 				<div class="page-header">
 					<h1 class="page-header-text"><a th:href="@{/community/board}"  class="page-header-text"style="color:#666">COMMUNITY</a></h1>
 				</div>
@@ -279,9 +260,7 @@
 			</div>
 			
 			<div class="popular-section my-top-8 my-bottom-8">
-				
 				<div class="hot-paper">
-			
 					<div class="hot-box">
 						<div class="hot-label">HOT 🔥</div>
 						

@@ -813,13 +813,14 @@ textarea.comment_content {
 
 .title-container {
 	flex-grow: 1;
-    min-width: 250px;
+    min-width: 190px;
     max-width: 680px;
     margin-left: 2rem;
 }
 
 .userName-div{
 	max-width: 150px;
+    min-width: 100px;
     flex: 1;
     justify-content: center;
 }
@@ -829,7 +830,7 @@ textarea.comment_content {
     flex-direction: column;
     align-items: flex-end; 
     flex-shrink: 0; 
-    min-width: 120px;
+    min-width: 45px;
     max-width: 170px; 
 }
 
@@ -2205,7 +2206,32 @@ textarea {
     font-weight: bold;
 }
 
+.contents {
+    width: 92%;
+    max-width: 1100px;
+    margin: 40px auto;
+}
 
+.page-header-text {
+  font-family: "Playfair Display", serif;
+  font-optical-sizing: auto;
+  font-weight: bold;
+  font-style: normal;
+  margin: 20px 0 10px 10px;
+}
+
+		
+.hot-box {
+	box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+.hot-paper {
+	background-image: url('/images/check-paper.png');
+	background-size: 380px; 
+	background-repeat: repeat;
+	padding: 20px 20px; 
+	border-radius: 18px;
+}
+		
 @media screen and (max-width: 768px) {
   body {
     font-size: 14px;
@@ -2246,7 +2272,39 @@ textarea {
   	padding: 3px 7px !important;
   	font-size: 14px;
   }
-  
+    .neo-wrap::before{
+    	width: 0;
+    }
+    .neo-wrap {
+        width: 100%;
+        padding: 4px 6px;
+    }
+
+    .neo-input {
+        width: 100%; 
+        min-width: 215px; 
+        font-size: 10px;
+        padding: 0 20px;
+        height: 23px;
+    }
+    .page-header{
+    	margin:0;
+    }
+    .page-header-text{
+    	font-size:20px;
+    	margin: 0 0 10px 10px;
+    }
+    .rainbow-btn{
+	    padding: 3px 13px;
+	    height: 28px;
+	    font-size: 10px;
+    }
+    .search-icon{
+    	width: 20px;
+    }
+    #searchBtn{
+    	height: 23px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -2285,5 +2343,61 @@ textarea {
     }
     #detailAddress{
         margin-top: 10px;
+    }
+    
+    .neo-wrap::before{
+    	width: 0;
+    }
+    
+    .neo-wrap {
+        width: 100%;
+        padding: 4px 6px;
+    }
+
+    .neo-input {
+        width: 100%; 
+        min-width: 215px; 
+        font-size: 10px;
+        padding: 0 20px;
+        height: 23px;
+    }
+    .page-header{
+    	margin:0;
+    }
+    .page-header-text{
+    	font-size:20px;
+    	margin: 0 0 10px 10px;
+    }
+    .rainbow-btn{
+	    padding: 3px 13px;
+	    height: 28px;
+	    font-size: 10px;
+    }
+    .hot-post-title{
+    	font-size: 11px;
+    }
+    .hot-box{
+    	padding: 3px 12px;
+    }
+    .hot-paper{
+    	padding: 10px;
+    }
+    .arrow-btn{
+    	padding: 6px;
+    }
+    .boardTitle{
+    	font-size:11px;
+    }
+    .boardLink{
+    	padding: 3px;
+    }
+    .userName-div .userName{
+    	font-size: 11px;
+    }
+    .boardHits, .boardDate{
+    	font-size: 9px;
+    }
+    .board-section{
+    	margin-top: 35px;
     }
 }

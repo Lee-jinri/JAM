@@ -112,7 +112,7 @@
 </head>
 <body>
 	<div layout:fragment="body">
-		<div class=" my-top-15 my-bottom-15">
+		<div class="contents my-top-15 my-bottom-15">
 			<input type="hidden" id="postId" name="postId" th:value="${postId}" />
 			
 			<div class="post-container">
@@ -151,18 +151,20 @@
 			</div>	
 			
 			<div class="board-section">
-				<div class="popular-section my-top-7 my-bottom-8">
-					<div class="hot-box">
-						<div class="hot-label">HOT 🔥</div>
-						
-						<ul id="popularList"></ul>
-						<div class="popular-pagination text-center my-top-5">
-						<button id="prevPopular" class="arrow-btn">
-							<i class="fa-solid fa-arrow-left fa-sm"></i>
-						</button>
-						<button id="nextPopular" class="arrow-btn">
-							<i class="fa-solid fa-arrow-right fa-sm"></i>
-						</button>
+				<div class="popular-section my-top-8 my-bottom-8">
+					<div class="hot-paper">
+						<div class="hot-box">
+							<div class="hot-label">HOT 🔥</div>
+							
+							<ul id="popularList"></ul>
+							<div class="popular-pagination text-center my-top-5">
+								<button id="prevPopular" class="arrow-btn">
+									<i class="fa-solid fa-arrow-left fa-sm"></i>
+								</button>
+								<button id="nextPopular" class="arrow-btn">
+									<i class="fa-solid fa-arrow-right fa-sm"></i>
+								</button>
+							</div>
 						</div>
 					</div>
 				</div>
