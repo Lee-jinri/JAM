@@ -56,9 +56,12 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.setContentType("application/json;charset=UTF-8");
 
-		String prevPage = (String) request.getSession().getAttribute("prevPage");
-		String redirectUrl = (prevPage != null && !prevPage.isBlank()) ? prevPage : "/";
-
+		String redirectUrl = request.getParameter("redirect");
+		if (redirectUrl == null || redirectUrl.isBlank() || redirectUrl.startsWith("http")) {
+	        redirectUrl = "/";
+	    }
+		
+	    response.setContentType("application/json;charset=UTF-8");
 		response.getWriter().write("{ \"redirect\": \"" + redirectUrl + "\" }");
 	}
 }

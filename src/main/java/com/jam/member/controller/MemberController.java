@@ -4,8 +4,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 
 @Controller
@@ -18,14 +16,7 @@ public class MemberController {
 	 * @return 회원가입 페이지
 	 ******************************/
 	@GetMapping("/join")
-	public String joinPage(HttpServletRequest request) {
-		
-		String uri = request.getHeader("Referer");
-
-		if (uri != null && !uri.contains("/login")) {
-			HttpSession session = request.getSession(true);
-			session.setAttribute("prevPage", uri);
-		}
+	public String joinPage() {
 		return "member/join";
 	}
 	
@@ -35,15 +26,9 @@ public class MemberController {
 	 * @param request
 	 ****************************/
 	@GetMapping("/login")
-	public void loginPage(HttpServletRequest request) {
-		String uri = request.getHeader("Referer");
-
-		if (uri != null && !uri.contains("/login")) {
-			HttpSession session = request.getSession(true);
-			session.setAttribute("prevPage", uri);
-		}
+	public String loginPage() {
+		return "member/login";
 	}
-
 
 	/***********************************
 	 * @return 아이디/비밀번호 찾기 페이지

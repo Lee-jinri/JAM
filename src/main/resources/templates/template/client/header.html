@@ -329,6 +329,10 @@
 		    	location.reload();
 		     })
 		}
+	    function goToLogin() {
+	        const currentUrl = window.location.pathname + window.location.search;
+	        location.href = "/member/login?redirect=" + encodeURIComponent(currentUrl);
+	    }
     </script>
     
     <div class="header">
@@ -359,7 +363,7 @@
 			<!-- 오른쪽: 로그인/회원가입 -->
 			<div sec:authorize="isAnonymous()" id="loggedOutDiv" class="auth-buttons">
 				<div class="inline-block mr-1 logoutDiv text-alignC">
-					<a th:href="@{/member/login}" class="neo-btn ">로그인</a>
+					<a href="javascript:void(0);" onclick="goToLogin()" class="neo-btn">로그인</a>
 				</div>
 				<div class="inline-block logoutDiv text-alignC">
 					<a th:href="@{/member/join}" class="neo-btn font-color-blue">회원가입</a>

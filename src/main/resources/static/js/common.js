@@ -83,7 +83,8 @@ function handleApiError(err, fallbackUrl = "/") {
 			// 팝업 -> 부모 페이지 로그인 페이지로 이동 + 팝업 닫기
 			if(window.opener && !window.opener.closed){
 				if (confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하겠습니까?")) {
-					window.opener.location.href = "/member/login";
+				const parentUrl = window.opener.location.pathname + window.opener.location.search;
+					window.opener.location.href = "/member/login?redirect=" + encodeURIComponent(parentUrl);
 				} 
 				window.close();
 			}
@@ -93,7 +94,8 @@ function handleApiError(err, fallbackUrl = "/") {
 		} else {
 			// 일반 페이지
 			if (confirm("로그인이 필요한 서비스입니다.\n로그인 페이지로 이동하겠습니까?")) {
-				location.href = "/member/login";
+				const currentUrl = window.location.pathname + window.location.search;
+				location.href = "/member/login?redirect=" + encodeURIComponent(currentUrl);
 			} else {
 				location.href = fallbackUrl;
 			}

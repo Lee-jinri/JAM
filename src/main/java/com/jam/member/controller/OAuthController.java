@@ -75,17 +75,18 @@ public class OAuthController {
 	 * @throws java.io.IOException 
 	 */
 	@GetMapping("/kakao")
-	public String redirectToKakaoAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
+	public String redirectToKakaoAuth(HttpServletResponse response, HttpServletRequest request) throws java.io.IOException {
 	    
 		String clientId = kakao_clientId;
         String redirectUri = kakaoRedirectUri;
         String state = UUID.randomUUID().toString();
-        
+		String prevPage = request.getParameter("redirect");
+		
         try {
 	        // CSRF 방어용 레디스 저장
 	        stringRedisTemplate.opsForValue().set(
 	        	"oauth:state:" + state,
-	        	"kakao",
+	        	"kakao|" + (prevPage != null ? prevPage : "/"),
 	        	Duration.ofMinutes(5)
 	        );
 	        
@@ -120,7 +121,6 @@ public class OAuthController {
 	public String handleKakaoCallback(
 			@RequestParam("code") String code,
 			@RequestParam("state") String state,
-			HttpSession session,
 			HttpServletRequest request, 
 			HttpServletResponse response) {
 		try {
@@ -133,6 +133,12 @@ public class OAuthController {
 				log.error("Invalid OAuth state");
 				return "redirect:/member/login?error=invalid_state";
 			}
+			
+			String savedData = stringRedisTemplate.opsForValue().get("oauth:state:" + state);
+
+			String[] parts = savedData.split("\\|", 2);
+			String provider = parts[0]; 
+			String prevPage = (parts.length > 1) ? parts[1] : "/";
 			
 			stringRedisTemplate.delete(key);
 			
@@ -170,19 +176,15 @@ public class OAuthController {
 			setCookies(response, token.getAccessToken(), token.getRefreshToken());
 			
 			// 6. 로그인 이전 페이지로 리다이렉트
-			String prevPage = (String) request.getSession().getAttribute("prevPage");
-			
-			if (prevPage != null && !prevPage.isBlank()) {
-			    URI uri = URI.create(prevPage);
-			    return "redirect:" + uri.toString();
-			}else{
-				return "redirect:/";
+			if (prevPage == null || prevPage.isBlank() || prevPage.startsWith("http") || prevPage.equals("null")) {
+			    return "redirect:/";
+			}else {
+				return "redirect:" + prevPage;
 			}
 		} catch (Exception e) {
 			log.error("카카오 OAuth 콜백 실패", e);
 			return "redirect:/member/login?error=oauth";
 		}
-		
 	}
 	
 	/**
@@ -349,15 +351,16 @@ public class OAuthController {
 	 * - 로그인 완료 후 네이버에서 redirect_uri로 code, state 전달됨
 	 */
 	@GetMapping("/naver")
-	public String redirectToNaverAuth(HttpServletResponse response, HttpSession session) throws java.io.IOException {
+	public String redirectToNaverAuth(HttpServletResponse response, HttpServletRequest request) throws java.io.IOException {
 		
 		String state = UUID.randomUUID().toString();
+		String prevPage = request.getParameter("redirect");
 		
 		try {
 			// CSRF 방어용 레디스 저장
 	        stringRedisTemplate.opsForValue().set(
 	        	"oauth:state:" + state,
-	        	"naver",
+	        	"naver|" + (prevPage != null ? prevPage : "/"),
 	        	Duration.ofMinutes(5)
 	        );
 	        
@@ -394,19 +397,21 @@ public class OAuthController {
 	public String handleNaverCallback(
 			@RequestParam("code") String code,
 			@RequestParam("state") String state,
-			HttpSession session,
 			HttpServletRequest request, 
 			HttpServletResponse response) {
 		
 		// 1. state 검증
 		String key = "oauth:state:" + state;
-
-		Boolean exists = stringRedisTemplate.hasKey(key);
+		String savedData = stringRedisTemplate.opsForValue().get("oauth:state:" + state);
 		
-		if (exists == null || !exists) {
-			log.error("Invalid OAuth state");
-			return "redirect:/member/login?error=invalid_state";
+		if (savedData == null) {
+		    log.error("Invalid OAuth state");
+		    return "redirect:/member/login?error=invalid_state";
 		}
+		
+		String[] parts = savedData.split("\\|", 2);
+		String provider = parts[0];
+		String prevPage = (parts.length > 1) ? parts[1] : "/";
 		
 		stringRedisTemplate.delete(key);
 		
@@ -442,15 +447,12 @@ public class OAuthController {
 		setCookies(response, token.getAccessToken(), token.getRefreshToken());
 		
 		// 6. 로그인 이전 페이지로 리다이렉트
-		String prevPage = (String) request.getSession().getAttribute("prevPage");
-		
-		if (prevPage != null && !prevPage.isBlank()) {
-		    URI uri = URI.create(prevPage);
-		    return "redirect:" + uri.toString();
+		if (prevPage == null || prevPage.isBlank() || prevPage.startsWith("http") || prevPage.equals("null")) {
+		    return "redirect:/";
+		}else {
+			return "redirect:" + prevPage;
 		}
-		return "redirect:/";
 	}
-	
 	
 	private Map<String, Object> getNaverUserInfo(String accessToken) {
 		try {

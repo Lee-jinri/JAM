@@ -93,7 +93,10 @@
 						
 				let checkbox = document.getElementById("autoLogin");
 				let autoLogin = checkbox.checked;
-
+				
+				const urlParams = new URLSearchParams(window.location.search);
+				const redirectParam = urlParams.get('redirect') || '/';
+				
 				fetch("/api/member/login-process", {
 						method: "POST",
 						headers: {
@@ -102,7 +105,8 @@
 					body: new URLSearchParams({
 						username: id,
 					    password: pw,
-					    autoLogin: autoLogin
+					    autoLogin: autoLogin,
+					    redirect: redirectParam
 					  }),
 				})
 				.then(res => {

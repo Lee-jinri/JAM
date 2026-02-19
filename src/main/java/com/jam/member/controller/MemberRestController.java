@@ -9,7 +9,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -58,7 +57,7 @@ public class MemberRestController {
 	 * @throws Exception 회원 가입 처리 중 예외 발생 시
 	 */
 	@PostMapping(value = "/join", produces = "application/json")
-	public ResponseEntity<String> join(@RequestBody MemberDto member , Model model, HttpServletRequest request) throws Exception {
+	public ResponseEntity<String> join(@RequestBody MemberDto member, HttpServletRequest request) throws Exception {
 		
 		ValidationUtils.validateUserInfo(member);
 		
@@ -67,9 +66,8 @@ public class MemberRestController {
 		
 		member.setUser_pw(encodePw);
 		memberService.join(member);
-		String prevPage = (String) request.getSession().getAttribute("prevPage");
-
-		return ResponseEntity.ok().header("prev-page", prevPage).body(null);
+		
+		return ResponseEntity.ok().body(null);
 	}
 	
 	@GetMapping(value="/loginType")
