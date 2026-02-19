@@ -238,15 +238,6 @@
 
     <script th:inline="javascript">
 	    $(function() {
-			if(window.MY_NAME) {
-				// 헤더에 닉네임과 로그아웃 버튼 추가
-	            headerName = $('#header_name');
-	            headerName.html(window.MY_NAME + "님");
-	            
-	            $("#loggedOutDiv").css("display", "none");
-	            $("#loggedInDiv").css("display", "flex");
-	        }
-			
 			// 로그아웃
 			$("#logout").click(function() {
 				fetch('/api/member/loginType')
@@ -366,7 +357,7 @@
 			</div>
 			
 			<!-- 오른쪽: 로그인/회원가입 -->
-			<div id="loggedOutDiv" class="auth-buttons">
+			<div sec:authorize="isAnonymous()" id="loggedOutDiv" class="auth-buttons">
 				<div class="inline-block mr-1 logoutDiv text-alignC">
 					<a th:href="@{/member/login}" class="neo-btn ">로그인</a>
 				</div>
@@ -376,14 +367,19 @@
 			</div>
 			
 			<!-- 로그인 했을 때 -->
-			<div id="loggedInDiv" class="flex items-center" style="display: none;">
+			<div sec:authorize="isAuthenticated()" id="loggedInDiv" class="flex items-center">
 				<div>
 					<span sec:authorize="hasRole('ADMIN')" class="">
 						<a th:href="@{/admin/main}">관리자페이지</a>
 					</span>
 				</div>
+        		<span id="header_name"
+						th:text="${#authentication.principal.nickname}"
+						class="font-weight-bold cursor-pointer mr-1 font-color-gray">
+				    닉네임
+				</span>
 				<span id="header_name" class=" font-weight-bold cursor-pointer mr-1 font-color-gray"></span>
-					<div class="mypage_toggle absolute border border-radius-7px">
+				<div class="mypage_toggle absolute border border-radius-7px">
 
 					<ul>
 						<li class="mypage_toggle_li">

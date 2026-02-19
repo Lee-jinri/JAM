@@ -52,7 +52,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 로그인 필수
                 .requestMatchers(AUTH_REQUIRED_LIST).authenticated()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+            	.requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/.well-known/**").denyAll()
                 .anyRequest().permitAll()
             )
@@ -67,10 +67,9 @@ public class SecurityConfig {
                 .logoutRequestMatcher(new AntPathRequestMatcher("/api/member/logout", "POST"))
                 .addLogoutHandler(customLogoutHandler)
                 .logoutSuccessHandler(customLogoutSuccessHandler)
-                .invalidateHttpSession(true)
             )
             .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             // JWT 필터 추가
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

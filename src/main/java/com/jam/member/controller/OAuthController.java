@@ -333,10 +333,6 @@ public class OAuthController {
 
 		// 4. 로컬 로그아웃 로직
 	    try {
-	        HttpSession session = request.getSession(false);
-	        if (session != null) {
-	            session.invalidate();
-	        }
 	        SecurityContextHolder.clearContext();
 	        deleteCookies(response, "kakaoAccessToken");
 	    } catch (Exception e) {
@@ -573,10 +569,6 @@ public class OAuthController {
 
 	    // 3. 로컬 로그아웃 로직
 	    try {
-	        HttpSession session = request.getSession(false);
-	        if (session != null) {
-	            session.invalidate();
-	        }
 	        SecurityContextHolder.clearContext();
 	        deleteCookies(response, "naverAccessToken");
 	    } catch (Exception e) {
