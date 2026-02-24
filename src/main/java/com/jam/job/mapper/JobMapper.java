@@ -21,6 +21,7 @@ public interface JobMapper {
 
 	// 공고 상세페이지
 	public JobDto getPost(Long post_id);
+	public JobDto getPostWithFavorite(Long post_id, @Param("user_id") String currentUserId);
 
 	// 공고 입력
 	public int writePost(JobDto job_vo);

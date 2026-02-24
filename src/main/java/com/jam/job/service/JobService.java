@@ -35,7 +35,6 @@ public class JobService {
 	
 	public List<JobDto> getBoard(JobDto job) {
 		List<JobDto> list = new ArrayList<>();
-		
 		if(job.getUser_id() == null || job.getUser_id().isEmpty()) 
 			list = jobMapper.getBoard(job);
 		else 
@@ -49,14 +48,14 @@ public class JobService {
 		return jobMapper.listCnt(job);
 	}
 
-	//  조회수 증가 
-	public void incrementReadCnt(Long post_id) {
-		jobMapper.incrementReadCnt(post_id);
-	}
-
 	//  상세페이지
-	public JobDto getPost(Long post_id) {
-		return jobMapper.getPost(post_id);
+	@Transactional
+	public JobDto getPost(Long post_id, String currentUserId) {
+		// 조회수 증가
+		jobMapper.incrementReadCnt(post_id);
+		
+		if(currentUserId == null) return jobMapper.getPost(post_id);
+		else return jobMapper.getPostWithFavorite(post_id, currentUserId);
 	}
 
 	//  글 작성

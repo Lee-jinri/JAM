@@ -5,14 +5,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,8 +56,8 @@ public class JobRestController {
 	 * 요청 파라미터(JobDto)에 따라 채용공고 목록을 조회하고 페이징 정보를 함께 반환합니다.
 	 *
 	 * @param jobs	요청 파라미터를 담은 DTO 객체
-	 * @param request	HttpServletRequest, userId 추출용
-	 * @return			jobList(채용공고 목록), pageMaker(페이징 정보)
+	 * @param user	현재 로그인한 사용자 (nullable, 각 게시글의 즐겨찾기(별표) 활성화 여부를 판단하는 데 사용)
+	 * @return		jobList(채용공고 목록), pageMaker(페이징 정보)
 	 */
 	@GetMapping(value = "/board")
 	public ResponseEntity<Map<String, Object>> getBoard(JobDto jobs, HttpServletRequest request, @AuthenticationPrincipal MemberDto user){
@@ -88,31 +87,24 @@ public class JobRestController {
 	/*************************************
 	 * 구인 글 상세정보를 조회하는 메서드입니다.
 	 *
-	 * @param post_id 조회할 구인 글의 번호
+	 * @param post_id 	조회할 구인 글의 번호
+	 * @param user		현재 로그인한 사용자 (nullable, 각 게시글의 즐겨찾기(별표) 활성화 여부를 판단하는 데 사용)
 	 * @return ResponseEntity<JobDto> - 조회된 구인 글의 정보와 HTTP 상태 코드를 포함한 응답 VO
-	 * @throws Exception 데이터 조회 중 발생한 예외
 	 ************************************/
 	@GetMapping(value = "/post/{post_id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Map<String, Object>> getPost(@PathVariable("post_id") Long post_id, @AuthenticationPrincipal MemberDto user) throws Exception{
-
+	public ResponseEntity<Map<String, Object>> getPost(
+			@PathVariable("post_id") Long post_id, 
+			@AuthenticationPrincipal MemberDto user) {
 		post_id = ValidationUtils.requireValidId(post_id);
+		String currentUserId = (user != null) ? user.getUser_id() : null;
 		
-		// 조회수 증가
-		jobService.incrementReadCnt(post_id);
-					
 		Map<String, Object> result = new HashMap<>();
 		
-		JobDto post = jobService.getPost(post_id);
+		JobDto post = jobService.getPost(post_id, currentUserId);
+		
 		post.setPosition(getTranslatedPosition(post.getPosition()));
 		result.put("post", post);
-
-		Boolean isAuthor = false;
-		
-		if (user != null) {
-			if(user.getUser_id() != null && user.getUser_id().equals(post.getUser_id())) isAuthor = true;
-		}
-		
-		result.put("isAuthor", isAuthor);
+		result.put("isAuthor", Objects.equals(currentUserId, post.getUser_id()));
 		
 		return ResponseEntity.ok(result);
 	}

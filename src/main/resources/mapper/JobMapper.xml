@@ -126,6 +126,23 @@
 		WHERE j.post_id = #{post_id}
 	</select>
 	
+	<select id="getPostWithFavorite" resultType="job">
+		SELECT 
+			j.post_id, j.title, j.content, 
+			j.created_at, j.category, j.status,j.pay_category, pay, 
+			m.user_name, j.user_id, m.company_name,
+			j.city, j.gu, j.dong, 
+			j.position, j.view_count,
+			CASE WHEN f.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
+		FROM job j
+		LEFT JOIN favorite f 
+			ON j.post_id = f.post_id
+			AND f.board_type = 'JOB'
+			AND f.user_id = #{user_id, jdbcType=VARCHAR}
+		LEFT JOIN Member m ON j.user_id = m.user_id
+		WHERE j.post_id = #{post_id}
+	</select>
+	
 	<!-- 글 입력 -->
 	<insert id="writePost" parameterType="job">
 		<selectKey keyProperty="post_id" resultType="Long" order="BEFORE">
