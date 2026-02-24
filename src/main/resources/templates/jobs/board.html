@@ -2,6 +2,7 @@
 <html 
 	xmlns:th="http://www.thymeleaf.org" 
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	layout:decorate="~{template/client/layout}">
 <head>
 <meta charset="UTF-8">
@@ -695,15 +696,21 @@
 				$clone.find(".position").text(positionMap[board.position]);
 				$clone.find(".title").text(board.title);
 				$clone.find(".postLink").attr("data-location", "/jobs/post/" + board.post_id);
+
+				let $favoriteSpan = $clone.find(".favoriteSpan");
 				
 				if(!window.MY_AUTH || !window.MY_AUTH.includes('ROLE_COMPANY')){
-					let $favoriteSpan = $clone.find(".favoriteSpan");
 					$favoriteSpan.attr("data-post-id", board.post_id);
 					$favoriteSpan.attr("data-board-type", "JOB");
 					
-					let $icon = $favoriteSpan.find("i"); 
-					board.favorite ? $icon.addClass("fa-solid")
-								   : $icon.addClass("fa-regular");
+					const $favoriteStar = $('<i>')
+					    .addClass('favorite fa-star')
+					    .css({'color': '#FFD43B', 'cursor': 'pointer'});
+					
+					board.favorite ? $favoriteStar.addClass("fa-solid")
+								   : $favoriteStar.addClass("fa-regular");
+					
+					$favoriteSpan.append($favoriteStar);
 				}
 				
 				const payTexts = ["건별 ", "주급 ", "월급 ", "협의 후 결정"];
@@ -757,14 +764,20 @@
 				
 				let $boardDiv = $clone.find(".boardDiv");
 				$boardDiv.removeClass("company-list-row").addClass("member-list-row");
-				
+
 				let $favoriteSpan = $clone.find(".favoriteSpan");
+				
 				$favoriteSpan.attr("data-post-id", board.post_id);
 				$favoriteSpan.attr("data-board-type", "JOB");
 				
-				let $icon = $favoriteSpan.find("i"); 
-				board.favorite ? $icon.addClass("fa-solid")
-							   : $icon.addClass("fa-regular");
+				const $favoriteStar = $('<i>')
+				    .addClass('favorite fa-star')
+				    .css({'color': '#FFD43B', 'cursor': 'pointer'});
+				
+				board.favorite ? $favoriteStar.addClass("fa-solid")
+							   : $favoriteStar.addClass("fa-regular");
+				
+				$favoriteSpan.append($favoriteStar);
 				
 				$clone.find(".pay").remove();  
 				
@@ -929,7 +942,7 @@
 </head>
 <body>
 	<div layout:fragment="body">
-		<div data-recruit-type="0">
+		<div data-recruit-type="0" class="contents">
 			<div class="content company-mode container" >
 				<div class="my-top-15 my-bottom-15">
 					<input type="hidden" id="city">
@@ -1029,24 +1042,22 @@
 						    <span class="switch-label">멤버 모집🏕️</span>
 						</div>
 						
-					    <div class="write_btn items-center none">
-					    	<sec:authorize access="isAuthenticated()">
-						    	<button type="button" id="jobWriteBtn" class="write_btn_font border-none ">
-									<i class="fa-solid fa-pen-to-square write-icon"></i>
+					    <div sec:authorize="isAuthenticated()" class="write_btn items-center none">
+					    	<button type="button" id="jobWriteBtn" class="write_btn_font border-none ">
+								<i class="fa-solid fa-pen-to-square write-icon">
 									작성하기
-								</button>
-					    	</sec:authorize>
+								</i>
+							</button>
 						</div>
 					</div>
 					
 					<div>
 						<ul style="display:none">
 							<li id="boardTemplate" class="border-bottom">
-								<div class="boardDiv pd-2rem job-list-row text-alignC items-center">
+								<div class="boardDiv postLink pd-2rem job-list-row text-alignC items-center">
 									<span class="favoriteSpan">
-										<i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
 									</span>
-									<span class="font-size-5 title postLink"  style="cursor: pointer;"></span>
+									<span class="font-size-5 title"  style="cursor: pointer;"></span>
 							        
 									<span class="area"></span>
 									<span class="position"></span>

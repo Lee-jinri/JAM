@@ -36,66 +36,53 @@
 	    </if>
 	</sql>
 	
-	
 	<!-- 전체 공고 조회 -->
 	<select id="getBoard" parameterType="job" resultType="job">
 		<![CDATA[
 		SELECT 
-			post_id, title, 
-			to_char(created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
-			pay_category, pay, 
-			city, gu, dong, position,
-			0 AS isFavorite  
-		FROM (
-			SELECT /*+ INDEX_DESC(j IX_JOB_STATUS_CATEGORY_POSTID) */
-				j.post_id, j.title, j.created_at, 
-				j.pay_category, j.pay, 
-				j.city, j.gu, j.dong, j.position,
-				ROW_NUMBER() OVER (ORDER BY j.post_id DESC) AS rnum
-			FROM job j
-			]]>
-			<where>
-		        j.status = 0 AND j.category = #{category}
-		        <include refid="jobSearch"/>
-		        <include refid="jobLocalSearch"/>
-		        <include refid="jobPositionSearch"/>
-		    </where>
-		) 
-		<![CDATA[
-		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount}
+			j.post_id, j.title, 
+			j.created_at, j.pay_category, j.pay, 
+			j.city, j.gu, j.dong, j.position,
+			0 AS isFavorite 
+		FROM job j
 		]]>
+		<where>
+	        j.status = 0 AND j.category = #{category}
+	        <include refid="jobSearch"/>
+	        <include refid="jobLocalSearch"/>
+	        <include refid="jobPositionSearch"/>
+	    </where>
+	    <![CDATA[
+	    ORDER BY post_id DESC
+	    OFFSET (#{pageNum} -1) * #{amount} ROWS
+	    FETCH NEXT #{amount} ROWS ONLY
+	    ]]>
 	</select>	
 	
+	<!-- 로그인 한 사용자는 즐겨찾기 한 글도 함께 조회 -->
 	<select id="getBoardWithFavorite" parameterType="job" resultType="job">
 		<![CDATA[
 		SELECT 
-			j.post_id, j.title, 
-			to_char(j.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at,
-			j.pay_category, j.pay, 
-			j.city, j.gu, j.dong, j.position,
+			j.post_id, j.title, j.created_at,
+			j.pay_category, j.pay, j.position,
+			j.city, j.gu, j.dong,
 			CASE WHEN f.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
-		FROM (
-			SELECT /*+ INDEX_DESC(j IX_JOB_STATUS_CATEGORY_POSTID) */
-				j.post_id, j.title, j.created_at, 
-				j.pay_category, j.pay, 
-				j.city, j.gu, j.dong, j.position,
-				ROW_NUMBER() OVER (ORDER BY j.post_id DESC) AS rnum
-			FROM job j
-		]]>
-			<where>
-				j.status = 0 AND j.category = #{category}
-				<include refid="jobSearch"/>
-				<include refid="jobLocalSearch"/>
-				<include refid="jobPositionSearch"/>
-			</where>
-		<![CDATA[
-		) j 
-		LEFT JOIN favorite f  
-			ON j.post_id = f.post_id  
-			AND f.board_type = 'job'  
+		FROM JOB j
+		LEFT JOIN favorite f
+			ON j.post_id = f.post_id
+			AND f.board_type = 'JOB'
 			AND f.user_id = #{user_id, jdbcType=VARCHAR}
-		WHERE rnum > (#{pageNum} - 1) * #{amount} 
-		AND rnum <= #{pageNum} * #{amount}
+		]]>
+		<where>
+			j.status = 0 AND j.category = #{category}
+		        <include refid="jobSearch"/>
+		        <include refid="jobLocalSearch"/>
+		        <include refid="jobPositionSearch"/>
+		</where>
+		<![CDATA[
+		ORDER BY post_id DESC
+		OFFSET (#{pageNum} -1) * #{amount} ROWS
+		FETCH NEXT #{amount} ROWS ONLY
 		]]>
 	</select>
 		
@@ -417,7 +404,7 @@
 			SELECT 1
 			FROM favorite f
 			WHERE f.post_id = j.post_id
-				AND f.board_type = 'job'
+				AND f.board_type = 'JOB'
 				AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		)
 		AND j.category = #{category}
@@ -448,7 +435,6 @@
 	<select id="getMyFavoritesCnt" parameterType="job" resultType="int">
 		<bind name="periodDays" 
 			value="period != null &amp;&amp; period != '' &amp;&amp; period != 'all' ? @java.lang.Integer@valueOf(period) : null"/>
-	
 		SELECT
 			COUNT(*)
 		FROM job j
@@ -458,7 +444,7 @@
 			SELECT 1
 			FROM favorite f
 			WHERE f.post_id = j.post_id
-				AND f.board_type = 'job'
+				AND f.board_type = 'JOB'
 				AND f.user_id = #{user_id, jdbcType=VARCHAR}
 		)
 		AND j.category = #{category}
