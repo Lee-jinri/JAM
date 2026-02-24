@@ -94,6 +94,14 @@
 		$(function(){
 			getFavorites();
 			
+			$(document).on("click", ".postLink", function (e) {
+				e.preventDefault();
+				var location = $(this).attr("data-location");
+				if (location) {
+					window.location.href = location;
+				}
+			});
+			
 			$('#typeSwitch').on('change', function() {
 			    let category = $(this).is(':checked') ? "1" : "0";
 			   
@@ -208,9 +216,9 @@
 				var status = statusBadge(it.status); 
 				
 				return ''
-					+ '<tr>'
+					+ '<tr class="postLink" data-location="/jobs/post/'+ postId + '">'
 					+	'<td>'
-					+		'<span class="favoriteSpan" data-post-id="' + postId + '" data-board-type="job">'
+					+		'<span class="favoriteSpan" data-post-id="' + postId + '" data-board-type="JOB">'
 					+			'<i class="favorite fa-star fa-solid" style="color: #FFD43B; cursor: pointer;"></i>'
 					+		'</span>'
 					+	'</td>'
@@ -247,9 +255,9 @@
 				var status = statusBadge(it.status); 
 				
 				return ''
-					+ '<tr>'
+					+ '<tr class="postLink" data-location="/jobs/post/'+ postId + '">'
 					+	'<td>'
-					+		'<span class="favoriteSpan" data-post-id="' + postId + '" data-board-type="job">'
+					+		'<span class="favoriteSpan" data-post-id="' + postId + '" data-board-type="JOB">'
 					+			'<i class="favorite fa-star fa-solid" style="color: #FFD43B; cursor: pointer;"></i>'
 					+		'</span>'
 					+	'</td>'
@@ -365,15 +373,6 @@
 				        <span class="slider"></span>
 				    </label>
 				    <span class="switch-label">멤버 모집🏕️</span>
-				</div>
-				
-			    <div class="write_btn items-center none">
-			    	<sec:authorize access="isAuthenticated()">
-				    	<button type="button" id="jobWriteBtn" class="write_btn_font border-none ">
-							<i class="fa-solid fa-pen-to-square write-icon"></i>
-							작성하기
-						</button>
-			    	</sec:authorize>
 				</div>
 			</div>
 			
