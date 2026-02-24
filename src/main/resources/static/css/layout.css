@@ -2232,6 +2232,7 @@ textarea {
 	border-radius: 18px;
 }
 .f-board-button {
+	background: none;
 	font-size: 15px;
 	width: 87px;
 	position: relative;
@@ -2388,7 +2389,7 @@ textarea {
 	left: 0;
 }
 
-
+#header_name{margin-right: 1rem;}
 
 
 
@@ -2438,7 +2439,7 @@ textarea {
   
   #logout {
   	margin-right: 0;
-  	font-size: 10px;
+  	font-size: 12px;
   }
   .nav-icon{
   	margin: 0;
@@ -2481,6 +2482,8 @@ textarea {
     #searchBtn{
     	height: 23px;
     }
+    .header-icon{display: none;}
+    #header_name{margin-right: 6px;}
 }
 
 @media (max-width: 600px) {
@@ -2597,5 +2600,8 @@ textarea {
 		grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
 		gap: 20px;
 		padding: 10px 20px 60px 20px;
+	}
+	p {
+	   font-size: 15px;
 	}
 }

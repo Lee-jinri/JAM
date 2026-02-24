@@ -129,6 +129,25 @@
 			letter-spacing:.2px;
 			color:#111827;
 		}
+		.post-info i{ font-size: 16px;}
+		
+		/* ====== 480px 이하 ====== */
+		@media (max-width: 480px) {
+			.post-title{ height: 30px;
+			}
+			.post-info {
+			    & i, 
+			    & #created_at, 
+			    & #view_count {
+			        font-size: 12px;
+			        color: #999;
+			    }
+			}
+			#created_at{margin-left: 5px;}
+			.post-view-count{ margin-left: 8px;}
+			.post-header{margin: 0 10px;}
+		}
+		
 	</style>
 	<script th:inline="javascript">
 		$(function(){
@@ -225,9 +244,8 @@
 	</script>
 </head>
 <body class="wrap">
-
-		<div layout:fragment="body">
-		<div class="my-top-15 my-bottom-15">
+	<div layout:fragment="body">
+		<div class="contents">
 			<input type="hidden" id="postId" name="postId" th:value="${postId}"/>
 			
 			<div class="board-detail-container">
@@ -235,7 +253,7 @@
 			    <div class="post-header">
 			        <p id="title" class="post-title"></p>
 			        <div class="post-info">
-			        	<i class="fa-solid fa-clock" style="font-size: 16px;"></i>
+			        	<i class="fa-solid fa-clock"></i>
 			        	<span id="created_at"></span>
 			        	
 			            <span class="post-view-count">

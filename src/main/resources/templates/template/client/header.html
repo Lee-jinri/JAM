@@ -130,6 +130,7 @@
 		    cursor: pointer;
 		    box-shadow: 7px 7px 14px rgba(0, 0, 0, 0.08), -7px -7px 14px rgb(243 243 243 / 85%);
 		    transition: all 0.15s ease;
+		    color: #3f3f3f;
 		}
 		.neo-btn:active {
 		  	box-shadow:
@@ -344,7 +345,7 @@
 		                <img class="nav-icon" th:src="@{/images/JAM-logo.png}" alt="JAM">
 		            </a>
 				</div>
-				<div>
+				<div class="header-icon">
 					<img th:src="@{/images/JAM-icon.svg}" style="width: 37px;">
 				</div>
 		
@@ -378,8 +379,8 @@
 					</span>
 				</div>
         		<span id="header_name"
-						th:text="${#authentication.principal.nickname}"
-						class="font-weight-bold cursor-pointer mr-1 font-color-gray">
+						th:text="|${#authentication.principal.nickname}님|"
+						class="font-weight-bold cursor-pointer font-color-gray">
 				    닉네임
 				</span>
 				<span id="header_name" class=" font-weight-bold cursor-pointer mr-1 font-color-gray"></span>

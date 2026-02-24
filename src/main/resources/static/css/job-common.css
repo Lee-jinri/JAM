@@ -1,5 +1,9 @@
 @charset "UTF-8";
-
+.contents {
+    width: 92%;
+    max-width: 1100px;
+    margin: 40px auto;
+}
 .filterDiv{
 	margin: 5rem 0 3rem;
 }
@@ -360,14 +364,10 @@ background-color: #fff;
 @media (max-width: 1024px) {
 	.position-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 	.setting-base__col--list { max-height: 180px; }
-	.container{ margin: 4rem 3rem; }
 }
 
 /* ====== 768px 이하: 모바일 (카드형)====== */
 @media (max-width: 768px) {
-	.container{
-		margin: 4rem 2rem;
-	}
 	
 	 #jobListHeader { display: none !important; }
 	
@@ -427,9 +427,6 @@ background-color: #fff;
 @media (max-width: 480px) {
 	.filterDiv{
 		margin: 0;
-	}
-	.container{
-		margin: 4rem 1rem;
 	}
 	.filter-btn {         
 	 	padding: 3px 3px;

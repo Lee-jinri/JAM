@@ -357,19 +357,45 @@
 		    text-align: center;
 		    height: 36px;
 		}
+		.postLink{
+			cursor: pointer;
+		}
+		.postLink:hover{
+		    background-color: #f5f5f5;
+		}
+		
+		#jobWriteBtn {
+			background-color: #0F2D4A;  
+			color: #fff;                
+			font-weight: 600;       
+			padding: 10px 18px;
+			border-radius: 7px;
+			cursor: pointer;
+			transition: background-color 0.25s ease, transform 0.15s ease;
+		}
+		
+		#jobWriteBtn:hover {
+			background-color: #163B63; 
+			transform: translateY(-2px); 
+		}
+		
+		#jobWriteBtn:active {
+			background-color: #0A1E34;
+			transform: translateY(0);
+		}
+		
+		#areaConainer{
+			display: block;margin: 30px auto;
+		}
 		
 		/* ====== 1024px 이하 ====== */
 		@media (max-width: 1024px) {
 			.position-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
 			.setting-base__col--list { max-height: 180px; }
-			.container{ margin: 4rem 3rem; }
 		}
 		
 		/* ====== 768px 이하: 모바일 (카드형)====== */
 		@media (max-width: 768px) {
-			.container{
-				margin: 4rem 2rem;
-			}
 			
 			 #jobListHeader { display: none !important; }
 			
@@ -402,13 +428,24 @@
 			}
 			
 			.setting-base-row {
-			  flex-direction: column;
+			  flex-direction: row;
 			}
 			.setting-base__col--title {
-			  border-right: 0;
+			  border-right: 1px solid #e5e8ec;
 			  border-bottom: 1px solid #e5e8ec;
 			  text-align: left;
 			  padding-left: 10px;
+			  font-size: 11px;
+			  display: block;
+		        height: 25px;
+		        line-height: 25px;
+			}
+			.setting-base__col--list li{
+			  font-size: 11px;
+				padding: 6px;
+			}
+			.remove-btn, .area-remove-btn{
+				font-size: 11px;
 			}
 			
 			.position-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
@@ -418,11 +455,15 @@
 				gap: 8px; flex-wrap: wrap; 
 			}
 			.selected-position-span, .selected-area-span {
-			  margin-top: 6px;
-			  padding: 6px 10px;
-			  height: auto;
+			    margin: 0px;
+		        padding: 3px 4px;
+		        height: auto;
+		        font-size: 11px;
 			}
-		
+			
+			#jobWriteBtn{font-size: 11px; padding: 7px 6px;}
+			.pagination > li > .selected_btn {font-size: 10px;}
+			.selected-location-span { font-size: 11px; padding: 0 3px;}
 		}
 		
 		/* ====== 480px 이하 ====== */
@@ -430,30 +471,31 @@
 			.filterDiv{
 				margin: 0;
 			}
-			.container{
-				margin: 4rem 1rem;
-			}
 			.filter-btn {         
-			 	padding: 3px 3px;
-			    font-size: 8px;
-			    width: 47px;
+				padding: 3px 3px;
+		        font-size: 11px;
+		        width: 50px;
+		        gap: 3px;
 			}
 			.filter-btn .icon {
 			    width: min-content;
-			    font-size: 8px;
+			    font-size: 10px;
 			}
 			.filter-btn i {
-			    font-size: 8px;
+			    font-size: 10px;
 			}
 			.searchBtn {
 			    width: auto;
-			    padding: 1px 4px;
-			    font-size: 8px;
+			    padding: 2px 8px;
+			    font-size: 11px;
 			    height: auto;
 			    align-items: center;
 			}
 			span {
-				font-size: 10px;
+				font-size: 12px;
+			}
+			.switch-container{
+				gap: 5px;
 			}
 			.switch {
 			    width: 30px;
@@ -462,46 +504,28 @@
 			.slider:before {
 			    height: 12px;
 			    width: 12px;
+			    bottom: 2px;
 			}
 			input:checked+.slider:before {
 			    transform: translateX(12px);
 			}
 			.selected-wrapper { padding: 12px; }
-			.position-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+			.position-grid { grid-template-columns: repeat(auto-fill, minmax(60px, 1fr)); gap: 12px;}
+			.position-grid label { padding: 4px 2px; font-size: 10px;}
+			.position-grid input[type="checkbox"] { width: 10px; height: 10px;}
+			#positionContainer{ padding: 6px;}
 			.boardDiv .title { font-size: 12px; }
-			.boardDiv .area, .boardDiv .position { font-size: 10px; }
-			.boardDiv .created_at { font-size: 10px; }
+			.boardDiv .area, .boardDiv .position { font-size: 11px; }
+			.boardDiv .created_at { font-size: 11px; }
 			.payDiv{ align-items: center; }
 			.pay_category{
-				font-size: 8px;
+				font-size: 11px;
 			    padding: 2px 4px;
 			    line-height: normal;
 			    align-items: center;
 			}
 		}
-		#jobWriteBtn {
-			background-color: #0F2D4A;  
-			color: #fff;                
-			font-weight: 600;       
-			padding: 10px 18px;
-			border-radius: 7px;
-			cursor: pointer;
-			transition: background-color 0.25s ease, transform 0.15s ease;
-		}
 		
-		#jobWriteBtn:hover {
-			background-color: #163B63; 
-			transform: translateY(-2px); 
-		}
-		
-		#jobWriteBtn:active {
-			background-color: #0A1E34;
-			transform: translateY(0);
-		}
-		
-		#areaConainer{
-			display: block;margin: 30px auto;
-		}
 	</style>
 	<script th:inline="javascript">
 		let memberListCache = null;

@@ -10,10 +10,6 @@
 			backdrop-filter:saturate(180%) blur(8px); 
 			z-index:1030; 
 		}
-		
-		.header{
-			padding: 10px 20px;
-		}
 		.header-container {
 		    display: flex;
 		    align-items: center;
@@ -214,26 +210,25 @@
 		}
 		
 		@media (max-width: 691px) {
-			.header{padding:0;}
+			
+			header{padding: 10px;}
 			.nav-icon {
-		    	width: 35px;
+		    	width: 65px;
 		    }
 		
 			.header-container { 
-				margin: 0 10px;
+				margin: 0;
 				height: 30px;
 			}
 		
 			.job-search-div {
 				min-width: 0;
-				 /*flex-basis: 240px; max-width: 280px;*/ 
-				max-width: 240px;
+				max-width: 170px;
 				width: 100%;
 				margin: 0 8px;
-				padding: 0 8px;
+				padding: 5px 8px;
 				border: 1px solid #0F2D4A; 
 			}
-			
 			.main-favicon { 
 				margin: 0; 
 				width: 12px;
@@ -242,35 +237,39 @@
 			
 			.brand-link span,
 			.brand-link {
-				font-size: 7px;
+				font-size: 10px;
 				margin-left: 2px;
 			}
 			#header_name, .userTypeSpan {
-		        font-size: 7px;
+		        font-size: 12px;
 		    }
 		    .userTypeSpan {
 		        padding: 3px 5px;
 		    }
-			.menu{
-				margin-right: 10px;
-			}
 			.menu__list{
 				min-width: 100px;
 				padding: 0;
 			}
 			.menu__list a {
 			    padding: 5px 13px;
-			    font-size: 8px;
+			    font-size: 12px;
 			}
 			.menu__toggle{
 				padding: 3px 3px;
+				gap: 0;
 				margin-right: 6px;
 			}
 			.search-bar-wrapper .glass_icon{font-size:8px; margin: 3px 0;}
-			.search-input {font-size: 8px;}
+			.search-input {font-size: 11px;}
 			.search{margin:0;}
 			.fa-caret-down{font-size:6px;}
-			.auth-buttons a{font-size: 8px;}
+			.auth-buttons a{font-size: 12px;}
+			.search-bar-wrapper{
+				height: 14px;
+			}
+			#searchBtn {
+		        height: fit-content;
+		    }
 		}
 		
 		@media (min-width: 691px) and (max-width: 1024px) {
@@ -281,11 +280,11 @@
 		    	width: 65px;
 		    }
 			.header-container { 
-				margin: 0 12px; 
+				margin: 0; 
 				padding: 0 12px; 
 			}
 			#header_name, .userTypeSpan{font-size:12px;}
-			.brand-link span{font-size: 12px;}
+			.brand-link span{font-size: 10px;}
 			.job-search-div {
 				/*flex-basis: 420px; */
 				max-width: 350px;
