@@ -288,8 +288,8 @@ public class MemberService {
 
 	
 	// 전화번호 변경
-	public boolean updatePhone(MemberDto member) {
-		return memberMapper.updatePhone(member) == 1;
+	public void updatePhone(MemberDto member) {
+		memberMapper.updatePhone(member);
 	}
 	
 	// 비밀번호 확인
@@ -299,15 +299,17 @@ public class MemberService {
 	}
 
 	// 비밀번호 변경
-	public int updatePw(String user_id, String user_pw) {
-	
-		return memberMapper.updatePw(user_id, user_pw);
+	public void updatePw(String user_id, String user_pw) {
+		
+		memberMapper.updatePw(user_id, user_pw);
+		
+		// 로그아웃 처리
+		// refreshToken 삭제
 	}
 	
 	// 주소 변경
-	public int updateAddress(MemberDto member) {
-		
-		return memberMapper.updateAddress(member);
+	public int updateAddress(String address, String userId) {
+		return memberMapper.updateAddress(address, userId);
 	}
 
 	// 회원 닉네임 가져오기

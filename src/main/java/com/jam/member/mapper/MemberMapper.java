@@ -57,7 +57,7 @@ public interface MemberMapper {
 	int updateUserName(MemberDto member);
 	
 	// 전화번호 변경
-	int updatePhone(MemberDto member);
+	void updatePhone(MemberDto member);
 	
 	// 비밀번호 확인을 위해 비밀번호 가져옴
 	String getPassword(MemberDto member);
