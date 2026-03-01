@@ -559,25 +559,29 @@ public class MemberRestController {
     }
 	
 	/**
-	 * 일반 회원을 기업 회원으로 전환합니다.
+	 * 일반 회원을 기업 회원으로 전환하고 권한이 갱신된 토큰을 재발급합니다.
 	 * 
 	 * 1. 요청 본문의 회사명 유효성 검사 (필수값, HTML 태그 제한)
-     * 2. 현재 로그인된 사용자 정보 확인 (resolveAuthenticatedUser)
-     * 3. DB 권한 변경 및 새로운 인증 정보(Authentication) 생성
-     * 4. 변경된 권한이 반영된 새로운 JWT 토큰 재발급 및 쿠키 설정
-     * 
-	 * @param request  HttpServletRequest 
-	 * @param response HttpServletResponse
-	 * @param member   회사명(company_name)을 포함한 요청 객체
+	 * 2. DB 권한 변경 및 새로운 인증 정보(Authentication) 생성
+	 * 3. 변경된 권한이 반영된 새로운 JWT 토큰 재발급 및 쿠키 설정
 	 * 
-	 * @return ResponseEntity<String> - "기업회원 전환 성공" 메시지
-     * @throws BadRequestException 회사명이 없거나 부적절한 경우
-     * @throws UnauthorizedException 로그인이 되어 있지 않은 경우
+	 * @param request  HTTP 요청 객체 (기존 쿠키 정보 추출용)
+	 * @param response HTTP 응답 객체 (새 토큰 쿠키 설정용)
+	 * @param user     요청 본문에서 전달된 회사명 정보 객체
+	 * @param authUser 인증 컨텍스트의 실제 로그인 사용자 정보
+	 * @return 성공 시 "기업회원 전환 성공" 메시지
+	 * @throws BadRequestException   회사명이 비어있거나 형식이 올바르지 않은 경우
+	 * @throws UnauthorizedException 인증 정보가 없거나 쿠키가 누락된 경우
 	 */
 	@PostMapping(value="/convertBusiness")
-	public ResponseEntity<String> convertBusiness(HttpServletRequest request, HttpServletResponse response, @RequestBody MemberDto member){
+	public ResponseEntity<String> convertBusiness(
+			HttpServletRequest request, 
+			HttpServletResponse response, 
+			@RequestBody MemberDto user,
+			@AuthenticationPrincipal MemberDto authUser){
+		if(authUser == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다.");
 		
-		String company_name = member.getCompany_name();
+		String company_name = user.getCompany_name();
 		if (company_name == null || company_name.trim().isEmpty()) {
 			throw new BadRequestException("회사명을 입력하세요.");
 		}
@@ -586,18 +590,20 @@ public class MemberRestController {
 			throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
 		}
 		
-		Map<String, Object> data = resolveAuthenticatedUser(request, response);
+		Cookie[] cookies = request.getCookies();
+		if(cookies == null) {
+        	log.error("쿠키가 없습니다."); 
+        	throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
+        }
+        
+    	String loginType = jwtService.extractLoginType(request, response, cookies);
+    	boolean autoLogin = jwtService.extractAutoLogin(request, response, cookies);
 
-		if(data == null || data.get("user") == null) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		
-		MemberDto user = (MemberDto)data.get("user");
-		
-		user.setCompany_name(company_name);	
-    	Authentication authentication = memberService.convertBusiness(user.getUser_id(), company_name, user);
+    	Authentication authentication = memberService.convertBusiness(authUser.getUser_id(), company_name, authUser);
     	
-    	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, (boolean)data.get("autoLogin"), (String)data.get("loginType"));
+    	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
 		
-    	setJwtCookies(token, response, (boolean)data.get("autoLogin"));
+    	setJwtCookies(token, response, autoLogin);
 
 		return ResponseEntity.ok("기업회원 전환 성공");
 	}
@@ -655,56 +661,5 @@ public class MemberRestController {
 		cookie.setPath("/");
 	    
 	    response.addCookie(cookie);
-	}
-	
-	/**
-	 * HttpServletRequest와 쿠키 정보를 기반으로 사용자 인증을 검증합니다.
-	 * 
-	 * @param request HttpServletRequest (쿠키와 세션 접근)
-	 * @return 
-	 * - 인증 성공 시: loginType, autoLogin, user 정보를 포함한 Map
-	 * - 인증 실패 시: UnauthorizedException
-	 */
-	private Map<String, Object> resolveAuthenticatedUser(HttpServletRequest request, HttpServletResponse response) {
-		Map<String, Object> data = new HashMap<>();
-		
-		Cookie[] cookies = request.getCookies();
-    	if(cookies == null) {
-    		log.error("쿠키가 없습니다."); 
-			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
-    	}
-
-    	String accessToken = jwtService.extractToken(cookies, "Authorization");
-    	if (accessToken == null || accessToken.isEmpty()) {
-    		log.error("인증 토큰이 없습니다.");
-			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
-		}
-    	
-    	TokenStatus status = jwtService.validateToken(accessToken);
-		
-		if(status != TokenStatus.VALID) {
-	        AuthClearUtil.clearAuth(request, response);
-	        
-			log.error("유효하지 않은 사용자입니다.");
-			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
-		}
-
-    	MemberDto user = jwtService.extractUserInfoFromToken(accessToken);
-
-    	if (user == null) {
-    		AuthClearUtil.clearAuth(request, response);
-    		
-			log.error("유효하지 않은 사용자입니다.");
-			throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
-		}
-    	
-    	String loginType = jwtService.extractLoginType(request, response, cookies);
-    	boolean autoLogin = jwtService.extractAutoLogin(request, response, cookies);
-
-		data.put("loginType", loginType);
-		data.put("autoLogin", autoLogin);
-    	data.put("user", user);
-    	
-    	return data;
 	}
 }
