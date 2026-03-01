@@ -659,8 +659,8 @@
 				        });
 				    }
 					if (!response.ok) throw new Error('Network response was not ok');
-		            alert('비밀번호가 변경되었습니다.');
-		            location.reload();
+		            alert('비밀번호가 변경되었습니다. 새로운 비밀번호로 로그인해 주세요.');
+		            location.href = "/member/login";
 				})
 				.catch(error => {
 					alert('오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
