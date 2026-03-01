@@ -63,7 +63,7 @@ public interface MemberMapper {
 	String getPassword(MemberDto member);
 
 	// 주소 변경
-	int updateAddress(MemberDto member);
+	int updateAddress(@Param("address") String address, @Param("userId") String userId);
 
 	// 회원 탈퇴
 	int deleteAccount(String user_id);

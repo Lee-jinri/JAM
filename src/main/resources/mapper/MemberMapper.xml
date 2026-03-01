@@ -168,7 +168,7 @@
 	<update id="updateAddress" parameterType="member">
 		UPDATE member
 		SET address = #{address}
-		WHERE user_id = #{user_id} AND deleted_at IS NULL
+		WHERE user_id = #{userId} AND deleted_at IS NULL
 	</update>
 	
 	<!-- 회원 탈퇴 -->

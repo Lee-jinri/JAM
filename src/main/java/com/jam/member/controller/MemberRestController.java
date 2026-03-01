@@ -1,15 +1,14 @@
 package com.jam.member.controller;
 
-import java.util.HashMap;
+import java.time.Duration;
 import java.util.Map;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -26,7 +25,6 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
-import com.jam.global.jwt.TokenInfo.TokenStatus;
 import com.jam.global.util.AuthClearUtil;
 import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValidationUtils;
@@ -36,7 +34,6 @@ import com.jam.member.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,6 +45,7 @@ public class MemberRestController {
 	private final MemberService memberService;
 	private final PasswordEncoder encoder;
 	private final JwtService jwtService;
+	private final StringRedisTemplate redisTemplate;
 	
 	/**
 	 * 회원 가입
@@ -252,23 +250,42 @@ public class MemberRestController {
 		// 임시 비밀번호로 변경, 임시 비밀번호 메일로 전송
 		memberService.updatePwAndSendEmail(user_id, email, phone);
 		
+		// 검증 플래그 삭제
+		String key = "auth:mypage:" + user_id;
+    	redisTemplate.delete(key);
+    	
 		return ResponseEntity.ok().build();
 	}
 	
 	/**
-	 * 사용자의 닉네임을 변경합니다.
-	 * 
-	 * @param user_name 변경할 닉네임
-	 * @return HTTP 응답 상태코드
-	 */
+     * 사용자의 닉네임을 변경하고 JWT 토큰을 갱신합니다.
+     * 
+     * @param user         인증 컨텍스트에서 가져온 현재 로그인 사용자 정보
+     * @param request      HTTP 요청 객체 (쿠키 추출용)
+     * @param response     HTTP 응답 객체 (쿠키 설정용)
+     * @param member       변경할 닉네임 정보가 담긴 요청 본문
+     * 
+     * @throws UnauthorizedException 인증 정보가 없거나 유효하지 않은 경우
+     * @throws ForbiddenException    잘못된 검증 플래그
+     * @throws BadRequestException   입력된 닉네임이 null 또는 형식이 올바르지 않거나 HTML 태그가 포함된 경우
+     * 
+     * @return 성공 시 200 OK
+     */
 	@PutMapping(value ="/userName")
-	public ResponseEntity<Void> updateUserName(HttpServletRequest request, HttpServletResponse response, @RequestBody MemberDto member) throws Exception {
-		Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
+	public ResponseEntity<Void> updateUserName(
+			@AuthenticationPrincipal MemberDto user, 
+			HttpServletRequest request,
+			HttpServletResponse response, 
+			@RequestBody MemberDto member) {
+		if(user == null || user.getUser_id() == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다.");
 		
-		if (verifyStatus == null || !verifyStatus) {
-			log.error("not verified.");
-			throw new ForbiddenException("본인 확인이 필요합니다. 다시 비밀번호를 입력해주세요.");
-		}
+		String userId = user.getUser_id();
+		String key = "auth:mypage:" + userId;
+		String status = redisTemplate.opsForValue().get(key);
+	    
+		if (!"true".equals(status)) {
+			 throw new ForbiddenException("유효하지 않은 인증 정보입니다.");
+        }
 		
 		String userName = member.getUser_name();
 		
@@ -282,22 +299,24 @@ public class MemberRestController {
 			throw new BadRequestException("닉네임은 3~10자 이내로 입력해주세요.");
 		}
 		
-    	Map<String, Object> data = resolveAuthenticatedUser(request, response);
-    	
-    	if (data == null || data.get("user") == null) {
-    		throw new UnauthorizedException("인증되지 않은 사용자입니다.");
-    	}
-    	
-    	MemberDto user = (MemberDto) data.get("user");
-    	boolean autoLogin = (boolean) data.get("autoLogin");
-    	String loginType = (String) data.get("loginType");
-    	
     	// 변경할 닉네임 세팅
     	user.setUser_name(member.getUser_name());
-    	
+    	Cookie[] cookies = request.getCookies();
+
+        if(cookies == null) {
+        	log.error("쿠키가 없습니다."); 
+        	throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인해주세요.");
+        }
+        
+    	String loginType = jwtService.extractLoginType(request, response, cookies);
+    	boolean autoLogin = jwtService.extractAutoLogin(request, response, cookies);
+
     	Authentication authentication = memberService.updateUserNameAndTokens(user, autoLogin, loginType, response);
     	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
     	setJwtCookies(token, response, autoLogin);
+    	
+    	// 검증 플래그 삭제
+    	redisTemplate.delete(key);
     	
         return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -305,16 +324,28 @@ public class MemberRestController {
 	/**
 	 * 사용자의 전화번호를 변경합니다.
 	 * 
-	 * @param phone 변경할 전화번호
-	 * @return HTTP 응답 상태코드
+     * @param user		인증 컨텍스트에서 가져온 현재 로그인 사용자 정보
+	 * @param member 	변경할 전화번호 정보가 담긴 요청 본문
+	 * 
+     * @throws UnauthorizedException 인증 정보가 없거나 유효하지 않은 경우
+     * @throws ForbiddenException    잘못된 검증 플래그
+     * @throws BadRequestException   입력된 전화번호가 null 또는 형식이 올바르지 않거나 HTML 태그가 포함된 경우
+     * 
+     * @return 성공 시 200 OK
 	 */
 	@PutMapping(value = "/phone")
-	public ResponseEntity<Void> updatePhone(HttpServletRequest request, @RequestBody MemberDto member) throws Exception {
-		Boolean verifyStatus = (Boolean)request.getSession().getAttribute("verifyStatus");
-		if(verifyStatus == null || !verifyStatus) {
-			log.error("not verified.");
-			throw new ForbiddenException("유효하지 않은 인증 정보 입니다.");
-		}
+	public ResponseEntity<Void> updatePhone(
+			@AuthenticationPrincipal MemberDto user, 
+			@RequestBody MemberDto member) {
+		if(user == null || user.getUser_id() == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다.");
+		
+		String userId = user.getUser_id();
+		String key = "auth:mypage:" + userId;
+		String status = redisTemplate.opsForValue().get(key);
+	    
+		if (!"true".equals(status)) {
+			 throw new ForbiddenException("유효하지 않은 인증 정보입니다.");
+        }
 		
 		String phone = member.getPhone();
 		
@@ -325,40 +356,36 @@ public class MemberRestController {
 		if(HtmlSanitizer.hasHtmlTag(phone)) throw new BadRequestException("HTML 태그는 허용되지 않습니다.");
 		if(!ValidationUtils.validatePhone(phone)) throw new BadRequestException("전화번호 형식이 올바르지 않습니다.");
 
-		
-		String userId = (String)request.getAttribute("userId");
-		if(userId == null) {
-			log.error("UnAuthorized user.");
-			throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
-		}
-		
 		member.setUser_id(userId);
+		memberService.updatePhone(member);
+
+		// 검증 플래그 삭제
+		redisTemplate.delete("auth:mypage:" + userId);
 		
-		boolean isUpdate = memberService.updatePhone(member);
-		
-		if(isUpdate) {
-			return ResponseEntity.ok().build();
-		}else {
-			throw new Exception("오류가 발생했습니다. 잠시 후 다시 시도하세요.");
-		}
+		return ResponseEntity.ok().build();
 	}
-	
+
 	/**
-	 * 사용자의 비밀번호 확인 후, verify-password 플래그를 세션에 저장합니다.
+     * 사용자의 비밀번호 확인 후, verify-password 플래그를 레디스에 저장합니다.
 	 * (마이페이지 > 계정정보(Account)에서 인증 확인 용도)
-	 * 
-	 * @param user	현재 로그인한 사용자
-	 * @param member 사용자가 입력한 비밀번호를 포함한 MemberDto 객체
-	 * 
-	 * @return HTTP 응답 상태코드
-	 * 		- 200 OK: 비밀번호 확인 완료
-	 *      - 400 BAD REQUEST: 입력된 비밀번호가 null
-	 *      - 401 UNAUTHORIZED: 잘못된 비밀번호
-	 *      - 440 (Custom): JWT 토큰 인증되지 않음
-	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
-	 */
+     * 
+     * @param user         인증 컨텍스트에서 가져온 현재 로그인 사용자 정보
+     * @param request      HTTP 요청 객체 (쿠키 및 세션 확인용)
+     * @param response     HTTP 응답 객체 (갱신된 JWT 쿠키 설정용)
+     * @param member       사용자가 입력한 비밀번호 정보가 담긴 요청 본문
+     * 
+     * @throws UnauthorizedException 인증 정보가 없거나 유효하지 않은 경우
+     * @throws ForbiddenException    잘못된 검증 플래그
+     * @throws BadRequestException   입력된 닉네임이 null 또는 형식이 올바르지 않거나 HTML 태그가 포함된 경우
+     * 
+     * @return 성공 시 200 OK
+     */
 	@PostMapping("/verify-password")
-	public ResponseEntity<String> verifyPassword(@RequestBody MemberDto member, @AuthenticationPrincipal MemberDto user, HttpServletRequest request, HttpServletResponse response) throws Exception {
+	public ResponseEntity<String> verifyPassword(
+			@RequestBody MemberDto member, 
+			@AuthenticationPrincipal MemberDto user, 
+			HttpServletRequest request, 
+			HttpServletResponse response) {
 		
 		if(member.getUser_pw() == null || member.getUser_pw().isBlank()) throw new BadRequestException("비밀번호를 입력하세요.");
 		
@@ -379,61 +406,61 @@ public class MemberRestController {
 		
 		// 비밀번호 일치 여부 판단
 		if (encoder.matches(user_pw, encodePw)) { 
-			HttpSession session = request.getSession(false);
-			if (session == null) throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
-			session.setAttribute("verifyStatus", true);
+			String key = "auth:mypage:" + user.getUser_id();
+	        redisTemplate.opsForValue().set(key, "true", Duration.ofMinutes(10));
 			return new ResponseEntity<>(HttpStatus.OK);
 		} else {
 			throw new UnauthorizedException("비밀번호가 일치하지 않습니다.");
 		}
 	}
-		
+	
 	/**
-	 * 사용자의 비밀번호를 변경합니다.
+	 * 사용자의 비밀번호를 변경 후 로그아웃 처리 합니다.
 	 * 
-	 * @param user_pw 변경할 비밀번호
-	 * @return HTTP 응답 상태코드
-	 * 		- 200 OK: 비밀번호 변경 완료
-	 *      - 400 BAD REQUEST: 입력된 비밀번호가 null
-	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
+     * @param user		인증 컨텍스트에서 가져온 현재 로그인 사용자 정보
+	 * @param member 	변경할 비밀번호 정보가 담긴 요청 본문
+     * @param request   HTTP 요청 객체 
+     * @param response  HTTP 응답 객체 
+     * 
+     * @throws UnauthorizedException 인증 정보가 없거나 유효하지 않은 경우
+     * @throws ForbiddenException    잘못된 검증 플래그
+     * @throws BadRequestException   입력된 비밀번호가 null 또는 형식이 올바르지 않은 경우
+     * 
+     * @return 성공 시 200 OK
 	 */
 	@PutMapping(value = "/password")
-	public ResponseEntity<String> updatePw(HttpServletRequest request, @RequestBody MemberDto member) throws Exception {
-
-		/* FIXME: 비밀번호 변경 후 로그아웃 처리, 재로그인 하도록 함 
-		DB에서 비밀번호 변경 완료
-		RefreshToken 삭제 (DB에서 해당 유저 토큰 전부 제거)
-		SecurityContextHolder.clearContext()
-		request.getSession(false).invalidate()
-		쿠키 삭제 (Authorization, RefreshToken)
-		로그인 페이지로 리다이렉트
-		*/
-		
+	public ResponseEntity<String> updatePw(
+			@AuthenticationPrincipal MemberDto user, 
+			@RequestBody MemberDto member,
+			HttpServletRequest request,
+			HttpServletResponse response){
+        if (user == null || user.getUser_id() == null) {
+        	throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
+        }
+        
 		String password = member.getUser_pw();
 		
 		if(password == null || password.isEmpty()) throw new BadRequestException("비밀번호를 입력하세요.");
 		if(!ValidationUtils.validatePassword(password)) throw new BadRequestException("잘못된 비밀번호입니다.");
-			
-		HttpSession session = request.getSession();
-		Boolean verifyStatus = (Boolean) session.getAttribute("verifyStatus");
 		
-		if (verifyStatus == null || !verifyStatus) {
+		String userId = user.getUser_id();
+		String key = "auth:mypage:" + userId;
+		String status = redisTemplate.opsForValue().get(key);
+	    
+		if (!"true".equals(status)) {
 			 throw new ForbiddenException("유효하지 않은 인증 정보입니다.");
         }
 		
-        String userId = (String) request.getAttribute("userId");
-        if (userId == null) {
-        	throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
-        }
-        
-		member.setUser_id(userId);
-		
 		String encodePw = encoder.encode(password); // 비밀번호 인코딩
 
-		memberService.updatePw(member.getUser_id(), encodePw);
+		memberService.updatePw(userId, encodePw);
+		//RefreshToken 삭제
 		
-		// 민감한 정보 변경 후에는 검증 플래그 삭제
-		session.removeAttribute("verifyStatus");
+		// 검증 플래그 삭제
+		redisTemplate.delete("auth:mypage:" + userId);
+		
+		// 로그아웃 처리
+		AuthClearUtil.clearAuth(request, response);
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -441,45 +468,63 @@ public class MemberRestController {
 	/**
 	 * 사용자의 주소를 변경합니다.
 	 * 
-	 * @param address 변경할 주소
-	 * @return HTTP 응답 상태 코드
-	 * 		- 200 OK: 주소 변경 완료
-	 *      - 400 BAD REQUEST: 입력된 주소가 null
-	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
+	 * @param payload  주소("address") 정보를 담은 JSON 객체
+	 * @param authUser 인증 컨텍스트의 현재 사용자 정보
+	 * 
+	 * @return 200 OK: 주소 변경 완료
+	 * @throws BadRequestException 	주소값이 비어있거나 누락된 경우
+	 * @throws UnauthorizedException 로그인이 되어 있지 않은 경우
 	 */
 	@PutMapping("/address")
-	public ResponseEntity<String> updateAddress(@RequestBody MemberDto member, HttpServletRequest request) throws Exception {
+	public ResponseEntity<String> updateAddress(
+			@RequestBody Map<String, String> payload,
+			@AuthenticationPrincipal MemberDto user){
 		
-		String address = member.getAddress();
+		String address = payload.get("address");
 		if(address == null || address.isEmpty()) throw new BadRequestException("주소를 입력하세요.");
 		
-		String userId = (String) request.getAttribute("userId");
-    	
-		member.setUser_id(userId);
+		if(user == null || user.getUser_id() == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다.");
 		
-		memberService.updateAddress(member);
+		memberService.updateAddress(address, user.getUser_id());
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	/**
-	 * 회원 탈퇴
+	 * 회원 탈퇴를 진행 후 모든 인증 정보를 삭제합니다.
 	 * 
-	 * @return HTTP 응답 상태 코드
-	 * 		- 200 OK: 회원 탈퇴 완료
-	 *      - 500 INTERNAL SERVER ERROR: 서버 내부 오류 발생
+	 * 1. Redis 인증 플래그(auth:mypage) 확인 및 삭제
+	 * 2. 로그인 타입에 따른 소셜 연동 해제 (카카오/네이버)
+	 * 3. 로컬 DB 회원 데이터 삭제 및 인증 쿠키 초기화
+	 * 
+	 * @param user     인증 컨텍스트에서 가져온 현재 사용자 정보
+	 * @param request  HTTP 요청 객체 (쿠키 및 세션 접근용)
+	 * @param response HTTP 응답 객체 (쿠키 삭제용)
+	 * @return 성공 시 200 OK
+	 * @throws UnauthorizedException 로그인이 되어 있지 않은 경우
+	 * @throws ForbiddenException    잘못된 검증 플래그
 	 */
 	@DeleteMapping("/me")
-    public ResponseEntity<Void> deleteAccount(HttpServletRequest request, HttpServletResponse response) {
+    public ResponseEntity<Void> deleteAccount(
+    		@AuthenticationPrincipal MemberDto user,
+    		HttpServletRequest request, 
+    		HttpServletResponse response) {
+		
+		if(user == null || user.getUser_id() == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다.");
+		
+		String userId = user.getUser_id();
 		
     	// 1. 인증 플래그 확인
-		HttpSession session = request.getSession(false);
-		Boolean verifyStatus = session != null ? (Boolean) session.getAttribute("verifyStatus") : null;
-    	if(verifyStatus == null || !verifyStatus) throw new ForbiddenException("인증 정보가 유효하지 않습니다.");
-    	
+		String key = "auth:mypage:" + userId;
+		String status = redisTemplate.opsForValue().get(key);
+	    
+		if (!"true".equals(status)) {
+			 throw new ForbiddenException("유효하지 않은 인증 정보입니다.");
+        }
+		redisTemplate.delete(key);
+		
     	// 2. loginType 확인 (local, kakao, naver)
     	Cookie[] cookies = request.getCookies();
-    	
     	String loginType = jwtService.extractLoginType(request, response, cookies);
     	
     	if (loginType != null) {
@@ -507,28 +552,9 @@ public class MemberRestController {
     	}
     	
         // 4. 로컬 회원 탈퇴 
-    	String userId = (String)request.getAttribute("userId");
-    	
-        if (userId == null) {
-        	AuthClearUtil.clearAuth(request, response);
-        	log.error("회원 탈퇴 오류: 사용자 아이디 없음.");
-        	throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
-	    }
-        
-        // 5. 세션 userId 일관성 검증
-        String sessionUserId = session != null ? (String) session.getAttribute("userId") : null;
-        if (sessionUserId != null && !sessionUserId.equals(userId)) {
-        	AuthClearUtil.clearAuth(request, response);
-        	log.error("회원 탈퇴 오류: 토큰 정보와 세션 정보 불일치");
-        	throw new UnauthorizedException("인증 정보가 유효하지 않습니다. 다시 로그인 후 시도해주세요.");
-        }
-        
-        // 6. DB 삭제
+    	AuthClearUtil.clearAuth(request, response);
         memberService.deleteAccount(userId);
         
-        // 6. 인증정보 삭제 (로그아웃 처리)
-    	AuthClearUtil.clearAuth(request, response);
-    	
         return ResponseEntity.ok().build();
     }
 	
