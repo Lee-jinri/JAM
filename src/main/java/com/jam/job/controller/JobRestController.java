@@ -180,7 +180,7 @@ public class JobRestController {
 	        return "포지션을 선택해주세요.";
 	    }
 	    
-	    if(jobs.getCategory() == 0 && jobs.getCategory() == 0 && jobs.getPay() == null) {
+	    if(jobs.getCategory() == 0 && jobs.getPay() == null) {
 	    	return "급여를 입력하세요.";
 	    }
 	    
