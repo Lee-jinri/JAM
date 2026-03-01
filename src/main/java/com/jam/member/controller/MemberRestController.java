@@ -51,11 +51,11 @@ public class MemberRestController {
 	 * 회원 가입
 	 *
 	 * @param member 회원 정보 객체
-	 * @return 회원 가입 결과와 HTTP 상태 코드
-	 * @throws Exception 회원 가입 처리 중 예외 발생 시
+	 * @return 성공 시 200 OK
 	 */
 	@PostMapping(value = "/join", produces = "application/json")
-	public ResponseEntity<String> join(@RequestBody MemberDto member, HttpServletRequest request) throws Exception {
+	public ResponseEntity<String> join(
+			@RequestBody MemberDto member){
 		
 		ValidationUtils.validateUserInfo(member);
 		
@@ -69,7 +69,9 @@ public class MemberRestController {
 	}
 	
 	@GetMapping(value="/loginType")
-	public ResponseEntity<String> getLoginType(HttpServletRequest request, HttpServletResponse response) {
+	public ResponseEntity<String> getLoginType(
+			HttpServletRequest request, 
+			HttpServletResponse response) {
 		Cookie[] cookies = request.getCookies();
     	String loginType = jwtService.extractLoginType(request, response, cookies);
     	
@@ -87,7 +89,7 @@ public class MemberRestController {
 	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value = "/userId/check")
-	public ResponseEntity<String> idChk(@RequestParam String userId) throws Exception {
+	public ResponseEntity<String> idChk(@RequestParam String userId) {
 		if (userId == null || userId.isBlank()) {
 			throw new BadRequestException("아이디를 입력하세요.");
 		}
@@ -96,7 +98,7 @@ public class MemberRestController {
 		if(!ValidationUtils.validateUserId(userId)) throw new BadRequestException("아이디는 8~20자 이내로 영문, 숫자를 혼용하여 입력해 주세요");
 		
 		int result = memberService.idCheck(userId);
-		if(result != 0 )throw new ConflictException("이미 사용중인 아이디 입니다.");
+		if(result != 0)throw new ConflictException("이미 사용중인 아이디 입니다.");
 
 		return ResponseEntity.ok().build();
 	}
@@ -112,7 +114,7 @@ public class MemberRestController {
 	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value="/userName/check")
-	public ResponseEntity<String> nameChk(@RequestParam String userName) throws Exception {
+	public ResponseEntity<String> nameChk(@RequestParam String userName) {
 		if (userName == null || userName.trim().isEmpty()) {
 			throw new BadRequestException("닉네임을 입력하세요.");
 		}
@@ -133,13 +135,12 @@ public class MemberRestController {
 	 *
 	 * @param phone 사용자가 입력한 전화번호
 	 * @return 200 OK: 전화번호 사용 가능
+	 * 
 	 * @throws BadRequestException 전화번호가 비어있거나 형식이 올바르지 않은 경우
 	 * @throws ConflictException 이미 사용 중인 전화번호인 경우
-	 * 
-	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value = "/phone/check")
-	public ResponseEntity<String> phoneChk(@RequestParam String phone) throws Exception {
+	public ResponseEntity<String> phoneChk(@RequestParam String phone) {
 		if (phone == null || phone.trim().isEmpty()) {
 			throw new BadRequestException("전화번호를 입력하세요.");
 		}
@@ -162,11 +163,9 @@ public class MemberRestController {
 	 * @return 200 OK: 이메일 사용 가능
 	 * @throws BadRequestException 이메일이 비어있거나 형식이 올바르지 않은 경우
 	 * @throws ConflictException 이미 사용 중인 이메일인 경우
-	 * 
-	 * 오류 메시지는 GlobalExceptionHandler에서 JSON 응답의 detail 필드로 전달됨.
 	 */
 	@GetMapping(value = "/email/check")
-	public ResponseEntity<String> emailChk(@RequestParam String email) throws Exception {
+	public ResponseEntity<String> emailChk(@RequestParam String email) {
 
 		if (email == null || email.trim().isEmpty()) {
 			throw new BadRequestException("이메일을 입력하세요.");
@@ -189,10 +188,11 @@ public class MemberRestController {
 	 * @param String email 사용자가 입력한 이메일 
 	 * @param String phone 사용자가 입력한 전화번호
 	 * 
-	 * @return HTTP 응답 상태코드와 사용자의 아이디
+	 * @throws BadRequestException 이메일이나 전화번호가 비어있거나 형식이 올바르지 않은 경우
+	 * @return HTTP 응답 상태코드와 사용자의 마스킹된 아이디
 	 **/
 	@PostMapping(value = "/id/find")
-	public ResponseEntity<String> findId(@RequestBody MemberDto req) throws Exception {
+	public ResponseEntity<String> findId(@RequestBody MemberDto req) {
 		
 		String email = req.getEmail();
 		String phone = req.getPhone();
@@ -226,13 +226,14 @@ public class MemberRestController {
 	}
 	
 	/**
-	 * 사용자 정보를 확인 후 임시 비밀번호 발급합니다.
+	 * 사용자 정보(아이디, 이메일, 전화번호)를 확인 후 임시 비밀번호 발급합니다.
 	 * 
 	 * @param member 사용자의 아이디와 이메일, 전화번호를 포함한 객체
-	 * @return HTTP 응답 상태코드
+	 * @throws BadRequestException 사용자가 입력한 아이디, 이메일이나 전화번호가 비어있거나 형식이 올바르지 않은 경우
+	 * @return 성공 시 200 OK
 	 */
 	@PostMapping("/password/temp")
-	public ResponseEntity<String> issueTempPassword(@RequestBody MemberDto member) throws Exception {
+	public ResponseEntity<String> issueTempPassword(@RequestBody MemberDto member) {
 		// TODO: 현재는 임시비밀번호 발급 방식 사용 중
 		// 비밀번호 재설정 링크 방식으로 개선 예정
 
