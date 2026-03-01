@@ -1,9 +1,11 @@
 package com.jam.job.service;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -155,18 +157,25 @@ public class JobService {
 		return jobMapper.findPostInfo(post_id);
 	}
 
-	// 작성한 기업 공고
-	public List<JobDto> getMyJobPosts(JobDto jobs) {
-		return jobMapper.getMyJobPosts(jobs);
-	}
-	
-	// 작성한 멤버 모집 공고
-	public List<JobDto> getMyRecruitPosts(JobDto jobs) {
-		return jobMapper.getMyRecruitPosts(jobs);
+	// 작성한 공고
+	public List<JobDto> getMyPosts(JobDto job, Set<String> roles) {
+		if (roles.contains("ROLE_COMPANY")) {
+	        return jobMapper.getMyJobPosts(job);
+	    } else if (roles.contains("ROLE_USER")) {
+	        return jobMapper.getMyRecruitPosts(job);
+	    }
+		return Collections.emptyList();
 	}
 
 	// 작성한 공고 페이징
-	public int getMyPostCnt(JobDto job) {
+	public int getMyPostCnt(JobDto job, Set<String> roles) {
+		if (roles.contains("ROLE_COMPANY")) {
+			job.setCategory(0);
+	    } else if (roles.contains("ROLE_USER")) {
+	    	job.setCategory(1);
+	    }else {
+	        return 0;
+	    }
 		return jobMapper.getMyPostCnt(job);
 	}
 

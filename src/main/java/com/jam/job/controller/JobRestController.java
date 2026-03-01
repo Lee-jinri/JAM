@@ -1,17 +1,18 @@
 package com.jam.job.controller;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,7 +28,6 @@ import com.jam.common.dto.PageDto;
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.UnauthorizedException;
-import com.jam.global.jwt.JwtService;
 import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValidationUtils;
 import com.jam.global.util.ValueUtils;
@@ -37,7 +37,6 @@ import com.jam.job.service.JobService;
 import com.jam.member.dto.MemberDto;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +48,6 @@ import lombok.extern.slf4j.Slf4j;
 public class JobRestController {
 
 	private final JobService jobService;
-	private final JwtService jwtService;
 
 	/**
 	 * jobs 게시판 조회 API
@@ -135,7 +133,9 @@ public class JobRestController {
 	 *****************************/
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/post")
-	public ResponseEntity<String> writePost(@RequestBody JobDto jobs, @AuthenticationPrincipal MemberDto user) throws Exception{
+	public ResponseEntity<String> writePost(
+			@RequestBody JobDto jobs, 
+			@AuthenticationPrincipal MemberDto user){
 
 	    // 기본값 및 사용자 정보 세팅
 	    preprocessJobDto(jobs, user);
@@ -144,13 +144,23 @@ public class JobRestController {
 	        log.error("JOBS writePost JobDto is null");
 	        throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요.");
 	    }
-
+		
+		Set<String> roles = AuthorityUtils.authorityListToSet(user.getAuthorities());
+		if (roles.contains("ROLE_COMPANY")) {
+		    jobs.setCategory(0);
+		} else if (roles.contains("ROLE_USER")) {
+		    jobs.setCategory(1);
+		} else {
+			log.error("JOBS writePost 알 수 없는 권한: {}", roles);
+			throw new ForbiddenException("해당 메뉴에 접근할 권한이 없습니다.");
+		}
+		
 	    // 유효성 검사
 	    String validationError = validateJobDto(jobs);
 	    if (validationError != null) {
 	        throw new BadRequestException(validationError);
 	    }
-		
+	    
 		jobService.writePost(jobs);
 		
 		String post_id = jobs.getPost_id().toString();
@@ -170,7 +180,7 @@ public class JobRestController {
 	        return "포지션을 선택해주세요.";
 	    }
 	    
-	    if(jobs.getCategory() == 0 && jobs.getPay() == null) {
+	    if(jobs.getCategory() == 0 && jobs.getCategory() == 0 && jobs.getPay() == null) {
 	    	return "급여를 입력하세요.";
 	    }
 	    
@@ -204,8 +214,10 @@ public class JobRestController {
 	 ***********************************/
 	@PreAuthorize("isAuthenticated()")
 	@PutMapping("/post/{postId}")
-	public ResponseEntity<String> editPost(@PathVariable Long postId, @RequestBody JobDto jobs, @AuthenticationPrincipal MemberDto user) throws Exception{
-		
+	public ResponseEntity<String> editPost(
+			@PathVariable Long postId, 
+			@RequestBody JobDto jobs, 
+			@AuthenticationPrincipal MemberDto user) throws Exception{		
 		if (jobs == null) {
 	        log.error("JOBS editPost: 요청 본문이 비어 있습니다. (Jobs 데이터 누락)"); 
 		    throw new BadRequestException("시스템 오류입니다. 잠시 후 다시 시도하세요.");
@@ -216,6 +228,16 @@ public class JobRestController {
 
 		postId = ValidationUtils.requireValidId(postId);
 		jobs.setPost_id(postId);
+		
+		Set<String> roles = AuthorityUtils.authorityListToSet(user.getAuthorities());
+		if (roles.contains("ROLE_COMPANY")) {
+		    jobs.setCategory(0);
+		} else if (roles.contains("ROLE_USER")) {
+		    jobs.setCategory(1);
+		} else {
+			log.error("JOBS editPost 알 수 없는 권한: {}", roles);
+			throw new ForbiddenException("해당 메뉴에 접근할 권한이 없습니다.");
+		}
 		
 	    // 유효성 검사
 	    String validationError = validateJobDto(jobs);
@@ -304,8 +326,6 @@ public class JobRestController {
 	@GetMapping("/my/posts")
 	public ResponseEntity<Map<String, Object>> getPostings(
 			JobDto jobs, 
-			HttpServletRequest request,
-			HttpServletResponse response,
 			@CookieValue(name = "Authorization", required = true) String token,
 			@AuthenticationPrincipal MemberDto user){		
 		
@@ -314,24 +334,16 @@ public class JobRestController {
 		
 		if (jobs.getPositions() == null) jobs.setPositions(Collections.emptyList());
 
-		Map<String, Object> result = new HashMap<>();
-		List<JobDto> postings = new ArrayList<>();
+		Set<String> roles = AuthorityUtils.authorityListToSet(user.getAuthorities());
+		List<JobDto> postings = jobService.getMyPosts(jobs, roles);
 		
-		// FIXME: 이거 되는지 확인 필요
-		List<String> roles = jwtService.extractUserRole(request, response, token);
-		
-		if (roles.contains("ROLE_COMPANY")) {
-			postings = jobService.getMyJobPosts(jobs);
-		}else if (roles.contains("ROLE_USER")) {
-			postings = jobService.getMyRecruitPosts(jobs);
-		}
-		
-		result.put("postings", postings);
-		
-		int total = jobService.getMyPostCnt(jobs);
-		PageDto pageMaker = new PageDto(jobs, total);
-        result.put("pageMaker", pageMaker);
+		int total = jobService.getMyPostCnt(jobs, roles);
 
+		Map<String, Object> result = new HashMap<>();
+		result.put("category", jobs.getCategory());
+		result.put("postings", postings);
+        result.put("pageMaker", new PageDto(jobs, total));
+        
         return ResponseEntity.ok(result);
 	}
 	

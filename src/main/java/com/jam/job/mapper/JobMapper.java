@@ -40,7 +40,7 @@ public interface JobMapper {
 	// 작성한 기업 공고/ 멤버 모집 공고/ 페이징
 	public List<JobDto> getMyJobPosts(JobDto jobs);
 	public List<JobDto> getMyRecruitPosts(JobDto jobs);
-	public int getMyPostCnt(JobDto job_vo);
+	public int getMyPostCnt(JobDto job);
 
 	// 공고 마감
 	public int closePost(@Param("post_id") Long post_id, @Param("user_id") String user_id);
