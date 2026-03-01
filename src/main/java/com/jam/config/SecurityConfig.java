@@ -34,8 +34,7 @@ public class SecurityConfig {
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
     
     private static final String[] AUTH_REQUIRED_LIST = {
-            "/api/member/auth/check", "/api/member/me/token", "/api/member/logout",
-            "/oauth/kakao/logout", "/oauth/naver/logout", "/api/member/userName",
+            "/api/member/logout", "/oauth/kakao/logout", "/oauth/naver/logout", "/api/member/userName",
             "/api/member/phone", "/api/member/verify-password", "/api/member/password",
             "/api/member/address", "/api/member/deleteAccount", "/api/member/convertBusiness",
             "/api/chat/**", "/api/mypage/myPosts", "/api/mypage/account",

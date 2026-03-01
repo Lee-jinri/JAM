@@ -79,54 +79,6 @@ public class MemberRestController {
 	}
 	
 	/**
-	 * JWT 토큰 검증 후 JWT 토큰에 저장된 사용자의 아이디와 닉네임, 권한 정보를 반환합니다.
-	 * 
-	 * @return HTTP 응답 상태 코드와 사용자 정보를 포함한 객체
-	 */
-	@GetMapping(value = "/me/token", produces = MediaType.APPLICATION_JSON_VALUE)
-	@CrossOrigin
-	public ResponseEntity<MemberDto> getUserInfo(HttpServletResponse response, HttpServletRequest request) {
-		
-		MemberDto member = new MemberDto();
-		
-		if(response.getStatus() == 200) {
-			String userId = (String) request.getAttribute("userId");
-			String auth = (String) request.getAttribute("auth");
-			String userName = (String)request.getSession().getAttribute("userName");
-			
-			if(userId != null && userName != null && auth != null) {
-				
-				member.setUser_id(userId);
-				member.setRole(auth);
-				member.setUser_name(userName);
-				
-				return ResponseEntity.ok().body(member);
-			}
-		}else {
-			Cookie[] cookies = request.getCookies();
-			if(cookies != null) deleteJwtCookies(cookies, response);
-		}
-		
-		return ResponseEntity.ok().body(member);
-	}
-	
-	/**
-	 * 인증 여부 확인용 엔드포인트
-	 *
-	 * - 이 엔드포인트는 실제 로직은 없고, 인터셉터를 통해 인증 상태를 확인합니다.
-	 * - 인증된 사용자라면 200 OK를 반환하고, 인증되지 않은 사용자는 401 Unauthorized를 반환합니다.
-	 *
-	 * @return 200 OK (정상적으로 인증된 경우)
-	 */
-	@GetMapping("/auth/check")
-	public ResponseEntity<Void> checkAuthentication(HttpServletRequest request) {
-	    String userId = (String)request.getAttribute("userId");
-	    
-	    if(userId == null) throw new UnauthorizedException("인증되지 않은 사용자입니다.");
-        return ResponseEntity.ok().build();
-	}
-	
-	/**
 	 * 사용자가 입력한 아이디의 중복을 확인합니다.
 	 * 
 	 * @param userId 사용자가 입력한 아이디
