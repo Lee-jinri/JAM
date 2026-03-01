@@ -2,6 +2,7 @@
 <html 
 	xmlns:th="http://www.thymeleaf.org" 
 	xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+	xmlns:sec="http://www.thymeleaf.org/extras/spring-security"
 	layout:decorate="~{template/client/layout}">
 <head>
 <meta charset="UTF-8">
@@ -22,9 +23,7 @@
 				return;
 			}
 			
-			window.ROLE_COMPANY = !!window.ROLE_COMPANY;
-	
-			if (window.ROLE_COMPANY) {
+			if (window.MY_AUTH && window.MY_AUTH.includes('ROLE_COMPANY')) {
 				// 기업회원
 				$('#jobCategoryText').text("기업 구인");
 				$("#jobCategoryText").addClass("jam-type-company");
@@ -87,7 +86,7 @@
 			$("#update").click(function(){
 				let post_id = /*[[${post.post_id}]]*/ 'default_value';
 				let title = $("#job_title").val();
-				let content = $("#job_content").val();
+				let content = $('#job_content').summernote('code');
 				let pay = $("#pay").val() || null;
 				let category = window.ROLE_COMPANY ? '0' : '1';
 				let pay_category = $("#payNegotiable").is(":checked") ? '3' : $("#pay_category").val();
@@ -106,7 +105,7 @@
 					return false;
 				}
 				
-				if(category == '0'){
+				if (window.MY_AUTH && window.MY_AUTH.includes('ROLE_COMPANY')) {
 					if(pay_category === '3'){
 						pay = 0;
 					}else if(pay_category !== '3' && pay == null){
@@ -175,6 +174,24 @@
 				    alert(err.detail || '수정을 실패했습니다.');
 				});
 			})
+
+			$('.summernote').summernote({
+				toolbar: [
+				    ['fontname', ['fontname']],
+				    ['fontsize', ['fontsize']],
+				    ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
+				    ['color', ['forecolor','color']],
+				    ['table', ['table']],
+				    ['para', ['ul', 'ol', 'paragraph']],
+				    ['height', ['height']],
+				    ['insert',['picture','link','video']]
+				],
+				fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
+				fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
+				height: 450,
+				lang: "ko-KR",
+				placeholder : "내용을 작성하세요."
+			});
 		})
 		
 		function setInitialSelections(){
@@ -205,7 +222,7 @@
 		}
 		
 		function updateSelectedPosition(){
-			let position = /*[[${post.pay_category}]]*/ '';
+			let position = /*[[${post.position}]]*/ '';
 			
 			let $selectedPosition = $("input[name='position'][value='" + position + "']");
 			$selectedPosition.prop("checked", true);
@@ -363,24 +380,5 @@
 			</div>
 		</div>
 	</div>
-	<script th:inline="javascript">
-		$('.summernote').summernote({
-			toolbar: [
-			    ['fontname', ['fontname']],
-			    ['fontsize', ['fontsize']],
-			    ['style', ['bold', 'italic', 'underline','strikethrough', 'clear']],
-			    ['color', ['forecolor','color']],
-			    ['table', ['table']],
-			    ['para', ['ul', 'ol', 'paragraph']],
-			    ['height', ['height']],
-			    ['insert',['picture','link','video']]
-			],
-			fontNames: ['Arial', 'Arial Black', 'Comic Sans MS', 'Courier New','맑은 고딕','궁서','굴림체','굴림','돋움체','바탕체'],
-			fontSizes: ['8','9','10','11','12','14','16','18','20','22','24','28','30','36','50','72'],
-			height: 450,
-			lang: "ko-KR",
-			placeholder : "내용을 작성하세요."
-		});
-	</script>
 </body>
 </html>

@@ -21,10 +21,8 @@
 				return;
 			}
 			
-			window.ROLE_COMPANY = !!window.ROLE_COMPANY;
-	
-			if (window.ROLE_COMPANY) {
-				// 기업회원
+			if (window.MY_AUTH && window.MY_AUTH.includes('ROLE_COMPANY')) {
+			    // 기업회원
 				$('#jobCategoryText').text("기업 구인");
 				$("#jobCategoryText").addClass("jam-type-company");
 				$('.jam-pay-section').stop(true, true).slideDown(300);
@@ -72,7 +70,6 @@
 				let title = $("#job_title").val();
 				let job_content = $("#job_content").val();
 				let pay = $("#pay").val() || null;
-				let category = window.ROLE_COMPANY ? '0' : '1';
 				let pay_category = $("#payNegotiable").is(":checked") ? '3' : $("#pay_category").val();
 				let city = $("#city").val() || null;
 				let gu = $("#gu").val() || null;
@@ -85,8 +82,8 @@
 					$("#write").prop("disabled", false); 
 					return false;
 				}
-				
-				if(category === '0'){
+
+				if (window.MY_AUTH && window.MY_AUTH.includes('ROLE_COMPANY')) {
 					if(pay_category === '3'){
 						pay = 0;
 					}else if(pay_category !== '3' && pay == null){
@@ -120,7 +117,6 @@
 				var data = {
 						'title':title,
 						'content':job_content,
-						'category':category,
 						'pay':pay,
 						'pay_category':pay_category,
 						'position':position,
