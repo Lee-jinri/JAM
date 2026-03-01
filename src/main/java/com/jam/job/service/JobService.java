@@ -61,7 +61,7 @@ public class JobService {
 	}
 
 	//  글 작성
-	public int writePost(JobDto job) throws Exception {
+	public int writePost(JobDto job){
 		return jobMapper.writePost(job);
 	}
 
