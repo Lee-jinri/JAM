@@ -109,41 +109,6 @@ public class MemberService {
 		return accessToken;
 	}
 	
-	// 마이페이지 작성글
-	// FIXME: 이름이 너무 구리다
-	public List<CommunityDto> comMyWrite(CommunityDto com) {
-		return memberMapper.comMyWrite(com);
-	}
-
-	public List<FleaMarketDto> fleaMyWrite(FleaMarketDto flea) {
-		return memberMapper.fleaMyWrite(flea);
-	}
-	
-	public List<JobDto> jobMyWrite(JobDto job) {
-		return memberMapper.jobMyWrite(job);
-	}
-
-	public List<StudioDto> roomMyWrite(StudioDto studio) {
-		return memberMapper.roomMyWrite(studio);
-	}
-	
-	// 마이페이지 작성글 페이징
-	public int myComListCnt(CommunityDto com) {
-		return memberMapper.myComListCnt(com);
-	}
-
-	public int myFleaListCnt(FleaMarketDto flea) {
-		return memberMapper.myFleaListCnt(flea);
-	}
-
-	public int myJobListCnt(JobDto job) {
-		return memberMapper.myJobListCnt(job);
-	}
-
-	public int myRoomListCnt(StudioDto studio) {
-		return memberMapper.myRoomListCnt(studio);
-	}
-
 	// 아이디 찾기
 	public String FindId(String email, String phone) {
 		return memberMapper.findId(email, phone);
