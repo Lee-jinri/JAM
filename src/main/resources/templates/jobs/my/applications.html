@@ -170,7 +170,12 @@
 			if(act === 'withdraw'){
 				if(!confirm('지원을 취소하겠습니까?')) return;
 				try{
-					let res = await fetch('/api/jobs/applications/' + id + '/withdraw', {method:'DELETE'});
+					let res = await fetch('/api/jobs/applications/' + id + '/withdraw', {
+						method:'DELETE',
+		                headers: {
+				    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+		                }
+					});
 					if (!res.ok) {
 						const data = await res.json().catch(() => null);
 						let msg = data?.detail || data?.error || '지원 취소 중 오류가 발생했습니다.';

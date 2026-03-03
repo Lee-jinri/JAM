@@ -356,6 +356,10 @@
 					fetch('/api/member/me',{
 						method: 'DELETE',
 						credentials: 'include',
+		                headers: {
+		                    'Content-Type': 'application/json',
+				    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+		                }
 					})
 					.then(response =>{
 						if(response.ok){
@@ -413,7 +417,8 @@
 				method: 'POST',
 				credentials: 'include',
 			    headers: {
-			        'Content-Type': 'application/json'
+			        'Content-Type': 'application/json',
+		    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 			    },
 			    body: JSON.stringify({ user_pw: password }) 
 			})
@@ -533,6 +538,7 @@
 		            method: 'PUT',
 		            headers: {
 		                'Content-Type': 'application/json',
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 		            },
 		            body: JSON.stringify({
 		                user_name: new_name,
@@ -602,6 +608,7 @@
 		            method: 'PUT',
 		            headers: {
 		                'Content-Type': 'application/json',
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 		            },
 		            body: JSON.stringify({
 		                phone: new_phone,
@@ -646,7 +653,8 @@
 					method: 'PUT',
 					credentials: 'include',
 					headers: {
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 					},
 					body: JSON.stringify({
 						user_pw: new_pw
@@ -689,6 +697,7 @@
 				method: 'PUT',
 				headers: {
 		            'Content-Type': 'application/json',
+		    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 		        },
 		        body: JSON.stringify({
 		            address: address,

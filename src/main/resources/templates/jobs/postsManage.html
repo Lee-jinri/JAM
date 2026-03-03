@@ -361,7 +361,10 @@
 				const postId = $div.attr("data-post-id");
 				
 				fetch('/api/jobs/post/' + encodeURIComponent(postId), {
-					method: 'PATCH'
+					method: 'PATCH',
+					headers: {
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+	                }
 				})
 				.then(res => {
 					if (res.ok) {
@@ -405,7 +408,10 @@
 				}
 				
 				fetch('/api/jobs/post/' + encodeURIComponent(postId), {
-					method: 'DELETE'
+					method: 'DELETE',
+					headers: {
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+	                }
 				})
 				.then(res => {
 					if (res.ok) {

@@ -100,7 +100,8 @@
 				fetch("/api/member/login-process", {
 						method: "POST",
 						headers: {
-						"Content-Type": "application/x-www-form-urlencoded"
+						"Content-Type": "application/x-www-form-urlencoded",
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 					},
 					body: new URLSearchParams({
 						username: id,

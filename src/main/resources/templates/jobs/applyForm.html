@@ -301,9 +301,13 @@
 					content: content,
 					category: 1
 				};
+				
 				fetch('/api/jobs/applications', {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: { 
+						'Content-Type': 'application/json',
+				    	'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+					},
 					body: JSON.stringify(payload)
 				})
 				.then(res => { 
@@ -378,7 +382,10 @@
 				};
 				return fetch('/api/jobs/applications', {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: { 
+						'Content-Type': 'application/json',  
+				    	'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+					},
 					body: JSON.stringify(payload)
 				});
 			})
@@ -440,7 +447,10 @@
 				// presigned url 발급
 				return fetch('/api/files/upload-url', { 
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: { 
+						'Content-Type': 'application/json',
+				    	'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+					},
 					body: JSON.stringify({
 						file_name: file.name,
 						file_type: contentType,
@@ -456,7 +466,10 @@
 					// S3 PUT 업로드
 					return fetch(json.url, {
 						method: 'PUT',
-						headers: { 'Content-Type': json.contentType || contentType },
+						headers: { 
+							'Content-Type': json.contentType || contentType,
+					    	'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+						},
 						body: file
 					}).then(r => {
 						if (!r.ok) throw new Error('S3 업로드 실패(' + r.status + ')');

@@ -65,7 +65,12 @@
 			}
 	
 			try {
-				const res = await fetch('/api/jobs/applications/' + appId, {credentials:'same-origin'});
+				const res = await fetch('/api/jobs/applications/' + appId, {
+					credentials:'same-origin',
+	                headers: {
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+	                }
+				});
 				
 				if (!res.ok) {
 					const data = await res.json().catch(() => null);

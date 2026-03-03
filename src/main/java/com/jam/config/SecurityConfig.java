@@ -8,6 +8,9 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import com.jam.global.handler.CustomAccessDeniedHandler;
@@ -16,6 +19,7 @@ import com.jam.global.handler.CustomLoginFailureHandler;
 import com.jam.global.handler.CustomLoginSuccessHandler;
 import com.jam.global.handler.CustomLogoutHandler;
 import com.jam.global.handler.CustomLogoutSuccessHandler;
+import com.jam.global.security.CsrfCookieFilter;
 import com.jam.global.security.JwtAuthenticationFilter;
 
 import lombok.RequiredArgsConstructor;
@@ -42,8 +46,14 @@ public class SecurityConfig {
         };
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    	CsrfTokenRequestAttributeHandler requestHandler = new CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
+        
         http
-        	.csrf(csrf -> csrf.disable())
+        	.csrf(csrf -> csrf
+                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                .csrfTokenRequestHandler(requestHandler)
+            )
             .exceptionHandling(conf -> conf
                 .authenticationEntryPoint(customAuthEntryPoint)
                 .accessDeniedHandler(customAccessDeniedHandler)
@@ -71,7 +81,8 @@ public class SecurityConfig {
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
             )
             // JWT 필터 추가
-            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+            .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
         return http.build();
     }

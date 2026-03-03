@@ -243,7 +243,8 @@
 		    fetch("/api/community/my/posts", {
 		        method: "DELETE",
 		        headers: {
-		            "Content-Type": "application/json"
+		            "Content-Type": "application/json",
+    				'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 		        },
 		        body: JSON.stringify(ids)
 		    })

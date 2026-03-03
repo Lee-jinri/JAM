@@ -263,7 +263,11 @@
 			$(document).on("click", "#fleaDeleteBtn", function() {
 				if(confirm("정말 삭제하시겠습니까?")){
 					fetch('/api/fleaMarket/post/'+post_id,{
-						method: 'DELETE'
+						method: 'DELETE',
+		                headers: {
+		                    'Content-Type': 'application/json',
+				    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+		                }
 					})
 					.then(response =>{
 						if (!response.ok) {

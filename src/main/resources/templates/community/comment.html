@@ -103,10 +103,12 @@
 				const body = {
 					content: content
 				};
+
 				fetch("/community/posts/" + postId + "/comments",{
 					method: "POST",
 					headers: {
-						"Content-Type": "application/json"
+						"Content-Type": "application/json",
+	    				'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 				       },
 					body: JSON.stringify(body)
 				})
@@ -181,10 +183,12 @@
 				const data = {
 					'content': content
 				}
+				
 				fetch('/community/comments/' + commentId,{
 				    method: 'PUT',
 				    headers: {
-				        'Content-Type': 'application/json'
+				        'Content-Type': 'application/json',
+	    				'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 				    },
 				    body: JSON.stringify(data)
 				}).then(response => {
@@ -214,7 +218,11 @@
 				}
 
 				fetch('/community/comments/' + commentId,{
-					method: 'DELETE'
+					method: 'DELETE',
+				    headers: {
+				        'Content-Type': 'application/json',
+	    				'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+				    },
 				}).then(res => {
 					if (!res.ok) {
 						return res.json().then(err => {

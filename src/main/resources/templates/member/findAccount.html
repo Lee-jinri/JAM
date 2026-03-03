@@ -128,7 +128,10 @@
 				
 				fetch('/api/member/id/find', {
 					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
+					headers: { 
+						'Content-Type': 'application/json',
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+					},
 					credentials: 'same-origin',
 					body: JSON.stringify({ email, phone })
 				})
@@ -194,7 +197,8 @@
 				fetch('/api/member/password/temp', {
 					method: 'POST',
 					headers: {
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 					},
 					body: JSON.stringify({
 						user_id: user_id,

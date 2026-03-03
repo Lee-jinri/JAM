@@ -142,7 +142,8 @@
 		        fetch('/api/community/post', {
 		            method: 'PUT',
 		            headers: {
-		                'Content-Type': 'application/json'
+		                'Content-Type': 'application/json',
+	    				'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 		            },
 		            body: JSON.stringify(data)
 		        }).then(response => {
@@ -198,7 +199,8 @@
 				const res = await fetch('/api/files/upload-url', {
 					method: 'POST',
 					headers: { 
-						'Content-Type': 'application/json'
+						'Content-Type': 'application/json',
+						'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 					},
 					body: JSON.stringify({
 						file_name: optimized.name,
@@ -223,7 +225,10 @@
 				// 3. S3 업로드
 				await fetch(json.url, {
 					method: 'PUT',
-					headers: { 'Content-Type': contentType },
+					headers: { 
+						'Content-Type': contentType ,
+						'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+		    		},
 					body: optimized
 				});
 	

@@ -283,6 +283,9 @@
 					const response = await fetch('/api/fleaMarket/post/update',{
 						method :'POST',
 						body: formData,
+		                headers: {
+				    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+		                }
 					});
 					
 					if(response.ok){

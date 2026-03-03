@@ -128,7 +128,8 @@
 				fetch('/api/jobs/post', {
 				    method: 'POST',
 				    headers: {
-				        'Content-Type': 'application/json'
+				        'Content-Type': 'application/json',
+			    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
 				    },
 				    body: JSON.stringify(data)
 				})

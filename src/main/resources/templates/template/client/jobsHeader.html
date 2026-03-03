@@ -400,7 +400,11 @@
 		}
 		
 		fetch(uri, {
-		    method: 'POST'
+		    method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+	    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+            }
 	    })
 	    .then(() => {
 	    	location.reload();

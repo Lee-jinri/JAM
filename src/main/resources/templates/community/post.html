@@ -31,7 +31,11 @@
 				if(confirm("정말 삭제하시겠습니까?")){
 
 					fetch('/api/community/post/' + postId, {
-						method: 'DELETE'
+						method: 'DELETE',
+		                headers: {
+		                    'Content-Type': 'application/json',
+				    		'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+		                }
 					})
 					.then(response => {
 						if (!response.ok) {
