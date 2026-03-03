@@ -326,7 +326,7 @@ public class JobRestController {
 	@GetMapping("/my/posts")
 	public ResponseEntity<Map<String, Object>> getPostings(
 			JobDto jobs, 
-			@CookieValue(name = "Authorization", required = true) String token,
+			@CookieValue(name = "Authorization", required = false) String token,
 			@AuthenticationPrincipal MemberDto user){		
 		
 		String userId = ValidationUtils.requireLogin(user.getUser_id());

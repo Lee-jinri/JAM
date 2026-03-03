@@ -8,18 +8,19 @@ import java.util.Map;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.servlet.ModelAndView;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ConflictException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
-
-import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -123,7 +124,11 @@ public class GlobalExceptionHandler {
 	}
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<Map<String, Object>> handleAny(Exception ex, HttpServletRequest req) {
+    public ResponseEntity<Map<String, Object>> handleAny(Exception ex, HttpServletRequest req) throws Exception {
+    	if (ex instanceof AccessDeniedException || ex instanceof AuthorizationDeniedException) {
+            throw ex; 
+        }
+    	
     	log.error("500 INTERNAL_SERVER_ERROR:" + ex.getClass().getName());
     	log.warn("500 ERROR MESSAGE: " + ex.getMessage());
         ex.printStackTrace();
