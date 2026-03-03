@@ -24,9 +24,11 @@
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
     <!-- <script th:src="@{/js/userToggle.js}"></script> -->
     <!-- <link rel="stylesheet" th:href="@{/css/css/all.min.css}"> -->
+    <script th:inline="javascript">
+    	const isLogin = /*[[${#authentication.principal != 'anonymousUser'}]]*/ false;
+    </script>
     
     <script sec:authorize="isAuthenticated()" th:inline="javascript">
-    	const isLogin = /*[[${#authentication.principal != 'anonymousUser'}]]*/ false;
         window.MY_ID = /*[[${#authentication.name}]]*/ "";
         window.MY_NAME = /*[[${#authentication.principal.user_name}]]*/ "";
         
