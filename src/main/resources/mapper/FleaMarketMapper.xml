@@ -17,7 +17,8 @@
 			JOIN member m ON f.user_id = m.user_id
 			]]>
 		<trim prefix="WHERE" prefixOverrides="AND |OR ">
-			f.sales_status = 0
+			f.sales_status = 0 
+			AND m.deleted_at IS NULL
 			<if test="keyword != null and keyword != ''">
 				AND f.title LIKE '%' || #{keyword} || '%'
 			</if>
@@ -52,7 +53,8 @@
 			JOIN member m ON f.user_id = m.user_id
 		]]>
 		<trim prefix="WHERE" prefixOverrides="AND |OR ">
-			f.sales_status = 0
+			f.sales_status = 0 
+			AND m.deleted_at IS NULL
 			<if test="keyword != null and keyword != ''">
 				AND f.title LIKE '%' || #{keyword} || '%'
 			</if>
