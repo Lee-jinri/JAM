@@ -6,6 +6,9 @@ import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.stereotype.Component;
 
+import com.jam.global.exception.BadRequestException;
+import com.jam.member.service.MemberService;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -15,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatRoomFacade {
 
 	private final ChatService chatService;
+	private final MemberService memberService;
 	private final RedissonClient redissonClient;
     
 	// 채팅방 Id 조회
@@ -30,7 +34,12 @@ public class ChatRoomFacade {
 		try {
 			// 락 획득 시도
 			boolean isLocked = lock.tryLock(5, TimeUnit.SECONDS);
-			 
+			
+			boolean isTargetActive = memberService.isActiveUser(targetUserId); 
+	        if (!isTargetActive) {
+	            throw new BadRequestException("상대방이 탈퇴하여 채팅을 시작할 수 없습니다.");
+	        }
+	        
 			if (!isLocked) {
 				log.warn("락 획득 실패: {} & {}", userId, targetUserId);
 				throw new RuntimeException("잠시 후 다시 시도해주세요.");

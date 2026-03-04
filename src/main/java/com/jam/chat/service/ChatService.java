@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,23 +26,21 @@ import lombok.extern.slf4j.Slf4j;
 public class ChatService {
 
 	private final ChatMapper chatMapper;
-    //private final RedisTemplate<String, Object> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
     
 	public List<ChatRoomListDto> getChatRooms(String userId) {
 		List<ChatRoomListDto> chatList = new ArrayList<>();
 		String key = "chat:list:" + userId;
 		
-		/*
 	    @SuppressWarnings("unchecked")
 		List<ChatRoomListDto> cachedList = (List<ChatRoomListDto>) redisTemplate.opsForValue().get(key);
 
 	    if (cachedList != null) {
 	        return cachedList;
 	    }
-	    */
 		chatList = chatMapper.getChatRooms(userId);
 
-        //redisTemplate.opsForValue().set(key, chatList, 10, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key, chatList, 10, TimeUnit.MINUTES);
 		
 		return chatList;
 	}
@@ -48,16 +48,22 @@ public class ChatService {
     // 채팅방 Id 조회
  	@Transactional
  	public Long createChatRoomWithTransaction(String userId, String targetUserId, String pairKey) {
- 		// 락 획득 후 로직 수행 이미 방이 있는지 다시 확인
-        Long roomId = chatMapper.getChatRoomId(userId, targetUserId);
-        if (roomId == null) {
-            roomId = chatMapper.nextChatRoomId();
-            chatMapper.createChatRoomId(roomId, pairKey);
-            chatMapper.insertChatRoomUser(roomId, userId);
-            chatMapper.insertChatRoomUser(roomId, targetUserId);
-            log.info("새로운 채팅방 생성 완료: {}", roomId);
-        }
-		return roomId;
+ 		
+ 		try{
+ 			// 락 획득 후 로직 수행 이미 방이 있는지 다시 확인
+	        Long roomId = chatMapper.getChatRoomId(userId, targetUserId);
+	        if (roomId == null) {
+	            roomId = chatMapper.nextChatRoomId();
+	            chatMapper.createChatRoomId(roomId, pairKey);
+	            chatMapper.insertChatRoomUser(roomId, userId);
+	            chatMapper.insertChatRoomUser(roomId, targetUserId);
+	            log.info("새로운 채팅방 생성 완료: {}", roomId);
+	        }
+			return roomId;
+	 	} catch (DuplicateKeyException e) {
+	        // 이미 다른 스레드가 방을 만들었다면 만들어진 방 ID를 다시 찾아서 반환
+	        return chatMapper.getChatRoomId(userId, targetUserId);
+	    }
 	}
 	
 	public Map<String, String> getChatPartner(Long roomId, String userId) {
@@ -72,8 +78,8 @@ public class ChatService {
 		chat.setSentAt(LocalDateTime.now(ZoneId.of("Asia/Seoul")));
 		chatMapper.saveChat(chat);
 		
-		//redisTemplate.delete("chat:list:" + chat.getSenderId());
-		//redisTemplate.delete("chat:list:" + chat.getReceiverId());
+		redisTemplate.delete("chat:list:" + chat.getSenderId());
+		redisTemplate.delete("chat:list:" + chat.getReceiverId());
 	}
 	
 	public List<ChatDto> getMessages(Long roomId, String userId) {
