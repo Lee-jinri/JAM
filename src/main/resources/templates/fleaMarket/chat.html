@@ -344,16 +344,19 @@
 				
 				let retried = false;
 				socket.onopen = function() { 
-				  retried = false; 
-				  sendEnter(roomId); 
+					retried = false; 
+					sendEnter(roomId); 
 				};
 		
 				socket.onclose = function() {
-				  console.log("WebSocket is closed now.");
-				  if (currentRoomId && !retried) {
-				    retried = true;
-				    setTimeout(() => initWebSocket(currentRoomId), 2000);
-				  }
+					console.log("WebSocket is closed now.");
+					console.log("WebSocket 연결 종료 코드:", event.code);
+					console.log("WebSocket 종료 사유:", event.reason);
+				    console.log("클린 종료 여부:", event.wasClean);
+				  	if (currentRoomId && !retried) {
+				    	retried = true;
+				    	setTimeout(() => initWebSocket(currentRoomId), 2000);
+				  	}
 				};
 				
 				socket.onerror = function(error) {

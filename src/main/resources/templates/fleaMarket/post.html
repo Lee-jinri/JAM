@@ -299,6 +299,10 @@
 							if(confirm("로그인이 필요한 서비스입니다. 로그인 하시겠습니까?")){
 								window.location.href = '/member/login';
 							}
+						} else if(res.status === 400){
+							const data = await res.json();
+					        alert(data.detail);
+					        return;
 						} else {
 							alert("채팅방 정보를 불러오는 데 실패했습니다. 잠시 후 다시 시도해주세요.");
 						}
