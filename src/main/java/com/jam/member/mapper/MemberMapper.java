@@ -101,4 +101,7 @@ public interface MemberMapper {
 	void updateCompanyName(Map<String, String> param);
 	
 	void insertCompanyRole(Map<String, String> param);
+	
+	// 탈퇴한 사용자인지 확인
+	boolean isActiveUser(String targetUserId);
 }

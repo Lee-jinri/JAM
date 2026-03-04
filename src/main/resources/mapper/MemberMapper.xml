@@ -227,4 +227,14 @@
 			AND role_code = 'ROLE_COMPANY' 
 		)
 	</insert>
+	
+	<select id="isActiveUser" parameterType="String" resultType="boolean">
+		SELECT CASE WHEN EXISTS (
+	        SELECT 1 
+	        FROM member 
+	        WHERE user_id = #{userId} 
+	        AND deleted_at IS NULL
+	    ) THEN 1 ELSE 0 END AS result
+	    FROM DUAL
+	</select>
 </mapper>

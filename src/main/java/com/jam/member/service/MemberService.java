@@ -464,4 +464,9 @@ public class MemberService {
 		String key = "users:name:" + userId;
 		stringRedisTemplate.opsForValue().set(key, userName);
 	}
+
+	// 탈퇴한 사용자인지 확인 (true: 탈퇴하지 않음, false: 탈퇴함)
+	public boolean isActiveUser(String targetUserId) {
+		return memberMapper.isActiveUser(targetUserId);
+	}
 }
