@@ -68,13 +68,6 @@
 	    FROM member_role
 	    WHERE user_id = #{user_id}
 	</select>
-	
-	<!-- refresh token으로 회원 아이디 조회 -->
-	<select id="findUserIdByRefreshToken" parameterType="string" resultType="string">
-	    SELECT user_id
-	    FROM member
-	    WHERE refreshToken = #{refreshToken} AND deleted_at IS NULL
-	</select>
   	
   	<!-- 회원 닉네임 가져오기 -->
   	<select id="getUserName" resultType="String">

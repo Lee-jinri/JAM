@@ -3,7 +3,6 @@ package com.jam.member.service;
 import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -26,14 +25,10 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 
-import com.jam.community.dto.CommunityDto;
-import com.jam.fleaMarket.dto.FleaMarketDto;
 import com.jam.global.exception.ConflictException;
 import com.jam.global.exception.MailSendFailureException;
-import com.jam.job.dto.JobDto;
 import com.jam.member.dto.MemberDto;
 import com.jam.member.mapper.MemberMapper;
-import com.jam.studio.dto.StudioDto;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
@@ -449,10 +444,6 @@ public class MemberService {
 		Authentication authentication = authenticateUser(user);
 		
 		return authentication;
-	}
-
-	public String findUserIdByRefreshToken(String refreshToken) {
-		return memberMapper.findUserIdByRefreshToken(refreshToken);
 	}
 
 	public MemberDto findByUserInfo(String userId) {
