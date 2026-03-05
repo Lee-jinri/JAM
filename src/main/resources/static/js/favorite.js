@@ -29,6 +29,9 @@ function removeFavorite(postId, boardType, $icon){
 	
 	fetch(url,{
 		method: "DELETE",
+        headers: {
+			'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+        },
 	})
 	.then(response=>{
 		if(response.ok) {
@@ -68,6 +71,9 @@ function addFavorite(postId, boardType, $icon){
 	
 	fetch(url,{
 		method: "POST",
+        headers: {
+			'X-XSRF-TOKEN': getCookie('XSRF-TOKEN')
+        },
 	})
 	.then(response=>{
 		if(response.ok) $icon.removeClass("fa-regular").addClass("fa-solid"); // 즐겨찾기 추가
