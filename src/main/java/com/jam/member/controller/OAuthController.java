@@ -147,7 +147,8 @@ public class OAuthController {
 			// 2. access token 발급 및 쿠키 저장
 			Cookie kakaoAccessTokenCookie = new Cookie("kakaoAccessToken", accessToken);
 			kakaoAccessTokenCookie.setHttpOnly(true);   
-			kakaoAccessTokenCookie.setPath("/");       
+			kakaoAccessTokenCookie.setPath("/");  
+			kakaoAccessTokenCookie.setAttribute("SameSite", "Lax");     
 			kakaoAccessTokenCookie.setMaxAge(3 * 60 * 60);
 
 			response.addCookie(kakaoAccessTokenCookie);
@@ -420,7 +421,8 @@ public class OAuthController {
 		// 2. access token 발급 및 쿠키 저장 (사용자 정보 조회 및 로그아웃 등에 사용) 
 		Cookie naverAccessTokenCookie = new Cookie("naverAccessToken", accessToken);
 		naverAccessTokenCookie.setHttpOnly(true);   
-		naverAccessTokenCookie.setPath("/");       
+		naverAccessTokenCookie.setPath("/");  
+		naverAccessTokenCookie.setAttribute("SameSite", "Lax");         
 		naverAccessTokenCookie.setMaxAge(3 * 60 * 60);
 
 		response.addCookie(naverAccessTokenCookie);
@@ -587,12 +589,14 @@ public class OAuthController {
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(3 * 60 * 60);
+        accessTokenCookie.setAttribute("SameSite", "Lax");  
         response.addCookie(accessTokenCookie);
 
         Cookie refreshTokenCookie = new Cookie("RefreshToken", refreshToken);
         refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setPath("/"); 
         refreshTokenCookie.setMaxAge(24 * 60 * 60);
+        refreshTokenCookie.setAttribute("SameSite", "Lax"); 
         response.addCookie(refreshTokenCookie);
 	}
 	
@@ -603,6 +607,7 @@ public class OAuthController {
 	        Cookie cookie = new Cookie(name, null);
 	        cookie.setHttpOnly(true);
 	        cookie.setMaxAge(0);
+	        cookie.setAttribute("SameSite", "Lax");
 	        cookie.setPath("/");
 	        
 	        response.addCookie(cookie);

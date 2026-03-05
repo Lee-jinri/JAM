@@ -21,6 +21,7 @@ public final class AuthClearUtil {
 	    cookie.setHttpOnly(true);
 	    cookie.setPath("/");
 	    cookie.setMaxAge(0);
+	    cookie.setAttribute("SameSite", "Lax");
 	    response.addCookie(cookie);
 	}
 }

@@ -226,6 +226,7 @@ public class JwtService {
 		cookie.setHttpOnly(true);
 		cookie.setPath("/");
 		cookie.setMaxAge(maxAge);
+		cookie.setAttribute("SameSite", "Lax");
 		
 		response.addCookie(cookie);
 	}

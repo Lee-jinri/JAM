@@ -46,12 +46,14 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		accessTokenCookie.setHttpOnly(true);
 		accessTokenCookie.setPath("/");
 		accessTokenCookie.setMaxAge(3 * 60 * 60); // 3시간
+		accessTokenCookie.setAttribute("SameSite", "Lax");
 		response.addCookie(accessTokenCookie);
 
 		Cookie refreshTokenCookie = new Cookie("RefreshToken", token.getRefreshToken());
 		refreshTokenCookie.setHttpOnly(true);
 		refreshTokenCookie.setPath("/");
 		refreshTokenCookie.setMaxAge(autoLogin ? 30 * 24 * 60 * 60 : 24 * 60 * 60);
+		refreshTokenCookie.setAttribute("SameSite", "Lax");
 		response.addCookie(refreshTokenCookie);
 
 		response.setStatus(HttpServletResponse.SC_OK);

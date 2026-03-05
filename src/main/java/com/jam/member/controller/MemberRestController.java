@@ -625,6 +625,7 @@ public class MemberRestController {
         accessTokenCookie.setHttpOnly(true);
         accessTokenCookie.setPath("/");
         accessTokenCookie.setMaxAge(3 * 60 * 60);
+        accessTokenCookie.setAttribute("SameSite", "Lax");
         response.addCookie(accessTokenCookie);
 
         int maxAge = autoLogin? 30 * 24 * 60 * 60  : 24 * 60 * 60;
@@ -633,6 +634,7 @@ public class MemberRestController {
         refreshTokenCookie.setHttpOnly(true);
         refreshTokenCookie.setPath("/");
         refreshTokenCookie.setMaxAge(maxAge);
+        refreshTokenCookie.setAttribute("SameSite", "Lax");
         response.addCookie(refreshTokenCookie);
 	}
 
@@ -642,6 +644,7 @@ public class MemberRestController {
 	    Cookie cookie = new Cookie("Authorization", null);
 	    cookie.setHttpOnly(true);
 	    cookie.setPath("/");
+	    cookie.setAttribute("SameSite", "Lax");
 	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
 	    
 	    response.addCookie(cookie);
@@ -650,6 +653,7 @@ public class MemberRestController {
 	    Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
 	    refreshTokenCookie.setHttpOnly(true); 
 	    refreshTokenCookie.setMaxAge(0);
+	    refreshTokenCookie.setAttribute("SameSite", "Lax");
 	    refreshTokenCookie.setPath("/");
 	    
 	    response.addCookie(refreshTokenCookie);
@@ -659,6 +663,7 @@ public class MemberRestController {
 		Cookie cookie = new Cookie(cookieName, null);
 		cookie.setHttpOnly(true);	    
 		cookie.setMaxAge(0);
+		cookie.setAttribute("SameSite", "Lax");
 		cookie.setPath("/");
 	    
 	    response.addCookie(cookie);
