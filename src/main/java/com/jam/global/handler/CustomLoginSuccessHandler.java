@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
+import com.jam.global.util.SecurityUtil;
 import com.jam.member.service.MemberService;
 
 import jakarta.servlet.http.Cookie;
@@ -39,7 +40,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		boolean autoLogin = Boolean.parseBoolean(request.getParameter("autoLogin"));
 
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
-		memberService.addRefreshToken(userId, token.getRefreshToken());
+		memberService.addRefreshToken(userId, SecurityUtil.hashToken(token.getRefreshToken()));
 
 		Cookie accessTokenCookie = new Cookie("Authorization", token.getAccessToken());
 		accessTokenCookie.setHttpOnly(true);

@@ -70,7 +70,7 @@ public class JwtTokenProvider {
                 .and().compact();
         
         // Refresh Token 생성
-        String refreshToken = generateRefreshToken(autoLogin, loginType);
+        String refreshToken = generateRefreshToken(authentication.getName(), autoLogin, loginType);
         
         // Access Token과 Refresh Token을 발급
         return TokenInfo.builder()
@@ -80,13 +80,14 @@ public class JwtTokenProvider {
     }
     
     // refresh 토큰 생성
-    public String generateRefreshToken(boolean autoLogin, String loginType) {
-    	
+    public String generateRefreshToken(String userId, boolean autoLogin, String loginType) {
+    	log.info("==========================generateRefreshToken autoLogin: {}", autoLogin);
     	// 자동 로그인이면 유효 기간 30일, 아니면 1일 
         long expirationTime = autoLogin ? 30L * 24 * 3600 * 1000 : 24L * 3600 * 1000;
         
         // Refresh Token을 생성하고 서명
         String refreshToken = Jwts.builder()
+        		.subject(userId)
                 .claim("autoLogin", autoLogin)
                 .claim("loginType", loginType)
         		.id(UUID.randomUUID().toString()) // 고유 ID 설정
@@ -257,5 +258,15 @@ public class JwtTokenProvider {
 
 	public boolean extractAutoLogin(String token) {
 		return (boolean) getClaims(token).get("autoLogin");
+	}
+	
+	/**
+	 * RefreshToken의 UUID 값을 추출합니다.
+	 * @param token JWT 문자열 
+	 * @return Token에 저장된 Id
+	 */
+	public String extractJti(String token) {
+		Claims claims = getClaims(token);
+		return claims.getId();
 	}
 }

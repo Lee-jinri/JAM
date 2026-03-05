@@ -1,13 +1,16 @@
 package com.jam.global.jwt;
 
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.jam.global.jwt.TokenInfo.TokenStatus;
 import com.jam.global.util.AuthClearUtil;
+import com.jam.global.util.SecurityUtil;
 import com.jam.member.dto.MemberDto;
 import com.jam.member.service.MemberService;
 
@@ -25,6 +28,7 @@ public class JwtService {
 	
 	private final JwtTokenProvider jwtTokenProvider;
 	private final MemberService memberService;
+	private final StringRedisTemplate redisTemplate;
 	
 	/**
 	 * 쿠키에 저장된 토큰을 이용해 로그인된 사용자 정보를 반환
@@ -68,7 +72,7 @@ public class JwtService {
 				    if (accessToken == null && refreshToken == null) {
 				        return null;
 				    }
-
+				    
 				    // 토큰이 있는데 유효하지 않거나 만료된 경우에만 정리
 					if (refreshToken == null ||jwtTokenProvider.validateToken(refreshToken) != TokenStatus.VALID) {
 						
@@ -102,6 +106,12 @@ public class JwtService {
 		return null;
 	}
 	
+	/**
+	 * 토큰에 저장된 사용자 정보를 반환
+	 * 
+	 * @param 	accessToken 사용자 정보 추출용
+	 * @return ID, 닉네임, 회사명, 권한이 포함된 MemberDto 객체
+	 */
 	// NOTE: 토큰 기반 사용자 정보 (DB 최신 상태와 다를 수 있음)
 	public MemberDto extractUserInfoFromToken(String accessToken){
 		Claims claim = jwtTokenProvider.getClaims(accessToken);
@@ -120,50 +130,81 @@ public class JwtService {
 		return userInfo;
 	}
 	
-	private synchronized Authentication processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {
-		
-		// 쿠키에 새로 만든 토큰이 있는지 확인
-	    String currentAccessToken = extractToken(request.getCookies(), "Authorization");
-	    
-	    if (jwtTokenProvider.validateToken(currentAccessToken) == TokenStatus.VALID) {
-	    	MemberDto userInfo = extractUserInfoFromToken(currentAccessToken);
-	    
-	    	return new UsernamePasswordAuthenticationToken(userInfo, null, userInfo.getAuthorities());
-	    }
-	    
+	/**
+     * 리프레시 토큰을 검증하고 새로운 액세스 토큰을 발급합니다.
+     * 
+     * [동시성 제어]
+     * 동일 사용자의 여러 요청이 동시에 들어올 경우 중복 갱신을 방지하기 위해 synchronized 처리.
+     * 첫번째 요청이 토큰을 갱신하면 아주 짧은 시간 차로 들어온 다음 요청은 
+     * DB에 저장된 Refresh Token과의 대조와 Redis의 유예 기간(10초)을 확인하여 인증을 승인합니다.
+     * 
+     * @param refreshToken 클라이언트로부터 전달받은 리프레시 토큰 원본
+     * @return 인증 객체(Authentication), 검증 실패 시 null
+     */
+	private synchronized Authentication processRefreshToken(String refreshToken, HttpServletResponse response, HttpServletRequest request, boolean autoLogin) {	    
 		log.info("processRefreshToken 진입");
 		
-		// 1. RefreshToken으로 사용자 정보 가져옴.
-		String userId = memberService.findUserIdByRefreshToken(refreshToken);
+		String userId = jwtTokenProvider.extractUserId(refreshToken);
+		String jti = jwtTokenProvider.extractJti(refreshToken);
+		if (userId == null || userId.isEmpty() || jti == null) return null;
+
+		String key = "refresh:prev:" + userId + ":" + jti;
 		
-		if (userId == null || userId.isEmpty()) {
-		    log.error("[JWT] refreshToken으로 사용자 정보 조회 실패");
-		    return null;
+		// DB에 저장된 refreshToken과 사용자가 보낸 토큰을 대조
+		String encodedRefreshToken = memberService.getRefreshToken(userId);
+		if (encodedRefreshToken == null || !SecurityUtil.matches(refreshToken, encodedRefreshToken)) { 
+			log.error("[JWT] DB RefreshToken 불일치. encodedRefreshToken: {}, refreshToken: {}", encodedRefreshToken, refreshToken);
+			
+			if (redisTemplate.hasKey(key)) {
+		        log.info("[JWT] 동시 요청으로 인해 이미 갱신 처리된 토큰. 인증을 허용합니다.");
+		        return createAuthentication(userId);
+		    }
+			
+			return null;
 		}
 		
+		return renewTokens(userId, refreshToken, jti, response, autoLogin);
+	}
+	
+	/**
+     * Security Authentication 객체를 생성합니다.
+     * (토큰 갱신 없이 인증 정보만 필요할 때 사용)
+     */
+	private Authentication createAuthentication(String userId) {
 		MemberDto userInfo = memberService.findByUserInfo(userId);
-
-    	String loginType = jwtTokenProvider.extractLoginType(refreshToken);
     	
-    	// 2. SecurityContext에 Authentication 설정
     	Authentication authentication = new UsernamePasswordAuthenticationToken(
     			userInfo, null,  userInfo.getAuthorities());
-    	
-        // 3. 새로운 토큰 갱신
-        TokenInfo token = jwtTokenProvider.generateToken(authentication, autoLogin, loginType);
-        
-        // 4. 새로운 JWT 토큰 쿠키에 저장 및 RefreshToken DB에 저장
-        // MaxAge : 3시간
-        addCookieToResponse(response, "Authorization", token.getAccessToken(), 3 * 60 * 60);
-        
-        memberService.addRefreshToken(userId, token.getRefreshToken());
-        
-        int maxAge = autoLogin? 30 * 24 * 60 * 60 : 24 * 60 * 60;
-        addCookieToResponse(response, "RefreshToken", token.getRefreshToken(), maxAge);
-        
-        log.info("[JWT] 새로운 AccessToken/RefreshToken 발급 - userId: " + userId + " loginType: " + loginType);
+		
+		return authentication;
+	}
+	
+	/**
+     * 새로운 토큰(Access/Refresh)을 발급하고 DB와 쿠키를 업데이트합니다.
+     * 발급 후 이전 토큰의 JTI를 Redis에 10초간 기록하여 동시 요청에 대비합니다.
+     */
+	private Authentication renewTokens(String userId, String oldToken, String jti, HttpServletResponse response, boolean autoLogin) {
+	    MemberDto userInfo = memberService.findByUserInfo(userId);
+	    String loginType = jwtTokenProvider.extractLoginType(oldToken);
+	    
+	    Authentication auth = new UsernamePasswordAuthenticationToken(userInfo, null, userInfo.getAuthorities());
+	    TokenInfo newToken = jwtTokenProvider.generateToken(auth, autoLogin, loginType);
 
-        return authentication;
+	    // DB 업데이트 및 쿠키 설정
+	    memberService.addRefreshToken(userId, SecurityUtil.hashToken(newToken.getRefreshToken()));
+	    
+	    addCookieToResponse(response, "Authorization", newToken.getAccessToken(), 3 * 60 * 60);
+	    
+	    int maxAge = autoLogin ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
+	    addCookieToResponse(response, "RefreshToken", newToken.getRefreshToken(), maxAge);
+
+	    // 갱신 전 토큰의 JTI를 Redis에 기록하여 유예 기간 부여.
+	    // 동시 요청 시 이미 갱신된 이전 토큰으로 접근하는 스레드를 10초간 허용.
+	    String key = "refresh:prev:" + userId + ":" + jti;
+	    redisTemplate.opsForValue().set(key, "1", 10, TimeUnit.SECONDS);
+
+        log.info("[JWT] 새로운 AccessToken/RefreshToken 발급 - userId: " + userId + " loginType: " + loginType);
+	    return auth;
 	}
 	
 	// 쿠키에서 토큰 추출
@@ -234,7 +275,6 @@ public class JwtService {
         return jwtTokenProvider.extractLoginType(token);
     }
 
-
     /**
      * 인증 객체(Authentication)로부터 JWT 토큰을 발급
      *
@@ -267,7 +307,6 @@ public class JwtService {
 		
 		return jwtTokenProvider.extractUserRole(accessToken);
 	}
-	
 	
 	/**
 	 * JWT 토큰에서 자동 로그인 여부를 추출합니다.
