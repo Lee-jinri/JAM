@@ -18,6 +18,7 @@ import org.springframework.stereotype.Component;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.global.jwt.TokenInfo.TokenStatus;
+import com.jam.global.util.CookieEnum;
 import com.jam.member.dto.MemberDto;
 
 import io.jsonwebtoken.Claims;
@@ -64,7 +65,7 @@ public class JwtTokenProvider {
                 .claim("userName", userName)
                 .claim("companyName", companyName)
                 .claim("loginType", loginType)
-                .expiration(new Date(System.currentTimeMillis() + 3 * 3600 * 1000))
+                .expiration(new Date(System.currentTimeMillis() + (long) CookieEnum.ACCESS_TOKEN.getExpiry() * 1000))
                 .signWith(key)
                 .header().add("typ", "JWT")
                 .and().compact();
@@ -81,9 +82,10 @@ public class JwtTokenProvider {
     
     // refresh 토큰 생성
     public String generateRefreshToken(String userId, boolean autoLogin, String loginType) {
-    	log.info("==========================generateRefreshToken autoLogin: {}", autoLogin);
+    	
     	// 자동 로그인이면 유효 기간 30일, 아니면 1일 
-        long expirationTime = autoLogin ? 30L * 24 * 3600 * 1000 : 24L * 3600 * 1000;
+        CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
+        long expirationTime = refreshConfig.getExpiry() * 1000L;
         
         // Refresh Token을 생성하고 서명
         String refreshToken = Jwts.builder()
@@ -92,7 +94,7 @@ public class JwtTokenProvider {
                 .claim("loginType", loginType)
         		.id(UUID.randomUUID().toString()) // 고유 ID 설정
         		.issuedAt(new Date())
-                .expiration(new Date(System.currentTimeMillis() + expirationTime)) 
+                .expiration(new Date(System.currentTimeMillis() + expirationTime))
                 .signWith(key)
                 .compact();
         
