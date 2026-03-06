@@ -10,10 +10,11 @@ import org.springframework.stereotype.Component;
 
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
+import com.jam.global.util.CookieEnum;
+import com.jam.global.util.CookieUtil;
 import com.jam.global.util.SecurityUtil;
 import com.jam.member.service.MemberService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -42,19 +43,20 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
 		memberService.addRefreshToken(userId, SecurityUtil.hashToken(token.getRefreshToken()));
 
-		Cookie accessTokenCookie = new Cookie("Authorization", token.getAccessToken());
-		accessTokenCookie.setHttpOnly(true);
-		accessTokenCookie.setPath("/");
-		accessTokenCookie.setMaxAge(3 * 60 * 60); // 3시간
-		accessTokenCookie.setAttribute("SameSite", "Lax");
-		response.addCookie(accessTokenCookie);
-
-		Cookie refreshTokenCookie = new Cookie("RefreshToken", token.getRefreshToken());
-		refreshTokenCookie.setHttpOnly(true);
-		refreshTokenCookie.setPath("/");
-		refreshTokenCookie.setMaxAge(autoLogin ? 30 * 24 * 60 * 60 : 24 * 60 * 60);
-		refreshTokenCookie.setAttribute("SameSite", "Lax");
-		response.addCookie(refreshTokenCookie);
+		CookieUtil.addCookie(
+				response, 
+			    CookieEnum.ACCESS_TOKEN.getName(), 
+			    token.getAccessToken(), 
+			    CookieEnum.ACCESS_TOKEN.getExpiry()
+			);
+		
+		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
+		CookieUtil.addCookie(
+				response, 
+				refreshConfig.getName(), 
+				token.getRefreshToken(), 
+				refreshConfig.getExpiry()
+			);
 
 		response.setStatus(HttpServletResponse.SC_OK);
 		response.setContentType("application/json;charset=UTF-8");

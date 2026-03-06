@@ -8,10 +8,9 @@ import org.springframework.stereotype.Component;
 
 import com.jam.global.jwt.JwtTokenProvider;
 import com.jam.global.jwt.TokenInfo.TokenStatus;
-import com.jam.global.util.AuthClearUtil;
+import com.jam.global.util.CookieUtil;
 import com.jam.member.service.MemberService;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -31,13 +30,7 @@ public class CustomLogoutHandler implements LogoutHandler  {
     @Override
     public void logout(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
     	try {
-    		String accessToken = "";
-    		
-    		for (Cookie cookie : request.getCookies()) {
-				if (cookie.getName().equals("Authorization")) {
-					accessToken = cookie.getValue();
-				}
-			}
+    		String accessToken = CookieUtil.getValue(request, "Authorization");
     		
     		if (accessToken == null || accessToken.isBlank()) {
     		    log.warn("로그아웃 요청: 토큰이 없음");
@@ -69,7 +62,7 @@ public class CustomLogoutHandler implements LogoutHandler  {
     		log.error(e.getMessage());
     	} finally {
     		// 세션, JWT 토큰 쿠키 삭제
-    		AuthClearUtil.clearAuth(request, response);
+    		CookieUtil.clearAuthCookies(request, response);
         }
     }
 }

@@ -1,6 +1,5 @@
 package com.jam.member.controller;
 
-import java.net.URI;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,13 +28,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
+import com.jam.global.util.CookieEnum;
+import com.jam.global.util.CookieUtil;
 import com.jam.member.dto.MemberDto;
 import com.jam.member.service.MemberService;
 
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -145,13 +145,12 @@ public class OAuthController {
 			String accessToken = getKakaoAccessToken(code);
 			
 			// 2. access token 발급 및 쿠키 저장
-			Cookie kakaoAccessTokenCookie = new Cookie("kakaoAccessToken", accessToken);
-			kakaoAccessTokenCookie.setHttpOnly(true);   
-			kakaoAccessTokenCookie.setPath("/");  
-			kakaoAccessTokenCookie.setAttribute("SameSite", "Lax");     
-			kakaoAccessTokenCookie.setMaxAge(3 * 60 * 60);
-
-			response.addCookie(kakaoAccessTokenCookie);
+			CookieUtil.addCookie(
+					response, 
+					CookieEnum.KAKAO_ACCESS_TOKEN.getName(), 
+					accessToken, 
+					CookieEnum.KAKAO_ACCESS_TOKEN.getExpiry()
+				);
 			
 			// 3. 사용자 정보 조회 및 회원 처리
 			Map<String, Object> userInfo = getKakaoUserInfo(accessToken);
@@ -174,7 +173,19 @@ public class OAuthController {
 			memberService.addRefreshToken((String)userInfo.get("user_id"), token.getRefreshToken());
 			
 			// 5. JWT 쿠키 저장
-			setCookies(response, token.getAccessToken(), token.getRefreshToken());
+	    	CookieUtil.addCookie(
+	    			response, 
+				    CookieEnum.ACCESS_TOKEN.getName(), 
+				    token.getAccessToken(), 
+				    CookieEnum.ACCESS_TOKEN.getExpiry()
+				);
+			
+			CookieUtil.addCookie(
+					response, 
+					CookieEnum.REFRESH_TOKEN.getName(), 
+					token.getRefreshToken(), 
+					CookieEnum.REFRESH_TOKEN.getExpiry()
+				);
 			
 			// 6. 로그인 이전 페이지로 리다이렉트
 			if (prevPage == null || prevPage.isBlank() || prevPage.startsWith("http") || prevPage.equals("null")) {
@@ -337,7 +348,7 @@ public class OAuthController {
 		// 4. 로컬 로그아웃 로직
 	    try {
 	        SecurityContextHolder.clearContext();
-	        deleteCookies(response, "kakaoAccessToken");
+	        CookieUtil.deleteCookie(response, "kakaoAccessToken");
 	    } catch (Exception e) {
 	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
 	    }
@@ -419,14 +430,13 @@ public class OAuthController {
 		String accessToken = getNaverAccessToken(code, state);
 		
 		// 2. access token 발급 및 쿠키 저장 (사용자 정보 조회 및 로그아웃 등에 사용) 
-		Cookie naverAccessTokenCookie = new Cookie("naverAccessToken", accessToken);
-		naverAccessTokenCookie.setHttpOnly(true);   
-		naverAccessTokenCookie.setPath("/");  
-		naverAccessTokenCookie.setAttribute("SameSite", "Lax");         
-		naverAccessTokenCookie.setMaxAge(3 * 60 * 60);
-
-		response.addCookie(naverAccessTokenCookie);
-		
+		CookieUtil.addCookie(
+				response, 
+				CookieEnum.NAVER_ACCESS_TOKEN.getName(), 
+				accessToken, 
+				CookieEnum.NAVER_ACCESS_TOKEN.getExpiry()
+			);
+				
 		// 3. 사용자 정보 조회 및 회원 처리
 		Map<String, Object> userInfo = getNaverUserInfo(accessToken);
 		
@@ -446,7 +456,18 @@ public class OAuthController {
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "naver");
 		
 		// 5. JWT 쿠키 저장
-		setCookies(response, token.getAccessToken(), token.getRefreshToken());
+		CookieUtil.addCookie(
+				response, 
+				CookieEnum.ACCESS_TOKEN.getName(), 
+				token.getAccessToken(), 
+				CookieEnum.ACCESS_TOKEN.getExpiry()
+			);
+		CookieUtil.addCookie(
+				response, 
+				CookieEnum.REFRESH_TOKEN.getName(), 
+				token.getRefreshToken(), 
+				CookieEnum.REFRESH_TOKEN.getExpiry()
+			);
 		
 		// 6. 로그인 이전 페이지로 리다이렉트
 		if (prevPage == null || prevPage.isBlank() || prevPage.startsWith("http") || prevPage.equals("null")) {
@@ -574,43 +595,11 @@ public class OAuthController {
 	    // 3. 로컬 로그아웃 로직
 	    try {
 	        SecurityContextHolder.clearContext();
-	        deleteCookies(response, "naverAccessToken");
+	        CookieUtil.deleteCookie(response, "naverAccessToken");
 	    } catch (Exception e) {
 	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
 	    }
 		
 		return ResponseEntity.ok().build();
-	}
-	
-	private void setCookies(HttpServletResponse response, String accessToken, String refreshToken) {
-		
-		// 쿠키에 jwt 토큰 저장
-		Cookie accessTokenCookie = new Cookie("Authorization", accessToken);
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(3 * 60 * 60);
-        accessTokenCookie.setAttribute("SameSite", "Lax");  
-        response.addCookie(accessTokenCookie);
-
-        Cookie refreshTokenCookie = new Cookie("RefreshToken", refreshToken);
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/"); 
-        refreshTokenCookie.setMaxAge(24 * 60 * 60);
-        refreshTokenCookie.setAttribute("SameSite", "Lax"); 
-        response.addCookie(refreshTokenCookie);
-	}
-	
-	private void deleteCookies(HttpServletResponse response, String tokenKeyName) {
-	    String[] cookieNames = { tokenKeyName, "Authorization", "RefreshToken" };
-
-	    for (String name : cookieNames) {
-	        Cookie cookie = new Cookie(name, null);
-	        cookie.setHttpOnly(true);
-	        cookie.setMaxAge(0);
-	        cookie.setAttribute("SameSite", "Lax");
-	        cookie.setPath("/");
-	        
-	        response.addCookie(cookie);
-	    }
 	}
 }

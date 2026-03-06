@@ -25,7 +25,8 @@ import com.jam.global.exception.NotFoundException;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
-import com.jam.global.util.AuthClearUtil;
+import com.jam.global.util.CookieEnum;
+import com.jam.global.util.CookieUtil;
 import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValidationUtils;
 import com.jam.member.dto.MemberDto;
@@ -314,8 +315,22 @@ public class MemberRestController {
 
     	Authentication authentication = memberService.updateUserNameAndTokens(user, autoLogin, loginType, response);
     	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
-    	setJwtCookies(token, response, autoLogin);
     	
+    	CookieUtil.addCookie(
+    			response, 
+			    CookieEnum.ACCESS_TOKEN.getName(), 
+			    token.getAccessToken(), 
+			    CookieEnum.ACCESS_TOKEN.getExpiry()
+			);
+		
+		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
+		CookieUtil.addCookie(
+				response, 
+				refreshConfig.getName(), 
+				token.getRefreshToken(), 
+				refreshConfig.getExpiry()
+			);
+		
     	// 검증 플래그 삭제
     	redisTemplate.delete(key);
     	
@@ -391,7 +406,7 @@ public class MemberRestController {
 		if(member.getUser_pw() == null || member.getUser_pw().isBlank()) throw new BadRequestException("비밀번호를 입력하세요.");
 		
 		if(user == null || user.getUser_id().equals("")) {
-			AuthClearUtil.clearAuth(request, response);
+			CookieUtil.clearAuthCookies(request, response);
 			
 			log.error("VerifyPassword: userId is null.");
 			throw new UnauthorizedException("로그인 정보가 만료되었습니다. 다시 로그인 후 시도해주세요.");
@@ -461,7 +476,7 @@ public class MemberRestController {
 		redisTemplate.delete("auth:mypage:" + userId);
 		
 		// 로그아웃 처리
-		AuthClearUtil.clearAuth(request, response);
+		CookieUtil.clearAuthCookies(request, response);
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
@@ -532,28 +547,28 @@ public class MemberRestController {
     		// 3. 소셜 연결 끊기
             switch (loginType) {
                 case "kakao":
-                	String kakaoAccessToken = getCookieValue(cookies, "kakaoAccessToken");
+                	String kakaoAccessToken = CookieUtil.getValue(request, "kakaoAccessToken");
                 	
             		if (kakaoAccessToken != null) {
             	        memberService.kakaoDeleteAccount(kakaoAccessToken);
             	    }
             		
-            		if(cookies != null)	deleteCookie(cookies, response, "kakaoAccessToken");
+            		CookieUtil.deleteCookie(response, "kakaoAccessToken");
             		break;
             		
                 case "naver":
-                	String naverAccessToken = getCookieValue(cookies, "naverAccessToken");
+                	String naverAccessToken = CookieUtil.getValue(request, "naverAccessToken");
 
                 	if(naverAccessToken != null)
             			memberService.naverDeleteAccount(naverAccessToken);
             			
-                	if(cookies != null)	deleteCookie(cookies, response, "naverAccessToken");
+                	CookieUtil.deleteCookie(response, "naverAccessToken");
             		break;
             }
     	}
     	
         // 4. 로컬 회원 탈퇴 
-    	AuthClearUtil.clearAuth(request, response);
+    	CookieUtil.clearAuthCookies(request, response);
         memberService.deleteAccount(userId);
         
         return ResponseEntity.ok().build();
@@ -604,68 +619,21 @@ public class MemberRestController {
     	
     	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
 		
-    	setJwtCookies(token, response, autoLogin);
+    	CookieUtil.addCookie(
+    			response, 
+			    CookieEnum.ACCESS_TOKEN.getName(), 
+			    token.getAccessToken(), 
+			    CookieEnum.ACCESS_TOKEN.getExpiry()
+			);
+		
+		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
+		CookieUtil.addCookie(
+				response, 
+				refreshConfig.getName(), 
+				token.getRefreshToken(), 
+				refreshConfig.getExpiry()
+			);
 
 		return ResponseEntity.ok("기업회원 전환 성공");
-	}
-	
-	private String getCookieValue(Cookie[] cookies, String name) {
-	    if (cookies == null) return null;
-	    for (Cookie cookie : cookies) {
-	        if (name.equals(cookie.getName())) {
-	            return cookie.getValue();
-	        }
-	    }
-	    return null;
-	}
-	
-	private void setJwtCookies(TokenInfo tokenInfo, HttpServletResponse response, boolean autoLogin) {
-		// 쿠키에 jwt 토큰 저장
-		Cookie accessTokenCookie = new Cookie("Authorization", tokenInfo.getAccessToken());
-        accessTokenCookie.setHttpOnly(true);
-        accessTokenCookie.setPath("/");
-        accessTokenCookie.setMaxAge(3 * 60 * 60);
-        accessTokenCookie.setAttribute("SameSite", "Lax");
-        response.addCookie(accessTokenCookie);
-
-        int maxAge = autoLogin? 30 * 24 * 60 * 60  : 24 * 60 * 60;
-        
-        Cookie refreshTokenCookie = new Cookie("RefreshToken", tokenInfo.getRefreshToken());
-        refreshTokenCookie.setHttpOnly(true);
-        refreshTokenCookie.setPath("/");
-        refreshTokenCookie.setMaxAge(maxAge);
-        refreshTokenCookie.setAttribute("SameSite", "Lax");
-        response.addCookie(refreshTokenCookie);
-	}
-
-	private void deleteJwtCookies(Cookie[] cookies, HttpServletResponse response) {
-
-		// Authorization 쿠키 삭제
-	    Cookie cookie = new Cookie("Authorization", null);
-	    cookie.setHttpOnly(true);
-	    cookie.setPath("/");
-	    cookie.setAttribute("SameSite", "Lax");
-	    cookie.setMaxAge(0);  // 쿠키 만료 시간 0으로 설정
-	    
-	    response.addCookie(cookie);
-	    
-	    // refreshToken 쿠키 삭제
-	    Cookie refreshTokenCookie = new Cookie("RefreshToken", null);
-	    refreshTokenCookie.setHttpOnly(true); 
-	    refreshTokenCookie.setMaxAge(0);
-	    refreshTokenCookie.setAttribute("SameSite", "Lax");
-	    refreshTokenCookie.setPath("/");
-	    
-	    response.addCookie(refreshTokenCookie);
-	}
-	
-	private void deleteCookie(Cookie[] cookies, HttpServletResponse response, String cookieName) {
-		Cookie cookie = new Cookie(cookieName, null);
-		cookie.setHttpOnly(true);	    
-		cookie.setMaxAge(0);
-		cookie.setAttribute("SameSite", "Lax");
-		cookie.setPath("/");
-	    
-	    response.addCookie(cookie);
 	}
 }

@@ -9,7 +9,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
 import com.jam.global.jwt.TokenInfo.TokenStatus;
-import com.jam.global.util.AuthClearUtil;
+import com.jam.global.util.CookieEnum;
+import com.jam.global.util.CookieUtil;
 import com.jam.global.util.SecurityUtil;
 import com.jam.member.dto.MemberDto;
 import com.jam.member.service.MemberService;
@@ -47,7 +48,7 @@ public class JwtService {
 	public Authentication getAuthentication(Cookie[] cookies, HttpServletRequest request, HttpServletResponse response){
 				
 		try {
-			String accessToken = extractToken(cookies, "Authorization");
+			String accessToken = CookieUtil.getValue(request, "Authorization");
 			
 			TokenStatus tokenStatus = jwtTokenProvider.validateToken(accessToken);
 			
@@ -66,7 +67,7 @@ public class JwtService {
 					return authentication;
 				case EXPIRED:
 				case EMPTY:
-					String refreshToken = extractToken(cookies, "RefreshToken");
+					String refreshToken = CookieUtil.getValue(request, "RefreshToken");
 					
 					// 비로그인 사용자
 				    if (accessToken == null && refreshToken == null) {
@@ -76,7 +77,7 @@ public class JwtService {
 				    // 토큰이 있는데 유효하지 않거나 만료된 경우에만 정리
 					if (refreshToken == null ||jwtTokenProvider.validateToken(refreshToken) != TokenStatus.VALID) {
 						
-						AuthClearUtil.clearAuth(request, response);
+						CookieUtil.clearAuthCookies(request, response);
 						return null;
 					}
 	
@@ -88,19 +89,19 @@ public class JwtService {
 						
 						return authentication;
 					}else {
-						AuthClearUtil.clearAuth(request, response);
+						CookieUtil.clearAuthCookies(request, response);
 					}
 					
 					return null;
 				case INVALID:
 					log.warn("[JWT] 유효하지 않은 토큰");
 					
-					AuthClearUtil.clearAuth(request, response);
+					CookieUtil.clearAuthCookies(request, response);
 	                return null;
 			}
 		}catch(Exception e) {
 	        log.error("[JWT] 내부 처리 중 예외 발생", e);
-	        AuthClearUtil.clearAuth(request, response);
+	        CookieUtil.clearAuthCookies(request, response);
 	    }
 		
 		return null;
@@ -193,11 +194,21 @@ public class JwtService {
 	    // DB 업데이트 및 쿠키 설정
 	    memberService.addRefreshToken(userId, SecurityUtil.hashToken(newToken.getRefreshToken()));
 	    
-	    addCookieToResponse(response, "Authorization", newToken.getAccessToken(), 3 * 60 * 60);
-	    
-	    int maxAge = autoLogin ? 30 * 24 * 60 * 60 : 24 * 60 * 60;
-	    addCookieToResponse(response, "RefreshToken", newToken.getRefreshToken(), maxAge);
-
+	    CookieUtil.addCookie(
+	    		response, 
+			    CookieEnum.ACCESS_TOKEN.getName(), 
+			    newToken.getAccessToken(), 
+			    CookieEnum.ACCESS_TOKEN.getExpiry()
+			);
+		
+		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
+		CookieUtil.addCookie(
+				response, 
+				refreshConfig.getName(), 
+				newToken.getRefreshToken(), 
+				refreshConfig.getExpiry()
+			);
+		
 	    // 갱신 전 토큰의 JTI를 Redis에 기록하여 유예 기간 부여.
 	    // 동시 요청 시 이미 갱신된 이전 토큰으로 접근하는 스레드를 10초간 허용.
 	    String key = "refresh:prev:" + userId + ":" + jti;
@@ -205,30 +216,6 @@ public class JwtService {
 
         log.info("[JWT] 새로운 AccessToken/RefreshToken 발급 - userId: " + userId + " loginType: " + loginType);
 	    return auth;
-	}
-	
-	// 쿠키에서 토큰 추출
-	public String extractToken(Cookie[] cookies, String tokenName) {
-        if (cookies != null) {
-			for (Cookie cookie : cookies) {
-				if (cookie.getName().equals(tokenName)) {
-					return cookie.getValue();
-				}
-			}
-		}
-        
-		return null;
-	}
-
-	// 쿠키 추가
-	private void addCookieToResponse(HttpServletResponse response, String name, String value, int maxAge) {
-		Cookie cookie = new Cookie(name, value);
-		cookie.setHttpOnly(true);
-		cookie.setPath("/");
-		cookie.setMaxAge(maxAge);
-		cookie.setAttribute("SameSite", "Lax");
-		
-		response.addCookie(cookie);
 	}
 	
 	/**
@@ -240,10 +227,10 @@ public class JwtService {
 	 * @return 로그인 타입 문자열 또는 유효하지 않을 경우 null
 	 */
 	public String extractUserId(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
-		String token = extractToken(cookies, "Authorization");
+		String token = CookieUtil.getValue(request, "Authorization");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-			AuthClearUtil.clearAuth(request, response);
+			CookieUtil.clearAuthCookies(request, response);
             log.warn("유효하지 않은 토큰입니다.");
 
             return null;
@@ -264,10 +251,10 @@ public class JwtService {
 	 */
     public String extractLoginType(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
         
-    	String token = extractToken(cookies, "Authorization");
+    	String token = CookieUtil.getValue(request, "Authorization");
     	
     	if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-    		AuthClearUtil.clearAuth(request, response);
+    		CookieUtil.clearAuthCookies(request, response);
             log.warn("유효하지 않은 토큰입니다.");
 
             return null;
@@ -300,7 +287,7 @@ public class JwtService {
 	public List<String> extractUserRole(HttpServletRequest request, HttpServletResponse response, String accessToken) {
 		
 		if (accessToken == null || jwtTokenProvider.validateToken(accessToken) != TokenStatus.VALID) {
-			AuthClearUtil.clearAuth(request, response);
+			CookieUtil.clearAuthCookies(request, response);
             log.warn("유효하지 않은 토큰입니다.");
 
             return null;
@@ -316,10 +303,10 @@ public class JwtService {
 	 * @return 사용자의 자동 로그인 여부 (true, false)
 	 * */
 	public Boolean extractAutoLogin(HttpServletRequest request, HttpServletResponse response, Cookie[] cookies) {
-		String token = extractToken(cookies, "RefreshToken");
+		String token = CookieUtil.getValue(request, "RefreshToken");
 		
 		if (token == null || jwtTokenProvider.validateToken(token) != TokenStatus.VALID) {
-			AuthClearUtil.clearAuth(request, response);
+			CookieUtil.clearAuthCookies(request, response);
             log.warn("유효하지 않은 토큰입니다.");
 
             return null;
