@@ -65,7 +65,6 @@
 	<select id="listCnt" parameterType="community" resultType="int">
 	    SELECT count(*)
 	    FROM community c
-	    LEFT JOIN member m ON c.user_id = m.user_id
 	    <where>
 			1=1
 		    <include refid="comSearch"></include>
