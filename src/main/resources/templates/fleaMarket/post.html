@@ -284,15 +284,8 @@
 			});
 			
 			$(document).on("click", "#chatBtn", async function(){
-				var targetId = this.dataset.targetId;
-				
-				if (!targetId) {
-					alert("사용자 정보를 불러올 수 없습니다.");
-					return;
-				}
-				
 				try {		
-					const res = await fetch('/api/chat/chatRoomId?targetUserId=' + targetId);
+					const res = await fetch('/api/chat/chatRoomId?postId=' + post_id);
 	
 					if (!res.ok) {
 						if (res.status === 401) {

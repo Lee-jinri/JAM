@@ -230,6 +230,11 @@
 		  AND rnum <= #{pageNum} * #{amount}
 		]]>
 	</select>
-
+	
+	<select id="getWriterIdByPostId" parameterType="Long" resultType="String">
+		SELECT user_id
+		FROM fleaMarket
+		WHERE post_id = #{postId}
+	</select>
 
 </mapper>

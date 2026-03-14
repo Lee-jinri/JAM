@@ -188,4 +188,8 @@ public class FleaMarketService {
 	public List<ImageFileDto> getImages(Long post_id) {
 		return imageFileMapper.getImages(post_id, "FLEA");
 	}
+
+	public String getWriterIdByPostId(Long postId) {
+		return fleaMapper.getWriterIdByPostId(postId);
+	}
 }

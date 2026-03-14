@@ -43,4 +43,6 @@ public interface FleaMarketMapper {
 	public Long getNextPostId();
 
 	public List<FleaMarketDto> getFavorites(FleaMarketDto flea);
+
+	public String getWriterIdByPostId(Long postId);
 }
