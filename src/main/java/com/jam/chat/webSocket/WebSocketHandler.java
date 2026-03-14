@@ -179,11 +179,6 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             }
         }
     }
-
-    // 닫힌 세션을 chatRoomSession에서 제거
-    private void removeClosedSession(Set<WebSocketSession> chatRoomSession) {
-        chatRoomSession.removeIf(sess -> !sessions.contains(sess));
-    }
     
     private void sendMessage(WebSocketSession session, String type, Object data) {
         if (session == null || !session.isOpen()) {
