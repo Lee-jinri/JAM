@@ -7,8 +7,12 @@
 		<if test="keyword != null and keyword != ''">
 			<![CDATA[
 			AND (
-				LOWER(c.title) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
-        		OR LOWER(c.content) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
+				c.post_id IN (
+	                SELECT post_id FROM community WHERE LOWER(title) LIKE '%' || LOWER(#{keyword}) || '%'
+	                UNION ALL
+	                SELECT post_id FROM community WHERE CONTAINS(content, '{' || #{keyword} || '}') > 0
+	            )
+	            
 			)
 			]]>
 		</if>
