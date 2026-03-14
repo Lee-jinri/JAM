@@ -79,6 +79,7 @@
 			c.title,
 			m.user_name, 
 			c.comment_count,
+			c.view_count,
 			(c.view_count * 1 + c.comment_count * 5) AS popularity_score
 		FROM community c
 		JOIN member m ON c.user_id = m.user_id
