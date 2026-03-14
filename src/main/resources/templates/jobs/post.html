@@ -10,72 +10,6 @@
 
 <script th:src="@{/js/favorite.js}"></script>
 	<style>
-		.post-title{
-		    font-size: 20px;
-		    font-weight: 700;
-		}
-		.job-meta-box {
-		    background-color: #f9f9f9;
-		    border: 1px solid #eee;
-		    border-radius: 8px;
-		    padding: 12px;
-		    margin-bottom: 16px;
-		    max-width: 400px;
-		}
-		
-		.job-meta-row {
-		    display: flex;
-		    justify-content: space-between;
-		    padding: 6px 0;
-		    border-bottom: 1px solid #f0f0f0;
-		}
-		
-		.job-meta-row:last-child {
-		    border-bottom: none;
-		}
-		
-		.job-meta-label {
-		    color: #444;
-		    font-size: 16px;
-		}
-		
-		.job-status {
-		    margin: 16px 0;
-		    padding: 8px;
-		    background-color: #ffefef;
-		    color: #d9534f;
-		    font-weight: bold;
-		    text-align: center;
-		    border-radius: 4px;
-		}
-		
-		.post-actions{
-			justify-content: center;
-		    display: flex;
-		    align-items: center;
-		    gap: 12px; 
-		    margin-top: 16px;
-		}
-		
-		#apply {
-			background-color: #ff5722; 
-			color: #fff;
-			padding: 10px 20px;
-			border: none;
-			border-radius: 6px;
-			font-size: 14px;
-			font-weight: 600;
-			cursor: pointer;
-			transition: background-color 0.2s, transform 0.1s, box-shadow 0.2s;
-		}
-		#apply:hover {
-			background-color: #e64a19; 
-			box-shadow: 0 4px 10px rgba(255, 87, 34, 0.3);
-			transform: translateY(-2px);
-		}
-		#apply:active {
-			transform: translateY(1px);
-		}
 		
 		.favoriteSpan {
 			display: flex;
@@ -97,6 +31,8 @@
 		.favoriteSpan:hover {
 			color: #ff9800; 
 		}
+		
+		
 		.post-buttons {
 			position: relative;
 			display: flex;
@@ -123,22 +59,16 @@
 		.post-view-count{
 			margin-left: 15px;
 		}
-		.company-name{
-			font-weight:800;
-			font-size:1.125rem; /* 18px */
-			letter-spacing:.2px;
-			color:#111827;
-		}
 		.post-info i{ font-size: 16px;}
 		
 		/* ====== 480px 이하 ====== */
 		@media (max-width: 480px) {
-			.post-title{ height: 30px;
-			}
+			.post-title{ height: 20px; font-size: 13px;}
 			.post-info {
 			    & i, 
 			    & #created_at, 
-			    & #view_count {
+			    & #view_count,
+			    & .post-view-count {
 			        font-size: 12px;
 			        color: #999;
 			    }
@@ -146,6 +76,7 @@
 			#created_at{margin-left: 5px;}
 			.post-view-count{ margin-left: 8px;}
 			.post-header{margin: 0 10px;}
+			#post-content> p{font-size: 13px;}
 		}
 		
 	</style>

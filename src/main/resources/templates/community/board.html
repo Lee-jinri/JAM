@@ -35,7 +35,12 @@
 			box-shadow: 0 2px 4px rgba(123, 134, 170, 0.2);
 		}
 		
+		.favoriteDiv {width: 3rem;}
 		
+		@media (max-width: 600px) {
+			.favoriteDiv {width: fit-content;}
+			.favoriteSpan{font-size: 14px;}
+		}
 	</style>
 	<script th:inline="javascript">
 		const boardState = {
@@ -142,33 +147,41 @@
 		}
 		
 		function renderList(data){
-			let $template = $("#boardTemplate");
-			let $boardList = $("#boardList");
-			       
-			$boardList.empty(); 
-			
-			data.communityList.forEach(board => {
-				let $clone = $template.clone().removeAttr("id").show();
-							           
-				$clone.find(".userName").text(board.user_name);
-				$clone.find(".boardDate").text(timeAgo(board.created_at));
-				$clone.find(".boardTitle").text(board.title);
-				$clone.find(".boardHits").text("조회 " +board.view_count);
-				$clone.find(".boardReplyCnt").text(board.comment_count);
-				$clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
-							
-				let $favoriteSpan = $clone.find(".favoriteSpan");
-				$favoriteSpan.attr("data-post-id", board.post_id);
-				$favoriteSpan.attr("data-board-type", "COM");
-							 		
-				let $icon = $favoriteSpan.find("i"); 
-				board.favorite ? $icon.addClass("fa-solid")
-							   : $icon.addClass("fa-regular");
-							
-				$boardList.append($clone);
-			});
-			       
-			loadPagination(data.pageMaker);
+		    let html = "";
+		    
+		    data.communityList.forEach(board => {
+		        html += `
+		            <li class="border-bottom">
+		                <div class="boardLink cursor-pointer pd-2rem flex items-center" data-location="/community/post/${board.post_id}">
+		                    <div class="favoriteDiv flex items-center justify-center">
+		                        <span class="favoriteSpan" data-post-id="${board.post_id}" data-board-type="COM">
+		                            <i class="favorite fa-star ${board.favorite ? 'fa-solid' : 'fa-regular'}" style="color: #FFD43B; cursor: pointer;"></i>
+		                        </span>
+		                    </div>
+		                    <div class="title-container flex-1 flex items-center cursor-pointer">
+		                        <div class="flex items-center">
+		                            <span class="font-size-5 boardTitle">${board.title}</span>
+		                            <span class="ml-05 boardReplyCnt">${board.comment_count}</span>
+		                        </div>
+		                    </div>
+		                    <div class="userName-div my-bottom-2 flex">
+		                        <span class="userName">${board.user_name}</span>
+		                    </div>
+		                    <div class="date-container flex-1 text-right">
+		                        <div class="my-bottom-2">
+		                            <span class="boardDate">${timeAgo(board.created_at)}</span>
+		                        </div>
+		                        <div class="flex items-center justify-end my-top-2">
+		                            <span class="ml-05 boardHits">조회 ${board.view_count}</span>
+		                        </div>
+		                    </div>
+		                </div>
+		            </li>
+		        `;
+		    });
+		    
+		    $("#boardList").html(html);
+		    loadPagination(data.pageMaker);
 		}
 		
 		const popularState = {
@@ -303,7 +316,7 @@
 				        <li id="boardTemplate" class="border-bottom" >
 				            <div class="boardLink cursor-pointer pd-2rem flex items-center " >
 				                
-				                <div class="flex items-center justify-center " style="width: 3rem;">
+				                <div class="favoriteDiv flex items-center justify-center ">
 				                    <span class="favoriteSpan">
 				                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
 				                    </span>

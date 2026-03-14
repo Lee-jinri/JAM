@@ -9,6 +9,11 @@
 <script th:src="@{/js/community/board.js}"></script>
 	<style>
 	
+		.favoriteDiv {width: 3rem;}
+		@media (max-width: 600px) {
+			.favoriteDiv {width: fit-content; margin: 0;}
+			.favoriteSpan{font-size: 14px;}
+		}
 	</style>
 	<script th:inline="javascript">
 		$(function(){
@@ -179,7 +184,7 @@
 					        <li id="boardTemplate" class="border-bottom" >
 					            <div class="boardLink cursor-pointer pd-2rem flex items-center " >
 					                
-					                <div class="flex items-center justify-center ml-2 mr-2" style="width: 3rem;">
+					                <div class="favoriteDiv flex items-center justify-center">
 					                    <span class="favoriteSpan">
 					                        <i class="favorite fa-star" style="color: #FFD43B; cursor: pointer;"></i>
 					                    </span>

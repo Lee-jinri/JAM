@@ -3,12 +3,6 @@
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
     
     <style>
-		@media screen and (max-width: 768px) {
-		  
-		  #header_name{
-		  	font-size: 12px;
-		  }
-		}
 		
 		header {
 		    width: 100%;
@@ -143,6 +137,38 @@
 		.font-color-orange{
 		    color: #FDD77F;
 		}
+		
+		
+		.mypage_toggle_li {
+		    padding: 6px;
+		}
+		
+		.mypage_toggle_li span {
+		    font-size: 11px;
+		    color: #999; 
+		    letter-spacing: -0.02em;
+		    text-transform: uppercase;
+		}
+		
+		.mypage_toggle_btn {
+		    padding: 0;
+		}
+		
+		.mypage_toggle_btn span {
+		    display: block;
+		    padding: 13px 20px;
+		    font-size: 14px;
+		    color: #5a5a5a;
+		}
+		
+		.mypage_toggle_btn:hover span {
+		    color: #8ab4f8;
+		}
+		
+		.menu-divider {
+		    height: 1px;
+		    background-color: #eee;
+		}
 		/* 모바일 반응형 */
 		@media screen and (max-width: 900px) {
 			#headerNav{
@@ -179,8 +205,8 @@
 		  
 			#mobileMenu a {
 				text-align: center;
-				padding: 14px 20px;
-				margin: 4px 12px;
+				padding: 10px 20px;
+				/*margin: 4px 12px;*/
 				font-size: 14px;
 				font-weight: 500;
 				color: #333;
@@ -205,35 +231,17 @@
 			}
 		}
 		
-		.mypage_toggle_li {
-		    padding: 6px;
-		}
-		
-		.mypage_toggle_li span {
-		    font-size: 11px;
-		    color: #999; 
-		    letter-spacing: -0.02em;
-		    text-transform: uppercase;
-		}
-		
-		.mypage_toggle_btn {
-		    padding: 0;
-		}
-		
-		.mypage_toggle_btn span {
-		    display: block;
-		    padding: 13px 20px;
-		    font-size: 14px;
-		    color: #5a5a5a;
-		}
-		
-		.mypage_toggle_btn:hover span {
-		    color: #8ab4f8;
-		}
-		
-		.menu-divider {
-		    height: 1px;
-		    background-color: #eee;
+		@media screen and (max-width: 768px) {
+			 #header_name{
+			 	font-size: 12px;
+			 }
+		  
+			.neo-btn{
+				font-size: 11px;
+			}
+			.mypage_toggle{
+				right: 30px;
+			}
 		}
     </style>
 
@@ -344,7 +352,7 @@
 		<div class="header-container">
 			<div class="nav-container">    
 				<div class="header-left">
-					<button id="mobile-menu-btn"><i class="fa-solid fa-bars"></i></button>
+					<button id="mobile-menu-btn"><i class="fa-solid fa-bars" style="color: #292929;"></i></button>
 					<a th:href="@{/}" class="flex">
 		                <img class="nav-icon" th:src="@{/images/JAM-logo.png}" alt="JAM">
 		            </a>
