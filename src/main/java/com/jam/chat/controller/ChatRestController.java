@@ -38,7 +38,7 @@ public class ChatRestController {
      * - 현재 로그인한 사용자의 채팅방 목록을 조회
 	 * 
 	 * @param user	현재 로그인한 사용자
-	 * @return List<ChatRoomListVO> 채팅 상대방 정보와 마제막 메시지, 전송 시간
+	 * @return List<ChatRoomListVO> 채팅 상대방 정보와 마지막 메시지, 전송 시간
      */
     @GetMapping(value="/chatRooms")
     public ResponseEntity<List<ChatRoomListDto>> getChatRooms(

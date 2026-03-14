@@ -49,6 +49,7 @@ public class CommunityRestController {
 	 * @param user		현재 로그인한 사용자 (nullable, 각 게시글의 즐겨찾기(별표) 활성화 여부를 판단하는 데 사용)
 	 * @param pageNum	요청한 페이지 번호
 	 * @param keyword	검색 키워드 (없을 경우 전체 조회)
+	 * @param total		전체 게시글 개수 (nullable)
 	 * @return communityList(커뮤니티 글 목록), pageMaker(페이징 정보)
 	 ****************************************************/
 	@GetMapping(value = "board")
@@ -56,6 +57,7 @@ public class CommunityRestController {
 			HttpServletRequest request,
 			@RequestParam (defaultValue = "1")int pageNum,
 			@RequestParam(required=false) String keyword,
+			@RequestParam(defaultValue = "0") int total,
 			@AuthenticationPrincipal MemberDto user){
 			
 		CommunityDto community = new CommunityDto();
@@ -75,7 +77,10 @@ public class CommunityRestController {
 		List<CommunityDto> communityList = comService.getBoard(community);
 		result.put("communityList", communityList);
 		
-		int total = comService.listCnt(community);
+		if (total <= 0) {
+	       total = comService.listCnt(community);
+	    }
+		
 		PageDto pageMaker = new PageDto(community, total);
         result.put("pageMaker", pageMaker);
 

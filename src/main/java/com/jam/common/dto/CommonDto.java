@@ -6,6 +6,7 @@ import lombok.Data;
 public class CommonDto {
 	private int pageNum = 0;
 	private int amount = 0;
+	private int total;
 	
 	private String search_category = "";
 	private String search = "";
