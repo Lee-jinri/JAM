@@ -68,7 +68,7 @@ public class JobController {
 	 *********************************/
 	@GetMapping(value="/toBusiness")
 	public String convertToBusinessPage() {
-		return "/jobs/toBusiness";
+		return "jobs/toBusiness";
 	}
 	
 	/**************************************
@@ -99,7 +99,7 @@ public class JobController {
 	 *********************************/
 	@GetMapping(value="/applications/{applicationId}")
 	public String viewApplication(@PathVariable Long applicationId, Model model) {
-		return "/jobs/application";
+		return "jobs/application";
 	}
 
 	/***********************************
