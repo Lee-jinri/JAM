@@ -46,4 +46,9 @@ public class MainController {
         
         return new ResponseEntity<>(response, HttpStatus.OK);
     }
+	
+	@GetMapping("/coming-soon")
+	public String ComingSoonPage() {
+		return "/common/comingSoon";
+	}
 }
