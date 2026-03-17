@@ -55,7 +55,8 @@ public final class HtmlSanitizer {
 
 	    String cleaned = Jsoup.clean(unescapedHtml, "", safelist, new Document.OutputSettings().prettyPrint(false));
 		
-	    Document doc = Jsoup.parseBodyFragment(cleaned);
+	    Document doc = Jsoup.parseBodyFragment(cleaned, "");
+	    doc.outputSettings().prettyPrint(false);
 
 		// p / span 태그에 style 필터 적용
 		doc.select("p[style], span[style]").forEach(el -> {
