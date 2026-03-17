@@ -31,7 +31,7 @@ public class MypageController {
 	 ****************************************************/
 	@GetMapping("/account")
 	public String mypageAccount() throws Exception {
-		return "mypage/account";
+		return "myPage/account";
 	}
 }
 
