@@ -49,6 +49,6 @@ public class MainController {
 	
 	@GetMapping("/coming-soon")
 	public String ComingSoonPage() {
-		return "/common/comingSoon";
+		return "common/comingSoon";
 	}
 }
