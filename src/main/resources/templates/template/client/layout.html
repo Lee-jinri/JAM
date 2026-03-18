@@ -16,8 +16,13 @@
         
     <title layout:title-pattern="$CONTENT_TITLE">JAM</title>
     
-    <link rel="icon" th:href="@{/images/main-favicon.svg}">
-    <link rel="apple-touch-icon" th:href="@{/images/main-favicon.svg}">
+	<link rel="icon" th:href="${currentURI.startsWith('/jobs')}
+	                      ? @{/images/jobs-favicon.svg}
+	                      : @{/images/main-favicon.svg}">
+
+	<link rel="apple-touch-icon" th:href="${currentURI.startsWith('/jobs')}
+	                                     ? @{/images/jobs-favicon.svg}
+	                                     : @{/images/main-favicon.svg}">
 
     <script type="text/javascript" th:src="@{/js/jquery-3.7.1.min.js}"></script>
     <link rel="stylesheet" th:href="@{/css/layout.css}">
