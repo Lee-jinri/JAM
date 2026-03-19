@@ -2336,7 +2336,6 @@ textarea {
 .post-title {
 	font-size: 16px;
 	line-height: 1.3em;
-	height: 2.6em;
 	text-overflow: ellipsis;
 	display: -webkit-box;
     -webkit-line-clamp: 2;

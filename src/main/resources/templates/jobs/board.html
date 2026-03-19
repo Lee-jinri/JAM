@@ -9,7 +9,6 @@
 <title>Jobs</title>
 <script th:src="@{/js/area.js}"></script>
 <script th:src="@{/js/favorite.js}"></script>
-<link rel="stylesheet" th:href="@{/css/job-common.css}">
 	<style>
 		.filterDiv{
 			margin: 5rem 0 3rem;
@@ -231,100 +230,6 @@
 			justify-content: center;
 		}
 		
-		.filter-btn i {
-			font-size: 12px;
-			color: #555;
-		}
-		
-		#positionContainer {
-			background: #f9f9f9;
-			padding: 16px;
-			border: 1px solid #ddd;
-			border-radius: 6px;
-			max-width: 600px;
-			margin-top: 8px;
-		}
-		
-		.position-grid {
-			display: grid;
-			grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); 
-			gap: 8px; 
-		}
-		
-		.position-grid label {
-			display: flex;
-			align-items: center;
-			gap: 6px;
-			padding: 8px 12px;
-			background: #fff;
-			border: 1px solid #ddd;
-			border-radius: 6px;
-			font-size: 14px;
-			cursor: pointer;
-			transition: background-color 0.2s, box-shadow 0.2s;
-		}
-		
-		.position-grid label:hover {
-			background-color: #f0f0f0;
-			box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-		}
-		
-		.position-grid input[type="checkbox"] {
-			width: 16px;
-			height: 16px;
-			accent-color: #007bff;
-		}
-		
-		.remove-btn, .area-remove-btn {
-			background: none;
-			border: none;
-			color: #ff6b6b;
-			font-weight: bold;
-			font-size: 14px;
-			cursor: pointer;
-			padding-right: 0;
-		}
-		
-		.boardDiv{
-			height: 110px;
-		}
-		.job-board-header span{
-			font-weight: bold;
-		}
-		.title{
-			font-weight: normal;
-		}
-		.payDiv{
-			display: flex;
-			justify-content: flex-end;
-			gap: 6px;
-			align-items: center;
-		}
-		.pay_category {
-		background-color: #fff;
-		    padding: 2px 8px;
-		    border-radius: 28px;
-		    font-size: .75rem;
-		    line-height: 1rem;
-		    align-items: center;
-		    display: inline-flex;
-		    font-weight: 400;
-		}  
-		.daily {
-			border: 1px solid #ff501b;
-		    border-color: #ff501b;
-		    color: #ff501b;
-		}  
-		.weekly {
-			border: 1px solid #00b0a6;
-		    border-color: #00b0a6;
-		    color: #00b0a6;
-		}  
-		.monthly {
-			border: 1px solid #00a1ef;
-		    border-color: #00a1ef;
-		    color: #00a1ef;
-		}
 		#pagination{
 			padding-top: 40px;
 		}

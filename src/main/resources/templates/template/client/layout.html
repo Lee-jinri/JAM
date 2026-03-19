@@ -27,8 +27,7 @@
     <script type="text/javascript" th:src="@{/js/jquery-3.7.1.min.js}"></script>
     <link rel="stylesheet" th:href="@{/css/layout.css}">
     <script type="text/javascript" th:src="@{/js/common.js}"></script>
-    <!-- <script th:src="@{/js/userToggle.js}"></script> -->
-    <!-- <link rel="stylesheet" th:href="@{/css/css/all.min.css}"> -->
+    
     <script th:inline="javascript">
     	const isLogin = /*[[${#authentication.principal != 'anonymousUser'}]]*/ false;
     </script>

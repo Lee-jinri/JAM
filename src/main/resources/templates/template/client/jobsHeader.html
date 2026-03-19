@@ -1,6 +1,7 @@
 <header th:fragment="headerFragment" 
 	xmlns:th="http://www.thymeleaf.org"
 	xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+	<link rel="stylesheet" th:href="@{/css/job-common.css}">
 	<style>
 		header {
 		    width: 100%;
@@ -433,7 +434,7 @@
 				<div class="nav-container">    
 					<div class="header-left">
 						<a th:href="@{/jobs/board}" class="flex"> 
-							<img class="nav-icon" th:src="@{/images/jobs-icon.png}" alt="JAM">
+							<img class="nav-icon jobs-nav-icon" th:src="@{/images/jobs-icon.png}" alt="JAM">
 						</a>
 					</div>
 				</div>
