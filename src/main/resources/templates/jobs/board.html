@@ -440,13 +440,12 @@
 				  pageNum: 1,
 				  search: "all",
 				  keyword: "",
-				  category: "0", 
+				  category: "", 
 				  city: "",
 				  gu: "",
 				  dong: "",
 				  positions: []
 				};
-	
 	
 		$(function(){
 			getBoard();
@@ -474,7 +473,6 @@
 						};
 				
 			    let category = $(this).is(':checked') ? "1" : "0";
-			   
 			    boardState.category = category;
 			    
 			    getBoard();
@@ -546,6 +544,21 @@
 	
 			const params = new URLSearchParams(window.location.search);
 			const keywordParam = params.get("keyword");
+			
+			if(boardState.category == ""){
+				const categoryParam = params.get("category");
+				if(categoryParam){
+					boardState.category = categoryParam;
+				}else {
+					boardState.category = "0";
+				}
+			}
+			
+			if (boardState.category === "1") {
+		        $('#typeSwitch').prop('checked', true);
+		    } else {
+		        $('#typeSwitch').prop('checked', false);
+		    }
 			
 			if (keywordParam) {
 			    boardState.keyword = keywordParam;

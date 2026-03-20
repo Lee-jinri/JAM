@@ -133,7 +133,8 @@
 							$(".pay-div").css("display", "none");
 							$(".userName").text(data.user_name + "님");
 			        	}
-			        	
+
+						$("#btn-go-list").attr("data-link", '/jobs/board?category=' + data.category);
 			        	$("#apply").attr("data-category", data.category);
 			        	
 			        	if(data.status == 1){
@@ -160,6 +161,11 @@
 			    var option = "width=500, height=610, top=10, left=10";
 			    var name = "applyPopup";
 			    window.open(url, name, option);
+			})
+			
+			$("#btn-go-list").click(function(){
+				var link = $(this).attr("data-link");
+				location.href= link;
 			})
 		})
 		
@@ -237,7 +243,7 @@
 		    				<i class="favorite fa-star"></i>
 						</span>
 			    	</div>
-			    	<a th:href="@{/jobs/board}" class="board-btn">목록</a>
+			    	<a id="btn-go-list" class="board-btn">목록</a>
 			    </div>
 			</div>
 		</div>
