@@ -310,32 +310,34 @@
 		}
 		
 		function buildPayCell(it) {
-			if (it.pay_category > 2) {
-				return (
-					'<span class="negotiable">협의 후 결정</span>'
-				);
-			}
-		
-			let payCategoryClass = '';
-			let payCategoryText = '';
-			if (it.pay_category === 0) {
-				payCategoryClass = 'daily';
-				payCategoryText = '건당';
-			} else if (it.pay_category === 1) {
-				payCategoryClass = 'weekly';
-				payCategoryText = '주급';
-			} else if (it.pay_category === 2) {
-				payCategoryClass = 'monthly';
-				payCategoryText = '월급';
-			}
-		
-			const hasPay = it.pay !== null && it.pay !== undefined && Number(it.pay) > 0;
-			const payText = hasPay ? esc(formatNumberKo(it.pay)) +'원' : '';
-		
-			return (
-				'<span class="pay_category  ' + esc(payCategoryClass) + '">' + esc(payCategoryText) + '</span>'
-				+ (hasPay ? '&nbsp;<span class="pay-amount">' + payText + '</span>' : '')
-			);
+			const payTexts = ["협의 후 결정", "건별 ","시급 ", "일급 ", "월급 ", "연봉 "];
+			const payClassMap = {
+				    0: "negotiable",
+				    1: "per-task",
+				    2: "hourly",
+				    3: "daily",
+				    4: "monthly",
+				    5: "yearly"
+				};
+
+			const categoryIndex = it.pay_category || 0;
+		    const newClass = payClassMap[categoryIndex] || "default";
+		    const payText = payTexts[categoryIndex] || "협의 후 결정";
+		    const hasPay = categoryIndex !== 0 && it.pay > 0;
+		    
+		    let formattedPrice = "";
+		    
+		    if (hasPay) {
+		        if (it.pay >= 10000) {
+		            formattedPrice = esc(formatNumberKo(Math.floor(it.pay / 10000))) + "만 원";
+		        } else {
+		            formattedPrice = esc(it.pay.toLocaleString()) + "원";
+		        }
+		    }
+		    return `
+				<span class="pay_category ${esc(newClass)}">${esc(payText)}</span>
+				${hasPay ? `&nbsp;<span class="pay-amount">${formattedPrice}</span>` : ''}
+				`.trim();
 		}
 		
 		function buildPositionText(key) {

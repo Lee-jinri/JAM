@@ -583,24 +583,35 @@
 				$clone.find(".title").text(posting.title);
 				$clone.find(".postLink").attr("data-location", "/jobs/post/" + posting.post_id);
 				
-				const payTexts = ["건별 ", "주급 ", "월급 ", "협의 후 결정"];
+				const payTexts = ["협의 후 결정", "건별 ","시급 ", "일급 ", "월급 ", "연봉 "];
 				let payText = payTexts[posting.pay_category] || "협의 후 결정";
 				
-				let $payDiv = $clone.find(".payDiv");
-				$payDiv.find(".pay").text(posting.pay_category < 3 ? formatNumberKo(posting.pay) + "원" : "협의 후 결정");
+				let $payDiv =$clone.find(".payDiv");
+				$payDiv.find(".pay").text(posting.pay_category > 0 ? formatNumberKo(posting.pay) + "원" : "");
 				
 				let $payCategory = $payDiv.find(".pay_category");
-				if(posting.pay_category < 3){
-					$payCategory.text(payText)
-				} else{
-					$payCategory.css("display","none");
+				$payCategory.text(payText);
+				
+				if(posting.pay_category == 0){
+					$payDiv.find(".pay").css("display","none");
 					$payDiv.css("justifyContent","center");	
 				}
 				
-				if(posting.pay_category == 0) $payCategory.addClass("daily");
-				else if(posting.pay_category == 1) $payCategory.addClass("weekly");
-				else if(posting.pay_category == 2) $payCategory.addClass("monthly");
+				const payClassMap = {
+					    0: "negotiable",
+					    1: "per-task",
+					    2: "hourly",
+					    3: "daily",
+					    4: "monthly",
+					    5: "yearly"
+					};
 
+				const newClass = payClassMap[posting.pay_category];
+
+				if (newClass) {
+				    $payCategory.removeClass("negotiable per-task hourly daily monthly yearly");
+				    $payCategory.addClass(newClass);
+				}
 				let date = timeAgo(posting.created_at);
 				$clone.find(".created_at").text(date);
 				

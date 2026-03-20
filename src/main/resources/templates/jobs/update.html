@@ -89,7 +89,7 @@
 				let content = $('#job_content').summernote('code');
 				let pay = $("#pay").val() || null;
 				let category = window.ROLE_COMPANY ? '0' : '1';
-				let pay_category = $("#payNegotiable").is(":checked") ? '3' : $("#pay_category").val();
+				let pay_category = $("#payNegotiable").is(":checked") ? '0' : $("#pay_category").val();
 				let city = $("#city").val() || null;
 				let gu = $("#gu").val() || null;
 				let dong = $("#dong").val() || null;
@@ -106,9 +106,9 @@
 				}
 				
 				if (window.MY_AUTH && window.MY_AUTH.includes('ROLE_COMPANY')) {
-					if(pay_category === '3'){
+					if(pay_category === '0'){
 						pay = 0;
-					}else if(pay_category !== '3' && pay == null){
+					}else if(pay_category !== '0' && pay == null){
 						alert("급여를 입력하세요.");
 						$("#pay").focus();
 						return false;
@@ -209,7 +209,7 @@
 				$(".jam-pay-section").css("display", "flex");
 				
 				let pay_category = /*[[${post.pay_category}]]*/ 'default_value';
-				if (pay_category == 3) {
+				if (pay_category == 0) {
 			        // "협의 후 결정" 체크박스 선택 & 급여 입력창 비활성화
 			        $("#payNegotiable").prop("checked", true);
 			        $("#pay").prop("disabled", true).val("");
@@ -282,12 +282,14 @@
 			    	<h3>급여 정보</h3>
 			    </div>
 			    <select id="pay_category">
-			    	<option value="0">건별</option>
-			        <option value="1">주급</option>
-			        <option value="2">월급</option>
+			        <option value="1">건별</option>
+			        <option value="2">시급</option>
+			    	<option value="3">일급</option>
+			        <option value="4">월급</option>
+			        <option value="5">연봉</option>
 			    </select>
 			    <input type="number" id="pay" class="pay_input" placeholder="급여 (원)" style="text-align: right;"  th:value="${post.pay }">
-			    <label><input type="checkbox" id="payNegotiable" value="3"> 협의 후 결정</label>
+			    <label><input type="checkbox" id="payNegotiable" value="0"> 협의 후 결정</label>
 			</div>
 		
 			<div class="jam-card area-wrapper">

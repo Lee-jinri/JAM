@@ -122,16 +122,11 @@
 			    					   : $icon.addClass("fa-regular");
 				        
 			        	if(data.category == 0){
-			        		const payCategoryMap = {
-			        			    0: "건별",
-			        			    1: "주급",
-			        			    2: "월급"
-			        		};
-		
-			        		let pay_category = payCategoryMap[data.pay_category];
-		
+			        		const payTexts = ["협의 후 결정", "건별 ","시급 ", "일급 ", "월급 ", "연봉 "];
+							let pay_category = payTexts[data.pay_category] || "협의 후 결정";
+							
 			        		$("#pay_category").text(pay_category);
-			        		$("#pay").text(data.pay_category < 3 ? formatNumberKo(data.pay) + "원" : "협의 후 결정");
+			        		$("#pay").text(data.pay_category > 0 ? formatNumberKo(data.pay) + "원" : "");
 		
 				        	$("#company-name").text(data.company_name);
 			        	}else {

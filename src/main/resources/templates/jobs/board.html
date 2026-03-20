@@ -642,23 +642,41 @@
 					$favoriteSpan.append($favoriteStar);
 				}
 				
-				const payTexts = ["건별 ", "주급 ", "월급 ", "협의 후 결정"];
+				if (board.pay >= 10000) {
+				    formattedPrice = formatNumberKo(Math.floor(board.pay / 10000)) + "만 원";
+				} else {
+				    formattedPrice = formatNumberKo(board.pay.toLocaleString()) + "원";
+				}
+
+				let $payDiv =$clone.find(".payDiv");
+				$payDiv.find(".pay").text(board.pay_category > 0 ? formattedPrice : "");
+
+				const payTexts = ["협의 후 결정", "건별 ","시급 ", "일급 ", "월급 ", "연봉 "];
 				let payText = payTexts[board.pay_category] || "협의 후 결정";
 				
-				let $payDiv =$clone.find(".payDiv");
-				$payDiv.find(".pay").text(board.pay_category < 3 ? formatNumberKo(board.pay) + "원" : "협의 후 결정");
-				
 				let $payCategory = $payDiv.find(".pay_category");
-				if(board.pay_category < 3){
-					$payCategory.text(payText)
-				} else{
-					$payCategory.css("display","none");
+				$payCategory.text(payText);
+				
+				if(board.pay_category == 0){
+					$payDiv.find(".pay").css("display","none");
 					$payDiv.css("justifyContent","center");	
 				}
 				
-				if(board.pay_category == 0) $payCategory.addClass("daily");
-				else if(board.pay_category == 1) $payCategory.addClass("weekly");
-				else if(board.pay_category == 2) $payCategory.addClass("monthly");
+				const payClassMap = {
+					    0: "negotiable",
+					    1: "per-task",
+					    2: "hourly",
+					    3: "daily",
+					    4: "monthly",
+					    5: "yearly"
+					};
+
+				const newClass = payClassMap[board.pay_category];
+
+				if (newClass) {
+				    $payCategory.removeClass("negotiable per-task hourly daily monthly yearly");
+				    $payCategory.addClass(newClass);
+				}
 	
 				let date = timeAgo(board.created_at);
 				$clone.find(".created_at").text(date);

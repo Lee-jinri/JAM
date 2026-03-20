@@ -22,7 +22,7 @@ public class JobDto extends CommonDto  {
 	private int category; // 0:기업 구인 1: 멤버 구인
 	private int status;   // 0:구인중 1:구인 완료
 	private Integer view_count;
-	private Integer pay_category; // 0:건당 1:시급 2:월급
+	private Integer pay_category; // 0:협의, 1:건별, 2:시급, 3:일급, 4:월급, 5:연봉
 	private Integer pay;
 	private String position;
 	private List<String> positions;
