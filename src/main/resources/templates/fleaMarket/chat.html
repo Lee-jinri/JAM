@@ -169,13 +169,19 @@
 
 				        // 내가 보고 있지 않은 방에 메시지가 왔다면 알림 표시
 				        if (data.roomId != currentRoomId) {
-				            roomsIndex.get(data.roomId)?.addClass('has-new-notif');
+				            roomsIndex.get(String(data.roomId))?.addClass('has-new-notif');
 				        }
 					} else if (type === "PARTNER_INFO") {
 						renderPartnerName(data.partnerName);
 					} else if (type === 'NEW_ROOM_ALERT'){
-						prependRoomItem(data);
-			            roomsIndex.get(data.roomId)?.addClass('has-new-notif');
+						prependRoomItem({
+							roomId: String(data.roomId),
+							partnerId: data.partnerId,
+							partner: data.partner || '',
+							message: data.message || '',
+							chatDate: data.sentAt || ''
+						});
+			            roomsIndex.get(String(data.roomId))?.addClass('has-new-notif');
 					} else if (type === "ERROR") {
 						sessionStorage.removeItem("roomId");
 		
@@ -213,15 +219,9 @@
 				socket.send(chatJson); // JSON 문자열을 WebSocket을 통해 전송
 				
 				$("#chatMessage").val("").css("height", "auto"); // 입력 필드를 비움 + 높이 초기화
-				/*
-				updateRoomPreview({ 
-		            roomId: roomId, 
-		            message: chatMessage, 
-		            chatDate: new Date().toISOString()
-		        });*/
 				
 				prependRoomItem({ 
-		            roomId: roomId, 
+		            roomId: String(roomId), 
 		            partner: $("#chatPartnerName").text(), // 현재 대화중인 상대방 이름
 		            message: chatMessage, 
 		            chatDate: new Date().toISOString()
@@ -362,7 +362,7 @@
 					if(!r.message) continue;
 					
 					prependRoomItem({
-						roomId: r.roomId,
+						roomId: String(r.roomId),
 						partnerId: r.partnerId,
 						partner: r.partner || '',
 						message: r.message || '',
