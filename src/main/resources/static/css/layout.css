@@ -2529,8 +2529,8 @@ z-index: 999;*/
 .chat-room-item.has-new-notif::after {
     content: 'N';
     position: absolute;
-    right: 15px;
-    top: 35px;
+    right: 13px;
+    top: 38px;
     background: #ff5a5a;
     color: white;
     font-size: 10px;
@@ -2554,6 +2554,7 @@ z-index: 999;*/
 }
 
 .chat-last-message {
+	padding-right: 20px;
 	font-size: 12px;
 	color: #888;
 	width: 100%;
