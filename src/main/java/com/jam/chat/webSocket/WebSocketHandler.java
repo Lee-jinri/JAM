@@ -38,10 +38,17 @@ public class WebSocketHandler extends TextWebSocketHandler  {
      * 채팅에 입장하면 채팅방 추가됨, 채팅방 
      * 특정 세션이 참여한 채팅방 관리, 채팅방 나갈 때 채팅방 id 찾기 위함  */
     private final Map<WebSocketSession, Long> sessionToChatRoom = new ConcurrentHashMap<>();
+    
+    // 접속한 모든 사용자의 ID와 세션을 매핑
+    private final Map<String, WebSocketSession> userSessionMap = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
-        log.info("소켓 연결됨" + session.getId());
+        String userId = (String) session.getAttributes().get("userId");
+        if (userId != null) {
+            userSessionMap.put(userId, session);
+            log.info("사용자 {} 연결됨 (세션: {})", userId, session.getId());
+        }
         sessions.add(session);
     }
 
@@ -144,7 +151,17 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             	    // 메시지 저장 후 해당 방에만 브로드캐스트
             	    chatService.saveChat(chatDto);
             	    sendMessageToChatRoom(chatDto, "MESSAGE", sessionSet);
-                    
+
+            	    WebSocketSession receiverSession = userSessionMap.get(partnerId);
+            	    if (receiverSession != null && receiverSession.isOpen()) {
+            	    	// 만약 상대방 세션이 현재 이 채팅방의 sessionSet에 포함되어 있지 않다면 알림 전송
+            	        if (!sessionSet.contains(receiverSession)) {
+            	        	String myName = (String) session.getAttributes().get("userName");
+            	        	chatDto.setPartner(myName);
+            	        	sendMessage(receiverSession, "NEW_ROOM_ALERT", chatDto);
+            	        }
+            	    }
+
         	    } catch (Exception e) {
         	        throw new RuntimeException("Failed to save chat message", e);
         	    }
@@ -160,11 +177,16 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     // 클라이언트가 연결 끊음
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
-        
+
     	log.info("연결 끊김" + session.getId());
-    	
+
+    	String userId = (String) session.getAttributes().get("userId");
+        if (userId != null) {
+            userSessionMap.remove(userId);
+        }
+
         sessions.remove(session);
-        
+
         // 세션이 속한 채팅방 ID 찾기
         Long roomId = sessionToChatRoom.remove(session);
         

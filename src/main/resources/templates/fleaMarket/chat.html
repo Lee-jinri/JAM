@@ -17,10 +17,11 @@
 		$(function(){
 			loadChatRooms().then(() => {
 				const roomId = sessionStorage.getItem('roomId');
+				initWebSocket();
+				
 				if (roomId) {
 					setEmptyUI(false);
 					getChatMessages(roomId);
-					initWebSocket(roomId);
 					
 					requestAnimationFrame(() => {
 						$('.chat-room-item').removeClass('active');
@@ -132,12 +133,13 @@
 		}
 		
 		//웹소켓 초기화
-		function initWebSocket(roomId) {
+		function initWebSocket() {
 			try {
 				// 웹소켓 중복 연결 방지
 				if (socket) {
 					if (socket.readyState === WebSocket.OPEN) {
-						sendEnter(roomId);
+						const roomId = sessionStorage.getItem('roomId');
+						if(roomId) sendEnter(roomId);
 						return;
 					}
 					if (socket.readyState === WebSocket.CONNECTING) {
@@ -154,7 +156,8 @@
 				let retried = false;
 				socket.onopen = function() { 
 					retried = false; 
-					sendEnter(roomId); 
+					const roomId = sessionStorage.getItem('roomId');
+					if(roomId) sendEnter(roomId);
 				};
 		
 				socket.onclose = function() {
@@ -164,7 +167,7 @@
 				    console.log("클린 종료 여부:", event.wasClean);
 				  	if (currentRoomId && !retried) {
 				    	retried = true;
-				    	setTimeout(() => initWebSocket(currentRoomId), 2000);
+				    	setTimeout(() => initWebSocket(), 2000);
 				  	}
 				};
 				
@@ -176,13 +179,20 @@
 					const { type, data } = JSON.parse(event.data);
 					if (type === "MESSAGE") {
 						const isMine = (data.senderId === window.MY_ID);
-						displayChat({ ...data, mine: isMine });
+						if (data.roomId == currentRoomId) {
+							displayChat({ ...data, mine: isMine });
+						}
 						updateRoomPreview({ roomId: data.roomId, message: data.message, chatDate: data.chatDate });
+						
+				        // 내가 보고 있지 않은 방에 메시지가 왔다면 알림 표시
+				        if (data.roomId != currentRoomId) {
+				            roomsIndex.get(data.roomId)?.addClass('has-new-notif');
+				        }
 					} else if (type === "PARTNER_INFO") {
 						renderPartnerName(data.partnerName);
-					} else if (type === 'ROOM_CREATED'){
+					} else if (type === 'NEW_ROOM_ALERT'){
 						prependRoomItem(data);
-						$('.chat-room-item[data-roomId="' + data.roomId + '"]').trigger('click');
+			            roomsIndex.get(data.roomId)?.addClass('has-new-notif');
 					} else if (type === "ERROR") {
 						sessionStorage.removeItem("roomId");
 		
@@ -286,50 +296,47 @@
 		function prependRoomItem({ roomId, partnerId, partner, message, chatDate }) {
 			// 이미 있으면 새로 만들지 말고 위로 올림
 			if (roomsIndex.has(roomId)) {
-				const $item = roomsIndex.get(roomId);
 				updateRoomPreview({ roomId, message, chatDate });
-				$item.prependTo('.chat-room-list');
 				return;
 			}
 		
 			const $list = $('.chat-room-list');
-			const $tpl  = $('<div class="chat-room-item"></div>')
-				.attr('data-roomId', roomId)
-				.append(`
-					<div class="chat-room-info">
-						<div class="chat-user-name"></div>
-						<div class="chat-room-time"></div>
-					</div>
-					<div class="chat-last-message"></div>
-				`);
-		
-			$tpl.find('.chat-user-name').text(partner || '');
-			$tpl.find('.chat-last-message').text(message || '');
-			$tpl.find('.chat-room-time').text(chatDate ? timeAgo(chatDate) : '');
-		
+			const $tpl = $(`
+			        <div class="chat-room-item" data-roomId="${roomId}">
+			            <div class="chat-room-info">
+			                <div class="chat-user-name">${partner || ''}</div>
+			                <div class="chat-room-time">${timeAgo(chatDate)}</div>
+			            </div>
+			            <div class="chat-last-message">${message || ''}</div>
+			        </div>
+			    `);
+
+			$list.prepend($tpl);
+			roomsIndex.set(roomId, $tpl);
+            
 			$tpl.on('click', function() {
+				if (currentRoomId === roomId) return;
+				
 				// 기존 active 제거
 			    $('.chat-room-item').removeClass('active');
 			    // 현재 클릭한 아이템만 active
-			    $(this).addClass('active');
+			    $(this).addClass('active').removeClass('has-new-notif');
 			    
 				if (currentRoomId && currentRoomId !== roomId) sendLeave(currentRoomId);
 				sessionStorage.setItem('roomId', roomId);
+				currentRoomId = roomId;
 				setEmptyUI(false);
 				
 				getChatMessages(roomId);
 				
 				if (socket && socket.readyState === WebSocket.OPEN) sendEnter(roomId);
-				else initWebSocket(roomId);
+				else initWebSocket();
 			});
-		
-			$list.prepend($tpl);
-			roomsIndex.set(roomId, $tpl);
 		}
 		
 		function updateRoomPreview({ roomId, message, chatDate }) {
 			const $item = roomsIndex.get(roomId);
-			if (!$item) return; // 리스트에 없으면 패스 (ROOM_CREATED로 들어올 때 생성됨)
+			if (!$item) return; // 리스트에 없으면 패스 (NEW_ROOM_ALERT로 들어올 때 생성됨)
 			$item.find('.chat-last-message').text(message || '');
 			$item.find('.chat-room-time').text(chatDate ? timeAgo(chatDate) : '');
 			$item.prependTo('.chat-room-list'); // 최근 활동이므로 맨 위로
@@ -393,7 +400,7 @@
 			getChatMessages(roomId);
 		
 			if (socket && socket.readyState === WebSocket.OPEN) sendEnter(roomId);
-			else initWebSocket(roomId);
+			else initWebSocket();
 		}
 		
 		function highlightCurrentRoom() {

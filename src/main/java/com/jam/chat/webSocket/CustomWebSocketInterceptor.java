@@ -58,6 +58,7 @@ public class CustomWebSocketInterceptor implements HandshakeInterceptor{
 		MemberDto user = (MemberDto) auth.getPrincipal();
 		
 		attributes.put("userId", user.getUser_id());
+		attributes.put("userName", user.getUser_name());
 		attributes.put("roles", user.getRoles());
 		
 		return true;
