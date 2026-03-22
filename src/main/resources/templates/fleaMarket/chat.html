@@ -166,6 +166,14 @@
 						if (data.roomId == currentRoomId) {
 							displayChat({ ...data, mine: isMine });
 						}
+						
+						if (!isMine) {
+							updateRoomPreview({ 
+								roomId: String(data.roomId), 
+								message: data.message, 
+								chatDate: data.sentAt 
+							});
+						}
 
 				        // 내가 보고 있지 않은 방에 메시지가 왔다면 알림 표시
 				        if (data.roomId != currentRoomId) {
@@ -300,7 +308,7 @@
 			        <div class="chat-room-item" data-roomId="${roomId}">
 			            <div class="chat-room-info">
 			                <div class="chat-user-name">${partner || ''}</div>
-			                <div class="chat-room-time">${timeAgo(chatDate)}</div>
+			                <div class="chat-room-time">${timeAgo(chatDate) || '방금 전'}</div>
 			            </div>
 			            <div class="chat-last-message">${message || ''}</div>
 			        </div>
@@ -333,7 +341,8 @@
 			const $item = roomsIndex.get(roomId);
 			if (!$item) return; // 리스트에 없으면 패스 (NEW_ROOM_ALERT로 들어올 때 생성됨)
 			$item.find('.chat-last-message').text(message || '');
-			$item.find('.chat-room-time').text(chatDate ? timeAgo(chatDate) : '');
+			const newTimeText = chatDate ? timeAgo(chatDate) : '방금 전';
+		    $item.find('.chat-room-time').text(newTimeText);
 			$item.prependTo('.chat-room-list'); // 최근 활동이므로 맨 위로
 		}
 		
@@ -404,6 +413,28 @@
 			const id = sessionStorage.getItem('roomId');
 			$('.chat-room-item').removeClass('active');
 			if (id) $(`.chat-room-item[data-roomId="${id}"]`).addClass('active');
+		}
+		
+
+		function timeAgo(dateString) {
+			if (!dateString) return "";
+			
+			let now = new Date();
+			let past = new Date(dateString);
+			let diff = Math.floor((now - past) / 1000); 
+
+			if (diff < 60) return '방금 전';
+			if (diff < 3600) return Math.floor(diff / 60) + '분 전';
+			if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
+			if (diff < 172800) return '어제';
+			if (diff < 2592000) return Math.floor(diff / 86400) + '일 전';
+			
+			// 개월 계산 (30일 단위)
+		    let months = Math.floor(diff / 2592000); 
+		    if (months < 12) return months + '개월 전';
+		    
+			let dateStr = past.toLocaleDateString();
+			return dateStr.replace(/\.$/, '');
 		}
 	</script>
 </head>
