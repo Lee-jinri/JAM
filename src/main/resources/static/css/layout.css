@@ -2508,6 +2508,7 @@ z-index: 999;*/
 	padding: 10px;
 	border-bottom: 1px solid #f0f0f0;
 	cursor: pointer;
+	position: relative;
 }
 .chat-room-info{
 	display: flex;
@@ -2521,6 +2522,17 @@ z-index: 999;*/
 
 .chat-room-item.active {
     background-color: #f9f9f9;
+}
+.chat-room-item.has-new-notif::after {
+    content: 'N';
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    background: #ff5a5a;
+    color: white;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
 }
 
 .chat-profile-img {
