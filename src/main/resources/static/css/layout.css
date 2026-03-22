@@ -1100,6 +1100,9 @@ textarea.comment_content {
     margin: 5px; /* (선택) 상하 간격 추가 */
     height: 30px;
 }
+.chat > span{
+	white-space: pre-wrap;
+}
 .member-list-row{
 	display: grid;
     grid-template-columns: 0.5fr 2fr 1.5fr 1fr 0.1fr 1fr; 

@@ -75,22 +75,6 @@
 			}
 		}
 		
-		function timeAgo(dateString) {
-			if (!dateString) return "";
-			const past = new Date(dateString.replace(" ", "T"));
-			if (isNaN(past)) return dateString;
-			
-			const diff = Math.floor((Date.now() - past.getTime()) / 1000);
-			if (diff < 10) return "방금 전";
-			if (diff < 60) return diff + "초 전";
-			if (diff < 3600) return Math.floor(diff / 60) + "분 전";
-			if (diff < 86400) return Math.floor(diff / 3600) + "시간 전";
-			if (diff < 172800) return "어제";
-			if (diff < 2592000) return Math.floor(diff / 86400) + "일 전";
-			return past.toLocaleDateString().replace(/\.$/, "");
-		}
-		
-		
 		function getChatMessages(roomId){
 			fetch('/api/chat/messages?roomId='+roomId)
 			.then(res=>{
@@ -182,8 +166,7 @@
 						if (data.roomId == currentRoomId) {
 							displayChat({ ...data, mine: isMine });
 						}
-						updateRoomPreview({ roomId: data.roomId, message: data.message, chatDate: data.chatDate });
-						
+
 				        // 내가 보고 있지 않은 방에 메시지가 왔다면 알림 표시
 				        if (data.roomId != currentRoomId) {
 				            roomsIndex.get(data.roomId)?.addClass('has-new-notif');
@@ -230,6 +213,19 @@
 				socket.send(chatJson); // JSON 문자열을 WebSocket을 통해 전송
 				
 				$("#chatMessage").val("").css("height", "auto"); // 입력 필드를 비움 + 높이 초기화
+				/*
+				updateRoomPreview({ 
+		            roomId: roomId, 
+		            message: chatMessage, 
+		            chatDate: new Date().toISOString()
+		        });*/
+				
+				prependRoomItem({ 
+		            roomId: roomId, 
+		            partner: $("#chatPartnerName").text(), // 현재 대화중인 상대방 이름
+		            message: chatMessage, 
+		            chatDate: new Date().toISOString()
+		        });
 			}
 		}
 		
@@ -267,7 +263,6 @@
 			chatList.appendChild(chatDiv);
 			chatList.scrollTop = chatList.scrollHeight; // 스크롤 맨 아래로
 		}
-		
 		
 		function renderChatMessages(data){
 			const chatList = document.getElementById("chatList");
@@ -364,6 +359,8 @@
 				
 				for (let i = list.length - 1; i >= 0; i--) {
 					const r = list[i];
+					if(!r.message) continue;
+					
 					prependRoomItem({
 						roomId: r.roomId,
 						partnerId: r.partnerId,
