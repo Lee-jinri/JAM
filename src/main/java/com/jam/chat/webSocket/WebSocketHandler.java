@@ -78,94 +78,11 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             // 특정 채팅방에 연결된 세션 집합
             Set<WebSocketSession> sessionSet = chatRoomSession.get(roomId);
 
-            // ENTER(채팅방 입장)
-            if (chatDto.getType().equals(ChatDto.Type.ENTER)) {
-            	
-            	sessionSet.add(session);
-            	sessionToChatRoom.put(session, roomId);
-            	
-        	    Map<String, String> info = chatService.getChatPartner(roomId, userId);
-        	    
-        	    if (info == null || info.get("CHATPARTNERID") == null) {
-        	    	log.info("info : " + info);
-        	    	sessionSet.remove(session);
-        	    	if (sessionSet.isEmpty()) chatRoomSession.remove(roomId);
-        	    	sessionToChatRoom.remove(session);
-        	    	sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
-        	    	return;
-        		}
-        	    
-        	    session.getAttributes().put("partnerId", info.get("CHATPARTNERID"));
-        	    session.getAttributes().put("partnerName", info.get("CHATPARTNERNAME"));
-        	    
-        	    sendMessage(session, "PARTNER_INFO", Map.of("partnerName", info.get("CHATPARTNERNAME"))); 
-        	    
-        	    log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에 입장했습니다.");
-            } else if (chatDto.getType().equals(ChatDto.Type.LEAVE)) {
-            	
-                // 1. chatRoomSession에서 제거
-                if (chatRoomSession.containsKey(roomId)) {
-                    sessionSet.remove(session);
-
-                    // 채팅방에 세션이 없으면 맵에서 키 제거
-                    if (sessionSet.isEmpty()) {
-                        chatRoomSession.remove(roomId);
-                    }
-                }
-
-                sessionToChatRoom.remove(session);
-
-                log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에서 퇴장했습니다.");
-            
-            } else if (chatDto.getType().equals(ChatDto.Type.MESSAGE)) {
-            	try {
-
-            		// payload 검증
-            		if (roomId == null || chatDto.getMessage() == null || chatDto.getMessage().isBlank()) {
-            			sendMessage(session, "ERROR", Map.of("code", 400, "message", "잘못된 요청 입니다. 다시 시도해 주세요."));
-            			return;
-            		}
-            		// 방 세션 검증
-            		if (sessionSet == null || !sessionSet.contains(session)) {
-            			sendError(session, 403, "잘못된 접근 입니다.");
-            			session.close(CloseStatus.POLICY_VIOLATION);
-            			return;
-            		}
-            		
-            		// 멤버십 확인
-            		if (!chatService.isMemberOfRoom(userId, roomId)) {
-            			sendMessage(session, "ERROR", Map.of("code", 403, "message", "잘못된 접근 입니다."));
-            			return;
-            		}
-            		
-            		String partnerId = (String) attributes.get("partnerId");
-            		
-            		if (partnerId == null) {
-            			sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
-            			return;
-            		}
-            		
-            		chatDto.setReceiverId(partnerId);
-            		chatDto.setSenderId(userId);
-
-            	    // 메시지 저장 후 해당 방에만 브로드캐스트
-            	    chatService.saveChat(chatDto);
-            	    sendMessageToChatRoom(chatDto, "MESSAGE", sessionSet);
-
-            	    WebSocketSession receiverSession = userSessionMap.get(partnerId);
-            	    if (receiverSession != null && receiverSession.isOpen()) {
-            	    	// 만약 상대방 세션이 현재 이 채팅방의 sessionSet에 포함되어 있지 않다면 알림 전송
-            	        if (!sessionSet.contains(receiverSession)) {
-            	        	String myName = (String) session.getAttributes().get("userName");
-            	        	chatDto.setPartner(myName);
-            	        	sendMessage(receiverSession, "NEW_ROOM_ALERT", chatDto);
-            	        }
-            	    }
-
-        	    } catch (Exception e) {
-        	        throw new RuntimeException("Failed to save chat message", e);
-        	    }
-            }
+            switch (chatDto.getType()) {
+	        	case ENTER -> handleEnter(session, sessionSet, roomId, userId);
+	        	case LEAVE -> handleLeave(session, sessionSet, roomId);
+	        	case MESSAGE -> handleMessage(session, sessionSet, attributes, chatDto, roomId, userId);
+	        }
         } catch (Exception e) {
             log.error("Exception: " + e.getClass().getName() + ": " + e.getMessage());
             e.printStackTrace();
@@ -173,8 +90,103 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             sendError(session, 500,  "서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
         }
     }
+    
+	private void handleEnter(WebSocketSession session, Set<WebSocketSession> sessionSet, Long roomId, String userId) {
+    	sessionSet.add(session);
+    	sessionToChatRoom.put(session, roomId);
+    	
+	    Map<String, String> info = chatService.getChatPartner(roomId, userId);
+	    
+	    if (info == null || info.get("CHATPARTNERID") == null) {
+	    	log.info("info : " + info);
+	    	sessionSet.remove(session);
+	    	if (sessionSet.isEmpty()) chatRoomSession.remove(roomId);
+	    	sessionToChatRoom.remove(session);
+	    	sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
+	    	return;
+		}
+	    
+	    session.getAttributes().put("partnerId", info.get("CHATPARTNERID"));
+	    session.getAttributes().put("partnerName", info.get("CHATPARTNERNAME"));
+	    
+	    sendMessage(session, "PARTNER_INFO", Map.of("partnerName", info.get("CHATPARTNERNAME"))); 
+	    
+	    log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에 입장했습니다.");
+	}
 
-    // 클라이언트가 연결 끊음
+    private void handleLeave(WebSocketSession session, Set<WebSocketSession> sessionSet, Long roomId) {
+    	// 1. chatRoomSession에서 제거
+        if (chatRoomSession.containsKey(roomId)) {
+            sessionSet.remove(session);
+
+            // 채팅방에 세션이 없으면 맵에서 키 제거
+            if (sessionSet.isEmpty()) {
+                chatRoomSession.remove(roomId);
+            }
+        }
+
+        sessionToChatRoom.remove(session);
+
+        log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에서 퇴장했습니다.");
+	}
+    
+    private void handleMessage(
+    		WebSocketSession session, 
+    		Set<WebSocketSession> sessionSet, 
+    		Map<String, Object> attributes,
+    		ChatDto chatDto, 
+    		Long roomId, 
+    		String userId) {
+    	try {
+
+    		// payload 검증
+    		if (roomId == null || chatDto.getMessage() == null || chatDto.getMessage().isBlank()) {
+    			sendMessage(session, "ERROR", Map.of("code", 400, "message", "잘못된 요청 입니다. 다시 시도해 주세요."));
+    			return;
+    		}
+    		// 방 세션 검증
+    		if (sessionSet == null || !sessionSet.contains(session)) {
+    			sendError(session, 403, "잘못된 접근 입니다.");
+    			session.close(CloseStatus.POLICY_VIOLATION);
+    			return;
+    		}
+    		
+    		// 멤버십 확인
+    		if (!chatService.isMemberOfRoom(userId, roomId)) {
+    			sendMessage(session, "ERROR", Map.of("code", 403, "message", "잘못된 접근 입니다."));
+    			return;
+    		}
+    		
+    		String partnerId = (String) attributes.get("partnerId");
+    		
+    		if (partnerId == null) {
+    			sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
+    			return;
+    		}
+    		
+    		chatDto.setReceiverId(partnerId);
+    		chatDto.setSenderId(userId);
+
+    	    // 메시지 저장 후 해당 방에만 브로드캐스트
+    	    chatService.saveChat(chatDto);
+    	    sendMessageToChatRoom(chatDto, "MESSAGE", sessionSet);
+
+    	    WebSocketSession receiverSession = userSessionMap.get(partnerId);
+    	    if (receiverSession != null && receiverSession.isOpen()) {
+    	    	// 만약 상대방 세션이 현재 이 채팅방의 sessionSet에 포함되어 있지 않다면 알림 전송
+    	        if (!sessionSet.contains(receiverSession)) {
+    	        	String myName = (String) session.getAttributes().get("userName");
+    	        	chatDto.setPartner(myName);
+    	        	sendMessage(receiverSession, "NEW_ROOM_ALERT", chatDto);
+    	        }
+    	    }
+
+	    } catch (Exception e) {
+	        throw new RuntimeException("Failed to save chat message", e);
+	    }
+	}
+
+	// 클라이언트가 연결 끊음
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) throws Exception {
 
