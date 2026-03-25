@@ -67,9 +67,9 @@
 		    });
 			
 			$('#pay').on('input', function() {
-		        let value = $(this).val();
-		        $(this).val(value.replace(/[^0-9]/g, ''));  // 숫자만 허용
-		    });
+				let value = $(this).val();
+				$(this).val(value.replace(/[^0-9]/g, ''));  // 숫자만 허용
+			});
 			
 			$(".jam-grid input[type='radio']").on('change', function() {
 			    $(".jam-grid label").css({ background: "", color: "", borderColor: "" });  // 초기화
@@ -218,7 +218,7 @@
 			        $("#pay_category").val(pay_category);
 			    }
 				
-				$("#pay").val(/*[[${post.pay_category}]]*/ '');
+				$("#pay").val(/*[[${post.pay}]]*/ '');
 			}
 		}
 		
@@ -288,7 +288,7 @@
 			        <option value="4">월급</option>
 			        <option value="5">연봉</option>
 			    </select>
-			    <input type="number" id="pay" class="pay_input" placeholder="급여 (원)" style="text-align: right;"  th:value="${post.pay }">
+			    <input type="text" id="pay" class="pay_input" placeholder="급여 (원)" style="text-align: right;" th:value="${post.pay }" inputmode="numeric" pattern="[0-9]*">
 			    <label><input type="checkbox" id="payNegotiable" value="0"> 협의 후 결정</label>
 			</div>
 		
