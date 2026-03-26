@@ -108,15 +108,26 @@
 		    });
 			
 			$("#searchBtn").click(function(){
-				let keyword = $("#keyword").val();
-				
-				if(keyword.replace(/\s/g, "") == ""){
-					alert("검색어를 입력하세요.");
-					$("#keyword").focus();
-					return;
+				const keyword = $("#keyword").val().trim();
+		    	const categoryId = $(".selected-category").find("a").data("category");
+		    	const pageNum = 1;
+
+				if (!keyword) {
+				    alert("검색어를 입력하세요.");
+				    $("#keyword").focus();
+				    return;
 				}
 				
-				location.href = '/fleaMarket/board?&keyword='+keyword+'&pageNum=1';
+				const params = new URLSearchParams({
+				    pageNum: pageNum,
+				    keyword: keyword
+				});
+
+				if (categoryId !== 0 && categoryId !== undefined) {
+				    params.append("category_id", categoryId);
+				}
+				
+				location.href = `/fleaMarket/board?${params.toString()}`;
 			})
 			
 			$(".category-cell").click(function(e){

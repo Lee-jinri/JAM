@@ -2,104 +2,71 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.jam.fleaMarket.mapper.FleaMarketMapper">
 
+	<!-- 검색 -->
+	<sql id="fleaSearch">
+		<if test="keyword != null and keyword != ''">
+			AND CONTAINS(f.title, #{keyword}) > 0
+        </if>
+        <if test="category_id != null and category_id != 0">
+            AND f.category_id IN (
+                SELECT category_id
+                FROM flea_category
+                WHERE category_id = #{category_id}
+                OR parent_id = #{category_id}
+            )
+        </if>
+	</sql>
+	
 	<!-- 중고거래 list -->
 	<select id="getBoard" parameterType="flea" resultType="flea">
-		<![CDATA[
-		SELECT 
-			post_id, title, created_at,
-			category_id, price, 
-			thumbnail, user_id, user_name
-		FROM (
-			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-				f.post_id, f.title, f.created_at, f.category_id, f.price, f.thumbnail, f.user_id , m.user_name,
-				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
-			FROM fleaMarket f
-			JOIN member m ON f.user_id = m.user_id
-			]]>
-		<trim prefix="WHERE" prefixOverrides="AND |OR ">
-			f.sales_status = 0 
-			AND m.deleted_at IS NULL
-			<if test="keyword != null and keyword != ''">
-				AND f.title LIKE '%' || #{keyword} || '%'
-			</if>
-			<if test="category_id != null and category_id != 0">
-				AND f.category_id IN (
-					SELECT category_id
-					FROM flea_category
-					WHERE category_id = #{category_id}
-					OR parent_id = #{category_id}
-				)
-			</if>
-		</trim>
-		) 
-		<![CDATA[
-		WHERE rnum > (#{pageNum} - 1) * #{amount} AND rnum <= #{pageNum} * #{amount} 
-		]]>
+	    SELECT
+	        f.post_id, f.title, f.created_at,
+	        f.category_id, f.price,
+	        f.thumbnail, f.user_id, m.user_name
+	    FROM fleaMarket f
+	    JOIN member m ON f.user_id = m.user_id
+	    WHERE 
+	    	f.sales_status = 0
+	        AND m.deleted_at IS NULL
+	    	<include refid="fleaSearch"></include>
+	    ORDER BY f.post_id DESC
+	    OFFSET (#{pageNum} - 1) * #{amount} ROWS
+	    FETCH NEXT #{amount} ROWS ONLY
 	</select>
-
-	<select id="getBoardWithFavorite" parameterType="flea"
-		resultType="flea">
-		<![CDATA[
-		SELECT 
-			f.post_id, f.title, f.created_at,
-			f.category_id, f.price, f.thumbnail,
-			f.user_id, f.user_name,
+	
+	<!-- 중고거래 list -->
+	<select id="getBoardWithFavorite" parameterType="flea" resultType="flea">
+	    SELECT
+	        f.post_id, f.title, f.created_at,
+	        f.category_id, f.price,
+	        f.thumbnail, f.user_id, m.user_name,
 			CASE WHEN fav.post_id IS NOT NULL THEN 1 ELSE 0 END AS isFavorite 
-		FROM (
-			SELECT /*+ INDEX_DESC(FLEAMARKET SYS_C0023964) */
-				f.post_id, f.title, f.created_at, f.category_id, f.price, f.thumbnail, f.user_id, m.user_name,
-				ROW_NUMBER() OVER (ORDER BY f.post_id DESC) AS rnum
-			FROM fleaMarket f
-			JOIN member m ON f.user_id = m.user_id
-		]]>
-		<trim prefix="WHERE" prefixOverrides="AND |OR ">
-			f.sales_status = 0 
-			AND m.deleted_at IS NULL
-			<if test="keyword != null and keyword != ''">
-				AND f.title LIKE '%' || #{keyword} || '%'
-			</if>
-			<if test="category_id != null and category_id != 0">
-				AND f.category_id IN (
-				SELECT category_id
-				FROM
-				flea_category
-				WHERE category_id = #{category_id}
-				OR parent_id =
-				#{category_id}
-				)
-			</if>
-		</trim>
-		<![CDATA[
-		) f
-		LEFT JOIN favorite fav  
+	    FROM fleaMarket f
+	    JOIN member m ON f.user_id = m.user_id
+	    LEFT JOIN favorite fav  
 			ON f.post_id = fav.post_id  
 			AND fav.board_type = 'FLEA'  
 			AND fav.user_id = #{user_id, jdbcType=VARCHAR}
-		WHERE rnum > (#{pageNum} - 1) * #{amount} 
-		AND rnum <= #{pageNum} * #{amount}
+		<where>
+			f.sales_status = 0
+			AND m.deleted_at IS NULL
+			<include refid="fleaSearch"></include>
+		</where>
+		<![CDATA[
+			ORDER BY f.post_id DESC
+		    OFFSET (#{pageNum} - 1) * #{amount} ROWS
+		    FETCH NEXT #{amount} ROWS ONLY
 		]]>
 	</select>
-
 
 	<!-- 전체 레코드 수 조회 -->
 	<select id="listCnt" parameterType="flea" resultType="int">
 		SELECT count(*)
 		FROM fleaMarket f
-		LEFT JOIN member m ON f.user_id = m.user_id
-		<trim prefix="WHERE" prefixOverrides="AND |OR "
-			suffixOverrides="AND |OR ">
-			<if test="keyword != null and keyword != ''">
-				f.title LIKE '%' || #{keyword} || '%'
-			</if>
-			<if test="category_id != null and category_id != 0">
-				f.category_id IN (
-				SELECT category_id
-				FROM flea_category
-				WHERE category_id = #{category_id}
-				OR parent_id = #{category_id}
-				)
-			</if>
-		</trim>
+		<where>
+			1=1
+		    <include refid="fleaSearch"></include>
+		</where>
 	</select>
 
 
