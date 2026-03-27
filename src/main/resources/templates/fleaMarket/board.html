@@ -111,18 +111,15 @@
 				const keyword = $("#keyword").val().trim();
 		    	const categoryId = $(".selected-category").find("a").data("category");
 		    	const pageNum = 1;
-
-				if (!keyword) {
-				    alert("검색어를 입력하세요.");
-				    $("#keyword").focus();
-				    return;
+		    	
+		    	const params = new URLSearchParams({
+				    pageNum: pageNum
+				});
+		    	
+				if (keyword) {
+				    params.append("keyword", keyword);
 				}
 				
-				const params = new URLSearchParams({
-				    pageNum: pageNum,
-				    keyword: keyword
-				});
-
 				if (categoryId !== 0 && categoryId !== undefined) {
 				    params.append("category_id", categoryId);
 				}
@@ -132,19 +129,15 @@
 			
 			$(".category-cell").click(function(e){
 				e.preventDefault();
-			
-				let categoryId = $(this).find("a").data("category"); 
-				
-				if(categoryId == "0") location.href = "/fleaMarket/board";
-				else{
-					let params = new URLSearchParams(window.location.search);
-					let keyword = params.get("keyword") || "";
-					let pageNum = 1; 
-				
-					location.href = "/fleaMarket/board?pageNum=" + pageNum +
-					                "&keyword=" + keyword +
-					                "&category_id=" + categoryId;
-				}
+
+				const categoryId = $(this).find("a").data("category");
+				const keyword = $("#keyword").val().trim();
+				const params = new URLSearchParams({ pageNum: 1 });
+
+				if (keyword) params.append("keyword", keyword);
+				if (categoryId != 0) params.append("category_id", categoryId);
+
+				location.href = `/fleaMarket/board?${params.toString()}`;
 			});
 		
 			$("#flea-writeBtn").click(function(){
