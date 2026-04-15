@@ -24,11 +24,19 @@ public class ChatRoomFacade {
 	// 채팅방 Id 조회
 	public Long getOrCreateChatRoomId(String userId, String targetUserId) {
 		
+		boolean isTargetActive = memberService.isActiveUser(targetUserId); 
+        if (!isTargetActive) {
+            throw new BadRequestException("상대방이 탈퇴하여 채팅을 시작할 수 없습니다.");
+        }
+        
 		String firstUser = userId.compareTo(targetUserId) < 0 ? userId : targetUserId;
 		String secondUser = userId.compareTo(targetUserId) < 0 ? targetUserId : userId;
 		String pairKey = firstUser + ":" + secondUser;
 		String lockKey = "lock:chatroom:" + pairKey;
-		
+
+        Long existingRoomId = chatService.getChatRoomId(userId, targetUserId);
+	    if (existingRoomId != null) return existingRoomId;
+	    
 		RLock lock = redissonClient.getLock(lockKey);
 		 
 		try {
@@ -40,11 +48,6 @@ public class ChatRoomFacade {
 				throw new RuntimeException("잠시 후 다시 시도해주세요.");
 			}
 			
-			boolean isTargetActive = memberService.isActiveUser(targetUserId); 
-	        if (!isTargetActive) {
-	            throw new BadRequestException("상대방이 탈퇴하여 채팅을 시작할 수 없습니다.");
-	        }
-	        
 			return chatService.createChatRoomWithTransaction(userId, targetUserId, pairKey);
 		     
 		} catch (InterruptedException e) {

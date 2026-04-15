@@ -98,4 +98,8 @@ public class ChatService {
 		boolean isMember = chatMapper.isMemberOfRoom(roomId, userId) > 0;
 		return isMember;
 	}
+
+	public Long getChatRoomId(String userId, String targetUserId) {
+		return chatMapper.getChatRoomId(userId, targetUserId);
+	}
 }
