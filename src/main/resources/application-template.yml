@@ -1,0 +1,99 @@
+spring:
+  application:
+    name: jam
+  
+  datasource:
+    driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
+    url: ${DB_URL}
+    username: ${DB_USERNAME}                         
+    password: ${DB_PASSWORD}                   
+  
+  # Multipart 용량 설정
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  devtools: 
+    restart: 
+      enabled: false
+
+  # redis host , post  
+  redis: 
+    host: ${REDIS_HOST}
+    port: ${REDIS_PORT}
+    database: 0
+ 
+  mail:
+    host: smtp.naver.com
+    port: 465
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            trust: smtp.naver.com
+          timeout: 5000
+          connectiontimeout: 5000
+ 
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+mybatis: 
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.jam
+  configuration:
+    default-executor-type: SIMPLE 
+
+logging:
+  level:
+    jdbc.resultset: OFF
+    jdbc.resultsettable: OFF
+    jdbc.audit: OFF
+    jdbc.connection: OFF
+    jdbc.sqltiming: OFF
+    jdbc.sqlonly: OFF
+    org.springframework:
+      security:
+        web:
+          csrf:
+            CsrfFilter: DEBUG
+
+cors:
+  allowed-origins: http://localhost:3000, http://localhost:8080
+
+# jwt token secret
+jwt: 
+  secret: ${JWT_SECRET}
+
+oauth:
+  # naver client id 
+  naver:
+    clientId: ${OAUTH_NAVER_CLIENTID}
+    clientSecret: ${OAUTH_NAVER_CLIENTSECRET}
+    redirectUri: ${OAUTH_NAVER_REDIRETURI}
+
+  # kakao client id
+  kakao: 
+    clientId: ${OAUTH_KAKAO_CLIENTID}
+    redirectUri: ${OAUTH_KAKAO_REDIRECTURI}
+
+location: 
+  consumer_key: ${LOCATION_CONSUMER_KEY}
+  consumer_secret: ${LOCATION_CONSUMER_SECRET}
+  save-path: ${LOCATION_SAVE_PATH}
+
+cloud: 
+  aws: 
+    s3: 
+      static: ${AWS_S3_STATIC}
+      bucket: ${AWS_S3_BUCKET}
+
+file: 
+  upload-dir: ${FILE_UPLOAD_DIR}

@@ -1,0 +1,70 @@
+services:
+  # 1. 오라클 데이터베이스 설정
+  oracle:
+    image: gvenzl/oracle-free:23-slim
+    container_name: oracle-db
+    ports:
+      - "1521:1521"
+    environment:
+      - ORACLE_PASSWORD=admin1234
+      - APP_USER=jam_user
+      - APP_USER_PASSWORD=jam_pass
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+      - ./init.sql:/container-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "sqlplus", "-L", "jam_user/jam_pass@localhost/FREEPDB1", "@/dev/null"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
+
+  # 2. 레디스 설정
+  redis:
+    image: redis:latest
+    container_name: redis-cache
+    ports:
+      - "6379:6379"
+
+  # 3. 내 스프링 부트 애플리케이션 설정
+  app:
+    build: .
+    container_name: spring-app
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./address:/app/address
+    env_file:
+      - .env
+    environment:
+      # DB 연결 정보
+      - DB_URL=${DB_URL}
+      - DB_USERNAME=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      
+      # Redis 연결 정보
+      - REDIS_HOST=${REDIS_HOST}
+      - REDIS_PORT=${REDIS_PORT}
+      
+      - MAIL_USERNAME=${MAIL_USERNAME}
+      - MAIL_PASSWORD=${MAIL_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - OAUTH_NAVER_CLIENTID=${OAUTH_NAVER_CLIENTID}
+      - OAUTH_NAVER_CLIENTSECRET=${OAUTH_NAVER_CLIENTSECRET}
+      - OAUTH_NAVER_REDIRETURI=${OAUTH_NAVER_REDIRETURI}
+      - OAUTH_KAKAO_CLIENTID=${OAUTH_KAKAO_CLIENTID}
+      - OAUTH_KAKAO_REDIRECTURI=${OAUTH_KAKAO_REDIRECTURI}
+      - LOCATION_CONSUMER_KEY=${LOCATION_CONSUMER_KEY}
+      - LOCATION_CONSUMER_SECRET=${LOCATION_CONSUMER_SECRET}
+      - LOCATION_SAVE_PATH=${LOCATION_SAVE_PATH}
+      - AWS_S3_STATIC=${AWS_S3_STATIC}
+      - AWS_S3_BUCKET=${AWS_S3_BUCKET}
+      - FILE_UPLOAD_DIR=${FILE_UPLOAD_DIR}
+    depends_on:
+      oracle:
+        condition: service_healthy
+      redis:
+        condition: service_started
+
+volumes:
+  oracle-data:
