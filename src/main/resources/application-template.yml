@@ -1,13 +1,13 @@
 spring:
   application:
     name: jam
-  
+
   datasource:
     driver-class-name: net.sf.log4jdbc.sql.jdbcapi.DriverSpy
-    url: ${DB_URL}
-    username: ${DB_USERNAME}                         
-    password: ${DB_PASSWORD}                   
-  
+    url: jdbc:log4jdbc:oracle:thin:@oracle:1521/FREEPDB1
+    username: jam_user
+    password: jam_pass
+
   # Multipart 용량 설정
   servlet:
     multipart:
