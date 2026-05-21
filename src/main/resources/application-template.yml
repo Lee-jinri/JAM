@@ -23,7 +23,12 @@ spring:
     host: ${REDIS_HOST}
     port: ${REDIS_PORT}
     database: 0
- 
+
+    redisson:
+      config: |
+        singleServerConfig:
+          address: "redis://redis:6379"
+
   mail:
     host: smtp.naver.com
     port: 465
