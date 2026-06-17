@@ -56,11 +56,13 @@ function chkFile(item){
 }
 
 function timeAgo(dateString) {
+	if (!dateString) return "";
+	
 	let now = new Date();
 	let past = new Date(dateString);
 	let diff = Math.floor((now - past) / 1000); 
 
-	if (diff < 10) return '방금 전';
+	if (diff < 30) return '방금 전';
 	if (diff < 60) return diff + '초 전';
 	if (diff < 3600) return Math.floor(diff / 60) + '분 전';
 	if (diff < 86400) return Math.floor(diff / 3600) + '시간 전';
