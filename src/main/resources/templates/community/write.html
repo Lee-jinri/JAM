@@ -271,7 +271,8 @@
 				// 2. presigned URL 요청
 				const res = await fetch('/api/files/upload-url', {
 					method: 'POST',
-					headers: { 
+					headers: {
+						'X-XSRF-TOKEN': getCookie('XSRF-TOKEN'),
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
