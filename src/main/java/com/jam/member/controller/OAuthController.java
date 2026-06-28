@@ -30,6 +30,7 @@ import com.jam.global.jwt.JwtService;
 import com.jam.global.jwt.TokenInfo;
 import com.jam.global.util.CookieEnum;
 import com.jam.global.util.CookieUtil;
+import com.jam.global.util.SecurityUtil;
 import com.jam.member.dto.MemberDto;
 import com.jam.member.service.MemberService;
 
@@ -170,7 +171,7 @@ public class OAuthController {
 			TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "kakao");
 			
 			// RefreshToken DB에 저장
-			memberService.addRefreshToken((String)userInfo.get("user_id"), token.getRefreshToken());
+			memberService.addRefreshToken((String)userInfo.get("user_id"), SecurityUtil.hashToken(token.getRefreshToken()));
 			
 			// 5. JWT 쿠키 저장
 	    	CookieUtil.addCookie(
@@ -300,7 +301,7 @@ public class OAuthController {
 		
 		if (cookies != null) {
 		    for (Cookie cookie : cookies) {
-		        if ("kakaoAccessToken".equals(cookie.getName())) {
+		        if (CookieEnum.KAKAO_ACCESS_TOKEN.getName().equals(cookie.getName())) {
 		            kakaoAccessToken = cookie.getValue();
 		            break;
 		        }
@@ -348,7 +349,8 @@ public class OAuthController {
 		// 4. 로컬 로그아웃 로직
 	    try {
 	        SecurityContextHolder.clearContext();
-	        CookieUtil.deleteCookie(response, "kakaoAccessToken");
+	        CookieUtil.deleteCookie(response, CookieEnum.ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(response, CookieEnum.KAKAO_ACCESS_TOKEN.getName());
 	    } catch (Exception e) {
 	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
 	    }
@@ -454,7 +456,10 @@ public class OAuthController {
 		Authentication authentication = memberService.authenticateSocialUser(user);
 
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "naver");
-		
+
+		// RefreshToken DB에 저장
+		memberService.addRefreshToken((String)userInfo.get("user_id"), SecurityUtil.hashToken(token.getRefreshToken()));
+
 		// 5. JWT 쿠키 저장
 		CookieUtil.addCookie(
 				response, 
@@ -595,7 +600,8 @@ public class OAuthController {
 	    // 3. 로컬 로그아웃 로직
 	    try {
 	        SecurityContextHolder.clearContext();
-	        CookieUtil.deleteCookie(response, "naverAccessToken");
+	        CookieUtil.deleteCookie(response, CookieEnum.ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(response, CookieEnum.NAVER_ACCESS_TOKEN.getName());
 	    } catch (Exception e) {
 	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
 	    }
