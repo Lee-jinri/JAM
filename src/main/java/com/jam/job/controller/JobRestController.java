@@ -36,7 +36,6 @@ import com.jam.job.dto.JobDto;
 import com.jam.job.service.JobService;
 import com.jam.member.dto.MemberDto;
 
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -58,7 +57,7 @@ public class JobRestController {
 	 * @return		jobList(채용공고 목록), pageMaker(페이징 정보)
 	 */
 	@GetMapping(value = "/board")
-	public ResponseEntity<Map<String, Object>> getBoard(JobDto jobs, HttpServletRequest request, @AuthenticationPrincipal MemberDto user){
+	public ResponseEntity<Map<String, Object>> getBoard(JobDto jobs, @AuthenticationPrincipal MemberDto user){
 
 		if (user != null) {
 			jobs.setUser_id(user.getUser_id());
@@ -127,7 +126,8 @@ public class JobRestController {
 	 * 구인 글을 작성하는 메서드 입니다.
 	 * 
 	 * @param request  사용자 인증 정보(userId) 추출용 HttpServletRequest
-	 * @param JobDto jobs 제목과 내용, 카테고리, 급여 지불 방법, 급여
+	 * @param jobs  제목과 내용, 포지션, 급여 지불 방법, 급여, 지역
+	 * @param user	현재 로그인한 사용자
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 *****************************/
@@ -208,7 +208,9 @@ public class JobRestController {
 	
 	/***********************************
 	 * 구인 글을 수정하는 메서드 입니다.
-	 * @param JobDto job_vo  수정할 글 번호, 제목, 내용, 카테고리, 급여 지불 방법, 급여
+	 * @param postId 	수정할 글 번호
+	 * @param jobs  	제목과 내용, 포지션, 급여 지불 방법, 급여, 지역
+	 * @param user		현재 로그인한 사용자
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
@@ -255,7 +257,8 @@ public class JobRestController {
 
 	/**********************************
 	 * 구인 글을 삭제하는 메서드 입니다.
-	 * @param Long post_id 삭제할 글 번호
+	 * @param post_id 	삭제할 글 번호
+	 * @param user		현재 로그인한 사용자
 	 * @return HTTP 상태 코드
 	 * 			성공 시 HttpStatus.OK를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 **********************************/
@@ -278,7 +281,7 @@ public class JobRestController {
 	 * 마감 시 해당 공고에는 더 이상 지원할 수 없습니다.
 	 * 
 	 * @param postId	마감할 공고 ID
-	 * @param request	HttpServletRequest (userId 추출용)
+	 * @param user		현재 로그인한 사용자
 	 * @return	처리 성공 시 204 No Content 
 	 */
 	@PreAuthorize("isAuthenticated()")
@@ -299,7 +302,7 @@ public class JobRestController {
 	 * post_id로 company_user_id를 조회해 설정하고 인증 컨텍스트(request.userId)에서 사용자 ID를 추출하여 저장합니다.
 	 *
 	 * @param app		지원서 데이터(ApplicationDto, @Valid)
-	 * @param request	HttpServletRequest, userId 추출용
+	 * @param user		현재 로그인한 사용자
 	 * @return			HTTP 200 OK (본문 없음) — 생성 성공
 	 */
 	@PreAuthorize("isAuthenticated()")
@@ -319,7 +322,7 @@ public class JobRestController {
 	 * 요청 파라미터(JobDto)에 따라 내가 작성한 채용공고 목록을 조회하고 페이징 정보를 함께 반환합니다.
 	 * 
 	 * @param jobs	요청 파라미터를 담은 VO 객체
-	 * @param request	HttpServletRequest, userId 추출용
+	 * @param user	현재 로그인한 사용자
 	 * @return jobList(채용공고 목록), pageMaker(페이징 정보)
 	 */
 	@PreAuthorize("isAuthenticated()")
@@ -383,7 +386,7 @@ public class JobRestController {
 	 * 요청 파라미터(ApplicationDto)에 따라 내가 지원한 채용공고 목록을 조회하고 페이징 정보를 함께 반환합니다.
 	 * 
 	 * @param app	요청 파라미터를 담은 VO 객체
-	 * @param request	HttpServletRequest, userId 추출용
+	 * @param user	현재 로그인한 사용자
 	 * @return apps(지원한 공고 목록), pageMaker(페이징 정보)
 	 */
 	@PreAuthorize("isAuthenticated()")
@@ -417,7 +420,7 @@ public class JobRestController {
 	 * 지원 취소 API
 	 * 
 	 * @param applicationId	지원 취소할 지원서 ID
-	 * @param request	HttpServletRequest, userId 추출용	
+	 * @param user	현재 로그인한 사용자
 	 * @return	Http 상태코드
 	 */
 	@PreAuthorize("isAuthenticated()")
@@ -437,7 +440,7 @@ public class JobRestController {
 	 * 요청 파라미터(JobDto)에 따라 특정 공고의 지원자를 조회하고 페이징 정보를 함께 반환합니다.
 	 * 
 	 * @param jobs	요청 파라미터를 담은 VO 객체
-	 * @param request	HttpServletRequest, userId 추출용
+	 * @param user	현재 로그인한 사용자
 	 * @return apps(지원자 목록), pageMaker(페이징 정보)
 	 */
 	@PreAuthorize("isAuthenticated()")
@@ -466,7 +469,7 @@ public class JobRestController {
 	 * 사용자가 스크랩한 글 목록 조회 API
 	 * 
 	 * @param job	요청 파라미터를 담은 VO 객체	
-	 * @param request	HttpServletRequest, userId 추출용	
+	 * @param user	현재 로그인한 사용자
 	 * @return favorites(스크랩한 글 목록), pageMaker(페이징 정보)
 	 */
 	@PreAuthorize("isAuthenticated()")

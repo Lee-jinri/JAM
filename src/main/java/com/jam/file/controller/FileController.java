@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,9 +19,10 @@ import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.service.FileAccessService;
+import com.jam.global.util.ValidationUtils;
+import com.jam.member.dto.MemberDto;
 import com.jam.s3.service.S3Service;
 
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -57,15 +59,14 @@ public class FileController {
 	 * 파일 접근 권한 검증 후 S3 객체에 접근 가능한 일시적 다운로드 URL 반환.
 	 *
 	 * @param fileId 다운로드할 파일의 ID
-	 * @param req    HttpServletRequest, JWT 인터셉터에서 설정된 userId 사용
+	 * @param user	현재 로그인한 사용자
 	 * @return 지정된 파일을 다운로드할 수 있는 String Presigned URL 
 	 * @throws UnauthorizedException 로그인 되지 않을 시
 	 * @throws ForbiddenException    권한없는 파일 요청 시
 	 */
 	@GetMapping(value="/{fileId}/download-url", produces = MediaType.TEXT_PLAIN_VALUE)
-	public ResponseEntity<String> downloadFile(@PathVariable Long fileId, HttpServletRequest req) {
-	    String userId = (String)req.getAttribute("userId");
-	    if(userId == null) throw new UnauthorizedException("로그인이 필요한 서비스 입니다. 로그인 하시겠습니까?");
+	public ResponseEntity<String> downloadFile(@PathVariable Long fileId, @AuthenticationPrincipal MemberDto user) {
+		String userId = ValidationUtils.requireLogin(user.getUser_id());
 		
 	    fileAccessService.existsFileAccess(userId, fileId);
 	    
