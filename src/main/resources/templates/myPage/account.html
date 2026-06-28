@@ -240,11 +240,10 @@
 		}
 	</style>
 	<script th:inline="javascript">
+		let isSocialLogin;
+		let phone;
+		let user_name;
 		$(function(){
-			let isSocialLogin;
-			let phone;
-			let user_name;
-			
 			fetchVerifyStatus();
 			
 			document.querySelectorAll(".enter-submit").forEach(function (input) {
@@ -292,7 +291,7 @@
 			// 비밀번호 변경 버튼 클릭
 			$("#pw_modi_btn").click(function(){
 				// 소셜로그인 확인
-				if(isSocialLogin == 1) {
+				if(isSocialLogin) {
 					alert("소셜 회원은 비밀번호를 변경할 수 없습니다.");
 					return false;
 				}
@@ -464,10 +463,10 @@
 				return response.json();
 			})
 			.then((data) =>{
-				isSocialLogin = data.social_login;
+				isSocialLogin = data.social_login; 
 				phone = data.phone;
 				user_name = data.user_name;
-					
+
 				if(!isSocialLogin) $("#user_id").html(data.user_id);
 				$("#user_name").html(data.user_name);
 				$("#phone").html(data.phone);
