@@ -27,7 +27,7 @@ public class JobDto extends CommonDto  {
 	private String position;
 	private List<String> positions;
 	
-	@JsonFormat(pattern = "yyyy/MM/dd HH:mm")
+	@JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
 	private LocalDateTime created_at; 
 		
 	private String user_id;

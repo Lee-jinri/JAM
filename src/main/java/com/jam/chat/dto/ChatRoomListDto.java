@@ -21,7 +21,7 @@ public class ChatRoomListDto {
     String partner;
     String message;
     
-    @JsonFormat(pattern = "yyyy/MM/dd HH:mm")
+    @JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
     @JsonSerialize(using = LocalDateTimeSerializer.class)
     @JsonDeserialize(using = LocalDateTimeDeserializer.class)
 	LocalDateTime sentAt;

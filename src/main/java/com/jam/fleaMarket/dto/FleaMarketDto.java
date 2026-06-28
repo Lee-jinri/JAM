@@ -25,6 +25,6 @@ public class FleaMarketDto extends CommonDto  {
 	private String user_name;		// 작성자 닉네임
 	private String thumbnail;
 	
-	@JsonFormat(pattern = "yyyy/MM/dd HH:mm")
+	@JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
 	private LocalDateTime created_at;		// 작성일
 }

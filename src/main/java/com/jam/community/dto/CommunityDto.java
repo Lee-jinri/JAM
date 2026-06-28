@@ -23,7 +23,7 @@ public class CommunityDto extends CommonDto{
 	private int view_count;
 	private int comment_count;
 	
-	@JsonFormat(pattern = "yyyy/MM/dd HH:mm")
+	@JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
 	private LocalDateTime created_at;
 	
 	private String user_id;			
