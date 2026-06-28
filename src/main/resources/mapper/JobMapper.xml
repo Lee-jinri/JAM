@@ -315,6 +315,7 @@
 		LEFT JOIN member m
 			ON m.user_id = j.user_id 
 		WHERE a.user_id = #{user_id}
+		
 		<if test="periodDays != null">
 			<![CDATA[
 				AND a.created_at >= SYSDATE - #{periodDays}
@@ -324,6 +325,7 @@
 		<if test="job_status != null">
 			AND j.status = #{job_status}
 		</if>
+		
 		<if test="keyword != null">
 			AND (
 				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
@@ -340,8 +342,11 @@
 
 		SELECT COUNT(*)
 		FROM application a
+		JOIN job j
+			ON a.post_id = j.post_id
+		LEFT JOIN member m
+			ON m.user_id = j.user_id 
 		WHERE a.user_id = #{user_id}
-	
 		<if test="periodDays != null">
 			<![CDATA[
 				AND a.created_at >= SYSDATE - #{periodDays}
@@ -349,13 +354,9 @@
 		</if>
 	
 		<if test="job_status != null">
-			AND EXISTS (
-				SELECT 1
-				FROM job j
-				WHERE j.post_id = a.post_id
-				  AND j.status = #{}
-			)
+		    AND j.status = #{job_status}
 		</if>
+		
 		<if test="keyword != null">
 			AND (
 				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
