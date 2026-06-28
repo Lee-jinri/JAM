@@ -135,6 +135,16 @@ function loadPagination(pageMaker) {
     const $pagination = $("#pagination");
     $pagination.empty(); // 기존 페이지 버튼 초기화
 
+	if(pageMaker.total > 0) boardState.total = pageMaker.total;
+	
+	if (pageMaker.prev) {
+        $pagination.append(
+            '<li class="paginate_button prev">' +
+                '<a href="#" data-page="' + (pageMaker.startPage - 1) + '" class="font-weight-bold default_btn"> < </a>' +
+            '</li>'
+        );
+    }
+	
     // 페이지 번호 버튼
     for (let num = pageMaker.startPage; num <= pageMaker.endPage; num++) {
         $pagination.append(
@@ -144,6 +154,14 @@ function loadPagination(pageMaker) {
         );
     }
 
+	if (pageMaker.next) {
+        $pagination.append(
+            '<li class="paginate_button next">' +
+                '<a href="#" data-page="' + (pageMaker.endPage + 1) + '" class="font-weight-bold default_btn"> > </a>' +
+            '</li>'
+        );
+    }
+				
     $("#pagination a").click(function (e) {
         e.preventDefault();
         let pageNum = $(this).data("page");
