@@ -16,6 +16,7 @@
 		html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
 			font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif}
 		a{color:inherit;text-decoration:none}
+		.content {min-height: 500px;}
 		.container{max-width:1100px;margin:24px auto;padding:0 16px}
 		.a-header{display:flex;flex-wrap:wrap;align-items:center;gap:12px;margin-bottom:16px}
 		.h-title{font-size:22px;font-weight:700}
@@ -25,13 +26,13 @@
 	
 		.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
 		.select, .input{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:#fff}
-		.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:8px 12px;cursor:pointer}
+		.btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;cursor:pointer}
 		.btn.primary{background:var(--brand);color:#fff;border-color:var(--brand)}
 		.btn.ghost{background:#fff}
 		.status-close{background:#ededed}
 	
 		.table{width:100%;border-collapse:separate;border-spacing:0}
-		.table th, .table td{padding:12px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle;text-align:center;}
+		.table th, .table td{padding:8px;border-bottom:1px solid var(--line);font-size:14px;vertical-align:middle;text-align:center;}
 		.table th{text-align:center;color:var(--muted);font-weight:600}
 		.badge{border-radius:999px;padding:4px 8px;font-size:12px;border:1px solid var(--line);display:inline-flex;align-items:center;gap:6px}
 		.badge.ok{background:#ecfdf5;border-color:#d1fae5;color:#065f46}
@@ -45,20 +46,43 @@
 		.tag{font-size:12px;color:var(--muted)}
 	
 		.row-actions{display:flex;gap:6px}
+		.ellipsis-sm{max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start;}
 		.ellipsis{max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start;}
-	
+		.wrap-210 {max-width:210px;word-break: break-all;}
+
 		.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;background:#fafafa}
 		.pagination{display:flex;gap:6px}
 		.page{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
 		.page.active{background:var(--brand);color:#fff;border-color:var(--brand)}
 	
 		/* 모바일 카드형 */
-		@media (max-width: 720px){
-			.table thead{display:none}
-			.table, .table tbody, .table tr, .table td{display:block;width:100%}
-			.table tr{border-bottom:1px solid var(--line);padding:10px 0}
-			.table td{border:none;padding:6px 0}
-			.ellipsis{max-width:100%}
+		@media (max-width: 720px) {
+		    .table thead { display: none; }
+		    .table, .table tbody { display: block; }
+		
+		    .table tbody tr {
+		        display: grid;
+		        grid-template-columns: 1fr auto;
+		        gap: 6px 8px;
+		        background: #fff;
+		        border: 1px solid var(--line);
+		        border-radius: 12px;
+		        padding: 14px;
+		        margin-bottom: 10px;
+		        box-shadow: 0 2px 8px rgba(0,0,0,.04);
+		    }
+		
+		    .table tbody tr td:nth-child(1) { grid-column: 1 / 3; grid-row: 1; }
+		    .table tbody tr td:nth-child(2) { grid-column: 1; grid-row: 2; font-weight: 700; font-size: 15px; align-self: center; }
+		    .table tbody tr td:nth-child(5) { grid-column: 2; grid-row: 2; text-align: right; align-self: center; }
+		    .table tbody tr td:nth-child(3) { grid-column: 1; grid-row: 3; font-size: 13px; color: var(--muted); }
+		    .table tbody tr td:nth-child(4) { grid-column: 2; grid-row: 3; font-size: 12px; color: var(--muted); text-align: right; }
+		    .table tbody tr td:nth-child(6) { grid-column: 1 / 3; grid-row: 4; font-size: 13px; border-top: 1px solid var(--line); padding-top: 8px; margin-top: 4px; }
+		    .table tbody tr td:nth-child(7) { grid-column: 1 / 3; grid-row: 5; }
+		    .table tbody tr td:nth-child(7) .row-actions { justify-content: flex-end; }
+		
+		    .table tbody tr td { padding: 0; border: none; text-align: left; }
+		    .ellipsis, .ellipsis-sm { max-width: 100%; }
 		}
 	</style>
 	<script th:inline="javascript">
@@ -126,8 +150,8 @@
 					return ''
 						+ '<tr>'
 						+	'<td>' + kindIcon(it.category) + '</td>'
-						+	'<td class="ellipsis"><a ="/jobs/post/' + it.post_id + '">' + it.job_title + '</a></td>'
-						+	'<td>' + it.company_name + '</td>'
+						+	'<td class="ellipsis"><a href="/jobs/post/' + it.post_id + '">' + it.job_title + '</a></td>'
+						+	'<td class="ellipsis-sm">' + it.company_name + '</td>'
 						+	'<td>' + timeAgo(it.created_at) + '</td>'
 						+	'<td>' + statusBadge(it.status) + '</td>'
 						+	'<td class="ellipsis" title="' + it.application_title + '">' + it.application_title + '</td>'
@@ -258,9 +282,9 @@
 							<th>구분</th>
 							<th>공고 제목</th>
 							<th>회사/작성자</th>
-							<th>지원일</th>
+							<th>지원일자</th>
 							<th>상태</th>
-							<th>이력서</th>
+							<th>지원서</th>
 							<th></th>
 						</tr>
 					</thead>

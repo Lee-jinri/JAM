@@ -40,6 +40,47 @@
 		@media (max-width: 600px) {
 			.favoriteDiv {width: fit-content;}
 			.favoriteSpan{font-size: 14px;}
+			#keyword{font-size: 1rem;}
+		}
+		
+		@media (max-width: 480px) {
+		    .boardLink {
+		        display: grid !important;
+		        grid-template-columns: auto 1fr auto;
+		        grid-template-areas:
+		            "fav title date"
+		            "fav name date";
+		        padding: 10px 8px !important;
+		        align-items: center;
+		        flex-wrap: unset;
+		        gap: 5px;
+		    }
+		
+		    .favoriteDiv {
+		        grid-area: fav;
+		        align-self: start;
+		        padding-top: 2px;
+		    }
+		
+		    .title-container {
+		        grid-area: title;
+		        min-width: 0 !important;
+		        margin-left: 0.5rem;
+		    }
+		
+		    .userName-div {
+		        grid-area: name;
+		        min-width: unset;
+		        max-width: unset;
+		        margin-left: 0.5rem;
+		        justify-content: flex-start;
+		    }
+		
+		    .date-container {
+		        grid-area: date;
+		        align-self: start;
+		        min-width: 55px;
+		    }
 		}
 	</style>
 	<script th:inline="javascript">

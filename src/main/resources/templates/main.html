@@ -11,7 +11,9 @@
 		    font-family: 'Pretendard', sans-serif;
 		    color: #3A1E13;
 		}
-		
+		#content{
+			max-width: 1000px;
+		}
 		.contents {
 		    width: 92%;
 		    max-width: 1100px;
@@ -62,9 +64,9 @@
 		
 		@media (max-width: 600px) {
 		    .post-grid {
-		        grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-		        gap: 20px;
-		        padding: 5px 20px;
+		        grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+		        gap: 12px;
+		        padding: 5px 10px;
 		    }
 		    .post-title{
 		        font-size: 13px;
@@ -78,11 +80,11 @@
 		    }
 		    .post-price{
 		    	margin-top: 6px;
-		    }
-		    .post-card img{
-		    	height: 155px;
-    			object-fit: contain;
-		    }
+		    }		    
+    		.post-card img{
+    			width: calc(100% - 12px);
+    			margin: 6px;
+    		}
 		}
 	</style>
 	
@@ -250,7 +252,7 @@
 		    </div>
 		
 		    <div class="section">
-		        <div class="section-title" id="fleaHeader">🎸 최근 올라온 중고악기 매물</div>
+		        <div class="section-title" id="fleaHeader"><a th:href="@{/fleaMarket/board}">🎸 최근 올라온 중고악기 매물</a></div>
 		        <div id="fleaList" class="post-grid"></div>
 		        <div class="main-pagination text-center my-top-5">
 					<button id="prevFlea" class="arrow-btn">
@@ -263,7 +265,7 @@
 		    </div>
 		
 		    <div class="section">
-		        <div class="section-title" id="comHeader">💬 커뮤니티</div>
+		        <div class="section-title" id="comHeader"><a th:href="@{/community/board}">💬 커뮤니티</a></div>
 		        <ul id="comList" class="board-list"></ul>
 		        <div class="main-pagination text-center my-top-5">
 					<button id="prevComLatest" class="arrow-btn">

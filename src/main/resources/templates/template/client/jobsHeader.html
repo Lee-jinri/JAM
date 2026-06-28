@@ -5,11 +5,14 @@
 	<style>
 		header {
 		    width: 100%;
-		    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.05), 0 1px 0 rgba(0, 0, 0, 0.05);
 		    top:0; 
 			background:rgba(255,255,255,.92); 
 			backdrop-filter:saturate(180%) blur(8px); 
 			z-index:1030; 
+			position: sticky;
+		}
+		.header {
+		    box-shadow: 0 2px 2px rgba(0,0,0,0.05), 0 1px 0 rgba(0,0,0,0.05);
 		}
 		.header-container {
 		    display: flex;
@@ -17,7 +20,8 @@
 		    justify-content: space-between; 
 		    max-width: 114rem;
 		    padding: 0 32px;
-		    height: 42px;
+		    min-height: 42px;
+		    height: auto;
 		    margin: 0 60px;
 		}
 		
@@ -36,6 +40,7 @@
 			display: flex;
 			align-items: center;
 			margin-bottom: 0;
+			margin-left: auto; 
 		}
 		
 		.jobs-nav li{
@@ -174,7 +179,7 @@
 			background:#fff; 
 			border:1px solid #e5e7eb; 
 			border-radius:10px;
-			z-index:1000;
+			z-index:1031;
 			padding:8px 0; 
 			box-shadow:0 12px 28px rgba(0,0,0,.12), 0 2px 4px rgba(0,0,0,.06);
 		}
@@ -209,50 +214,74 @@
 		.typeCompany{
 		    background: linear-gradient(135deg, #4facfe, #00f2fe);
 		}
+		#header_name{
+		    color: #333;
+		}
+		
 		
 		@media (max-width: 691px) {
 			
-			header{padding: 10px;}
+			.header{padding: 10px;}
 			.nav-icon {
 		    	width: 65px;
 		    }
-		
 			.header-container { 
 				margin: 0;
-				height: 30px;
+				height: auto;
+				flex-wrap: wrap;
+				row-gap: 6px;
 			}
+			.header-container > div {
+		        min-width: 0; 
+		    }
+		    .jobs-nav {
+        		flex-basis: 100%;
+		        justify-content: flex-end;
+		        margin-top:2px;
+    		}
 		
 			.job-search-div {
-				min-width: 0;
-				max-width: 170px;
 				width: 100%;
+        		max-width: none;
+		        min-width: 0;
 				margin: 0 8px;
 				padding: 5px 8px;
 				border: 1px solid #0F2D4A; 
+				flex-basis: 100%;
+			    order: 3;
+			    width: 100%;
+		        box-sizing: border-box;
 			}
+			.search-bar-wrapper {
+		        max-width: none;
+        		min-width: 0;
+		    }
 			.main-favicon { 
 				margin: 0; 
-				width: 12px;
-		    	height: 12px;
+				width: 15px;
+		    	height: 15px;
 			}
 			
-			.brand-link span,
 			.brand-link {
 				font-size: 10px;
 				margin-left: 2px;
 			}
-			#header_name, .userTypeSpan {
+			.brand-link span{
+				display: none;
+			}
+			#header_name{
 		        font-size: 12px;
 		    }
 		    .userTypeSpan {
-		        padding: 3px 5px;
+				font-size: 8px;
+				padding: 3px 4px;
 		    }
 			.menu__list{
 				min-width: 100px;
 				padding: 0;
 			}
 			.menu__list a {
-			    padding: 5px 13px;
+			    padding: 9px 13px;
 			    font-size: 12px;
 			}
 			.menu__toggle{
@@ -263,7 +292,7 @@
 			.search-bar-wrapper .glass_icon{font-size:8px; margin: 3px 0;}
 			.search-input {font-size: 11px;}
 			.search{margin:0;}
-			.fa-caret-down{font-size:6px;}
+			.fa-caret-down{font-size:9px;color:#333;}
 			.auth-buttons a{font-size: 12px;}
 			.search-bar-wrapper{
 				height: 14px;
@@ -271,6 +300,10 @@
 			#searchBtn {
 		        height: fit-content;
 		    }
+			.userTypeSpan {
+				font-size: 11px;
+				padding: 2px 6px;
+			}
 		}
 		
 		@media (min-width: 691px) and (max-width: 1024px) {

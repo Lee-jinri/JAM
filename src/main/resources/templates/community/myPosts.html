@@ -7,10 +7,10 @@
 <meta charset="UTF-8">
 <title>커뮤니티</title>
 	<style>
-			.container {
+		.container {
 		    max-width: 1000px;
-		    margin: 0 auto 4rem;
-		    padding-top: 50px;
+			margin: 0 auto;
+			padding: 3rem 1.5rem;
 		}
 		.user-profile {
 		  display: flex;
@@ -104,6 +104,17 @@
 			color: #fff;
 			font-weight: 700;
 		}
+		#deletePostsBtn {margin-left: 2rem;}
+		
+		@media (max-width: 768px) {
+			#userNickname {font-size: 15px;}
+			.sub {font-size: 12px;}
+			#keyword {font-size: 1rem;}
+			.toolbar-wrap, .boardLink {padding: 5px;}
+			#deletePostsBtn {margin: 0;}
+	    }
+	    
+		
 	</style>
 	<script th:inline="javascript">
 		const state = {
@@ -347,12 +358,12 @@
 				    </ul>
 				    <ul>
 				    	<li class="border-bottom">
-				    		<div class="pd-2rem flex items-center ">
+				    		<div class="toolbar-wrap pd-2rem flex items-center ">
 				    			<div class="flex items-center justify-center" style="width: 3rem;">
 				    				<input type="checkbox" class="check-box" id="checkAll">
 				    			</div>
 				    			<div>
-				    				<button id="deletePostsBtn" class="action-btn" style="margin-left: 2rem;">삭제</button>
+				    				<button id="deletePostsBtn" class="action-btn">삭제</button>
 				    			</div>
 				    			<div>
 				    				<span id="selectedCount" class="ml-05" style="color:#7c7c7c; font-size:14px;"></span>

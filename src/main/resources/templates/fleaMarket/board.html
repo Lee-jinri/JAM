@@ -10,7 +10,6 @@
 <script th:src="@{/js/favorite.js}"></script>	
 
 	<style>
-	
 		.f-board {
 			padding-top: 40px;
 		}
@@ -35,10 +34,10 @@
 		.date-container {
 			display: flex;
 			flex-direction: column;
-			align-items: flex-end; /* 오른쪽 정렬 */
-			flex-shrink: 0; /* 자동 크기 축소 방지 */
-			min-width: 120px; /* 너무 넓지 않게 조절 */
-			max-width: 170px; /* 필요 이상으로 커지지 않게 제한 */
+			align-items: flex-end;
+			flex-shrink: 0;
+			min-width: 120px;
+			max-width: 170px; 
 		}
 		
 		.user_toggle {
@@ -47,7 +46,7 @@
 		}
 	
 		@media (max-width: 600px) {
-		
+			.post-grid {padding: 0;}
 	    	.post-title{
 	    		font-size: 13px;
 	    		height: 35px;
@@ -79,6 +78,7 @@
 			#flea-myStoreBtn, #flea-favoriteBtn, #flea-chatBtn{
 				display: none;
 			}
+			
 	    }
 	</style>
 	<script th:inline="javascript">

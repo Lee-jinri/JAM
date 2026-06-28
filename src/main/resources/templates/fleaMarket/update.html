@@ -152,6 +152,11 @@
 		}
 		.flea_title{
 			width: 1000px;
+			font-size: 16px;
+		}
+		
+		@media (max-width: 480px) {
+    		.category-container {gap: 0;}
 		}
 	</style>
 	<script th:inline="javascript">
@@ -408,8 +413,8 @@
 </head>
 <body>
 	<div layout:fragment="body">
-		<div class="my-top-15 my-bottom-15">
-			<div class="page-header">
+		<div class="contents  my-bottom-15">
+			<div class="page-header my-top-15">
 				<p class="page-title">판매 상품 등록</P>
 				<p>구매자가 궁금해할 정보들을 자세히 남겨주세요 ✨</p>
 				<p>사진·사용감·보유기간 등이 상세할수록 거래가 빠릅니다.</p>

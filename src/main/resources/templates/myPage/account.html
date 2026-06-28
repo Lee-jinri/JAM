@@ -10,234 +10,285 @@
 
 <title>계정 정보</title>
 	<style>
-		@media (max-width: 300px) {
-			.info-box{
-				max-width: 500px;
-				margin: 10px 0;
-			}
-			
-			.row_item {
-				padding: 12px 20px;
-				flex-direction: column;
-			}
-		
-			.info-row {
-				flex-direction: column;
-				align-items: flex-start;
-				gap: 8px;
-			}
-		
-			.modal-content {
-				width: 90%;  
-			}
-			
+	.common-box {
+		width: 100%;
+		height: 440px;
+		padding: 0 17px;
+		border-radius: 12px;
+		box-shadow: 1px 1px 10px 0 rgba(72, 75, 108, .08);
+		border: solid 1px #e3e9ed;
+		background-color: #fff;
+		box-sizing: border-box;
+	}
+	
+	.info_box {
+		margin: 4rem auto;
+		max-width: 750px;
+		padding: 0 16px;
+	}
+	
+	p {
+		margin: 0;
+	}
+	
+	.modal-content.modal-wide {
+		max-width: 510px;
+	}
+	
+	.account_title_div {
+		margin-bottom: 22px;
+	}
+	
+	.account-title {
+		display: inline;
+		font-size: 22px;
+		font-weight: bold;
+		line-height: 24px;
+		letter-spacing: -.2px;
+		color: #2e2e2e;
+	}
+	
+	.item_text {
+		padding-right: 4px;
+		letter-spacing: -.3px;
+		color: #303038;
+		word-break: break-all;
+		line-height: 33px;
+		font-weight: bold;
+	}
+	
+	.row_item {
+		padding: 14px 25px 12px 30px;
+		border-bottom: 1px solid #eee;
+	}
+	
+	.drop_link {
+		padding: 16px 0;
+		margin: 0 auto;
+	}
+	
+	.text-btn {
+		background: none;
+		border: none;
+		padding: 4px 8px;
+		font-size: 16px;
+		font-weight: 500;
+		color: #333;
+		cursor: pointer;
+		text-decoration: none;
+	}
+	
+	.text-btn:hover {
+		text-decoration: underline;
+	}
+	
+	.info-row {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+	
+	.info-row span {
+		flex: 1;
+		word-break: break-all;
+	}
+	
+	.btn-edit {
+		background-color: #f5f5f7;
+		border: none;
+		border-radius: 8px;
+		padding: 6px 12px;
+		font-size: 14px;
+		color: #333;
+		cursor: pointer;
+		font-weight: 500;
+	}
+	
+	.modal-overlay {
+		position: fixed;
+		top: 0; left: 0; right: 0; bottom: 0;
+		background-color: rgb(0 0 0 / 71%);
+		display: none;
+		justify-content: center;
+		align-items: center;
+		z-index: 999;
+		padding: 16px;
+	}
+	
+	.modal-overlay.active {
+		display: flex;
+	}
+	
+	.modal-content {
+		background: #fff;
+		padding: 20px 30px;
+		border-radius: 10px;
+		box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+		max-width: 430px;
+		text-align: center;
+	}
+	
+	.modal-content input,
+	#passwordVerifyInput {
+		border-radius: 20px;
+		border: 1.5px solid #ccc;
+		padding: 9px 14px;
+		font-size: 14px;
+		box-sizing: border-box;
+	}
+	
+	input:focus {
+		border: 2px solid #007bff;
+		box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
+		outline: none;
+	}
+	
+	.modal-buttons {
+		display: flex;
+		justify-content: center;
+		margin: 20px 0 10px 0;
+	}
+	
+	.modal-buttons button {
+		padding: 6px 12px;
+		margin: 0 3px;
+		border-radius: 6px;
+		border: none;
+		cursor: pointer;
+	}
+	
+	.modalTitle {
+		margin-bottom: 30px;
+		font-size: 21px;
+	}
+	
+	.modalHint {
+		font-size: 17px;
+		margin-bottom: 16px;
+	}
+	
+	.modalConfirm {
+		background-color: #4F70EC;
+		color: white;
+	}
+	
+	.modalCancel {
+		background-color: #f2f2f2;
+	}
+	
+	#password-box {
+		display: none;
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background: white;
+		max-width: 330px;
+		width: 90%;
+		padding: 25px;
+		border-radius: 12px;
+		box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+		text-align: center;
+		box-sizing: border-box;
+		z-index: 999;
+	}
+	
+	#password-box .box-section {
+		margin-bottom: 15px;
+	}
+	
+	#password-box p {
+		font-size: 18px;
+		font-weight: bold;
+	}
+	
+	#passwordInput,
+	#passwordCheck {
+		width: 230px;
+		box-sizing: border-box;
+	}
+	
+	#submitBtn {
+		width: 25%;
+		padding: 7px 10px;
+		background: #F4A261;
+		color: white;
+		font-size: 16px;
+		font-weight: bold;
+		border: none;
+		border-radius: 8px;
+		cursor: pointer;
+		transition: background 0.3s ease-in-out;
+	}
+	
+	#submitBtn:hover {
+		background: #E78B44;
+	}
+	
+	.modal-input-group {
+		display: flex;
+		flex-direction: column;
+		gap: 10px;
+		margin-bottom: 20px;
+	}
+	
+	.pw-input-group {
+		align-items: center;
+	}
+	
+	.modal-input-group .address-row {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+	}
+	
+	.modal-input-group .address-row input {
+		flex: 1;
+		min-width: 0;
+	}
+	
+	#address_search {
+		flex-shrink: 0;
+		padding: 9px 16px;
+		border-radius: 20px;
+		border: 1.5px solid #ccc;
+		background: #f5f5f7;
+		font-size: 14px;
+		cursor: pointer;
+		white-space: nowrap;
+		color: #333;
+	}
+	
+	@media (max-width: 480px) {
+		.row_item {
+			padding: 12px 16px;
 		}
-		
-		.common-box{
-			width: 100%;
-		    min-width: 360px;
-		    max-width: 694px;
-			height: 440px;
-			padding: 0 17px;
-		    border-radius: 12px;
-		    box-shadow: 1px 1px 10px 0 rgba(72, 75, 108, .08);
-		    border: solid 1px #e3e9ed;
-		    background-color: #fff;
-		    box-sizing: border-box;
-		}
-		
-		p{
-			margin: 0;
-		}
-		
-		.account_title_div{
-			margin: 0 auto;
-		    width: 694px;
-		    margin-bottom: 22px;
-		}
-		
-		.account-title{
-			display: inline;
-		    font-size: 22px;
-		    font-weight: bold;
-		    line-height: 24px;
-		    letter-spacing: -.2px;
-		    color: #2e2e2e;
-		}
-		
-		.item_text{
-			padding-right: 4px;
-		    letter-spacing: -.3px;
-		    color: #303038;
-		    word-break: break-all;
-		    line-height: 33px;
-		        font-weight: bold;
-		}
-		
-		.row_item{
-			padding: 14px 25px 12px 30px;
-		    border-bottom: 1px solid #eee;
-		}
-		
-		.drop_link{
-			padding: 16px 0;
-			margin: 0 auto;
-		    width: 694px;
-		}
-		.text-btn {
-			background: none;
-			border: none;
-			padding: 4px 8px;
-			font-size: 16px;
-			font-weight: 500;
-			color: #333;
-			cursor: pointer;
-			text-decoration: none;
-		}
-		
-		.text-btn:hover {
-			text-decoration: underline;
-		}
-		
+	
 		.info-row {
-			display: flex;
-			align-items: center;
+			flex-wrap: wrap;
 		}
-		
-		.info-row span{
-			flex: 1;
+	
+		.modalTitle, .modal-content input, #passwordVerifyInput {
+			font-size: 16px;
+			padding: 6px 14px;
 		}
-		
-		.btn-edit {
-			background-color: #f5f5f7; 
-			border: none;
-			border-radius: 8px; 
-			padding: 6px 12px;
-			font-size: 14px;
-			color: #333;
-			cursor: pointer;
-			font-weight: 500;
+		.modalHint {
+			font-size: 13px;
 		}
-		
-		.modal-overlay {
-			position: fixed;
-			top: 0; left: 0; right: 0; bottom: 0;
-			background-color: rgb(0 0 0 / 71%);
-			display: none;
-			justify-content: center;
-			align-items: center;
-			z-index: 999;
+		.modal-content input,
+		#passwordVerifyInput {
+			max-width: 100%;
 		}
-		
-		.modal-overlay.active {
-			display: flex;
+	
+		#address_search {
+			margin-left: 0;
+			margin-top: 6px;
+			width: auto;
+			height: auto;
+			padding: 5px 14px;
+			align-self: stretch;
 		}
-		
-		
-		.modal-content {
-			background: #fff;
-			padding: 20px 30px;
-			border-radius: 10px;
-			box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-			width: 430px;
-			text-align: center;
-		}
-		
-		.modal-content input, #passwordVerifyInput {
-			padding: 5px 8px;
-			margin: 6px 0;
-			border: #a7a7a7  2px solid;
-			border-radius: 16px;
-		}
-		
-		input:focus {
-			border: 2px solid #007bff;
-			box-shadow: 0 0 4px rgba(0, 123, 255, 0.5);
-			outline: none;
-		}
-		.modal-buttons {
-			display: flex;
-			justify-content: center;
-			margin: 20px 0 10px 0;
-		}
-		
-		.modal-buttons button {
-			padding: 6px 12px;
-			margin: 0 3px;
-			border-radius: 6px;
-			border: none;
-			cursor: pointer;
-		}
-		#address_search{
-			margin-left: 15px;
-			width: 75px;
-			height: 45px;
-			border-radius: 15px;
-			font-size: 15px;
-			border: none;
-			letter-spacing: -0.9px;
-		}
-		
-		.modalTitle{
-			margin-bottom: 30px;
-			font-size: 21px;
-		}
-		.modalHint{
-		    font-size: 17px;
-			margin-bottom: 10px;
-		}
-		.modalConfirm{
-		  background-color: #4F70EC; /* 메인 컬러 */
-		  color: white;
-		}
-		
-		.modalCancel{
-			background-color: #f2f2f2;
-		} 
-		
-		#password-box {
-		    display: none;
-		    position: fixed;
-		    top: 50%;
-		    left: 50%;
-		    transform: translate(-50%, -50%); 
-		    background: white;
-		    max-width: 330px;
-		    width: 90%;
-		    padding: 25px;
-		    border-radius: 12px;
-		    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); 
-		    text-align: center;
-		    box-sizing: border-box;
-		    z-index: 999;
-		}
-		
-		#password-box .box-section {
-		    margin-bottom: 15px; /* 각 요소 간격 조정 */
-		}
-		
-		#password-box p {
-		    font-size: 18px;
-		    font-weight: bold;
-		}
-		
-		#submitBtn {
-		    width: 25%;
-		    padding: 7px 10px;
-		    background: #F4A261;
-		    color: white;
-		    font-size: 16px;
-		    font-weight: bold;
-		    border: none;
-		    border-radius: 8px;
-		    cursor: pointer;
-		    transition: background 0.3s ease-in-out;
-		}
-		
-		#submitBtn:hover {
-		    background: #E78B44; 
-		    transition: background 0.3s ease-in-out;
-		}
+	}
 	</style>
 	<script th:inline="javascript">
 		let isSocialLogin;
@@ -735,7 +786,7 @@
 				</div>
 			</div>
 			
-			<div class="info_box my-top-15 my-bottom-15">
+			<div class="info_box">
 				<div class="account_title_div">
 					<h2 class="account-title">계정 정보 관리</h2>
 				</div>
@@ -821,11 +872,13 @@
 					</div>
 					
 					<div id="passwordModal" class="modal modal-overlay" >
-						<div class="modal-content" style="width: 510px;">
+						<div class="modal-content">
 							<h3 class="modalTitle">비밀번호 변경</h3>
 							<p class="modalHint">영문 대소문자와 숫자를 포함해 8~20자 이내로 입력해 주세요.</p>
-							<input type="password" id="passwordInput" class="modalInput" style="width: 270px;" placeholder="비밀번호 입력"/>
-							<input type="password" id="passwordCheck" class="modalInput enter-submit" style="width: 270px;" placeholder="비밀번호 확인" data-button="pwChangeBtn"/>
+							<div class="modal-input-group pw-input-group">
+								<input type="password" id="passwordInput" class="modalInput" placeholder="비밀번호 입력"/>
+								<input type="password" id="passwordCheck" class="modalInput enter-submit" placeholder="비밀번호 확인" data-button="pwChangeBtn"/>
+							</div>
 							<div class="modal-buttons">
 								<button id="pwChangeBtn" class="modalConfirm passwordConfirm">확인</button>
 								<button class="modalCancel">취소</button>
@@ -834,12 +887,15 @@
 					</div>
 					
 					<div id="addressModal" class="modal modal-overlay" >
-						<div class="modal-content" style="width: 470px;">
+						<div class="modal-content">
 							<h3 class="modalTitle">주소 변경</h3>
-							<input type="text" id="streetAddress" class="" placeholder="주소" readonly="readonly" style="width: 385px;"> 
-							<input type="text" id="detailAddress" class="enter-submit" placeholder="상세주소 입력" data-button="addressChangeBtn" style="width: 293px;">
-							<button type="button" id="address_search">검색</button>
-							
+							<div class="modal-input-group">
+								<input type="text" id="streetAddress" class="" placeholder="주소" readonly="readonly">
+								<div class="address-row">
+									<input type="text" id="detailAddress" class="enter-submit" placeholder="상세주소 입력" data-button="addressChangeBtn">
+									<button type="button" id="address_search">검색</button>
+								</div>
+							</div>
 							<div class="modal-buttons">
 								<button id="addressChangeBtn" class="modalConfirm">확인</button>
 								<button class="modalCancel">취소</button>

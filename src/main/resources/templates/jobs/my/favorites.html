@@ -55,8 +55,10 @@
 		.tag{font-size:12px;color:var(--muted)}
 	
 		.row-actions{display:flex;gap:6px}
+		.ellipsis-sm{max-width:130px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start;}
 		.ellipsis{max-width:230px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:start;}
-	
+		.wrap-210 {max-width:210px;word-break: break-all;}
+		
 		.empty{padding:32px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:12px;background:#fafafa}
 		.pagination{display:flex;gap:6px}
 		.page{padding:6px 10px;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
@@ -67,11 +69,53 @@
 		
 		/* 모바일 카드형 */
 		@media (max-width: 720px){
-			.table thead{display:none}
-			.table, .table tbody, .table tr, .table td{display:block;width:100%}
-			.table tr{border-bottom:1px solid var(--line);padding:10px 0}
-			.table td{border:none;padding:6px 0}
-			.ellipsis{max-width:100%}
+			.table thead { display: none; }
+		    .table, .table tbody { display: block; }
+		
+		    .table tbody tr {
+		        display: grid;
+		        background: #fff;
+		        border: 1px solid var(--line);
+		        border-radius: 12px;
+		        padding: 14px;
+		        margin-bottom: 10px;
+		        box-shadow: 0 2px 8px rgba(0,0,0,.04);
+		        gap: 4px 8px;
+		    }
+		
+		    .table tbody tr[data-type="company"] {
+		        grid-template-columns: 24px 1fr auto;
+		    }
+		    .table tbody tr[data-type="company"],
+		    .table tbody tr[data-type="member"] {
+		        align-items: center;
+		    }
+		    .table tbody tr[data-type="company"] td:nth-child(1) { grid-column: 1; grid-row: 1; align-self: center; padding-top: 2px; }
+		    .table tbody tr[data-type="company"] td:nth-child(2) { grid-column: 2; grid-row: 1; font-weight: 700; font-size: 15px; }
+		    .table tbody tr[data-type="company"] td:nth-child(3) { grid-column: 2 / 4; grid-row: 2; font-size: 13px; color: var(--muted); }
+		    .table tbody tr[data-type="company"] td:nth-child(4) { grid-column: 2; grid-row: 3; font-size: 13px; }
+		    .table tbody tr[data-type="company"] td:nth-child(5) { grid-column: 3; grid-row: 3; font-size: 13px; color: var(--muted); text-align: right; }
+		    .table tbody tr[data-type="company"] td:nth-child(6) { grid-column: 2; grid-row: 4; font-size: 13px; }
+		    .table tbody tr[data-type="company"] td:nth-child(7) { grid-column: 3; grid-row: 4; font-size: 12px; color: var(--muted); text-align: right; }
+		    .table tbody tr[data-type="company"] td:nth-child(8) { grid-column: 3; grid-row: 1; text-align: right; }
+		
+		    .table tbody tr[data-type="member"] {
+		        grid-template-columns: 24px 1fr auto;
+		    }
+		    .table tbody tr[data-type="member"] td:nth-child(1) { grid-column: 1; grid-row: 1 / 4; align-self: start; padding-top: 2px; }
+		    .table tbody tr[data-type="member"] td:nth-child(2) { grid-column: 2; grid-row: 1; font-weight: 700; font-size: 15px; }
+		    .table tbody tr[data-type="member"] td:nth-child(3) { grid-column: 2; grid-row: 2; font-size: 13px; }
+		    .table tbody tr[data-type="member"] td:nth-child(4) { grid-column: 3; grid-row: 2; font-size: 13px; color: var(--muted); text-align: right; }
+		    .table tbody tr[data-type="member"] td:nth-child(5) { grid-column: 2; grid-row: 3; font-size: 12px; color: var(--muted); }
+		    .table tbody tr[data-type="member"] td:nth-child(6) { grid-column: 3; grid-row: 1; text-align: right; }
+		
+		    .table tbody tr td {
+		        padding: 0;
+		        border: none;
+		        text-align: left;
+		    }
+		    .ellipsis { max-width: 100%; }
+		    .wrap-210 { max-width: 100%; }
 		}
 	</style>
 	<script th:inline="javascript">
@@ -206,15 +250,15 @@
 				var status = statusBadge(it.status); 
 				
 				return ''
-					+ '<tr class="postLink" data-location="/jobs/post/'+ postId + '">'
+					+ '<tr class="postLink" data-type="company" data-location="/jobs/post/'+ postId + '">'
 					+	'<td>'
 					+		'<span class="favoriteSpan" data-post-id="' + postId + '" data-board-type="JOB">'
 					+			'<i class="favorite fa-star fa-solid" style="color: #FFD43B; cursor: pointer;"></i>'
 					+		'</span>'
 					+	'</td>'
 					+	'<td class="ellipsis"><a th:href="@{/jobs/post/' + postId + '}">' + jobTitle + '</a></td>'
-					+	'<td>' + company + '</td>'
-					+	'<td>' + areaText + '</td>'
+					+	'<td class="ellipsis-sm">' + company + '</td>'
+					+	'<td class="wrap-210">' + areaText + '</td>'
 					+	'<td>' + positionText + '</td>'
 					+	'<td class="pay">' + payCell + '</td>'
 					+	'<td>' + created + '</td>'
@@ -245,7 +289,7 @@
 				var status = statusBadge(it.status); 
 				
 				return ''
-					+ '<tr class="postLink" data-location="/jobs/post/'+ postId + '">'
+					+ '<tr class="postLink" data-type="member" data-location="/jobs/post/'+ postId + '">'
 					+	'<td>'
 					+		'<span class="favoriteSpan" data-post-id="' + postId + '" data-board-type="JOB">'
 					+			'<i class="favorite fa-star fa-solid" style="color: #FFD43B; cursor: pointer;"></i>'

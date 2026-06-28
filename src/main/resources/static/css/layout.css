@@ -125,7 +125,6 @@ span{
 }
 
 #content{
-	max-width: 1000px;
 	min-height: 500px;
     margin: 0 auto;	
 }
@@ -252,7 +251,6 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 	font-size: 28px;
 	font-weight: 700;
 	line-height: 1.36;
-	/*color: #ffb689;*/
 	color: #A9BCF5;
 }
 
@@ -261,7 +259,19 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 	font-size: 20px;
 	letter-spacing: 0;
 }
-
+#join_form .address-row {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-top: 10px;
+}
+#join_form #detailAddress {
+	margin: 0;
+}
+#join_form #address_search {
+	border: none;
+	padding: 14px 18px;
+}
 .common-box {
 	padding: 40px;
 	width: 560px;
@@ -275,14 +285,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 #info-box {
 	height: 840px;
 }
-@media (max-width: 600px) {
-    .common-box {
-        width: 100%; 
-        padding: 30px;
-        min-height: none;
-        height: auto;
-    }
-}
+
 .join_button, .login_button, .findID_div, .findPw_div {
 	display: flex;
 	justify-content: center;
@@ -388,7 +391,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 
 
 .item {
-	flex-grow: 1; /* default 0 */
+	flex-grow: 1; 
 }
 
 .postBtn {
@@ -422,12 +425,19 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 }
 
 #address_search {
-	width: 65px;
-	height: 45px;
 	border-radius: 15px;
 	font-size: 15px;
 	border: none;
 	letter-spacing: -0.9px;
+	flex-shrink: 0;
+    padding: 8px 18px;
+    white-space: nowrap;
+    border-radius: 20px;
+    border: 1.5px solid #ccc;
+    background: #f5f5f7;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
 }
 
 .join_find {
@@ -451,6 +461,10 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
 	font-weight: 600;
     font-size: 15px;
     color: #666;
+    display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
 }
 .post-title{
 	font-size: 23px;
@@ -497,7 +511,7 @@ input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin: 16px;
+    margin: 0 16px 30px;
     justify-content: flex-end;
 }
 
@@ -638,17 +652,6 @@ textarea.comment_content {
 .write_border{
 	border: 2px solid #f2eadd;
 }
-
-/*
-.com_title, .flea_title {
-	border: 3px solid #f2eadd;
-	border: 3px solid #65A6E7;
-}
-
-.com_content, .flea_content {
-	/*border: 3px solid #f2eadd;
-	border: 3px solid #65A6E7;
-}*/*/
 
 #receive_btn{
 		border : 2px #848484;
@@ -915,15 +918,6 @@ textarea.comment_content {
 	margin-bottom: 35px;
 }
 
-/*
-#comReply_content, #fleaReply_content, .reply_content,
-	#roomReply_content {
-	width: 815px;
-	height: 90px;
-	border: none;
-	margin: 15px 0;
-}
-*/
 .comment-insert-btn {
 	padding: 8px 16px;
     float: right;
@@ -939,9 +933,9 @@ textarea.comment_content {
 }
 
 .comment-insert-btn:hover{
-	background-color: #CAD1F0; /* hover 시 더 밝게 */
-    border-color: #bbb; /* 테두리도 변경 */
-    transform: scale(1.05); /* 살짝 커지는 효과 */
+	background-color: #CAD1F0; 
+    border-color: #bbb; 
+    transform: scale(1.05); 
 }
 
 #comment-edit-textarea {
@@ -979,17 +973,17 @@ textarea.comment_content {
     border: none;
     background-color: #fff;
     font-size: 15px;
-    color: #444; /* 기존보다 약간 어두운 색상 */
+    color: #444; 
     padding: 4px 8px;
-    transition: all 0.2s ease-in-out; /* 부드러운 효과 */
+    transition: all 0.2s ease-in-out;
     cursor: pointer;
 }
 
 .delBtn:hover, .upBtn:hover, #commentUpdateBtn:hover {
-    background-color: #f0f0f0; /* hover 시 배경색 약간 변경 */
-    color: #222; /* hover 시 글자 색 더 강조 */
-    text-decoration: underline; /* 클릭 가능하다는 느낌 강조 */
-    opacity: 0.8; /* 살짝 흐려졌다가 클릭하면 돌아옴 */
+    background-color: #f0f0f0;
+    color: #222; 
+    text-decoration: underline;
+    opacity: 0.8;
 }
 
 .msg_border {
@@ -1063,9 +1057,9 @@ textarea.comment_content {
 	flex: 1;
 	overflow-y: auto;
 	display: flex;
-    flex-direction: column; /* 메시지를 세로로 쌓음 */
-    width: 100%; /* 부모 컨테이너의 너비 */
-    max-height: 370px; /* 메시지 목록의 최대 높이를 지정 */
+    flex-direction: column; 
+    width: 100%;
+    max-height: 370px; 
     
 }
 
@@ -1317,16 +1311,9 @@ textarea.comment_content {
     white-space: nowrap;
 }
 
-/* 동그란 라디오 안보이게 하면서도 클릭 유지 */
 .jam-radio-label span::before {
     display: none;
 }
-
-
-
-
-
-
 
 .jam-type-select label {
     display: inline-flex;
@@ -1435,11 +1422,6 @@ textarea.comment_content {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.15);
 }
 
-
-
-
-
-
 .jam-type-select label {
     margin-right: 15px;
     font-weight: bold;
@@ -1447,7 +1429,7 @@ textarea.comment_content {
 }
 
 .jam-pay-section {
-    display: none; /* 기본은 숨김 - JS로 제어 */
+    display: none; 
 }
 
 .jam-pay-section {
@@ -1458,7 +1440,7 @@ textarea.comment_content {
     display: flex;
     gap: 8px;
     align-items: center;
-    width: fit-content;  /* 내용물 크기에 맞게 */
+    width: fit-content;
     margin-bottom: 16px;
 }
 
@@ -1499,18 +1481,18 @@ textarea.comment_content {
 
 .search-bar-wrapper {
     display: flex;
-    gap: 8px; /* 요소 간 간격 */
+    gap: 8px; 
     width: 100%;
-    max-width: 800px; /* 포지션/지역과 동일한 폭 */
+    max-width: 800px; 
 }
 
 .search-bar-wrapper select {
-    flex: 0.2;  /* select는 전체의 20%만 차지 */
-    min-width: 100px; /* 너무 작아지는 거 방지 */
+    flex: 0.2;
+    min-width: 100px; 
 }
 
 .search-bar-wrapper input {
-    flex: 1;  /* input은 나머지 공간 차지 */
+    flex: 1;
     min-width: 0;
     box-sizing: border-box;
 }
@@ -1592,8 +1574,8 @@ input:checked + .slider:before {
 }
 
 .filterBtnContainer{
-    gap: 10px; /* 버튼 사이 간격 */
-    align-items: center; /* 버튼 높이 정렬 */
+    gap: 10px;
+    align-items: center; 
 	max-width: 700px;
     margin: 10px auto;	
 }
@@ -1603,9 +1585,9 @@ input:checked + .slider:before {
     border: 1px solid #ddd;
     border-radius: 6px;
     background-color: #fff;
-    max-width: 800px;  /* 컨테이너 최대 너비 (원하는 값으로 조절 가능) */
-    margin: 0 auto;  /* 중앙정렬 */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);  /* 살짝 그림자 */
+    max-width: 800px;  
+    margin: 0 auto;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
     padding: 10px;
 }
 
@@ -1632,7 +1614,7 @@ input:checked + .slider:before {
 
 
 .setting-base__col {
-    flex: 1;  /* 3등분으로 균등 배분 */
+    flex: 1; 
     border: 1px solid #e5e8ec;
     border-radius: 4px;
     background-color: #f9f9f9;
@@ -1640,7 +1622,7 @@ input:checked + .slider:before {
 }
 
 .setting-base__col--list {
-    max-height: 200px;  /* 높이 제한 (스크롤 추가 가능) */
+    max-height: 200px;
     overflow-y: auto;
     background-color: #fff;
     padding: 8px;
@@ -1718,11 +1700,6 @@ input:checked + .slider:before {
     color: #007bff;
 }
 
-/*
-.receiver {
-	margin-bottom: 10px;
-}*/
-
 .neo-wrap {
 	padding: 7px 11px;            
 	border-radius: 999px;
@@ -1740,7 +1717,7 @@ input:checked + .slider:before {
 	z-index: 1;
 }
 .neo-input {
-width: 430px;
+	width: 430px;
     height: 30px;
 	padding: 0 22px;
 	border: none;
@@ -1798,7 +1775,7 @@ select {
 	box-shadow: 0 1px 0 1px rgba(0, 0, 0, .04);
 }
 
-.contents_height {
+_height {
 	height: 35rem;
 }
 
@@ -1807,6 +1784,7 @@ footer {
 	padding-top: 27px;
 	width: 100%;
 	clear: both;
+	margin-top: 60px;
 }
 
 .icon {
@@ -2213,7 +2191,7 @@ textarea {
 .contents {
     width: 92%;
     max-width: 1100px;
-    margin: 40px auto;
+    margin: 6rem auto;
 }
 
 .page-header-text {
@@ -2295,7 +2273,7 @@ textarea {
 	border-radius: 14px;
 	color: #3b4abb;
 	font-weight: 600;
-	box-shadow: 0 4px 8px rgba(80, 110, 255, 0.22);
+	box-shadow: 0 4px 12px rgba(80, 110, 255, 0.22);
 }
 
 
@@ -2756,293 +2734,476 @@ z-index: 999;*/
 	color:#111827;
 }
 		
+.fa-face-smile{font-size: 25px; color: #bbb;}
 
+.com-content{margin: 45px 16px; min-height: 200px; }
 		
-@media screen and (max-width: 768px) {
-  body {
-    font-size: 14px;
-  }
+@media (max-width: 768px) {
+	body {
+		font-size: 14px;
+	}
 
-  h2 {
-    font-size: 18px;
-  }
+	h2 {
+		font-size: 18px;
+	}
 
-  .btn-edit {
-    font-size: 12px;
-  }
-  
-  footer {
-    font-size: 12px;
-  }
-  
-  .nav-container{
-  	max-width: 183px;
-  }
-  
-  .header-container {
-  	padding: 0 !important;
-  }
-  
-  #header_name{
-  	font-size: 12px;
-  }
-  
-  #logout {
-  	margin-right: 0;
-  }
-  .nav-icon{
-  	margin: 0;
-  }
-  .paginate-a{
-  	padding: 3px 7px !important;
-  	font-size: 14px;
-  }
-    .neo-wrap::before{
-    	width: 0;
-    }
-    .neo-wrap {
-        width: 100%;
-        padding: 4px 6px;
-    }
+	.btn-edit {
+		font-size: 12px;
+	}
 
-    .neo-input {
-        width: 100%; 
-        max-width: 215px; 
-        min-width: 215px; 
-        font-size: 10px;
-        padding: 0 20px;
-        height: 23px;
-    }
-    .page-header{
-    	margin:0;
-    }
-    .page-header-text{
-    	font-size:20px;
-    	margin: 0 0 10px 10px;
-    }
-    .rainbow-btn{
-	    padding: 3px 13px;
-	    height: 28px;
-	    font-size: 10px;
-    }
-    .search-icon{
-    	width: 20px;
-    }
-    #searchBtn{
-    	height: 23px;
-    }
-    .header-icon{display: none;}
-    #header_name{margin-right: 6px;}
-    .chat-sidebar{width: 50%;}
+	footer {
+		font-size: 12px;
+	}
+
+	.nav-icon {
+		width: 90px;
+		margin: 0;
+	}
+
+	.nav-container {
+		max-width: 183px;
+	}
+
+	.header-container {
+		padding: 0 !important;
+	}
+
+	#header_name {
+		font-size: 12px;
+		margin-right: 6px;
+	}
+
+	#logout {
+		margin-right: 0;
+	}
+
+	.paginate-a {
+		padding: 3px 7px !important;
+		font-size: 14px;
+	}
+
+	.neo-wrap {
+		width: 100%;
+		padding: 4px 6px;
+	}
+
+	.neo-wrap::before {
+		width: 0;
+	}
+
+	.neo-input {
+		width: 100%;
+		max-width: 215px;
+		min-width: 215px;
+		font-size: 10px;
+		padding: 0 20px;
+		height: 23px;
+	}
+
+	.page-header {
+		margin: 0;
+	}
+
+	.page-header-text {
+		font-size: 20px;
+		margin: 0 0 10px 10px;
+	}
+
+	.rainbow-btn {
+		padding: 3px 13px;
+		height: 28px;
+		font-size: 10px;
+	}
+
+	.search-icon {
+		width: 20px;
+	}
+
+	#searchBtn {
+		height: 23px;
+	}
+
+	.header-icon {
+		display: none;
+	}
+
+	.chat-sidebar {
+		width: 35%;
+	}
 }
 
-
-
-
-
-
-
 @media (max-width: 600px) {
-    .common-box {
-        width: 100% !important;
-        min-width: 320px;
-        padding: 20px !important;
-        min-height: auto !important;
-        margin: 10px auto;
-    }
-
-    .join_input {
-        font-size: 13px;
-    }
-
-    /* 주소 입력 부분 레이아웃 조정 */
-    #address_search {
-        width: 100%;
-        margin-top: 8px;
-        height: 45px;
-    }
-    .join_title>p, .login_title>p{
-        font-size: 20px;
-    }
-    .join_input{
-    	 height: 40px;
-    }
-    .join_hint{
-    	font-size: 12px;
-    }
-    .join_check{
-    	top: 23px;
-    }
-    .join_input{
-    	margin-top: 0;
-    }
-    #detailAddress{
-        margin-top: 10px;
-    }
-    
-    .neo-wrap::before{
-    	width: 0;
-    }
-    
-    .neo-wrap {
-        width: 100%;
-        padding: 4px 6px;
-    }
-
-    .neo-input {
-        width: 100%; 
-        min-width: 215px; 
-        font-size: 10px;
-        padding: 0 20px;
-        height: 23px;
-    }
-    .page-header{
-    	margin:0;
-    }
-    .page-header-text{
-    	font-size:20px;
-    	margin: 0 0 10px 10px;
-    }
-    .rainbow-btn{
-	    padding: 3px 13px;
-	    height: 28px;
-	    font-size: 10px;
-    }
-    .hot-post-title{
-    	font-size: 11px;
-    }
-    .hot-box{
-    	padding: 3px 12px;
-    }
-    .hot-paper{
-    	padding: 10px;
-    }
-    .arrow-btn{
-    	padding: 6px;
-    }
-    .boardTitle{
-    	font-size:11px;
-    }
-    .boardLink{
-    	padding: 3px;
-    }
-    .userName-div .userName{
-    	font-size: 11px;
-    }
-    .boardHits, .boardDate{
-    	font-size: 9px;
-    }
-    .board-section{
-    	margin-top: 35px;
-    }
-    .f-board-buttons{
-    	justify-content: center;
-    }
-    .f-board-button{
-    	font-size: 11px;
-    	width: auto;
-    	padding: 0 8px;
-    }
-    .f-board-button:not(:first-child) {
-    	margin: 0;
-    }
-    .category-cell a{
-    	padding: 0;
-    }
-    .category-cell{
-    	font-size: 10px;
-    }
-    .post-grid {
-		grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-		gap: 20px;
-		padding: 10px 20px 60px 20px;
-	}
 	p {
-	   font-size: 15px;
+		font-size: 15px;
 	}
-	
-	.join_input, .login-input{
+
+	.board-list {
+		margin: 0 10px;
+	}
+
+	.common-box {
+		width: 100% !important;
+		min-width: 320px;
+		padding: 20px !important;
+		min-height: auto !important;
+		margin: 10px auto;
+	}
+
+	.join_input,
+	.login-input {
 		width: 100%;
+		height: 40px;
+		font-size: 16px;
+		margin-top: 10px;
 	}
-	#join-box{
-		padding: 20px 60px !important;
+
+	.join_title > p,
+	.login_title > p {
+		font-size: 20px;
 	}
-	.join_agree{
+
+	.join_hint {
+		font-size: 12px;
+	}
+
+	.join_check {
+		top: 23px;
+	}
+
+	.join_agree {
 		padding: 13px 0;
 	}
-	.socialLoginBtn{
-		width: 100%;
-	height: auto;
+
+	#join-box {
+		padding: 20px 60px !important;
 	}
-	.login_sns_p{
+
+	#join_form #address_search {
+		padding: 10px 18px;
+	}
+
+	.address-row {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+	}
+
+	.neo-wrap {
+		width: 100%;
+		padding: 4px 6px;
+	}
+
+	.neo-wrap::before {
+		width: 0;
+	}
+
+	.neo-input {
+		width: 100%;
+		min-width: 215px;
+		font-size: 10px;
+		padding: 0 20px;
+		height: 23px;
+	}
+
+	.page-header {
+		margin: 0;
+	}
+
+	.page-header-text {
+		font-size: 20px;
+		margin: 0 0 10px 10px;
+	}
+
+	.rainbow-btn {
+		padding: 3px 13px;
+		height: 28px;
+		font-size: 10px;
+	}
+
+	.socialLoginBtn {
+		width: 100%;
+		height: auto;
+	}
+
+	.login_sns_p {
 		font-size: 14px;
 		margin-bottom: 5px;
 	}
-	.section-title{
-	font-size: 15px;
-	}
-	.listTitle{
-	font-size: 12px;
-	}
-	.board-item{
-	padding: 9px;
-	}
-	.meta-info{
-	font-size: 12px;
-	}
-	.main-pagination{margin: 0;}
-	.section-title{margin-top:5px;}
-	.section-title::after{margin-top: 5px;}
-	.board-btn, .action-btn, .comment-insert-btn{
-	padding: 5px 10px;
-	font-size: 12px;
-	}
-	.comment_div{
-	padding: 6px 13px;
-	}
-	.comment_login, .comment_login> span{
+
+	.hot-post-title {
 		font-size: 11px;
 	}
-	textarea.comment_content{
-	min-height: 55px;
+
+	.hot-box {
+		padding: 3px 12px;
 	}
-	.commentContainer{margin: 0;}
-	.comment-insert-btn{margin: 0;}
-	#comment_name, .panel-title .name{font-size:12px;} 
-	.post-title{
-		height: fit-content;
+
+	.hot-paper {
+		padding: 10px;
 	}
-	.post-header{
-	margin: 0 10px 10px 10px;
+
+	.arrow-btn {
+		padding: 9px;
 	}
-	.panel-body{font-size:11px;}
-	.paginate_button{margin:0;}
-	.pagination li a{padding: 5px;}
-	.pagination > li > .selected_btn, .pagination > li > .default_btn{
-		font-size:12px;
+
+	.boardTitle {
+		font-size: 14px;
 	}
-	.title-container{min-width: 200px;}
-	.chat-container{width: 95%;}
-	.chat-container > span{font-size: 11px;}
-	.chat-user-name, .chat>span, .chat-last-message  {font-size: 10px;}
-	.chat-time{font-size: 9px;}
-	.chat{padding: 3px 10px;}
-	.chat-header >span, #chatPartnerName{font-size: 11px;}
-	.chat-header, .chat-topbar{height: 25px;}
-	.chat-date-line{margin: 0;font-size: 9px;}
-	.chat-room-time{font-size: 9px; }
-	.chat-room-item{padding: 2px 10px;}
-	.chat-messages{    gap: 0px;}
-	.chat-input-container textarea{font-size: 11px;}
-	.chat-messages{padding:0;}
-	.chat-input-container button{padding: 3px 9px; font-size: 11px;}
+
+	.boardLink {
+		padding: 3px;
+	}
+
+	.userName-div .userName {
+		font-size: 11px;
+	}
+
+	.boardHits,
+	.boardDate {
+		font-size: 11px;
+	}
+
+	.board-section {
+		margin-top: 35px;
+	}
+
+	.f-board-buttons {
+		justify-content: center;
+	}
+
+	.f-board-button {
+		font-size: 11px;
+		width: auto;
+		padding: 0 8px;
+		margin: 0;
+	}
+
+	.f-board-button:not(:first-child) {
+		margin: 0;
+	}
+
+	.category-cell {
+		font-size: 12px;
+	}
+
+	.category-cell a {
+		padding: 0;
+	}
+
+	.post-grid {
+		grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+		gap: 10px;
+		padding: 10px 20px 60px 20px;
+	}
+
+	.section-title {
+		font-size: 15px;
+		margin-top: 5px;
+		margin-left: 20px;
+	}
+
+	.section-title::after {
+		margin-top: 5px;
+	}
+
+	.listTitle {
+		font-size: 12px;
+	}
+
+	.board-item {
+		padding: 9px;
+	}
+
+	.meta-info {
+		font-size: 12px;
+	}
+
+	.main-pagination {
+		margin: 0;
+	}
+
+	.board-btn,
+	.action-btn,
+	.comment-insert-btn {
+		padding: 5px 10px;
+		font-size: 13px;
+	}
+
+	.comment_div {
+		padding: 6px 13px;
+	}
+
+	.comment_login,
+	.comment_login > span {
+		font-size: 11px;
+	}
+
+	textarea.comment_content {
+		min-height: 55px;
+		font-size: 16px;
+	}
+
+	.commentContainer {
+		margin: 0;
+	}
+
+	.comment-insert-btn {
+		margin: 0;
+	}
+
+	#comment_name,
+	.panel-title .name {
+		font-size: 13px;
+	}
+
+	.post-title {
+		height: 2.6em;
+		overflow: hidden;
+	}
+
+	.post-header {
+		margin: 0 10px 10px 10px;
+	}
+
+	.panel-body {
+		font-size: 11px;
+	}
+
+	.paginate_button {
+		margin: 0;
+	}
+
+	.pagination li a {
+		padding: 5px;
+	}
+
+	.pagination > li > .selected_btn,
+	.pagination > li > .default_btn {
+		font-size: 12px;
+	}
+
+	.title-container {
+		min-width: 200px;
+	}
+
+	.chat-container {
+		width: 95%;
+	}
+
+	.chat-container > span,
+	.chat-user-name,
+	.chat > span,
+	.chat-last-message {
+		font-size: 10px;
+	}
+
+	.chat-header > span,
+	#chatPartnerName {
+		font-size: 11px;
+	}
+
+	.chat-header,
+	.chat-topbar {
+		height: 25px;
+	}
+
+	.chat-time,
+	.chat-room-time {
+		font-size: 9px;
+	}
+
+	.chat-date-line {
+		margin: 0;
+		font-size: 9px;
+	}
+
+	.chat {
+		padding: 3px 10px;
+	}
+
+	.chat-room-item {
+		padding: 2px 10px;
+	}
+
+	.chat-messages {
+		gap: 0;
+		padding: 0;
+	}
+
+	.chat-input-container textarea {
+		font-size: 11px;
+	}
+
+	.chat-input-container button {
+		padding: 3px 9px;
+		font-size: 11px;
+	}
 }
 
 @media (max-width: 480px) {
-    .title-container {
-       min-width: 135px;
-    }
-    #content{width: 100%;}
-    .job-meta-label, .job-meta-value > span{font-size: 12px;}
-    .job-meta-box{padding: 10px;}
+	.contents {
+		width: 85%;
+		max-width: 1100px;
+		margin: 4rem auto;
+	}
+
+	.neo-input {
+		max-width: 200px;
+		min-width: 200px;
+	}
+
+	.community {
+		margin: 2rem auto;
+	}
+
+	.title-container {
+		min-width: 135px;
+		margin-left: 1rem;
+	}
+
+	.post-container {
+		padding: 10px;
+	}
+
+	#content {
+		width: 100%;
+	}
+
+	.job-meta-label,
+	.job-meta-value > span {
+		font-size: 12px;
+	}
+
+	.job-meta-box {
+		padding: 10px;
+	}
+
+	.fa-face-smile {
+		font-size: 16px;
+	}
+
+	.com-content {
+		margin: 45px 16px;
+		min-height: 200px;
+	}
+
+	.note-btn {
+		padding: 4px 7px !important;
+		font-size: 13px !important;
+	}
+
+	.note-toolbar {
+		padding: 6px !important;
+	}
+
+	.note-editable {
+		min-height: 250px !important;
+		font-size: 16px !important;
+	}
+
+	.note-fontname .note-current-fontname {
+		max-width: 80px !important;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
 }

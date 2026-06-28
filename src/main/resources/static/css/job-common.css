@@ -368,7 +368,29 @@ background-color: #fff;
     text-align: center;
     height: 36px;
 }
+.post-actions{margin:0;}
+#created_at{margin-left:5px;}
+#jobWriteBtn {
+	background-color: #0F2D4A;  
+	color: #fff;                
+	font-weight: 600;       
+	padding: 10px 18px;
+	border-radius: 7px;
+	cursor: pointer;
+	transition: background-color 0.25s ease, transform 0.15s ease;
+}
 
+/* hover 효과 */
+#jobWriteBtn:hover {
+	background-color: #163B63; 
+	transform: translateY(-2px); 
+}
+
+/* 클릭(활성) 효과 */
+#jobWriteBtn:active {
+	background-color: #0A1E34;
+	transform: translateY(0);
+}
 /* ====== 1024px 이하 ====== */
 @media (max-width: 1024px) {
 	.position-grid { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); }
@@ -408,18 +430,18 @@ background-color: #fff;
 		width: auto; padding: 7px 12px 8px; 
 	}
 	
-	.setting-base-row {
-	  flex-direction: column;
-	}
 	.setting-base__col--title {
 	  border-right: 0;
 	  border-bottom: 1px solid #e5e8ec;
 	  text-align: left;
 	  padding-left: 10px;
+	  font-size: 13px;
+	  height: auto;
+      line-height: 30px;
 	}
-	
+	.setting-base__col--list li{font-size: 13px; padding: 7px 12px;}
 	.position-grid { grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); }
-	.position-grid label { padding: 8px 10px; }
+	.position-grid label, .jam-grid label { padding: 8px 9px; font-size: 13px; }
 	
 	.selected-position { 
 		gap: 8px; flex-wrap: wrap; 
@@ -429,8 +451,10 @@ background-color: #fff;
 	  padding: 6px 10px;
 	  height: auto;
 	}
-
+	#jobWriteBtn{padding: 8px 12px;}
+	#job_title{font-size: 16px;}
 }
+
 
 /* ====== 480px 이하 ====== */
 @media (max-width: 480px) {
@@ -438,9 +462,9 @@ background-color: #fff;
 		margin: 0;
 	}
 	.filter-btn {         
-	 	padding: 3px 3px;
-	    font-size: 8px;
-	    width: 47px;
+	 	padding: 7px 5px;
+	    font-size: 12px;
+	    width: 60px;
 	}
 	.filter-btn .icon {
 	    width: min-content;
@@ -451,8 +475,9 @@ background-color: #fff;
 	}
 	.searchBtn {
 	    width: auto;
-	    padding: 1px 4px;
-	    font-size: 8px;
+	    color: #333;
+	    padding: 5px 10px;
+        font-size: 11px;
 	    height: auto;
 	    align-items: center;
 	}
@@ -471,7 +496,7 @@ background-color: #fff;
 	    transform: translateX(12px);
 	}
 	.selected-wrapper { padding: 12px; }
-	.position-grid { grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); }
+	.position-grid { grid-template-columns: repeat(auto-fill, minmax(75px, 1fr)); }
 	.boardDiv .title { font-size: 12px; }
 	.boardDiv .area, .boardDiv .position { font-size: 10px; }
 	.boardDiv .created_at { font-size: 10px; }
@@ -482,25 +507,7 @@ background-color: #fff;
 	    line-height: normal;
 	    align-items: center;
 	}
-}
-#jobWriteBtn {
-	background-color: #0F2D4A;  
-	color: #fff;                
-	font-weight: 600;       
-	padding: 10px 18px;
-	border-radius: 7px;
-	cursor: pointer;
-	transition: background-color 0.25s ease, transform 0.15s ease;
-}
-
-/* hover 효과 */
-#jobWriteBtn:hover {
-	background-color: #163B63; 
-	transform: translateY(-2px); 
-}
-
-/* 클릭(활성) 효과 */
-#jobWriteBtn:active {
-	background-color: #0A1E34;
-	transform: translateY(0);
+	.position-grid label{font-size: 12px; padding: 5px 3px;}
+	
+	
 }

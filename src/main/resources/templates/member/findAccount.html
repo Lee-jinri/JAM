@@ -91,6 +91,50 @@
 			font-weight: 600;
 			color: #6b6f82;
 		}
+		
+		@media (max-width: 600px) {
+			.find-title-div {
+				width: 100%;
+			}
+		
+			.justify-space-around.flex {
+				flex-direction: column;
+				align-items: center;
+			}
+		
+			.find_id,
+			.find_pw {
+				width: 100%;
+				text-align: center;
+			}
+		
+			.find_id input,
+			.find_pw input {
+				width: 100%;
+			}
+		
+			.inline-block.width_80px {
+				display: block;
+				width: 100%;
+				text-align: left;
+				margin-bottom: 4px;
+			}
+		
+			.inline-block:has(input) {
+				display: block;
+				width: 100%;
+			}
+		
+			.findID_div,
+			.findPw_div {
+				text-align: center;
+			}
+		
+			.findID_div button,
+			.findPw_div button {
+				width: 100%;
+			}
+		}
 	</style>
 	<script th:inline="javascript">
 		const emailRegex = /^[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*@[0-9a-zA-Z]([-_.]?[0-9a-zA-Z])*\.[a-zA-Z]{2,3}$/i;

@@ -167,6 +167,14 @@
 		.bookmark-created-at{
 			margin-right: 10px;
 		}
+		
+		@media (max-width: 600px) {
+			.favoriteDiv{margin:0;}
+			.bookmark-item{padding: 10px;}
+			.bookmark-meta > span{font-size: 12px;}
+			#userNickname{font-size: 16px}
+			.profile-info > p {font-size: 12px;}
+		}
 	</style>
 	<script th:inline="javascript">
 		$(function(){
@@ -251,7 +259,7 @@
 		        $metaDiv.append($created_at, $view_count);
 		        $infoDiv.append($titleWrap, $metaDiv);
 		
-		        const $iconDiv = $("<div>").addClass("flex items-center justify-center ml-2 mr-2").css("width", "3rem");
+		        const $iconDiv = $("<div>").addClass("favoriteDiv flex items-center justify-center ml-2 mr-2").css("width", "3rem");
 		        const $iconSpan = $("<span>").addClass("favoriteSpan");
 		        $iconSpan.attr("data-post-id", favorite.post_id);
 		        $iconSpan.attr("data-board-type", "COM");
@@ -293,7 +301,7 @@
 </head>
 <body>
 	<div layout:fragment="body">
-		<div class="container my-bottom-15">
+		<div class="container contents my-bottom-15">
 			<div class="user-profile">
 				<div class="profile-info">
 				    <div class="nickname">

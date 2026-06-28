@@ -17,19 +17,19 @@
 		#content{max-width:1200px;}
 		.container{max-width:1200px;margin:56px auto;padding:0 20px}
 		.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:10px auto;max-width:600px;}
-		.chip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:700;font-size:15px;}
+		.chip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:8px 12px;font-weight:700;font-size:15px;color:#333;}
 		.chip svg{width:16px;height:16px}
 		.board{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 		.job-board-header.row{
 			display:grid;
-			grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr 110px;
+			grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr 60px;
 			padding:14px 16px;
 			font-size:14px;color:var(--muted);font-weight:800;
 			border-bottom:1px solid var(--line);
 		}
 		.row{
 			display:grid;align-items:center;
-			grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr 110px;
+			grid-template-columns:1.6fr 1fr 1fr 1fr 1fr 1fr 60px;
 			padding:16px;border-bottom:1px solid var(--line);
 		}
 		.row:last-child{border-bottom:0}
@@ -65,7 +65,7 @@
 		.cell.actions .dropdown[hidden]{display:none;}
 		.cell.actions .dropdown li{margin:0;padding:0;font-size:14px;}
 		.cell.actions .dropdown button{
-			width:100%;text-align:center;padding:8px 10px;border:0;background:transparent;border-radius:8px;font-size:14px;cursor:pointer;
+			width:100%;text-align:center;padding:8px 10px;border:0;background:transparent;border-radius:8px;font-size:14px;cursor:pointer;color:#333;
 		}
 		.cell.actions .dropdown button:hover{background:#f3f4f6;}
 		.apps-container{background:#fafbff;border-bottom:1px solid var(--line);}
@@ -122,10 +122,26 @@
 		.closePostings .apply_count{
 			color: #9ca3af;
 		}
+		.area-position{display: contents;}
 		
 		@media (max-width: 860px){
 			.search{min-width:unset;flex:1}
 			.job-board-header{display:none}
+			.job-actions { grid-area: job-actions; }
+			.manage-actions{ grid-area: manage-actions; }
+			.area-position {
+		        display: flex;
+		        gap: 4px;
+		        align-items: center;
+		        grid-area: area;
+		    }
+		    .area-position .position::before {
+		        content: "·";
+		        margin-right: 4px;
+		        color: #9ca3af;
+		    }
+		    .payDiv{justify-self: flex-start !important;}
+		    #boardList > li{margin-bottom: 10px;}
 			#boardList .row{
 				background: #fff;
 				border: 1px solid #e5e7eb;
@@ -153,16 +169,31 @@
 			#boardList .payDiv{
 				margin: 6px 0;
 			}
-		}
-		
-		@media (max-width: 860px){
-			#boardList[data-mode="user"] .row{
-				background: #fff;
+			#boardList[data-mode="company"] .row {
+		        grid-template-columns: 1fr auto;
+		        grid-template-areas:
+		            "title manage-actions"
+		            "area date"
+		            "pay job-actions";
+		        gap: 6px 8px;
+		    }
+		    #boardList[data-mode="user"] .row {
+		        grid-template-columns: 1fr 1fr auto;
+		        grid-template-areas:
+		            "title title manage-actions"
+		            "area position date"
+		            ". job-actions job-actions";
+		        gap: 6px 8px;
+		        background: #fff;
 				border: 1px solid #e5e7eb;
 				border-radius: 12px;
 				padding: 14px;
 				box-shadow: 0 2px 10px rgba(0,0,0,.03);
-			}
+		    }
+		    .pay, .apply_count, .fa-caret-down, .fa-caret-down:before{font-size: 14px;}
+		    .pay_category{font-size:12px;}
+		    .app-item{margin:0;}
+		    .cell.actions{justify-content: flex-end;}
 		}
 		
 		.cell.actions .more-btn{
@@ -361,7 +392,8 @@
 			});
 			
 			// 마감
-			$(document).on("click", ".action-close", function(){
+			$(document).on("click", ".action-close", function(e){
+				e.stopPropagation();
 				const $btn = $(this);
 				const $div = $btn.closest("div"); 
 				const postId = $div.attr("data-post-id");
@@ -389,7 +421,8 @@
 			})
 			
 			// 수정
-			$(document).on("click", ".action-edit", function() {
+			$(document).on("click", ".action-edit", function(e) {
+				e.stopPropagation();
 				const $btn = $(this);
 				const $div = $btn.closest("div"); 
 				const postId = $div.attr("data-post-id");
@@ -403,7 +436,8 @@
 			})
 
 			// 삭제
-			$(document).on("click", ".action-delete", function() {
+			$(document).on("click", ".action-delete", function(e) {
+				e.stopPropagation();
 				const $btn = $(this);
 				const $div = $btn.closest("div"); 
 				const postId = $div.attr("data-post-id");
@@ -876,11 +910,13 @@
 			<div>
 				<ul style="display:none">
 					<li id="boardTemplate" class="border-bottom">
-						<div class="boardDiv pd-2rem job-list-row text-alignC items-center row">
-							<span class="font-size-5 title postLink"  style="cursor: pointer;"></span>
+						<div class="boardDiv postLink pd-2rem job-list-row text-alignC items-center row" style="cursor: pointer;">
+							<span class="font-size-5 title"></span>
 					        
-							<span class="area"></span>
-							<span class="position"></span>
+					        <div class="area-position">
+								<span class="area"></span>
+								<span class="position"></span>
+							</div>
 							
 					        <div class="payDiv">
 					        	<span class="pay"></span>
@@ -892,9 +928,8 @@
 					        <div class="job-actions">
 								<span class="apply_count"></span>
 								<i class="fas fa-caret-right"></i>
-								
 							</div>
-							<div class="cell actions">
+							<div class="cell actions manage-actions">
 								<button class="more-btn" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="job-actions-menu" title="더 보기">⋮</button>
 								<ul class="dropdown" id="job-actions-menu" role="menu" hidden>
 									<li role="none"><button role="menuitem" type="button" class="action-edit">수정</button></li>
