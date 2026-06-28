@@ -387,15 +387,19 @@
 		
 			const $list = $('.chat-room-list');
 			const $tpl = $(`
-			        <div class="chat-room-item" data-roomId="${roomId}">
-			            <div class="chat-room-info">
-			                <div class="chat-user-name">${partner || ''}</div>
-			                <div class="chat-room-time">${timeAgo(chatDate) || '방금 전'}</div>
-			            </div>
-			            <div class="chat-last-message">${message || ''}</div>
-			        </div>
-			    `);
+				    <div class="chat-room-item" data-roomId="${roomId}">
+				        <div class="chat-room-info">
+				            <div class="chat-user-name"></div>
+				            <div class="chat-room-time"></div>
+				        </div>
+				        <div class="chat-last-message"></div>
+				    </div>
+				`);
 
+			$tpl.find('.chat-user-name').text(partner || '');
+			$tpl.find('.chat-room-time').text(timeAgo(chatDate) || '방금 전');
+			$tpl.find('.chat-last-message').text(message || '');
+			
 			$list.prepend($tpl);
 			roomsIndex.set(roomId, $tpl);
 
