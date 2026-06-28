@@ -4,7 +4,7 @@
 
 	<select id="commentList" resultType="comComment">
 		SELECT 
-			c.comment_id, c.content, c.user_id, m.user_name, c.created_at, 
+			c.comment_id, c.content, c.user_id, m.user_name, to_char(c.created_at, 'YYYY-MM-DD"T"HH24:MI:SS') as created_at, 
 			<choose>
 	            <when test="user_id != null">
 	                CASE WHEN c.user_id = #{user_id} THEN 1 ELSE 0 END
@@ -17,7 +17,7 @@
 		LEFT JOIN Member m
 		ON c.user_id = m.user_id
 		WHERE c.post_id = #{post_id}
-		ORDER BY c.created_at DESC
+		ORDER BY c.created_at ASC
 	</select>
 
 	<insert id="insertComment" parameterType="comComment">

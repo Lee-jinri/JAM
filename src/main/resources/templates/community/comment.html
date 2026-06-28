@@ -122,15 +122,14 @@
 					    });
 					}
 					$("#comment_content").val("");
-					listAll();
 					
-					setTimeout(() => {
-						const $newComment = $("#reviewList .comment").first();
+					listAll().then(() => {
+						const $newComment = $("#reviewList .comment").last();
 						if($newComment.length){
 							$newComment.addClass("highlight");
+							$newComment[0].scrollIntoView({ behavior: "smooth", block: "center" });
 						}
-					}, 100);
-					
+					});
 				})
 				.catch(err => {
 					if (handleApiError(err)) return;
@@ -247,7 +246,7 @@
 				return;
 			}
 			
-			fetch('/community/posts/'+postId+'/comments')
+			return fetch('/community/posts/'+postId+'/comments')
 			.then(res =>{
 				if (!res.ok) {
 					return res.json().then(err => {
