@@ -317,6 +317,7 @@ public class MemberRestController {
     	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
     	
     	CookieUtil.addCookie(
+    			request,
     			response, 
 			    CookieEnum.ACCESS_TOKEN.getName(), 
 			    token.getAccessToken(), 
@@ -325,6 +326,7 @@ public class MemberRestController {
 		
 		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
 		CookieUtil.addCookie(
+				request,
 				response, 
 				refreshConfig.getName(), 
 				token.getRefreshToken(), 
@@ -553,7 +555,7 @@ public class MemberRestController {
             	        memberService.kakaoDeleteAccount(kakaoAccessToken);
             	    }
             		
-            		CookieUtil.deleteCookie(response, "kakaoAccessToken");
+            		CookieUtil.deleteCookie(request, response, "kakaoAccessToken");
             		break;
             		
                 case "naver":
@@ -562,7 +564,7 @@ public class MemberRestController {
                 	if(naverAccessToken != null)
             			memberService.naverDeleteAccount(naverAccessToken);
             			
-                	CookieUtil.deleteCookie(response, "naverAccessToken");
+                	CookieUtil.deleteCookie(request, response, "naverAccessToken");
             		break;
             }
     	}
@@ -620,6 +622,7 @@ public class MemberRestController {
     	TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, loginType);
 		
     	CookieUtil.addCookie(
+    			request,
     			response, 
 			    CookieEnum.ACCESS_TOKEN.getName(), 
 			    token.getAccessToken(), 
@@ -628,6 +631,7 @@ public class MemberRestController {
 		
 		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
 		CookieUtil.addCookie(
+				request,
 				response, 
 				refreshConfig.getName(), 
 				token.getRefreshToken(), 

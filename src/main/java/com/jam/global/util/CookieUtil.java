@@ -21,9 +21,10 @@ public final class CookieUtil {
 		return null;
 	}
 	
-	public static void addCookie(HttpServletResponse response, String name, String value, int maxAge) {
+	public static void addCookie(HttpServletRequest request, HttpServletResponse response, String name, String value, int maxAge) {
         Cookie cookie = new Cookie(name, value);
         cookie.setHttpOnly(true);
+        cookie.setSecure(request.isSecure());
         cookie.setPath("/");
         cookie.setMaxAge(maxAge);
 	    cookie.setAttribute("SameSite", "Lax");
@@ -33,13 +34,14 @@ public final class CookieUtil {
 	public static void clearAuthCookies(HttpServletRequest request, HttpServletResponse response) {
 	    SecurityContextHolder.clearContext();
 	    
-	    deleteCookie(response, "Authorization");
-	    deleteCookie(response, "RefreshToken");
+	    deleteCookie(request, response, "Authorization");
+	    deleteCookie(request, response, "RefreshToken");
 	}
 
-	public static void deleteCookie(HttpServletResponse response, String name) {
+	public static void deleteCookie(HttpServletRequest request, HttpServletResponse response, String name) {
 	    Cookie cookie = new Cookie(name, null);
 	    cookie.setHttpOnly(true);
+	    cookie.setSecure(request.isSecure());
 	    cookie.setPath("/");
 	    cookie.setMaxAge(0);
 	    cookie.setAttribute("SameSite", "Lax");

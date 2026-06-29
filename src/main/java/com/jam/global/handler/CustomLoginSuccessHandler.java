@@ -41,9 +41,11 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		boolean autoLogin = Boolean.parseBoolean(request.getParameter("autoLogin"));
 
 		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, autoLogin, "local");
+		
 		memberService.addRefreshToken(userId, SecurityUtil.hashToken(token.getRefreshToken()));
 
 		CookieUtil.addCookie(
+				request,
 				response, 
 			    CookieEnum.ACCESS_TOKEN.getName(), 
 			    token.getAccessToken(), 
@@ -52,6 +54,7 @@ public class CustomLoginSuccessHandler implements AuthenticationSuccessHandler {
 		
 		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
 		CookieUtil.addCookie(
+				request,
 				response, 
 				refreshConfig.getName(), 
 				token.getRefreshToken(), 

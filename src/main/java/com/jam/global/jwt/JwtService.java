@@ -164,7 +164,7 @@ public class JwtService {
 			return null;
 		}
 		
-		return renewTokens(userId, refreshToken, jti, response, autoLogin);
+		return renewTokens(userId, refreshToken, jti, request, response, autoLogin);
 	}
 	
 	/**
@@ -184,7 +184,7 @@ public class JwtService {
      * 새로운 토큰(Access/Refresh)을 발급하고 DB와 쿠키를 업데이트합니다.
      * 발급 후 이전 토큰의 JTI를 Redis에 10초간 기록하여 동시 요청에 대비합니다.
      */
-	private Authentication renewTokens(String userId, String oldToken, String jti, HttpServletResponse response, boolean autoLogin) {
+	private Authentication renewTokens(String userId, String oldToken, String jti, HttpServletRequest request, HttpServletResponse response, boolean autoLogin) {
 	    MemberDto userInfo = memberService.findByUserInfo(userId);
 	    String loginType = jwtTokenProvider.extractLoginType(oldToken);
 	    
@@ -195,6 +195,7 @@ public class JwtService {
 	    memberService.addRefreshToken(userId, SecurityUtil.hashToken(newToken.getRefreshToken()));
 	    
 	    CookieUtil.addCookie(
+	    		request,
 	    		response, 
 			    CookieEnum.ACCESS_TOKEN.getName(), 
 			    newToken.getAccessToken(), 
@@ -203,6 +204,7 @@ public class JwtService {
 		
 		CookieEnum refreshConfig = CookieEnum.getRefreshToken(autoLogin);
 		CookieUtil.addCookie(
+				request,
 				response, 
 				refreshConfig.getName(), 
 				newToken.getRefreshToken(), 

@@ -147,6 +147,7 @@ public class OAuthController {
 			
 			// 2. access token 발급 및 쿠키 저장
 			CookieUtil.addCookie(
+					request,
 					response, 
 					CookieEnum.KAKAO_ACCESS_TOKEN.getName(), 
 					accessToken, 
@@ -175,6 +176,7 @@ public class OAuthController {
 			
 			// 5. JWT 쿠키 저장
 	    	CookieUtil.addCookie(
+	    			request,
 	    			response, 
 				    CookieEnum.ACCESS_TOKEN.getName(), 
 				    token.getAccessToken(), 
@@ -182,6 +184,7 @@ public class OAuthController {
 				);
 			
 			CookieUtil.addCookie(
+					request,
 					response, 
 					CookieEnum.REFRESH_TOKEN.getName(), 
 					token.getRefreshToken(), 
@@ -349,8 +352,9 @@ public class OAuthController {
 		// 4. 로컬 로그아웃 로직
 	    try {
 	        SecurityContextHolder.clearContext();
-	        CookieUtil.deleteCookie(response, CookieEnum.ACCESS_TOKEN.getName());
-	        CookieUtil.deleteCookie(response, CookieEnum.KAKAO_ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(request, response, CookieEnum.ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(request, response, CookieEnum.KAKAO_ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(request, response, CookieEnum.REFRESH_TOKEN.getName());
 	    } catch (Exception e) {
 	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
 	    }
@@ -433,6 +437,7 @@ public class OAuthController {
 		
 		// 2. access token 발급 및 쿠키 저장 (사용자 정보 조회 및 로그아웃 등에 사용) 
 		CookieUtil.addCookie(
+				request,
 				response, 
 				CookieEnum.NAVER_ACCESS_TOKEN.getName(), 
 				accessToken, 
@@ -462,12 +467,14 @@ public class OAuthController {
 
 		// 5. JWT 쿠키 저장
 		CookieUtil.addCookie(
+				request,
 				response, 
 				CookieEnum.ACCESS_TOKEN.getName(), 
 				token.getAccessToken(), 
 				CookieEnum.ACCESS_TOKEN.getExpiry()
 			);
 		CookieUtil.addCookie(
+				request,
 				response, 
 				CookieEnum.REFRESH_TOKEN.getName(), 
 				token.getRefreshToken(), 
@@ -600,8 +607,9 @@ public class OAuthController {
 	    // 3. 로컬 로그아웃 로직
 	    try {
 	        SecurityContextHolder.clearContext();
-	        CookieUtil.deleteCookie(response, CookieEnum.ACCESS_TOKEN.getName());
-	        CookieUtil.deleteCookie(response, CookieEnum.NAVER_ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(request, response, CookieEnum.ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(request, response, CookieEnum.NAVER_ACCESS_TOKEN.getName());
+	        CookieUtil.deleteCookie(request, response, CookieEnum.REFRESH_TOKEN.getName());
 	    } catch (Exception e) {
 	        log.error("로컬 세션 정리 중 오류: {}", e.getMessage());
 	    }

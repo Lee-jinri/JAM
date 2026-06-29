@@ -95,7 +95,7 @@ public class MypageRestController {
 		boolean verifyStatus = isVerified(request, response, user.getUser_id());
 		
 		if(verifyStatus) {
-			MemberDto account = mypageService.account(user.getUser_id());
+			MemberDto account = mypageService.account(user.getUser_id()); 
 			return ResponseEntity.ok().body(account);
 		}
 		
