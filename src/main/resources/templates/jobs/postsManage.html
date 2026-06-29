@@ -258,8 +258,8 @@
 				}
 			});
 			
-			$(document).on("click", ".job-actions", function() {
-				
+			$(document).on("click", ".job-actions", function(e) {
+				e.stopPropagation();
 				const $actions = $(this);
 				const hasCandidate = $actions.data("hasCandidate");
 				const $rowLi = $actions.closest("li"); 
