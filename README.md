@@ -395,7 +395,8 @@ cd JAM
 - DB 유니크 제약 + DuplicateKeyException fallback으로 다층 방어
 
 **성과:** 
-단일 서버 환경에서 150ms 간격 동시 요청에 대한 중복 생성 방지 검증 완료
+- 단일 서버 환경에서 동일 사용자 중복 클릭 (150ms 간격) → 중복 생성 0건
+- 서로 다른 두 사용자 초정밀 동시 요청 (6ms 간격) → 중복 생성 0건
 
 **트레이드 오프**:
 
@@ -412,10 +413,10 @@ cd JAM
 <br/>
 <br/>
 
-**[검증] 서버 로그 (**중복 클릭 상황에서 채팅방 생성 검증**)**
+### **[검증1] 동일 사용자의 중복 클릭 요청 검증 (수동 테스트)**
 
-사용자가 채팅 시작 버튼을 빠르게 두 번 클릭하는 상황을 가정하여
-동일한 채팅방 생성 요청이 연속으로 발생할 때 중복 채팅방이 생성되지 않는지 확인했습니다.
+사용자가 채팅 시작 버튼을 빠르게 두 번 클릭하는 상황(약 150ms 간격)을 가정하여 
+중복 채팅방이 생성되지 않는지 확인했습니다.
 
 <p align="center">
   <img src="docs/images/ChatConcurrentTest.gif" width="80%">
@@ -423,7 +424,7 @@ cd JAM
 
 <br>
 
-서버 로그
+### **서버 로그**
 
 ```jsx
 [첫 번째 요청 - 채팅방 생성]
@@ -444,15 +445,44 @@ cd JAM
 
 <br>
 
-[결과]
-
-- 첫 번째 요청 → 채팅방 생성 (room_id = 23)
-- 두 번째 요청 → 기존 채팅방 재사용 (room_id = 23)
-
-두 개의 요청이 150ms 간격으로 연속 발생했지만
-채팅방은 한 번만 생성되고 동일한 roomId가 반환되었습니다.
+**[결과]**
+- 두 요청 모두 동일 room_id=23 반환 → 중복 생성 0건
 
 <br><br>
+
+### **[검증2] 초정밀 동시 요청 검증 (JMeter)**
+
+유저 A와 B가 **0.006초 차이**로 동시에 채팅방 생성을 시도하는 상황을 JMeter Synchronizing Timer로 테스트했습니다.
+
+<br>
+
+### **서버 로그**
+
+```jsx
+[동시 요청 시작]
+13:54:21.230  [exec-10] ChatRestController.getChatRoomId(..) START 
+13:54:21.236  [exec-4 ] ChatRestController.getChatRoomId(..) START
+
+[요청 1이 먼저 채팅방 생성 시도]
+13:54:21.252  [exec-10] ChatService.createChatRoomWithTransaction(..) START 
+13:54:21.259  [exec-10] INSERT INTO chat_room ... 
+13:54:21.264  [exec-10] 새로운 채팅방 생성 완료: 16
+13:54:21.268  [exec-10] ChatRestController.getChatRoomId(..) END return=16
+
+[요청 2는 이미 생성된 채팅방을 조회]
+13:54:21.275  [exec-4 ] ChatService.createChatRoomWithTransaction(..) START 
+13:54:21.283  [exec-4 ] ChatService.createChatRoomWithTransaction(..) END return=16
+13:54:21.283  [exec-4 ] ChatRestController.getChatRoomId(..) END return=16
+```
+
+**[결과]**
+
+- Thread 1이 채팅방 생성
+- Thread 2는 Double-Checked Locking으로 기존 방 재사용
+- **중복 데이터 생성 0건**, **DB 무결성 100% 유지**.
+
+<br><br>
+
 
 ### **3️⃣SSR 환경에서 CSR 직접 도입**
 
