@@ -63,8 +63,9 @@ function initWebSocket(userName) {
         return;
     }
 	
-	socket = new WebSocket("ws://localhost:8080/ws");
-			
+	const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+	socket = new WebSocket(`${wsProtocol}${window.location.host}/ws`);
+	
 	let chatRoomId = sessionStorage.getItem("chatRoomId");		
 	
 	socket.onopen = function(event) {
