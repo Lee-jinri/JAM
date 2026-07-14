@@ -569,7 +569,7 @@ UNION ALL:  Buffers 2,436 ~ 6,833 (약 2.8배 변동, 안정적)
 - 현재 측정은 단일 세션 순차 실행 기준으로 다중 사용자 동시 요청 시 자원 경쟁 등 동시성 관점은 검증되지 않음.
 
 
-👉 [검색 성능 최적화 분석 상세 문서](https://www.notion.so/396e7bde342380ee9d8bd7f6db775e18?source=copy_link)
+👉 [검색 성능 최적화 분석 상세 문서(Notion)](https://www.notion.so/396e7bde342380ee9d8bd7f6db775e18?source=copy_link)
 
 <br><br>
 
