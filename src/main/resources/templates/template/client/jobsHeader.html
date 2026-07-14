@@ -123,7 +123,7 @@
 		
 		.search-bar-wrapper .glass_icon {
 			cursor: pointer;
-			font-size: 18px;
+			font-size: 15px;
 			align-self: center;
 		}
 		
@@ -218,6 +218,15 @@
 		    color: #333;
 		}
 		
+		#clearBtn{
+			cursor: pointer;
+	    	align-self: center;
+	    	margin-right: 6px;
+	    	color: #a0aec0; 
+			transition: all 0.2s ease-in-out;
+		}
+		#clearBtn:hover {color: #94c0ff; transform: scale(1.2);}
+		#searchBtn:hover {color: #94c0ff; transform: scale(1.2);}
 		
 		@media (max-width: 691px) {
 			
@@ -289,7 +298,7 @@
 				gap: 0;
 				margin-right: 6px;
 			}
-			.search-bar-wrapper .glass_icon{font-size:8px; margin: 3px 0;}
+			.search-bar-wrapper .glass_icon #clearBtn {font-size:8px; margin: 3px 0;}
 			.search-input {font-size: 11px;}
 			.search{margin:0;}
 			.fa-caret-down{font-size:9px;color:#333;}
@@ -325,7 +334,7 @@
 		    	min-width: 250px;
 		    	padding: 3px 8px;
 		    }
-		    .search-bar-wrapper .glass_icon{font-size: 14px;}
+		    .search-bar-wrapper .glass_icon, #clearBtn{font-size: 14px;}
 		    .search{margin:0;}
 		    
 			@keyframes fadeSlide {
@@ -341,6 +350,7 @@
 		}
 	</style>
 	<script>
+		let $keyword, $clearBtn;
 		$(function() {
 			if(window.MY_NAME) {
 				// 헤더에 닉네임과 로그아웃 버튼 추가
@@ -411,8 +421,6 @@
 			
 			$(".mypage_toggle").hide();
 			
-			$("#keyword").val();
-			
 			document.getElementById("searchBtn").addEventListener("click", searchJobs);
 			document.getElementById("keyword").addEventListener("keydown", function (e) {
 				if (e.key === "Enter") {
@@ -420,6 +428,20 @@
 				}
 			});
 			
+			$keyword = $("#keyword");
+			$clearBtn = $("#clearBtn");
+			
+			// 페이지 로드 시 검색어가 있으면 X버튼 보여주기
+			if ($keyword.val()) {
+				$clearBtn.show();
+			}
+
+			// X 버튼 누르면 검색어 지우고 전체 목록
+			$clearBtn.on("click", function() {
+				$keyword.val("");
+				$clearBtn.hide();
+				searchJobs(); 
+			});
 		})
 	
 	function logout(loginType){
@@ -449,8 +471,13 @@
 	}
 		
 	function searchJobs(){
+		let category = (typeof boardState !== 'undefined' && boardState.category) 
+			? boardState.category
+			: (new URLSearchParams(window.location.search).get('category') || 0);
+		
 		let keyword = $("#keyword").val();
-		$(location).attr('href', "/jobs/board?keyword="+keyword);
+		
+		$(location).attr('href', "/jobs/board?category="+category+"&keyword="+encodeURIComponent(keyword));
 	}
 	
 	function openBusinessPopup() {
@@ -475,6 +502,7 @@
 				<div class="job-search-div flex justify-center items-center border-radius-43px">
 					<div class="search-bar-wrapper item-center flex justify-space-around">
 						<input type="text" name="keyword" id="keyword" class="search search-input">
+						<i id="clearBtn" class="fa-solid fa-xmark" style="display:none; cursor:pointer; margin-right:6px;"></i>
 						<i id="searchBtn" class="glass_icon fa-solid fa-magnifying-glass"></i>
 					</div>
 				</div>
