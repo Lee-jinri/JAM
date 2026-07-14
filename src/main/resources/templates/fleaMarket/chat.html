@@ -105,11 +105,8 @@
 					}
 				}
 				
-				socket = new WebSocket(
-						"ws://"
-						+ location.host
-						+ "/ws"
-					);
+				const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+				socket = new WebSocket(`${wsProtocol}${window.location.host}/ws`);
 				
 				let retried = false;
 				socket.onopen = function() { 
@@ -117,7 +114,7 @@
 					const roomId = sessionStorage.getItem('roomId');
 					if(roomId) sendEnter(roomId);
 				};
-		
+
 				socket.onclose = function(event) {
 					console.log("WebSocket is closed now.");
 					console.log("WebSocket 연결 종료 코드:", event.code);
