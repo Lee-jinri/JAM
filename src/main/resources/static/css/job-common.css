@@ -5,6 +5,11 @@
     max-width: 1100px;
     margin: 40px auto;
 }
+.jobs-write-container{
+	max-width: 1000px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem;
+}
 .filterDiv{
 	margin: 5rem 0 3rem;
 }
