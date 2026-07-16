@@ -7,8 +7,11 @@
 		<if test="keyword != null and keyword != ''">
 			<![CDATA[
 			AND (
-				LOWER(j.title) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
-        		OR LOWER(j.content) LIKE '%' || LOWER(#{keyword}) || '%' ESCAPE '\'
+				j.post_id IN (
+	                SELECT post_id FROM job WHERE CONTAINS(title, '{' || #{keyword} || '}') > 0
+	                UNION ALL
+	                SELECT post_id FROM job WHERE CONTAINS(content, '{' || #{keyword} || '}') > 0
+	            )
 			)
 			]]>
 		</if>
