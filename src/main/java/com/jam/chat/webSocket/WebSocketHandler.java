@@ -24,32 +24,34 @@ import lombok.extern.slf4j.Slf4j;
 public class WebSocketHandler extends TextWebSocketHandler  {
     private final ChatService chatService;
     private final ObjectMapper objectMapper;
-    
-    // 현재 연결된 모든 WebSocket 세션을 관리
-    private final Set<WebSocketSession> sessions = java.util.concurrent.ConcurrentHashMap.newKeySet();
-
+    // FIXME: 캡슐화
     /* roomId: {session1, session2}
      * 채팅에 입장하면 세션 추가됨. 채팅 나가면 세션 삭제
-     * 특정 채팅방에 참여한 세션들을 관리. 키는 채팅방 ID, 값은 해당 채팅방에 연결된 세션들 /
+     * 특정 채팅방에 참여한 세션들을 관리. 키는 채팅방 ID, 값은 해당 채팅방에 연결된 세션들
      * 특정 채팅방에 속한 클라이언트들에게만 메시지를 보냄.*/
     private final Map<Long,Set<WebSocketSession>> chatRoomSession = new ConcurrentHashMap<>();
 
     /* session: roomId
-     * 채팅에 입장하면 채팅방 추가됨, 채팅방 
+     * 채팅에 입장하면 (session, roomId) 매핑 추가됨, 채팅방 나가면 제거됨
      * 특정 세션이 참여한 채팅방 관리, 채팅방 나갈 때 채팅방 id 찾기 위함  */
     private final Map<WebSocketSession, Long> sessionToChatRoom = new ConcurrentHashMap<>();
     
-    // 접속한 모든 사용자의 ID와 세션을 매핑
-    private final Map<String, WebSocketSession> userSessionMap = new ConcurrentHashMap<>();
+    /* userId: {session1, session2}
+     * 접속한 모든 사용자의 ID와 세션을 매핑
+     * 멀티탭 허용을 위해 Set 사용
+     * */
+    private final Map<String, Set<WebSocketSession>> userSessionMap = new ConcurrentHashMap<>();
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
         String userId = (String) session.getAttributes().get("userId");
         if (userId != null) {
-            userSessionMap.put(userId, session);
+        	userSessionMap
+        		.computeIfAbsent(userId, key -> ConcurrentHashMap.newKeySet())
+        		.add(session);
+
             log.info("사용자 {} 연결됨 (세션: {})", userId, session.getId());
         }
-        sessions.add(session);
     }
 
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
@@ -60,6 +62,10 @@ public class WebSocketHandler extends TextWebSocketHandler  {
             ChatDto chatDto = convertToChatMessageVO(payload);
 
             Long roomId = chatDto.getRoomId();
+            if (roomId == null) {
+                sendError(session, 400, "잘못된 요청입니다.");
+                return;
+            }
             
     	    Map<String, Object> attributes = session.getAttributes();
     	    String userId = (String) attributes.get("userId");
@@ -70,53 +76,50 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     	        return;
     	    }
     	    
-            // 채팅방 세션 없으면 만듦
-            if (!chatRoomSession.containsKey(roomId)) {
-                chatRoomSession.put(roomId, ConcurrentHashMap.newKeySet());
-            }
-            
-            // 특정 채팅방에 연결된 세션 집합
-            Set<WebSocketSession> sessionSet = chatRoomSession.get(roomId);
 
             switch (chatDto.getType()) {
-	        	case ENTER -> handleEnter(session, sessionSet, roomId, userId);
-	        	case LEAVE -> handleLeave(session, sessionSet, roomId);
-	        	case MESSAGE -> handleMessage(session, sessionSet, attributes, chatDto, roomId, userId);
+	        	case ENTER -> handleEnter(session, roomId, userId);
+	        	case LEAVE -> handleLeave(session, roomId);
+	        	case MESSAGE -> handleMessage(session, attributes, chatDto, roomId, userId);
 	        }
         } catch (Exception e) {
-            log.error("Exception: " + e.getClass().getName() + ": " + e.getMessage());
+            log.error("Exception: {} : {}", e.getClass().getName(), e.getMessage());
             e.printStackTrace();
             
             sendError(session, 500,  "서버에 문제가 발생했습니다. 잠시 후 다시 시도해 주세요.");
         }
     }
     
-	private void handleEnter(WebSocketSession session, Set<WebSocketSession> sessionSet, Long roomId, String userId) {
-    	sessionSet.add(session);
-    	sessionToChatRoom.put(session, roomId);
-    	
+	private void handleEnter(WebSocketSession session, Long roomId, String userId) {
+    	    	
 	    Map<String, String> info = chatService.getChatPartner(roomId, userId);
 	    
 	    if (info == null || info.get("CHATPARTNERID") == null) {
 	    	log.info("info : " + info);
-	    	sessionSet.remove(session);
-	    	if (sessionSet.isEmpty()) chatRoomSession.remove(roomId);
-	    	sessionToChatRoom.remove(session);
 	    	sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
 	    	return;
 		}
-	    
+
+        // 채팅방 세션 없으면 만듦
+        Set<WebSocketSession> sessionSet = chatRoomSession.computeIfAbsent(roomId, k -> ConcurrentHashMap.newKeySet());
+
+	    sessionSet.add(session);
+    	sessionToChatRoom.put(session, roomId);
+    	
 	    session.getAttributes().put("partnerId", info.get("CHATPARTNERID"));
 	    session.getAttributes().put("partnerName", info.get("CHATPARTNERNAME"));
 	    
 	    sendMessage(session, "PARTNER_INFO", Map.of("partnerName", info.get("CHATPARTNERNAME"))); 
 	    
-	    log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에 입장했습니다.");
+	    
+	    log.info("사용자 {}가 채팅방 {}에 입장했습니다.", session.getId(), roomId);
 	}
 
-    private void handleLeave(WebSocketSession session, Set<WebSocketSession> sessionSet, Long roomId) {
+    private void handleLeave(WebSocketSession session, Long roomId) {
+
     	// 1. chatRoomSession에서 제거
-        if (chatRoomSession.containsKey(roomId)) {
+    	Set<WebSocketSession> sessionSet = chatRoomSession.get(roomId);
+        if (sessionSet != null) {
             sessionSet.remove(session);
 
             // 채팅방에 세션이 없으면 맵에서 키 제거
@@ -124,15 +127,13 @@ public class WebSocketHandler extends TextWebSocketHandler  {
                 chatRoomSession.remove(roomId);
             }
         }
-
         sessionToChatRoom.remove(session);
 
-        log.info("사용자 " + session.getId() + "가 채팅방 " + roomId + "에서 퇴장했습니다.");
+        log.info("사용자 {}가 채팅방 {}에서 퇴장했습니다.", session.getId(), roomId);
 	}
     
     private void handleMessage(
     		WebSocketSession session, 
-    		Set<WebSocketSession> sessionSet, 
     		Map<String, Object> attributes,
     		ChatDto chatDto, 
     		Long roomId, 
@@ -145,6 +146,7 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     			return;
     		}
     		// 방 세션 검증
+            Set<WebSocketSession> sessionSet = chatRoomSession.get(roomId);
     		if (sessionSet == null || !sessionSet.contains(session)) {
     			sendError(session, 403, "잘못된 접근 입니다.");
     			session.close(CloseStatus.POLICY_VIOLATION);
@@ -171,14 +173,22 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     	    chatService.saveChat(chatDto);
     	    sendMessageToChatRoom(chatDto, "MESSAGE", sessionSet);
 
-    	    WebSocketSession receiverSession = userSessionMap.get(partnerId);
-    	    if (receiverSession != null && receiverSession.isOpen()) {
+    	    Set<WebSocketSession> receiverSessions = userSessionMap.get(partnerId);
+    	    if (receiverSessions != null) {
+	        	String myName = (String) session.getAttributes().get("userName");
+	        	chatDto.setPartner(myName);
+	        	
     	    	// 만약 상대방 세션이 현재 이 채팅방의 sessionSet에 포함되어 있지 않다면 알림 전송
-    	        if (!sessionSet.contains(receiverSession)) {
-    	        	String myName = (String) session.getAttributes().get("userName");
-    	        	chatDto.setPartner(myName);
-    	        	sendMessage(receiverSession, "NEW_ROOM_ALERT", chatDto);
-    	        }
+	        	for (WebSocketSession receiverSession : receiverSessions) {
+	                try {
+	                    if (receiverSession.isOpen() && !sessionSet.contains(receiverSession)) {
+	                        sendMessage(receiverSession, "NEW_ROOM_ALERT", chatDto);
+	                    }
+	                } catch (Exception e) {
+	                    // 로그만 남기고 다음 세션 계속 처리
+	                    log.warn("알림 전송 실패: {}", e.getMessage());
+	                }
+	        	}
     	    }
 
 	    } catch (Exception e) {
@@ -194,10 +204,15 @@ public class WebSocketHandler extends TextWebSocketHandler  {
 
     	String userId = (String) session.getAttributes().get("userId");
         if (userId != null) {
-            userSessionMap.remove(userId);
-        }
+            Set<WebSocketSession> sessions = userSessionMap.get(userId);
+            if (sessions != null) {
+                sessions.remove(session); // 현재 연결된 세션만 Set에서 제거
 
-        sessions.remove(session);
+                if (sessions.isEmpty()) {
+                    userSessionMap.remove(userId); // Set이 비었으면 맵에서 키 제거
+                }
+            }
+        }
 
         // 세션이 속한 채팅방 ID 찾기
         Long roomId = sessionToChatRoom.remove(session);
