@@ -27,4 +27,10 @@ public class FleaMarketDto extends CommonDto  {
 	
 	@JsonFormat(pattern = "yyyy/MM/dd HH:mm:ss")
 	private LocalDateTime created_at;		// 작성일
+	
+	public FleaMarketDto() {
+        super();
+        this.setAmount(30);
+    }
+
 }

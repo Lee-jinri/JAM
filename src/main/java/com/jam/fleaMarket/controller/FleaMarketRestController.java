@@ -58,9 +58,6 @@ public class FleaMarketRestController {
 		String kw = flea.getKeyword();
 		flea.setKeyword(ValueUtils.sanitizeForLike(kw));
 		
-		// FIXME: 임시
-		flea.setAmount(24);
-		
 		Map<String, Object> result = new HashMap<>();
 
 		List<FleaMarketDto> fleaMarketList = fleaService.getBoard(flea);
@@ -334,8 +331,6 @@ public class FleaMarketRestController {
 		
 		if(user == null || user.getUser_id().isEmpty()) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
 		flea.setUser_id(user.getUser_id());
-		// FIXME: 임시
-		flea.setAmount(36);
 		
 		Map<String, Object> result = new HashMap<>();
 
@@ -366,8 +361,6 @@ public class FleaMarketRestController {
 		if(user == null || user.getUser_id().isEmpty()) throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
 		
 		flea.setUser_id(user.getUser_id());
-		// FIXME: 임시
-		flea.setAmount(36);
 		
 		Map<String, Object> result = new HashMap<>();
 
