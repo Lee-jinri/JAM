@@ -5,7 +5,7 @@
 	<!-- 검색 -->
 	<sql id="fleaSearch">
 		<if test="keyword != null and keyword != ''">
-			AND CONTAINS(f.title, #{keyword}) > 0
+			AND CONTAINS(f.title, '{' || #{keyword} || '}') > 0
         </if>
         <if test="category_id != null and category_id != 0">
             AND f.category_id IN (
