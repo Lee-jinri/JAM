@@ -134,6 +134,10 @@
 				return;
 		    }
 			
+			$("#comWriteBtn").click(function () {
+				location.href = "/community/post/write";
+			})
+			
 			if(window.MY_NAME) {
 				$("#userNickname").text(window.MY_NAME + " 님의 게시글");
 		    }
@@ -205,7 +209,7 @@
 		function loadPosts(){
 		    let pageNum = state.pageNum || "1";
 		    let keyword = state.keyword || "";
-		    
+
 			let queryString = new URLSearchParams(state).toString();
 			let url = "/api/community/my/posts?" + queryString;
 			
@@ -231,18 +235,16 @@
 			let $boardList = $("#boardList");
 			     
 			$boardList.empty(); 
-			
 			data.posts.forEach(board => {
-				console.log(board);
 				let $clone = $template.clone().removeAttr("id").show();
 				         
-				$clone.find(".boardDate").text(timeAgo(board.created_at));
+				$clone.find(".boardDate").text(timeAgo(board.createdAt));
 				$clone.find(".boardTitle").text(board.title);
-				$clone.find(".boardHits").text("조회 " +board.view_count);
-				$clone.find(".boardReplyCnt").text(board.comment_count);
-				$clone.find(".boardLink").attr("data-location", "/community/post/" + board.post_id);
+				$clone.find(".boardHits").text("조회 " +board.viewCount);
+				$clone.find(".boardReplyCnt").text(board.commentCount);
+				$clone.find(".boardLink").attr("data-location", "/community/post/" + board.postId);
 				$clone.find(".check-box-template").removeClass("check-box-template")
-			    	.addClass("post-check").prop("disabled", false).val(board.post_id);
+			    	.addClass("post-check").prop("disabled", false).val(board.postId);
 				
 				$boardList.append($clone);
 			});
