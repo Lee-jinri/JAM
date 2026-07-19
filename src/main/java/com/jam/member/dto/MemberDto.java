@@ -16,7 +16,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper=false)
-@Alias("member")
+@Alias("memberDto")
 public class MemberDto extends CommonDto implements UserDetails {
 	private String user_id = "";		
 	private String user_pw = "";		

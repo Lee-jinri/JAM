@@ -135,14 +135,13 @@
 		        added = uploadedImages.filter(img => !beforeKeys.includes(img.file_key));
 		
 		        var data = {
-		        	'post_id': postId,
 		            'title': com_title,
 		            'content': com_content,
 		            'file_assets': added,
 		            'deleted_keys': removed
 		        };
 
-		        fetch('/api/community/post', {
+		        fetch('/api/community/post/'+postId, {
 		            method: 'PUT',
 		            headers: {
 		                'Content-Type': 'application/json',

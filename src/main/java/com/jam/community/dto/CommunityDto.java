@@ -14,7 +14,7 @@ import lombok.EqualsAndHashCode;
 
 @Data
 @EqualsAndHashCode(callSuper=false)
-@Alias("community")
+@Alias("communityDto")
 public class CommunityDto extends CommonDto{
 	private Long post_id;
 	private String title;

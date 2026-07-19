@@ -7,7 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.jam.comComment.dto.CommentDto;
 import com.jam.comComment.mapper.CommentMapper;
-import com.jam.community.mapper.CommunityMapper;
+import com.jam.community.repository.CommunityRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -19,7 +19,7 @@ public class CommentService {
 	private final static int COMMENT_DEL  = -1;
 	
 	private final CommentMapper commentMapper;
-	private final CommunityMapper communityMapper;
+	private final CommunityRepository communityRepository;
 	
 	public List<CommentDto> commentList(Long post_id, String user_id) {
 		List<CommentDto> list = commentMapper.commentList(post_id, user_id);
@@ -29,7 +29,7 @@ public class CommentService {
 	@Transactional
 	public int insertComment(CommentDto c) {
 		// 댓글 개수 증가
-		communityMapper.updateCommentCnt(c.getPost_id(), COMMENT_ADD);
+		communityRepository.updateCommentCount(c.getPost_id(), COMMENT_ADD);
 		return commentMapper.insertComment(c);
 	}
 
@@ -40,8 +40,8 @@ public class CommentService {
 	@Transactional
 	public int deleteComment(Long comment_id, String user_id) {
 		// 댓글 개수 감소
-		Long post_id = commentMapper.getPostIdByCommentId(comment_id);
-		communityMapper.updateCommentCnt(post_id, COMMENT_DEL);
+		Long postId = commentMapper.getPostIdByCommentId(comment_id);
+		communityRepository.updateCommentCount(postId, COMMENT_DEL);
 		
 		return commentMapper.deleteComment(comment_id, user_id);
 	}

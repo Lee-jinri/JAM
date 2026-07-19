@@ -22,11 +22,12 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.jam.common.dto.PageDto;
+import com.jam.community.dto.CommunityDetailResponseDto;
 import com.jam.community.dto.CommunityDto;
+import com.jam.community.dto.CommunityEditRequestDto;
+import com.jam.community.dto.CommunityWriteRequestDto;
 import com.jam.community.service.CommunityService;
 import com.jam.global.exception.BadRequestException;
-import com.jam.global.exception.NotFoundException;
-import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.util.HtmlSanitizer;
 import com.jam.global.util.ValueUtils;
 import com.jam.member.dto.MemberDto;
@@ -117,19 +118,15 @@ public class CommunityRestController {
 			@AuthenticationPrincipal MemberDto user) {
 		
 		// 상세 페이지 조회
-		CommunityDto detail = comService.getPost(postId);
+		CommunityDetailResponseDto detail = comService.getPost(postId);
 		
-		if (detail == null) {
-		    throw new NotFoundException("존재하지 않는 게시글입니다.");
-		}
-
         // 조회수 증가
 		comService.incrementReadCnt(postId);
 	
 		Map<String, Object> response = new HashMap<>();
 		response.put("detail", detail);
 
-		boolean isAuthor = user != null && user.getUser_id() != null && user.getUser_id().equals(detail.getUser_id());
+		boolean isAuthor = user != null && user.getUser_id() != null && user.getUser_id().equals(detail.getUserId());
         response.put("isAuthor", isAuthor);
 		
         return new ResponseEntity<>(response, HttpStatus.OK);
@@ -138,14 +135,10 @@ public class CommunityRestController {
 	@PreAuthorize("isAuthenticated()")
 	@GetMapping(value = "/posts/{post_id}/edit-data", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Map<String, Object>> getEditData(
-			@PathVariable("post_id") Long post_id, 
+			@PathVariable("post_id") Long postId, 
 			HttpServletRequest request) {
 		
-		Map<String, Object> data = comService.getPostForEdit(post_id);
-		
-		if (data.get("post") == null) {
-		    throw new NotFoundException("존재하지 않는 게시글입니다.");
-		}
+		Map<String, Object> data = comService.getPostForEdit(postId);
 		
         return new ResponseEntity<>(data, HttpStatus.OK);
 	}
@@ -160,20 +153,15 @@ public class CommunityRestController {
 	 *****************************/
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/post")
-	public ResponseEntity<String> writeBoard(@RequestBody CommunityDto community, @AuthenticationPrincipal MemberDto user) throws Exception{
+    public ResponseEntity<Long> writePost(@RequestBody CommunityWriteRequestDto requestDto, @AuthenticationPrincipal MemberDto user) {
 		
-		if(user == null) {
-			log.error("Community writeBoard User is not Authenticated.");
-	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		}
-		
-		if (community == null) {
+		if (requestDto == null) {
 	        log.error("Request body (community) is missing.");
 	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
 	    }
 
-		String title = community.getTitle();
-		String content = community.getContent();
+		String title = requestDto.getTitle();
+		String content = requestDto.getContent();
 		
 	    if (title == null || title.trim().isEmpty()) {
 	        log.error("Title cannot be null or empty.");
@@ -186,41 +174,34 @@ public class CommunityRestController {
 
 		String t = HtmlSanitizer.sanitizeTitle(title);
 		String c = HtmlSanitizer.sanitizeHtml(content);
-		community.setTitle(t);
-	    community.setContent(c);
-	    		
-		community.setUser_id(user.getUser_id());
-		
-		String post_id = comService.writePost(community).toString();
-		
-		return new ResponseEntity<>(post_id, HttpStatus.OK);
-	}
+		requestDto.setTitle(t);
+		requestDto.setContent(c);
+
+	    Long postId = comService.writePost(user.getUser_id(), requestDto);
+	    
+        return ResponseEntity.ok(postId);
+    }
 	
 	/***********************************
 	 * 커뮤니티 글을 수정하는 메서드 입니다.
 	 * 
-	 * @param community 수정할 글 번호, 제목과 내용
+	 * @param postId	수정할 글 번호
+	 * @param community 제목과 본문
 	 * @param user 		현재 접속 중인 인증된 사용자 정보 (Spring Security)
-	 * @return HTTP 상태 코드
+	 * @return HTTP 	상태 코드
 	 * 			성공 시 HttpStatus.OK와 글 번호를 반환하고 실패 시 HttpStatus.INTERNAL_SERVER_ERROR를 반환합니다.
 	 ***********************************/
 	@PreAuthorize("isAuthenticated()")
-	@PutMapping("/post")
-	public ResponseEntity<String> editBoard(@RequestBody CommunityDto community, @AuthenticationPrincipal MemberDto user) throws Exception{
+	@PutMapping("/post/{postId}")
+	public ResponseEntity<Long> editBoard(@PathVariable Long postId, @RequestBody CommunityEditRequestDto requestDto, @AuthenticationPrincipal MemberDto user) throws Exception{
 
-		if (community == null) { 
+		if (requestDto == null) { 
 	        log.error("Request body (community) is missing.");
 	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
 		}
 
-		if(user == null) {
-			log.error("Community writeBoard User is not Authenticated.");
-	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		}
-		community.setUser_id(user.getUser_id());
-		
-		String title = community.getTitle();
-		String content = community.getContent();
+		String title = requestDto.getTitle();
+		String content = requestDto.getContent();
 		
 		if (title == null || title.trim().isEmpty()) {
 			log.error("community editBoard title is null.");
@@ -233,13 +214,11 @@ public class CommunityRestController {
 		
 		String t = HtmlSanitizer.sanitizeTitle(title);
 		String c = HtmlSanitizer.sanitizeHtml(content);
-		community.setTitle(t);
-	    community.setContent(c);
+		requestDto.setTitle(t);
+		requestDto.setContent(c);
 	    
-		comService.editPost(community);
-		String post_id = community.getPost_id().toString();
-		
-		return new ResponseEntity<>(post_id, HttpStatus.OK);
+		comService.editPost(requestDto, postId, user.getUser_id());
+		return new ResponseEntity<>(postId, HttpStatus.OK);
 	}
 
 	/**********************************
@@ -252,14 +231,8 @@ public class CommunityRestController {
 	@PreAuthorize("isAuthenticated()")
 	@DeleteMapping("/post/{postId}")
 	public ResponseEntity<Void> postDelete(@PathVariable("postId") Long postId, @AuthenticationPrincipal MemberDto user) throws Exception{
-		
-		if(user == null) {
-			log.error("Community postDelete User is not Authenticated.");
-	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-		}
-		
+				
 		comService.deletePost(postId, user.getUser_id());
-		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
@@ -276,32 +249,13 @@ public class CommunityRestController {
 	@GetMapping("/my/posts")
 	public ResponseEntity<Map<String, Object>> getMyPosts(
 			@RequestParam(defaultValue = "1") int pageNum,
+	        @RequestParam(defaultValue = "10") int amount,
 			@RequestParam(required=false) String keyword,
 			@AuthenticationPrincipal MemberDto user){
-			
-		CommunityDto community = new CommunityDto();
-		
-        if (user == null) {
-	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-        }
-        
-        community.setUser_id(user.getUser_id());
-        community.setPageNum(pageNum);
-        
+
         keyword = (ValueUtils.sanitizeForLike(keyword));
-		if (keyword != null && !keyword.trim().isEmpty()) {
-		    community.setKeyword(keyword);
-		}
-		
-        Map<String, Object> result = new HashMap<>();
-
-        List<CommunityDto> posts = comService.getMyPosts(community);
-        result.put("posts", posts);
-
-        int total = comService.getMyPostsCnt(community);
-        PageDto pageMaker = new PageDto(community, total);
-        result.put("pageMaker", pageMaker);
-
+        Map<String, Object> result = comService.getMyPosts(user.getUser_id(), keyword, pageNum, amount);
+        
         return ResponseEntity.ok(result);
 	}
 
@@ -317,12 +271,7 @@ public class CommunityRestController {
 	@DeleteMapping("/my/posts")
 	public ResponseEntity<Void> deletePosts(@RequestBody List<Long> postIds, @AuthenticationPrincipal MemberDto user) {
 	    
-	    if (user == null || user.getUser_id().isEmpty()) {
-	        throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
-        }
-	    
 	    comService.deleteMyPosts(user.getUser_id(), postIds);
-
 	    return ResponseEntity.ok().build();
 	}
 	

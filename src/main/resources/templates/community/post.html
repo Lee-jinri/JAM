@@ -116,10 +116,10 @@
 				    authorUserName = detail.user_name;
 				        
 				    $("#com_title").text(detail.title);
-					$("#user_name").text(detail.user_name + "님");
-					$("#user_name").attr("data-userid", detail.user_id);
-					$("#created_at").text(detail.created_at);
-					$("#view_count").text("조회 " + detail.view_count);
+					$("#user_name").text(detail.userName + "님");
+					$("#user_name").attr("data-userid", detail.userId);
+					$("#created_at").text(detail.createdAt);
+					$("#view_count").text("조회 " + detail.viewCount);
 					$("#com_content").html(detail.content);
 					        
 					currentUserIsAuthor(data.isAuthor);

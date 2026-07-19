@@ -38,8 +38,7 @@ public class ValueUtils {
 		// 5 LIKE 와일드카드, ESCAPE 문자 이스케이프 (%, _, \)
 		k = k.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_");
 
-		// 6 양쪽 % 
-		return "%" + k + "%";
+		return k;
 	}
     
 }
