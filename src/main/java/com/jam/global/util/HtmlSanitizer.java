@@ -44,7 +44,7 @@ public final class HtmlSanitizer {
 				.addTags("br", "p", "b", "strong", "i", "em", "ul", "ol", "li", "span", "a", "img")
 				.addAttributes("span", "style")
 				.addAttributes("p", "style")
-				.addAttributes("img", "style", "src", "alt", "width", "height")
+				.addAttributes("img", "style", "src", "alt", "width", "height", "data-key")
 				
 				// 프로토콜 제한 (javascript 금지)
 				.addProtocols("a", "href", "http", "https", "mailto")
