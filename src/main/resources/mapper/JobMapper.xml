@@ -5,15 +5,10 @@
 	<!-- 키워드 검색 -->
 	<sql id="jobSearch">
 		<if test="keyword != null and keyword != ''">
-			<![CDATA[
 			AND (
-				j.post_id IN (
-	                SELECT post_id FROM job WHERE CONTAINS(title, '{' || #{keyword} || '}') > 0
-	                UNION ALL
-	                SELECT post_id FROM job WHERE CONTAINS(content, '{' || #{keyword} || '}') > 0
-	            )
-			)
-			]]>
+	            CONTAINS(j.title, '{' || #{keyword} || '}') > 0
+	            OR CONTAINS(j.content, '{' || #{keyword} || '}') > 0
+	        )
 		</if>
 	</sql>
 	
@@ -329,13 +324,7 @@
 			AND j.status = #{job_status}
 		</if>
 		
-		<if test="keyword != null">
-			AND (
-				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
-				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
-				OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
-			)
-		</if>
+	    <include refid="jobSearch"/>
 		ORDER BY a.created_at DESC
 	</select>
 	
@@ -360,13 +349,7 @@
 		    AND j.status = #{job_status}
 		</if>
 		
-		<if test="keyword != null">
-			AND (
-				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
-				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
-				OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
-			)
-		</if>
+	    <include refid="jobSearch"/>
 	</select>
 	
 	<!-- 지원 취소 -->
@@ -421,15 +404,7 @@
 			AND j.status = #{status}
 		</if>
 	
-		<if test="keyword != null and keyword != ''">
-			AND (
-				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
-				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
-				<if test="category == 0">
-					OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
-				</if>
-			)
-		</if>
+	    <include refid="jobSearch"/>
 	
 		ORDER BY j.post_id DESC
 		OFFSET (#{pageNum} - 1) * #{amount} ROWS
@@ -460,14 +435,6 @@
 			AND j.status = #{status}
 		</if>
 	
-		<if test="keyword != null and keyword != ''">
-			AND (
-				UPPER(j.title) LIKE UPPER(#{keyword}) ESCAPE '\'
-				OR UPPER(j.content) LIKE UPPER(#{keyword}) ESCAPE '\'
-				<if test="category == 0">
-					OR UPPER(m.company_name) LIKE UPPER(#{keyword}) ESCAPE '\'
-				</if>
-			)
-		</if>
+	    <include refid="jobSearch"/>
 	</select>
 </mapper>
