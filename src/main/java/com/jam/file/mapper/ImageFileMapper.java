@@ -11,4 +11,7 @@ public interface ImageFileMapper {
 	void insertImage(ImageFileDto imageVO);
 	void deleteImage(Long imageNo);
 	String findNameById(Long imageNo);
+	
+	// 썸네일 마이그레이션용
+	public List<ImageFileDto> findAll();
 }

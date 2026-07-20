@@ -22,4 +22,10 @@
 		DELETE FROM image_file
 		WHERE image_id = #{image_id} 
 	</delete>
+	
+	<select id="findAll" resultType="imageFile">
+		select * from image_file
+		where image_name 
+			in(select thumbnail from fleaMarket)
+	</select>
 </mapper>
