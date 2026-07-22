@@ -7,7 +7,7 @@
 		SELECT *
 		FROM (
 			SELECT 
-				f.post_id, f.title, f.created_at, 
+				f.post_id, f.title, f.created_at, f.price,
 				f.comment_count, f.view_count, m.user_id,  m.user_name, f.thumbnail
 			FROM fleaMarket f
 			LEFT JOIN Member m ON f.user_id = m.user_id
