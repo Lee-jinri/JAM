@@ -13,9 +13,14 @@
 			
 			$('#detailAddress').on('keypress', function(e){ 
 				if(e.keyCode == '13'){ 
+					e.preventDefault();
 					$('.join_agree').click(); 
 				}
 			}); 
+
+			$('#join_form').on('submit', function(e){
+			    e.preventDefault();
+			});
 				
 			// 주소 검색 (카카오 주소 API)
 			$("#address_search").click(function(){
