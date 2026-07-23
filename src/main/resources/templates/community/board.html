@@ -111,12 +111,7 @@
 			
 			$("#searchBtn").click(function(){
 				let keyword = $("#keyword").val();
-				console.log(keyword);
-				if(keyword.replace(/\s/g, "") == ""){
-					alert("검색어를 입력하세요.");
-					$("#keyword").focus();
-					return;
-				} 
+
 				boardState.keyword = keyword;
 				boardState.pageNum = 1;
 			    boardState.total = 0;
