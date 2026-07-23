@@ -102,16 +102,16 @@
 			
 			$("#keyword").keypress(function(event) {
 		        if (event.key === "Enter") {
-		            event.preventDefault(); 
+		            event.preventDefault();
 		            $("#searchBtn").click();
 		        }
 		    });
-			
+
 			$("#searchBtn").click(function(){
 				const keyword = $("#keyword").val().trim();
 		    	const categoryId = $(".selected-category").find("a").data("category");
 		    	const pageNum = 1;
-		    	
+
 		    	const params = new URLSearchParams({
 				    pageNum: pageNum
 				});
@@ -228,7 +228,7 @@
 					if (!post.thumbnail || post.thumbnail === '') {
 						$clone.find('img').attr('src', '/images/no-image.png');
 					} else {
-						$clone.find('img').attr('src', '/upload/flea/' + post.thumbnail);
+						$clone.find('img').attr('src', '/upload/thumb/flea/' + post.thumbnail);
 					}
 		
 					let savedSub = post.category_id;

@@ -311,11 +311,11 @@
 		                    $(location).attr('href', '/fleaMarket/post/' + body);
 		                }
 		            } else {
-		                const errorText = response.text();
-		                throw new Error(errorText);
+		                const errorBody = await response.json();
+		                throw new Error(errorBody.detail || "요청을 처리할 수 없습니다.");
 		            }
 		        } catch (error) {
-		            alert("게시글 작성을 완료할 수 없습니다. 잠시 후 다시 시도해주세요.");
+		            alert(error.message);
 		            console.error('Error:', error);
 		        }
 		    });

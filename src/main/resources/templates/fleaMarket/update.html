@@ -300,8 +300,8 @@
 							$(location).attr('href','/fleaMarket/post/'+body);
 						}
 					} else{
-						const errorText = await response.text();
-						throw new Error(errorText);
+						const errorBody  = await response.json();
+						throw new Error(errorBody.detail || "요청을 처리할 수 없습니다.");
 					}
 				}catch(error){
 					alert(error.message);
