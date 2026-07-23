@@ -1,6 +1,7 @@
 package com.jam.global.util;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -9,12 +10,18 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.jam.file.dto.FileCategory;
 import com.jam.file.dto.FileType;
+import com.jam.global.exception.BadRequestException;
+
+import net.coobird.thumbnailator.Thumbnails;
 
 @Component
 public class FileUtils {
 
 	@Value("${file.upload-dir}")
 	private String uploadDir;
+	
+	@Value("${file.thumb-upload-dir}")
+	private String thumbUploadDir;
 	
 	private static final long MB = 1024L * 1024L;
 	private static final long APP_MAX_SIZE = 20L * MB;   // 20MB
@@ -48,6 +55,19 @@ public class FileUtils {
         }
     }
     
+    public void saveThumbnail(String postType, String savedFileName) {
+    	File originalFile = new File(new File(uploadDir, postType), savedFileName);
+        File thumbDir = new File(thumbUploadDir, postType);
+        if (!thumbDir.exists()) thumbDir.mkdirs();
+        File thumbFile = new File(thumbDir, savedFileName);
+        
+        try {
+            Thumbnails.of(originalFile).size(300, 300).toFile(thumbFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+    
     public void deleteToLocal(String fileName, String postType) {
 		if (fileName == null || fileName.isBlank()) {
 			return;
@@ -68,10 +88,30 @@ public class FileUtils {
 			System.err.println("파일 삭제 중 오류 발생: " + fileName);
 		}
 	}
-    
+
+	public void deleteThumbnail(String fileName, String postType) {
+		if (fileName == null || fileName.isBlank()) {
+	        return;
+	    }
+
+		try {
+			File dir = new File(thumbUploadDir, postType);
+			File filePath = new File(dir, fileName);
+			
+			if (filePath.exists()) {
+				boolean deleted = filePath.delete();
+				if (!deleted) {
+					System.err.println("파일 삭제 실패: " + fileName);
+				}
+			}
+		} catch (Exception e) {
+			System.err.println("파일 삭제 중 오류 발생: " + fileName);
+		}
+	}
+
     // 파일 이름 길이 조정
     public String sanitizeFilename(String filename) {
-	    if (filename == null) throw new IllegalArgumentException("filename required");
+	    if (filename == null) throw new BadRequestException("filename required");
 	    String f = filename.trim();
 
 	    // 경로 분리자 제거
@@ -108,15 +148,15 @@ public class FileUtils {
     	String normalized = contentType.split(";")[0].trim().toLowerCase();
     	
     	if (type == null) {
-            throw new IllegalArgumentException("허용되지 않은 확장자입니다: " + ext);
+            throw new BadRequestException("허용되지 않은 확장자입니다: " + ext);
         }
 
         if (!type.mime.equals(normalized)) {
-            throw new IllegalArgumentException("확장자와 MIME 유형이 일치하지 않습니다: " + ext + " / " + contentType);
+            throw new BadRequestException("확장자와 MIME 유형이 일치하지 않습니다: " + ext + " / " + contentType);
         }
 
         if (type.category != category) {
-            throw new IllegalArgumentException("잘못된 카테고리 업로드입니다: " + type.category + ", "+ category);
+            throw new BadRequestException("잘못된 카테고리 업로드입니다: " + type.category + ", "+ category);
         }
     }
     
@@ -131,18 +171,18 @@ public class FileUtils {
 		switch (category) {
 	        case POST_IMAGE:
 	            if (fileSize > IMG_MAX_SIZE) // 5MB
-	            	throw new IllegalArgumentException("허용된 최대 크기 " + readableMB(IMG_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
+	            	throw new BadRequestException("허용된 최대 크기 " + readableMB(IMG_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
 	            break;
 	
 	        case APPLICATION:
 	            if (fileSize > APP_MAX_SIZE) // 20MB
-	                throw new IllegalArgumentException("허용된 최대 크기 " + readableMB(APP_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
+	                throw new BadRequestException("허용된 최대 크기 " + readableMB(APP_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
 	            break;
 	
 	        default:
 	            // 기본은 20MB 제한
 	            if (fileSize > APP_MAX_SIZE)
-	            	throw new IllegalArgumentException("허용된 최대 크기 " + readableMB(APP_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
+	            	throw new BadRequestException("허용된 최대 크기 " + readableMB(APP_MAX_SIZE) + "를 초과했습니다.(현재 크기: " + readableMB(fileSize) + ")");
 	    }
 	}
 	

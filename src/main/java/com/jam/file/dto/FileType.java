@@ -1,5 +1,7 @@
 package com.jam.file.dto;
 
+import com.jam.global.exception.BadRequestException;
+
 public enum FileType {
 	PDF("pdf",  "application/pdf", FileCategory.APPLICATION),
     DOC("doc",  "application/msword", FileCategory.APPLICATION),
@@ -26,6 +28,6 @@ public enum FileType {
         for (FileType t : values()) {
             if (t.ext.equalsIgnoreCase(ext)) return t;
         }
-        throw new IllegalArgumentException("허용되지 않은 확장자입니다: " + ext);
+        throw new BadRequestException("허용되지 않은 확장자입니다: " + ext);
     }
 }

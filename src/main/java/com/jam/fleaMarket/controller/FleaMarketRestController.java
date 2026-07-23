@@ -99,7 +99,7 @@ public class FleaMarketRestController {
 		FleaMarketDto post = fleaService.getPostDetail(flea);
 		
 		// 이미지 파일
-		List<ImageFileDto> images = fleaService.getImages(post_id);
+		List<ImageFileDto> images = fleaService.findFleaImagesByPostId(post_id);
 
 		result.put("post", post);
 		result.put("images", images);
@@ -128,22 +128,29 @@ public class FleaMarketRestController {
 			){
 		
 		if(user == null || user.getUser_id().isEmpty()) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+		    throw new UnauthorizedException("로그인이 필요한 서비스입니다.");
 		}
-		
+
 		if (title == null || title.trim().isEmpty()) {
-		    return ResponseEntity.badRequest().body("제목을 입력하세요.");
+		    throw new BadRequestException("제목을 입력하세요.");
+		}
+
+		if (content == null || content.trim().isEmpty()) {
+		    throw new BadRequestException("설명을 입력하세요.");
+		}
+
+		if (images == null || images.isEmpty()) {
+		    throw new BadRequestException("사진은 최소 1장 이상 등록해야 합니다.");
+		}
+
+		if (images.size() > 5) {
+		    throw new BadRequestException("이미지는 최대 5장까지 등록할 수 있습니다.");
+		}
+
+		if (price <= 0) {
+		    throw new BadRequestException("가격은 0원보다 커야 합니다.");
 		}
 		
-		if (content == null || content.trim().isEmpty()) {
-		    return ResponseEntity.badRequest().body("설명을 입력하세요.");
-		}
-		if (images == null || images.isEmpty()) {
-			return ResponseEntity.badRequest().body("사진은 최소 1장 이상 등록해야 합니다.");
-		}
-		if (price <= 0) {
-			return ResponseEntity.badRequest().body("가격은 0원보다 커야 합니다.");
-		}
 		title = HtmlSanitizer.sanitizeTitle(title);
 		content = HtmlSanitizer.sanitizeHtml(content);
 		
@@ -225,11 +232,11 @@ public class FleaMarketRestController {
 		}
 		
 	    if (thumbnailId == null && thumbnailName == null) {
-	        throw new RuntimeException("썸네일이 설정되지 않았습니다.");
+	        throw new BadRequestException("썸네일이 설정되지 않았습니다.");
 	    }
 	    
 		if (price <= 0) {
-			return ResponseEntity.badRequest().body("가격은 0원보다 커야 합니다.");
+			throw new BadRequestException("가격은 0원보다 커야 합니다.");
 		}
 
 		title = HtmlSanitizer.sanitizeTitle(title);

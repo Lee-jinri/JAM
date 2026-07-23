@@ -28,7 +28,6 @@ public class FileService {
 	
 	@Transactional(propagation = Propagation.MANDATORY, rollbackFor = Exception.class)
 	public void insertFiles(List<FileAssetDto> files, Long postId) {
-		log.info("files : " +files);
 		for (FileAssetDto f : files) {
 			String safe = fileUtils.sanitizeFilename(f.getFile_name());
 
