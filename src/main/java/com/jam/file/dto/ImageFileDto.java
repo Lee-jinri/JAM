@@ -14,7 +14,8 @@ public class ImageFileDto {
 	private Long image_id;
 	private String image_name;
 	private Long post_id;
-    private String post_type; 
+    private String post_type;
+    private String is_thumbnail; // Y, N
     
 	@JsonFormat(pattern = "yyyy/MM/dd HH:mm")
 	private LocalDateTime created_at;

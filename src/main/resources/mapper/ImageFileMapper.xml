@@ -7,13 +7,26 @@
 		WHERE post_id = #{post_id} AND post_type = #{post_type}
 	</select>
 	
+	<select id="findFleaImagesByPostId" resultType="imageFile">
+	    SELECT i.image_id, i.image_name
+	    FROM image_file i
+	    JOIN fleaMarket f ON f.post_id = i.post_id
+	    WHERE i.post_id = #{post_id} AND post_type = #{post_type}
+	    ORDER BY 
+	        CASE WHEN i.image_name = f.thumbnail THEN 0 ELSE 1 END,
+	        i.image_id ASC
+	</select>
+	
 	<insert id="insertImage" parameterType="imageFile">
-	    INSERT INTO image_file (image_id, image_name, post_id, post_type, created_at)
-	    VALUES (seq_image_file.NEXTVAL, #{image_name}, #{post_id}, #{post_type}, SYSDATE)
+		<selectKey keyProperty="image_id" resultType="Long" order="BEFORE">
+	        SELECT seq_image_file.NEXTVAL FROM dual
+	    </selectKey>
+	    INSERT INTO image_file (image_id, image_name, post_id, post_type, created_at, is_thumbnail)
+	    VALUES (#{image_id}, #{image_name}, #{post_id}, #{post_type}, SYSDATE, #{is_thumbnail, jdbcType=VARCHAR})
 	</insert>
 	
-	<select id="findNameById" parameterType="Long" resultType="String">
-		SELECT image_name
+	<select id="findById" parameterType="Long" resultType="imageFile">
+		SELECT image_id, image_name
 		FROM image_file
 		WHERE image_id = #{image_id}
 	</select>
@@ -22,10 +35,12 @@
 		DELETE FROM image_file
 		WHERE image_id = #{image_id} 
 	</delete>
-	
-	<select id="findAll" resultType="imageFile">
-		select * from image_file
-		where image_name 
-			in(select thumbnail from fleaMarket)
-	</select>
+
+	<update id="clearThumbnailFlag">
+	    UPDATE image_file SET is_thumbnail = 'N' WHERE post_id = #{postId}
+	</update>
+
+	<update id="setThumbnailFlag">
+	    UPDATE image_file SET is_thumbnail = 'Y' WHERE image_id = #{imageId}
+	</update>
 </mapper>

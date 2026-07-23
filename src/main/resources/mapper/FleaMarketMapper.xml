@@ -203,5 +203,11 @@
 		FROM fleaMarket
 		WHERE post_id = #{postId}
 	</select>
+	
+	<select id="findOwnerAndThumbnailByPostId" parameterType="Long" resultType="flea">
+	    SELECT user_id, thumbnail
+	    FROM fleaMarket
+	    WHERE post_id = #{postId}
+	</select>
 
 </mapper>
