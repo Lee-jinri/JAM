@@ -12,7 +12,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.amazonaws.services.kms.model.NotFoundException;
 import com.jam.common.dto.CommonDto;
 import com.jam.common.dto.PageDto;
 import com.jam.community.dto.CommunityDetailResponseDto;
@@ -26,6 +25,7 @@ import com.jam.community.repository.CommunityRepository;
 import com.jam.file.dto.FileAssetDto;
 import com.jam.file.dto.FileCategory;
 import com.jam.global.exception.ForbiddenException;
+import com.jam.global.exception.NotFoundException;
 import com.jam.global.service.FileReferenceService;
 import com.jam.global.service.PostImageViewService;
 import com.jam.member.entity.Member;
@@ -67,7 +67,7 @@ public class CommunityService {
 	public CommunityDetailResponseDto getPost(Long postId) {
 		// TODO: JPQL로 community + member 한 번에 조회
 		Community community = communityRepository.findById(postId)
-	            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 게시글입니다."));
+	            .orElseThrow(() -> new NotFoundException("존재하지 않는 게시글입니다."));
 		
 		String processedContent = imageViewService.injectViewUrls(community.getContent());
 
