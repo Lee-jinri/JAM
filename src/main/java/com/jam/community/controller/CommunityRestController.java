@@ -1,7 +1,6 @@
 package com.jam.community.controller;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +63,7 @@ public class CommunityRestController {
 		CommunityDto community = new CommunityDto();
 		community.setPageNum(pageNum);
 		
-		keyword = (ValueUtils.sanitizeForLike(keyword));
+		keyword = ValueUtils.sanitizeForLike(keyword);
 		if (keyword != null && !keyword.trim().isEmpty()) {
 		    community.setKeyword(keyword);
 		}
@@ -288,9 +287,6 @@ public class CommunityRestController {
 	public ResponseEntity<Map<String, Object>> getFavorites(
 			@AuthenticationPrincipal MemberDto user,
 			@RequestParam(value = "pageNum", defaultValue = "1") int pageNum) {
-		
-	    if(user == null || user.getUser_id() == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Collections.singletonMap("message", "로그인이 필요한 서비스 입니다."));
-	    
 	    CommunityDto community = new CommunityDto();
 	    community.setUser_id(user.getUser_id());
 	    community.setPageNum(pageNum);
