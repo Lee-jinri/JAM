@@ -153,11 +153,6 @@ public class CommunityRestController {
 	@PreAuthorize("isAuthenticated()")
 	@PostMapping("/post")
     public ResponseEntity<Long> writePost(@RequestBody CommunityWriteRequestDto requestDto, @AuthenticationPrincipal MemberDto user) {
-		
-		if (requestDto == null) {
-	        log.error("Request body (community) is missing.");
-	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
-	    }
 
 		String title = requestDto.getTitle();
 		String content = requestDto.getContent();
@@ -193,11 +188,6 @@ public class CommunityRestController {
 	@PreAuthorize("isAuthenticated()")
 	@PutMapping("/post/{postId}")
 	public ResponseEntity<Long> editBoard(@PathVariable Long postId, @RequestBody CommunityEditRequestDto requestDto, @AuthenticationPrincipal MemberDto user) throws Exception{
-
-		if (requestDto == null) { 
-	        log.error("Request body (community) is missing.");
-	        throw new BadRequestException("요청 데이터가 올바르지 않습니다.");
-		}
 
 		String title = requestDto.getTitle();
 		String content = requestDto.getContent();
