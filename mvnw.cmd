@@ -27,6 +27,10 @@
 @REM   MVNW_VERBOSE - true: enable verbose log; others: silence the output
 @REM ----------------------------------------------------------------------------
 
+@REM Pin JDK 17 for this project only (system/user JAVA_HOME is left untouched).
+@REM apt-maven-plugin (QueryDSL codegen) isn't Maven-toolchains-aware, so the
+@REM launcher JVM itself must be 17, not just the compiler/surefire plugins.
+@IF EXIST "C:\Program Files\Java\jdk-17\bin\java.exe" (SET "JAVA_HOME=C:\Program Files\Java\jdk-17")
 @IF "%__MVNW_ARG0_NAME__%"=="" (SET __MVNW_ARG0_NAME__=%~nx0)
 @SET __MVNW_CMD__=
 @SET __MVNW_ERROR__=

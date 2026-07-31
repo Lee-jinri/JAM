@@ -32,6 +32,13 @@
 set -euf
 [ "${MVNW_VERBOSE-}" != debug ] || set -x
 
+# Pin JDK 17 for this project only (system/user JAVA_HOME is left untouched).
+# apt-maven-plugin (QueryDSL codegen) isn't Maven-toolchains-aware, so the
+# launcher JVM itself must be 17, not just the compiler/surefire plugins.
+if [ -x "/c/Program Files/Java/jdk-17/bin/java" ]; then
+  JAVA_HOME="C:\Program Files\Java\jdk-17"
+fi
+
 # OS specific support.
 native_path() { printf %s\\n "$1"; }
 case "$(uname)" in
