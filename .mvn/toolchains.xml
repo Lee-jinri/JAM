@@ -6,7 +6,7 @@
       <version>17</version>
     </provides>
     <configuration>
-      <jdkHome>C:/Program Files/Java/jdk-17</jdkHome>
+      <jdkHome>${env.JAVA_HOME}</jdkHome>
     </configuration>
   </toolchain>
 </toolchains>
