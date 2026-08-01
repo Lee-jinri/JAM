@@ -9,6 +9,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jam.community.dto.CommunityDto;
@@ -20,6 +21,11 @@ import com.jam.member.repository.MemberRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 
+/**
+ * CommunityService에 대한 @SpringBootTest 통합 테스트. CommunityMapper.xml에 있는 실제 SQL을 검증한다.
+ * MyBatis를 사용하는 getBoard/getBoardWithFavorite는 CommunityMapper.xml에 있는 실제 SQL을 검증.
+ * JPA/QueryDSL을 사용하는 나머지 부분은 CommunityRepositoryTest에서 별도로 검증.
+ */
 @SpringBootTest
 @Transactional // 이 클래스에서 새로 쓰는 데이터(D)는 테스트 후 자동 롤백되어 실DB를 오염시키지 않음
 public class CommunityServiceIntegrationTest {
@@ -53,23 +59,52 @@ public class CommunityServiceIntegrationTest {
 	}
 	
 	@Test
-	@DisplayName("B: '기타'로 검색하면 제목이나 내용에 '기타'가 포함된 게시글만 반환한다")
+	@DisplayName("B: 키워드로 검색하면 제목이나 내용에 해당 키워드가 포함된 게시글만 반환한다"
+			+ " (CONTAINS 인덱스는 COMMIT 시점에 동기화되므로, 트랜잭션을 실제로 커밋해서 직접 시드한 글로 검증하고 테스트 후 되돌린다)")
 	void getBoard_withKeyword() {
 	    // Given
-	    String searchKeyword = "기타";
-	    CommunityDto com = new CommunityDto();
-	    com.setPageNum(1);
-	    com.setKeyword(searchKeyword);
-	    
-	    // When
-	    List<CommunityDto> result = communityService.getBoard(com);
-	    
-	    // Then
-	    // 결과 리스트의 모든 항목이 '기타'라는 단어를 포함하고 있는지 확인
-	    assertThat(result).allMatch(post -> 
-	        post.getTitle().contains(searchKeyword) || 
-	        post.getContent().contains(searchKeyword)
-	    );
+	    Member member = new Member();
+	    member.setUserId("comKeywordTestUser");
+	    member.setUserPw("pw1234");
+	    member.setUserName("comKeywordTestUser_name");
+	    member = memberRepository.save(member);
+
+	    String uniqueKeyword = "키워드검색테스트유니크단어";
+	    Community post = new Community();
+	    post.setMember(member);
+	    post.setTitle(uniqueKeyword + " 제목");
+	    post.setContent("내용");
+	    post.setViewCount(0);
+	    post.setCommentCount(0);
+	    post.setCreatedAt(LocalDateTime.now());
+	    post = communityRepository.save(post);
+
+	    TestTransaction.flagForCommit();
+	    TestTransaction.end(); // 실제 COMMIT (Oracle Text 인덱스 동기화 트리거)
+
+	    try {
+	        // When
+	        CommunityDto com = new CommunityDto();
+	        com.setPageNum(1);
+	        com.setKeyword(uniqueKeyword);
+
+	        List<CommunityDto> result = communityService.getBoard(com);
+
+	        // Then
+	        assertThat(result).isNotEmpty();
+	        assertThat(result).allMatch(p ->
+	            p.getTitle().contains(uniqueKeyword) ||
+	            p.getContent().contains(uniqueKeyword)
+	        );
+	    } finally {
+	        // @Transactional 롤백은 이미 커밋된 row는 못 지우므로 직접 정리
+	        TestTransaction.start();
+	        communityRepository.deleteById(post.getPostId());
+	        memberRepository.deleteById(member.getUserId());
+	        TestTransaction.flagForCommit();
+	        TestTransaction.end();
+	        TestTransaction.start();
+	    }
 	}
 	
 	@Test

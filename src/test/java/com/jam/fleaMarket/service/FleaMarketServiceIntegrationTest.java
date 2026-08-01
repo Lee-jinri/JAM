@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.transaction.TestTransaction;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.jam.fleaMarket.dto.FleaMarketDto;
@@ -23,12 +24,6 @@ import jakarta.persistence.PersistenceContext;
 
 /**
  * FleaMarketService에 대한 @SpringBootTest 통합 테스트. FleaMarketMapper.xml에 있는 실제 SQL을 검증한다.
- * fleaMarket 도메인은 JPA 엔티티가 없는 MyBatis 전용 도메인이라 FLEAMARKET/FAVORITE row는 mapper/native query로 직접 시드한다.
- *
- * getBoard/getBoardWithFavorite/listCnt의 키워드 검색은 CONTAINS(Oracle Text)를 쓰기 때문에, 같은 트랜잭션에서
- * 방금 insert한 row는 인덱스 동기화 타이밍상 검색에 안 잡힐 수 있다 - 그래서 키워드 검색 테스트는 이미 커밋되어
- * 있는 기존 시드 데이터("기타"가 포함된 글이 있다고 가정)에 의존하고, 직접 시드하는 테스트는 LIKE 기반 메서드
- * (getMyStore/getFavorites) 또는 키워드 없는 케이스로 작성했다.
  */
 @SpringBootTest
 @Transactional // 이 클래스에서 새로 쓰는 데이터는 테스트 후 자동 롤백되어 실DB를 오염시키지 않음
@@ -102,17 +97,38 @@ class FleaMarketServiceIntegrationTest {
 		}
 
 		@Test
-		@DisplayName("B: '기타'로 검색하면 제목에 '기타'가 포함된 게시글만 반환한다")
+		@DisplayName("B: 키워드로 검색하면 제목에 해당 키워드가 포함된 게시글만 반환한다"
+				+ " (CONTAINS 인덱스는 COMMIT 시점에 동기화되므로, 트랜잭션을 실제로 커밋해서 직접 시드한 글로 검증하고 테스트 후 되돌린다)")
 		void getBoard_withKeyword() {
-			String searchKeyword = "기타";
-			FleaMarketDto flea = new FleaMarketDto();
-			flea.setPageNum(1);
-			flea.setKeyword(searchKeyword);
+			Member member = seedMember("fleaKeywordTestUser");
+			String uniqueKeyword = "키워드검색테스트유니크단어";
+			long postId = seedFleaPost(member.getUserId(), uniqueKeyword + " 판매합니다", 10000);
 
-			List<FleaMarketDto> result = fleaMarketService.getBoard(flea);
+			TestTransaction.flagForCommit();
+			TestTransaction.end(); // 실제 COMMIT (Oracle Text 인덱스 동기화 트리거)
 
-			assertThat(result).isNotEmpty();
-			assertThat(result).allMatch(post -> post.getTitle().contains(searchKeyword));
+			try {
+				FleaMarketDto flea = new FleaMarketDto();
+				flea.setPageNum(1);
+				flea.setKeyword(uniqueKeyword);
+
+				List<FleaMarketDto> result = fleaMarketService.getBoard(flea);
+
+				assertThat(result).isNotEmpty();
+				assertThat(result).allMatch(post -> post.getTitle().contains(uniqueKeyword));
+			} finally {
+				// @Transactional 롤백은 이미 커밋된 row는 못 지우므로 직접 정리
+				TestTransaction.start();
+				entityManager.createNativeQuery("DELETE FROM fleaMarket WHERE post_id = :postId")
+						.setParameter("postId", postId)
+						.executeUpdate();
+				entityManager.createNativeQuery("DELETE FROM member WHERE user_id = :userId")
+						.setParameter("userId", member.getUserId())
+						.executeUpdate();
+				TestTransaction.flagForCommit();
+				TestTransaction.end();
+				TestTransaction.start();
+			}
 		}
 
 		@Test
