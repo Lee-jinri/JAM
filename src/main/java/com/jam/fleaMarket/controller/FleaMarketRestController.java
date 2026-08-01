@@ -134,10 +134,6 @@ public class FleaMarketRestController {
 		    throw new BadRequestException("설명을 입력하세요.");
 		}
 
-		if (images == null || images.isEmpty()) {
-		    throw new BadRequestException("사진은 최소 1장 이상 등록해야 합니다.");
-		}
-
 		if (images.size() > 5) {
 		    throw new BadRequestException("이미지는 최대 5장까지 등록할 수 있습니다.");
 		}
