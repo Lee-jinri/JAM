@@ -67,7 +67,7 @@ public class JobRestController {
 		
 		String kw = jobs.getKeyword();
 		jobs.setKeyword(ValueUtils.sanitizeForLike(kw));
-		
+
 		Map<String, Object> result = new HashMap<>();
 
 		List<JobDto> jobList = jobService.getBoard(jobs);
@@ -248,9 +248,12 @@ public class JobRestController {
 	        throw new BadRequestException(validationError);
 	    }
     
-		jobService.editPost(jobs);
+		int updated = jobService.editPost(jobs);
+		if (updated < 1) {
+			throw new ForbiddenException("수정 권한이 없습니다.");
+		}
 		String post_id = jobs.getPost_id().toString();
-		
+
 		return new ResponseEntity<>(post_id, HttpStatus.OK);
 	}
 	
