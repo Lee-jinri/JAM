@@ -63,8 +63,10 @@
 	<select id="listCnt" parameterType="flea" resultType="int">
 		SELECT count(*)
 		FROM fleaMarket f
+		JOIN member m ON f.user_id = m.user_id
 		<where>
-			1=1
+			f.sales_status = 0
+			AND m.deleted_at IS NULL
 		    <include refid="fleaSearch"></include>
 		</where>
 	</select>
