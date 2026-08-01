@@ -97,14 +97,14 @@ public class JobService {
 		int count = jobMapper.existsJobPost(app.getPost_id());
 	    if (count <= 0) {
 	    	log.error("createApplication 실패: 존재하지 않는 공고. post_id="+ app.getPost_id());
-	        throw new IllegalArgumentException("존재하지 않는 공고입니다.");
+	        throw new NotFoundException("존재하지 않는 공고입니다.");
 	    }
 	    
-		JobDto info = findPostInfo(app.getPost_id()); 
-		
+		JobDto info = findPostInfo(app.getPost_id());
+
 		if (info == null) {
 			log.error("createApplication 실패: 공고 정보 조회 불가. post_id="+ app.getPost_id());
-			//throw new NotFoundException("공고 정보를 찾을 수 없습니다.");
+			throw new NotFoundException("공고 정보를 찾을 수 없습니다.");
 		}
 		if (info.getUser_id() == null) {
 			log.error("createApplication 실패: 공고에 user_id 없음. post_id="+ app.getPost_id());
@@ -182,11 +182,11 @@ public class JobService {
 	// 지원서 상세
 	public Map<String, Object> getApplication(Long applicationId, String userId) {
 		
-		ApplicationDto info = findPostInfoByAppId(applicationId); 
-		
+		ApplicationDto info = findPostInfoByAppId(applicationId);
+
 		if (info == null) {
 			log.error("getApplication 실패: 공고 정보 조회 불가. applicationId="+ applicationId);
-			//throw new NotFoundException("공고 정보를 찾을 수 없습니다.");
+			throw new NotFoundException("존재하지 않는 지원서입니다.");
 		}
 		if (info.getUser_id() == null) {
 			log.error("getApplication 실패: 공고에 user_id 없음. post_id="+ info.getPost_id());
