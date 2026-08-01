@@ -1,14 +1,9 @@
 package com.jam.fleaMarket.controller;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
-import org.apache.commons.io.FileUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -278,51 +273,7 @@ public class FleaMarketRestController {
 		
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	
-	/********************************
-	 * 중고악기 사진 업로드
-	 * @return String 사진 저장 경로 
-	 ********************************/
-	@PreAuthorize("isAuthenticated()")
-	@PostMapping(value="/uploadImageFile", produces = "application/json; charset=utf8")
-	public ResponseEntity<Map<String, Object>> uploadImageFile(
-			@RequestParam("file") MultipartFile multipartFile, 
-			HttpServletRequest request)  {
-		
-		Map<String, Object> response = new HashMap<>();
-				
-		// 내부경로로 저장
-		String contextRoot = request.getServletContext().getRealPath("/");
-		//String contextRoot = new HttpServletRequestWrapper(request).getRealPath("/");
-		String fileRoot = contextRoot+"resources/fileupload/";
-		
-		String originalFileName = multipartFile.getOriginalFilename();	//오리지날 파일명
-		String extension = originalFileName.substring(originalFileName.lastIndexOf("."));	//파일 확장자
-		String savedFileName = UUID.randomUUID() + extension;	//저장될 파일 명
-		
-		File targetFile = new File(fileRoot + savedFileName);	
-		
-		try {
-			InputStream fileStream = multipartFile.getInputStream();
-			FileUtils.copyInputStreamToFile(fileStream, targetFile);	//파일 저장
-			response.put("url", "/resources/fileupload/" + savedFileName);
-	        response.put("responseCode", "success");
-	        
-	        return ResponseEntity.ok(response);
-	        /*
-			jsonObject.addProperty("url", "/resources/fileupload/"+savedFileName); // contextroot + resources + 저장할 내부 폴더명
-			jsonObject.addProperty("responseCode", "success");*/
-				
-		} catch (IOException e) {
-			FileUtils.deleteQuietly(targetFile);	//저장된 파일 삭제
-			log.error(e.getMessage());
-			
-			response.put("responseCode", "error")
-			;
-	        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-		}
-	}
-	
+
 	/**
 	 * 본인이 작성한 중고악기 게시글을 조회하는 메서드입니다.
 	 * 

@@ -16,7 +16,6 @@ import com.jam.global.exception.BadRequestException;
 import com.jam.global.exception.ForbiddenException;
 import com.jam.global.exception.NotFoundException;
 import com.jam.global.util.FileUtils;
-import com.jam.member.service.MemberService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,7 +24,6 @@ import lombok.RequiredArgsConstructor;
 public class FleaMarketService {
 
 	private final FleaMarketMapper fleaMapper;
-	private final MemberService memberService;
 	private final FileUtils fileUtils;
 	private final ImageFileMapper imageFileMapper;
 	
@@ -223,16 +221,6 @@ public class FleaMarketService {
 
 	public int getMyStoreCnt(FleaMarketDto flea) {
 		return fleaMapper.getMyStoreCnt(flea);
-	}
-
-	public String getUserId(String user_name) {
-		return memberService.getUserId(user_name);
-	}
-	
-	public boolean isValidUserName(String user_name) throws Exception {
-		int count = memberService.nameCheck(user_name);
-		
-		return count != 0 ? true : false;
 	}
 
 	public List<FleaMarketDto> getFavorites(FleaMarketDto flea) {
