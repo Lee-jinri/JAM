@@ -227,6 +227,10 @@ public class FleaMarketService {
 		return fleaMapper.getFavorites(flea);
 	}
 
+	public int getFavoritesCnt(FleaMarketDto flea) {
+		return fleaMapper.getFavoritesCnt(flea);
+	}
+
 	public List<ImageFileDto> getImages(Long post_id) {
 		return imageFileMapper.getImages(post_id, "FLEA");
 	}

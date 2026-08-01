@@ -199,7 +199,18 @@
 		  AND rnum <= #{pageNum} * #{amount}
 		]]>
 	</select>
-	
+
+	<select id="getFavoritesCnt" parameterType="flea" resultType="int">
+		SELECT count(*)
+		FROM fleaMarket f
+		JOIN favorite fav ON f.post_id = fav.post_id
+		WHERE fav.user_id = #{user_id}
+		AND fav.board_type = 'FLEA'
+		<if test="keyword != null and keyword != ''">
+			AND f.title LIKE '%' || #{keyword} || '%'
+		</if>
+	</select>
+
 	<select id="getWriterIdByPostId" parameterType="Long" resultType="String">
 		SELECT user_id
 		FROM fleaMarket

@@ -325,8 +325,8 @@ public class FleaMarketRestController {
 		List<FleaMarketDto> favoriteList = fleaService.getFavorites(flea);
 		
 		result.put("fleaMarketList", favoriteList);
-		
-		int total = fleaService.getMyStoreCnt(flea);
+
+		int total = fleaService.getFavoritesCnt(flea);
 		
 		PageDto pageMaker = new PageDto(flea, total);
         result.put("pageMaker", pageMaker);
