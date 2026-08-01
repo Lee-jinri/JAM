@@ -200,7 +200,7 @@ public class FleaMarketService {
 	
 	@Transactional
 	public void deletePost(Long post_id, String userId) {
-		List<ImageFileDto> deleteFileNames = imageFileMapper.getImages(post_id, "flea");
+		List<ImageFileDto> deleteFileNames = imageFileMapper.getImages(post_id, "FLEA");
 		
 		int count = fleaMapper.deletePost(post_id, userId);
 		if(count < 1) throw new ForbiddenException("게시물을 삭제할 권한이 없습니다.");
