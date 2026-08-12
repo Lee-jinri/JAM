@@ -1,0 +1,92 @@
+spring:
+  application:
+    name: jam
+
+  datasource:
+    driver-class-name: oracle.jdbc.OracleDriver
+    url: jdbc:oracle:thin:@localhost:1521/XEPDB1
+    username: jam
+    password: jam1234
+
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+
+  devtools:
+    restart:
+      enabled: false
+
+  redis:
+    host: localhost
+    port: 6379
+    database: 0
+
+  redisson:
+    address: redis://localhost:6379
+
+  mail:
+    host: smtp.naver.com
+    port: 465
+    username: ${MAIL_USERNAME:ci-dummy@example.com}
+    password: ${MAIL_PASSWORD:ci-dummy-password}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+            trust: smtp.naver.com
+          timeout: 5000
+          connectiontimeout: 5000
+
+server:
+  servlet:
+    encoding:
+      charset: UTF-8
+      force: true
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.jam
+  configuration:
+    default-executor-type: SIMPLE
+
+cors:
+  allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000, http://localhost:8080}
+
+jwt:
+  secret: ${JWT_SECRET:ci-only-dummy-jwt-secret-do-not-use-in-prod-0123456789}
+
+oauth:
+  naver:
+    clientId: ${NAVER_CLIENT_ID:ci-dummy-naver-client-id}
+    clientSecret: ${NAVER_CLIENT_SECRET:ci-dummy-naver-client-secret}
+    redirectUri: ${NAVER_REDIRECT_URI:http://localhost:8080/oauth/naver/callback}
+  kakao:
+    clientId: ${KAKAO_CLIENT_ID:ci-dummy-kakao-client-id}
+    redirectUri: ${KAKAO_REDIRECT_URI:http://localhost:8080/oauth/kakao/callback}
+
+location:
+  consumer_key: ${LOCATION_CONSUMER_KEY:ci-dummy-key}
+  consumer_secret: ${LOCATION_CONSUMER_SECRET:ci-dummy-secret}
+  save-path: ${LOCATION_SAVE_PATH:/tmp/jam-ci/address}
+
+cloud:
+  aws:
+    s3:
+      static: ap-northeast-2
+      bucket: ci-dummy-bucket
+
+file:
+  upload-dir: ${FILE_UPLOAD_DIR:/tmp/jam-ci/upload}
+  thumb-upload-dir: /tmp/jam-ci/upload/thumb
+
+migration:
+  thumbnail:
+    enabled: false
