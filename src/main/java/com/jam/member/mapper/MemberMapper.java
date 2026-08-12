@@ -66,7 +66,7 @@ public interface MemberMapper {
 	int updateAddress(@Param("address") String address, @Param("userId") String userId);
 
 	// 회원 탈퇴
-	int deleteAccount(String user_id);
+	int deleteAccount(@Param("userId") String userId, @Param("anonymizedName") String anonymizedName);
 
 	// 소셜 사용자 회원가입 여부 
 	int findSocialUser(String user_id);

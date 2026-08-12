@@ -69,11 +69,11 @@
 	    WHERE user_id = #{user_id}
 	</select>
   	
-  	<!-- 회원 닉네임 가져오기 -->
+  	<!-- 회원 닉네임 가져오기: 탈퇴한 회원이면 실제 저장값 대신 "(알 수 없음)"으로 조회 -->
   	<select id="getUserName" resultType="String">
-  		SELECT user_name
+  		SELECT CASE WHEN deleted_at IS NOT NULL THEN '(알 수 없음)' ELSE user_name END
   		FROM member
-  		WHERE user_id = #{user_id} AND deleted_at IS NULL
+  		WHERE user_id = #{user_id}
   	</select>
   	
   	<!-- 아이디 가져오기 -->
@@ -164,18 +164,19 @@
 		WHERE user_id = #{userId} AND deleted_at IS NULL
 	</update>
 	
-	<!-- 회원 탈퇴 -->
-	<update id="deleteAccount" parameterType="String">
+	<!-- 회원 탈퇴: user_name은 unique 제약이 있어 재사용 가능하도록 무작위 값으로 치환.
+	     실제 화면에는 deleted_at 존재 여부로 판단해 "(알 수 없음)"으로 표시한다(getUserName 등 참고). -->
+	<update id="deleteAccount">
 		update member
 		SET
-			user_name = '(알 수 없음)', 
+			user_name = #{anonymizedName},
         	address = NULL,
         	email = NULL,
         	phone = NULL,
         	REFRESHTOKEN = NULL,
         	social_login = NULL,
         	COMPANY_NAME = NULL,
-        	deleted_at = CURRENT_TIMESTAMP  WHERE user_id = #{user_id} 
+        	deleted_at = CURRENT_TIMESTAMP  WHERE user_id = #{userId}
 	</update>
 	
 	<!-- 저장된 소셜 회원인지 확인 -->

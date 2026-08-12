@@ -347,9 +347,12 @@ public class MemberService {
 	// 회원 탈퇴
 	@Transactional
 	public void deleteAccount(String user_id) {
-		memberMapper.deleteAccount(user_id);
-		
-		String redisKey = "user:nickname:" + user_id;
+		// user_name은 unique 제약이 있어 무작위 값으로 치환해 닉네임을 재사용 가능하게 만든다.
+		// 실제 화면 표시는 deleted_at 존재 여부로 판단해 "(알 수 없음)"으로 보여준다(getUserName 등 참고).
+		String anonymizedName = "del_" + UUID.randomUUID().toString().replace("-", "").substring(0, 16);
+		memberMapper.deleteAccount(user_id, anonymizedName);
+
+		String redisKey = "users:name:" + user_id;
 		stringRedisTemplate.delete(redisKey);
 	}
 	
