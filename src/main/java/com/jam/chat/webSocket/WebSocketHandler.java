@@ -91,9 +91,14 @@ public class WebSocketHandler extends TextWebSocketHandler  {
     }
     
 	private void handleEnter(WebSocketSession session, Long roomId, String userId) {
-    	    	
+
+	    if (!chatService.isMemberOfRoom(userId, roomId)) {
+	    	sendMessage(session, "ERROR", Map.of("code", 403, "message", "잘못된 접근 입니다."));
+	    	return;
+	    }
+
 	    Map<String, String> info = chatService.getChatPartner(roomId, userId);
-	    
+
 	    if (info == null || info.get("CHATPARTNERID") == null) {
 	    	log.info("info : " + info);
 	    	sendMessage(session, "ERROR", Map.of("code", 404, "message", "채팅방을 찾을 수 없습니다."));
