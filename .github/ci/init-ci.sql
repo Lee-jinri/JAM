@@ -1,3 +1,5 @@
+-- Oracle Text(CTXSYS)는 기본적으로 계정이 잠겨있는 경우가 많아 먼저 잠금을 해제한다.
+ALTER USER CTXSYS IDENTIFIED BY ctxsys_ci_pw123 ACCOUNT UNLOCK;
 -- CTXAPP은 SYS 권한으로, jam 유저로 CONNECT 하기 전에 부여해야 한다.
 GRANT CTXAPP TO jam;
 CONNECT jam/jam1234@XEPDB1;
