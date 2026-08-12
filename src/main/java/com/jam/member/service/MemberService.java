@@ -121,8 +121,6 @@ public class MemberService {
 	    String user_pw = encoder.encode(tempPw);
 
         // 임시 비밀번호로 비밀번호 변경
-        memberMapper.updatePw(user_id, user_pw);
-        
         int updated = memberMapper.updatePw(user_id, user_pw);
         if (updated != 1) {
         	throw new IllegalStateException("비밀번호 변경에 실패했습니다.");
