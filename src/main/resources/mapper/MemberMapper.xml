@@ -192,7 +192,7 @@
 	<!-- 소셜 회원 정보 저장 -->
 	<insert id="SocialRegister" parameterType="map">
 		INSERT INTO member(user_id, user_name, user_pw, email, social_login)
-		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email}, 1)
+		VALUES (#{user_id}, #{user_name}, #{user_pw}, #{email, jdbcType=VARCHAR}, 1)
 	</insert>
 	
 	<!-- 사용자 프로필 조회 -->
