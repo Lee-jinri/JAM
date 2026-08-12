@@ -33,7 +33,7 @@ jobs:
           -e APP_USER=jam \
           -e APP_USER_PASSWORD=jam1234 \
           -v "${{ github.workspace }}/.github/ci/init-ci.sql:/container-entrypoint-initdb.d/init-ci.sql" \
-          gvenzl/oracle-xe:21-slim
+          gvenzl/oracle-xe:21
 
     - name: Wait for Oracle to become ready
       run: |
