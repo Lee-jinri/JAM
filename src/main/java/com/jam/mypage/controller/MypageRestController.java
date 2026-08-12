@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.jam.global.exception.UnauthorizedException;
 import com.jam.global.jwt.JwtService;
 import com.jam.member.dto.MemberDto;
+import com.jam.mypage.dto.BoardType;
 import com.jam.mypage.service.MypageService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -46,7 +47,8 @@ public class MypageRestController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body("로그인이 필요한 서비스 입니다. 로그인 하시겠습니까?");
 		}
-		boolean added = mypageService.addFavorite(user.getUser_id(), boardType, postId);
+		String normalizedBoardType = BoardType.fromString(boardType).getValue();
+		boolean added = mypageService.addFavorite(user.getUser_id(), normalizedBoardType, postId);
         
 		if (!added) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -63,7 +65,8 @@ public class MypageRestController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
 					.body("로그인이 필요한 서비스 입니다. 로그인 하시겠습니까?");
 		}
-		boolean deleted = mypageService.deleteFavorite(user.getUser_id(), boardType, postId);
+		String normalizedBoardType = BoardType.fromString(boardType).getValue();
+		boolean deleted = mypageService.deleteFavorite(user.getUser_id(), normalizedBoardType, postId);
 		
 		if (!deleted) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
