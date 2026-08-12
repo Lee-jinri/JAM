@@ -415,77 +415,81 @@ public class OAuthController {
 	public String handleNaverCallback(
 			@RequestParam("code") String code,
 			@RequestParam("state") String state,
-			HttpServletRequest request, 
+			HttpServletRequest request,
 			HttpServletResponse response) {
-		
-		// 1. state 검증
-		String key = "oauth:state:" + state;
-		String savedData = stringRedisTemplate.opsForValue().get("oauth:state:" + state);
-		
-		if (savedData == null) {
-		    log.error("Invalid OAuth state");
-		    return "redirect:/member/login?error=invalid_state";
-		}
-		
-		String[] parts = savedData.split("\\|", 2);
-		String provider = parts[0];
-		String prevPage = (parts.length > 1) ? parts[1] : "/";
-		
-		stringRedisTemplate.delete(key);
-		
-		String accessToken = getNaverAccessToken(code, state);
-		
-		// 2. access token 발급 및 쿠키 저장 (사용자 정보 조회 및 로그아웃 등에 사용) 
-		CookieUtil.addCookie(
-				request,
-				response, 
-				CookieEnum.NAVER_ACCESS_TOKEN.getName(), 
-				accessToken, 
-				CookieEnum.NAVER_ACCESS_TOKEN.getExpiry()
-			);
-				
-		// 3. 사용자 정보 조회 및 회원 처리
-		Map<String, Object> userInfo = getNaverUserInfo(accessToken);
-		
-		if(userInfo.isEmpty()) return "redirect:/member/login?error=oauth";
-		
-		// 사용자 정보가 DB에 없으면 회원가입
-		MemberDto user = memberService.socialLoginOrRegister(userInfo, "naver");
-		
-		if(user.isEmpty()) {
-			log.error("소셜 로그인 사용자 매핑 실패");
-		    return "redirect:/member/login?error=oauth";
-	    }
-		
-		// 4.서비스 로그인
-		Authentication authentication = memberService.authenticateSocialUser(user);
+		try {
+			// 1. state 검증
+			String key = "oauth:state:" + state;
+			String savedData = stringRedisTemplate.opsForValue().get("oauth:state:" + state);
 
-		TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "naver");
+			if (savedData == null) {
+			    log.error("Invalid OAuth state");
+			    return "redirect:/member/login?error=invalid_state";
+			}
 
-		// RefreshToken DB에 저장
-		memberService.addRefreshToken((String)userInfo.get("user_id"), SecurityUtil.hashToken(token.getRefreshToken()));
+			String[] parts = savedData.split("\\|", 2);
+			String provider = parts[0];
+			String prevPage = (parts.length > 1) ? parts[1] : "/";
 
-		// 5. JWT 쿠키 저장
-		CookieUtil.addCookie(
-				request,
-				response, 
-				CookieEnum.ACCESS_TOKEN.getName(), 
-				token.getAccessToken(), 
-				CookieEnum.ACCESS_TOKEN.getExpiry()
-			);
-		CookieUtil.addCookie(
-				request,
-				response, 
-				CookieEnum.REFRESH_TOKEN.getName(), 
-				token.getRefreshToken(), 
-				CookieEnum.REFRESH_TOKEN.getExpiry()
-			);
-		
-		// 6. 로그인 이전 페이지로 리다이렉트
-		if (prevPage == null || prevPage.isBlank() || prevPage.startsWith("http") || prevPage.equals("null")) {
-		    return "redirect:/";
-		}else {
-			return "redirect:" + prevPage;
+			stringRedisTemplate.delete(key);
+
+			String accessToken = getNaverAccessToken(code, state);
+
+			// 2. access token 발급 및 쿠키 저장 (사용자 정보 조회 및 로그아웃 등에 사용)
+			CookieUtil.addCookie(
+					request,
+					response,
+					CookieEnum.NAVER_ACCESS_TOKEN.getName(),
+					accessToken,
+					CookieEnum.NAVER_ACCESS_TOKEN.getExpiry()
+				);
+
+			// 3. 사용자 정보 조회 및 회원 처리
+			Map<String, Object> userInfo = getNaverUserInfo(accessToken);
+
+			if(userInfo.isEmpty()) return "redirect:/member/login?error=oauth";
+
+			// 사용자 정보가 DB에 없으면 회원가입
+			MemberDto user = memberService.socialLoginOrRegister(userInfo, "naver");
+
+			if(user.isEmpty()) {
+				log.error("소셜 로그인 사용자 매핑 실패");
+			    return "redirect:/member/login?error=oauth";
+		    }
+
+			// 4.서비스 로그인
+			Authentication authentication = memberService.authenticateSocialUser(user);
+
+			TokenInfo token = jwtService.generateTokenFromAuthentication(authentication, false, "naver");
+
+			// RefreshToken DB에 저장
+			memberService.addRefreshToken((String)userInfo.get("user_id"), SecurityUtil.hashToken(token.getRefreshToken()));
+
+			// 5. JWT 쿠키 저장
+			CookieUtil.addCookie(
+					request,
+					response,
+					CookieEnum.ACCESS_TOKEN.getName(),
+					token.getAccessToken(),
+					CookieEnum.ACCESS_TOKEN.getExpiry()
+				);
+			CookieUtil.addCookie(
+					request,
+					response,
+					CookieEnum.REFRESH_TOKEN.getName(),
+					token.getRefreshToken(),
+					CookieEnum.REFRESH_TOKEN.getExpiry()
+				);
+
+			// 6. 로그인 이전 페이지로 리다이렉트
+			if (prevPage == null || prevPage.isBlank() || prevPage.startsWith("http") || prevPage.equals("null")) {
+			    return "redirect:/";
+			}else {
+				return "redirect:" + prevPage;
+			}
+		} catch (Exception e) {
+			log.error("네이버 OAuth 콜백 실패", e);
+			return "redirect:/member/login?error=oauth";
 		}
 	}
 	
