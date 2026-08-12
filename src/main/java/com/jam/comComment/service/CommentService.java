@@ -8,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.jam.comComment.dto.CommentDto;
 import com.jam.comComment.mapper.CommentMapper;
 import com.jam.community.repository.CommunityRepository;
+import com.jam.global.exception.ForbiddenException;
 
 import lombok.RequiredArgsConstructor;
 
@@ -34,15 +35,24 @@ public class CommentService {
 	}
 
 	public int updateComment(CommentDto c) {
-		return commentMapper.updateComment(c);
+		int updated = commentMapper.updateComment(c);
+		if (updated != 1) {
+			throw new ForbiddenException("수정 권한이 없습니다.");
+		}
+		return updated;
 	}
 
 	@Transactional
 	public int deleteComment(Long comment_id, String user_id) {
-		// 댓글 개수 감소
 		Long postId = commentMapper.getPostIdByCommentId(comment_id);
+		int deleted = commentMapper.deleteComment(comment_id, user_id);
+		if (deleted != 1) {
+			throw new ForbiddenException("삭제 권한이 없습니다.");
+		}
+
+		// 댓글 개수 감소 (실제 삭제가 성공했을 때만)
 		communityRepository.updateCommentCount(postId, COMMENT_DEL);
-		
-		return commentMapper.deleteComment(comment_id, user_id);
+
+		return deleted;
 	}
 }
