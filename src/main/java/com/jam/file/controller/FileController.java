@@ -66,7 +66,7 @@ public class FileController {
 	 */
 	@GetMapping(value="/{fileId}/download-url", produces = MediaType.TEXT_PLAIN_VALUE)
 	public ResponseEntity<String> downloadFile(@PathVariable Long fileId, @AuthenticationPrincipal MemberDto user) {
-		String userId = ValidationUtils.requireLogin(user.getUser_id());
+		String userId = ValidationUtils.requireLogin(user == null ? null : user.getUser_id());
 		
 	    fileAccessService.existsFileAccess(userId, fileId);
 	    
