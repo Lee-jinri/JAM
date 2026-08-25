@@ -2,6 +2,8 @@
 ALTER USER CTXSYS IDENTIFIED BY ctxsys_ci_pw123 ACCOUNT UNLOCK;
 -- CTXAPP은 SYS 권한으로, jam 유저로 CONNECT 하기 전에 부여해야 한다.
 GRANT CTXAPP TO jam;
+-- CTX_DDL 패키지 실행 권한 부여
+GRANT EXECUTE ON CTXSYS.CTX_DDL TO jam;
 CONNECT jam/jam1234@XEPDB1;
 ALTER SESSION SET CURRENT_SCHEMA = jam;
 --------------------------------------------------------
