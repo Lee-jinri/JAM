@@ -4,17 +4,11 @@
 	
 	<!-- 커뮤니티 검색 -->
 	<sql id="comSearch">
-		<if test="keyword != null and keyword != ''">
-			<![CDATA[
-			AND (
-				c.post_id IN (
-	                SELECT post_id FROM community WHERE LOWER(title) LIKE '%' || LOWER(#{keyword}) || '%'
-	                UNION ALL
-	                SELECT post_id FROM community WHERE CONTAINS(content, '{' || #{keyword} || '}') > 0
-	            )
-			)
-			]]>
-		</if>
+	    <if test="keyword != null and keyword != ''">
+	        <![CDATA[
+	        AND CONTAINS(c.title, '{' || #{keyword} || '}') > 0
+	        ]]>
+	    </if>
 	</sql>
 	
 	<select id="getBoard" parameterType="communityDto" resultType="communityDto">
