@@ -1,17 +1,17 @@
+-- CDB에서 CTXSYS 잠금 해제
+ALTER USER CTXSYS IDENTIFIED BY ctxsys_ci_pw123 ACCOUNT UNLOCK CONTAINER = ALL;
 -- jam 계정이 생성될 때까지 대기 (최대 60초)
 DECLARE
   v_cnt NUMBER := 0;
 BEGIN
   FOR i IN 1..30 LOOP
-    SELECT COUNT(*) INTO v_cnt FROM dba_users WHERE username = 'jam';
+    SELECT COUNT(*) INTO v_cnt FROM dba_users WHERE username = 'JAM';
     EXIT WHEN v_cnt > 0;
     DBMS_LOCK.SLEEP(2);
   END LOOP;
 END;
 /
 ALTER SESSION SET CONTAINER = XEPDB1;
--- Oracle Text(CTXSYS)는 기본적으로 계정이 잠겨있는 경우가 많아 먼저 잠금을 해제한다.
-ALTER USER CTXSYS IDENTIFIED BY ctxsys_ci_pw123 ACCOUNT UNLOCK;
 -- CTXAPP은 SYS 권한으로, jam 유저로 CONNECT 하기 전에 부여해야 한다.
 GRANT CTXAPP TO jam;
 -- CTX_DDL 패키지 실행 권한 부여
