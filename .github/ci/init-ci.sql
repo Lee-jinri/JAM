@@ -1,3 +1,15 @@
+-- jam 계정이 생성될 때까지 대기 (최대 60초)
+DECLARE
+  v_cnt NUMBER := 0;
+BEGIN
+  FOR i IN 1..30 LOOP
+    SELECT COUNT(*) INTO v_cnt FROM dba_users WHERE username = 'jam';
+    EXIT WHEN v_cnt > 0;
+    DBMS_LOCK.SLEEP(2);
+  END LOOP;
+END;
+/
+
 -- Oracle Text(CTXSYS)는 기본적으로 계정이 잠겨있는 경우가 많아 먼저 잠금을 해제한다.
 ALTER USER CTXSYS IDENTIFIED BY ctxsys_ci_pw123 ACCOUNT UNLOCK;
 -- CTXAPP은 SYS 권한으로, jam 유저로 CONNECT 하기 전에 부여해야 한다.
