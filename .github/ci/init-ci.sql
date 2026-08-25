@@ -376,7 +376,7 @@ BEGIN
   CTX_DDL.SET_ATTRIBUTE('comm_multi_ds', 'COLUMNS', 'title, content');
 END;
 /
-CREATE INDEX "IDX_COMM_COMBINED_TEXT" ON "COMMUNITY"("TITLE") INDEXTYPE IS CTXSYS.CONTEXT PARAMETERS ('DATASTORE comm_multi_ds SYNC (ON COMMIT)');
+CREATE INDEX "IDX_COMM_COMBINED_TEXT" ON "COMMUNITY"("TITLE") INDEXTYPE IS CTXSYS.CONTEXT PARAMETERS ('DATASTORE comm_multi_ds SYNC (MANUAL)');
 REM INSERTING into APPLICATION
 SET DEFINE OFF;
 Insert into APPLICATION (APPLICATION_ID,USER_ID,POST_ID,TITLE,CREATED_AT,COMPANY_USER_ID) values (2,'member123',5,'안녕하세요, 트랙 메이커/프로듀서 포지션에 지원드리는 이진리 입니다.',to_timestamp('26/03/28 02:20:03.000000000','RR/MM/DD HH24:MI:SSXFF'),'aaaa1234');
@@ -406,6 +406,10 @@ Insert into COMMUNITY (POST_ID,TITLE,VIEW_COUNT,COMMENT_COUNT,CREATED_AT,USER_ID
 Insert into COMMUNITY (POST_ID,TITLE,VIEW_COUNT,COMMENT_COUNT,CREATED_AT,USER_ID) values (7,'내 취향 명곡 알랴줌',4,0,to_timestamp('26/03/17 22:31:43.377012000','RR/MM/DD HH24:MI:SSXFF'),'rrrr1234');
 Insert into COMMUNITY (POST_ID,TITLE,VIEW_COUNT,COMMENT_COUNT,CREATED_AT,USER_ID) values (16,'요즘 자주 듣는 음악 장르 뭐 있으세요',3,2,to_timestamp('26/03/18 19:43:10.794772000','RR/MM/DD HH24:MI:SSXFF'),'qqqq1234');
 Insert into COMMUNITY (POST_ID,TITLE,VIEW_COUNT,COMMENT_COUNT,CREATED_AT,USER_ID) values (17,'[이론/작곡] ''코드 진행''이 막힐 때 써먹는 마법의 치트키',6,1,to_timestamp('26/03/18 20:03:25.000000000','RR/MM/DD HH24:MI:SSXFF'),'member123');
+BEGIN
+  CTX_DDL.SYNC_INDEX('idx_comm_combined_text');
+END;
+/
 REM INSERTING into COM_COMMENT
 SET DEFINE OFF;
 Insert into COM_COMMENT (COMMENT_ID,POST_ID,CREATED_AT,USER_ID) values (24,10,to_timestamp('26/03/18 19:44:42.000000000','RR/MM/DD HH24:MI:SSXFF'),'qqqq1234');
@@ -992,3 +996,8 @@ INSERT INTO role (role_code, display_name) VALUES ('ROLE_ADMIN', '관리자');
 	  REFERENCES "ROLE" ("ROLE_CODE") ENABLE;
 
 COMMIT;
+--------------------------------------------------------
+--  인덱스 생성 상태 체크
+--------------------------------------------------------
+SELECT idx_name, idx_status FROM ctx_user_indexes;
+SELECT ix_name, ix_err_timestamp, ix_err_message FROM ctx_user_index_errors ORDER BY ix_err_timestamp DESC;
