@@ -60,7 +60,7 @@ public class CommunityServiceIntegrationTest {
 	
 	@Test
 	@DisplayName("B: 키워드로 검색하면 제목이나 내용에 해당 키워드가 포함된 게시글만 반환한다"
-			+ " (CONTAINS 인덱스는 COMMIT 시점에 동기화되므로, 트랜잭션을 실제로 커밋해서 직접 시드한 글로 검증하고 테스트 후 되돌린다)")
+			+ " (제목 검색 통합 인덱스는 커밋 시점 동기화 되지 않으므로 직접 동기화 후 시드한 글로 검증하고 테스트 후 되돌린다)")
 	void getBoard_withKeyword() {
 	    // Given
 	    Member member = new Member();
@@ -80,7 +80,15 @@ public class CommunityServiceIntegrationTest {
 	    post = communityRepository.save(post);
 
 	    TestTransaction.flagForCommit();
-	    TestTransaction.end(); // 실제 COMMIT (Oracle Text 인덱스 동기화 트리거)
+	    TestTransaction.end(); // COMMIT
+
+	    // Oracle Text 인덱스 동기화
+	    TestTransaction.start();
+	    entityManager.createNativeQuery(
+    	    "BEGIN CTXSYS.CTX_DDL.SYNC_INDEX('idx_comm_combined_text'); END;"
+    	).executeUpdate();
+	    TestTransaction.flagForCommit();
+	    TestTransaction.end();
 
 	    try {
 	        // When
